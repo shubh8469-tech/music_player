@@ -1,0 +1,6 @@
+{
+  "@@locale": "en",
+  "appTitle": "Localization Demo",
+  "helloWorld": "Hello World",
+  "chooseLanguage": "Choose language"
+}
