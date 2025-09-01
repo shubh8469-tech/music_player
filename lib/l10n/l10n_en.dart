@@ -9,11 +9,8 @@ class SEn extends S {
   SEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Localization Demo';
-
-  @override
-  String get helloWorld => 'Hello World';
-
-  @override
   String get chooseLanguage => 'Choose language';
+
+  @override
+  String get musicPlayer => 'Music Player';
 }

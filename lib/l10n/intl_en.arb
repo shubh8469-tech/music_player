@@ -1,6 +1,4 @@
 {
-  "@@locale": "en",
-  "appTitle": "Localization Demo",
-  "helloWorld": "Hello World",
-  "chooseLanguage": "Choose language"
+  "chooseLanguage": "Choose language",
+  "musicPlayer": "Music Player"
 }

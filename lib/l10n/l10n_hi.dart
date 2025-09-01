@@ -9,11 +9,8 @@ class SHi extends S {
   SHi([String locale = 'hi']) : super(locale);
 
   @override
-  String get appTitle => 'लोकलाइज़ेशन डेमो';
-
-  @override
-  String get helloWorld => 'नमस्ते दुनिया';
-
-  @override
   String get chooseLanguage => 'भाषा चुनें';
+
+  @override
+  String get musicPlayer => 'संगीत बजाने वाला';
 }

@@ -97,23 +97,17 @@ abstract class S {
     Locale('hi'),
   ];
 
-  /// No description provided for @appTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Localization Demo'**
-  String get appTitle;
-
-  /// No description provided for @helloWorld.
-  ///
-  /// In en, this message translates to:
-  /// **'Hello World'**
-  String get helloWorld;
-
   /// No description provided for @chooseLanguage.
   ///
   /// In en, this message translates to:
   /// **'Choose language'**
   String get chooseLanguage;
+
+  /// No description provided for @musicPlayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Music Player'**
+  String get musicPlayer;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

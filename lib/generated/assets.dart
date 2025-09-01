@@ -2,6 +2,24 @@
 class Assets {
   Assets._();
 
+  static const String interInterBlack = 'assets/fonts/inter/Inter-Black.ttf';
+  static const String interInterBold = 'assets/fonts/inter/Inter-Bold.ttf';
+  static const String interInterExtraBold = 'assets/fonts/inter/Inter-ExtraBold.ttf';
+  static const String interInterLight = 'assets/fonts/inter/Inter-Light.ttf';
+  static const String interInterMedium = 'assets/fonts/inter/Inter-Medium.ttf';
+  static const String interInterRegular = 'assets/fonts/inter/Inter-Regular.ttf';
+  static const String interInterSemiBold = 'assets/fonts/inter/Inter-SemiBold.ttf';
+  static const String interInterThin = 'assets/fonts/inter/Inter-Thin.ttf';
+  static const String manropeManropeBold = 'assets/fonts/manrope/Manrope-Bold.ttf';
+  static const String manropeManropeExtraBold = 'assets/fonts/manrope/Manrope-ExtraBold.ttf';
+  static const String manropeManropeExtraLight = 'assets/fonts/manrope/Manrope-ExtraLight.ttf';
+  static const String manropeManropeLight = 'assets/fonts/manrope/Manrope-Light.ttf';
+  static const String manropeManropeMedium = 'assets/fonts/manrope/Manrope-Medium.ttf';
+  static const String manropeManropeRegular = 'assets/fonts/manrope/Manrope-Regular.ttf';
+  static const String manropeManropeSemiBold = 'assets/fonts/manrope/Manrope-SemiBold.ttf';
+  static const String pngFolder = 'assets/png/folder.png';
   static const String pngLogo = 'assets/png/logo.png';
+  static const String pngMusic = 'assets/png/music.png';
+  static const String pngMusicDirectory = 'assets/png/musicDirectory.png';
 
 }

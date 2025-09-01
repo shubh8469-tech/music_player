@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:music_app/screens/Splash&Setup/permission.dart';
 
-import '../generated/assets.dart';
+import '../../generated/assets.dart';
+import '../../l10n/l10n.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -25,6 +28,14 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
       duration: const Duration(seconds: 4),
     );
+
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context){
+          return PermissionPage();
+        }), (route) => false,);
+      }
+    });
 
     _logoOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -71,7 +82,7 @@ class _SplashScreenState extends State<SplashScreen>
           animation: _controller,
           builder: (context, child) {
             return SizedBox(
-              height: 400,
+              height: 400.h,
               width: double.infinity,
               child: Stack(
                 alignment: Alignment.center,
@@ -83,8 +94,8 @@ class _SplashScreenState extends State<SplashScreen>
                       scale: _logoScale.value,
                       child: Image.asset(
                         Assets.pngLogo,
-                        height: 113,
-                        width: 113,
+                        height: 113.h,
+                        width: 113.w,
                       ),
                     ),
                   ),
@@ -92,10 +103,10 @@ class _SplashScreenState extends State<SplashScreen>
                     bottom: _textPosition.value,
                     child: Opacity(
                       opacity: _textOpacity.value,
-                      child: const Text(
-                        "Music Player",
+                      child: Text(
+                        S.of(context).musicPlayer,
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 24.sp,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),

@@ -6,5 +6,5 @@ class LanguageState {
   const LanguageState({required this.locale});
 
   /// default initial state: English
-  factory LanguageState.initial() => const LanguageState(locale: Locale('en'));
+  factory LanguageState.initial() => const LanguageState(locale: Locale('en '));
 }
