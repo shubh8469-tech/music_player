@@ -5,6 +5,7 @@ import '../../commonWidgets/buton.dart';
 import '../../commonWidgets/textWidget.dart';
 import '../../generated/assets.dart';
 import '../../themes/color.dart';
+import '../../themes/font.dart';
 
 class PermissionPage extends StatefulWidget {
   const PermissionPage({super.key});
@@ -34,19 +35,22 @@ class _PermissionPageState extends State<PermissionPage> {
             SizedBox(height: 25.h,),
             Texts(
               'Permission Required',
-              fontWeight: FontWeight.w700,
+              fontFamily: AppFonts.manrope,
+              fontWeight: AppFontWeights.bold,
               fontSize: 20.sp,
             ),
             SizedBox(height: 17.h,),
             Texts(
               'To play your songs, we need permission to access music files stored on your device.',
-              fontWeight: FontWeight.w400,
+              fontFamily: AppFonts.inter,
+              fontWeight: AppFontWeights.regular,
               fontSize: 14.sp,
             ),
             SizedBox(height: 25.h,),
             Texts(
               'This allows the app to:',
-              fontWeight: FontWeight.w600,
+              fontFamily: AppFonts.inter,
+              fontWeight: AppFontWeights.semiBold,
               fontSize: 16.sp,
             ),
             SizedBox(height: 20.h,),
@@ -57,7 +61,8 @@ class _PermissionPageState extends State<PermissionPage> {
                     checkIconWidget(),
                     SizedBox(width: 5.w,),
                     Texts('Detect and list your offline music files',
-                      fontWeight: FontWeight.w400,
+                      fontFamily: AppFonts.inter,
+                      fontWeight: AppFontWeights.regular,
                       fontSize: 14.sp,
                     )
                   ],
@@ -68,7 +73,8 @@ class _PermissionPageState extends State<PermissionPage> {
                     checkIconWidget(),
                     SizedBox(width: 5.w,),
                     Texts('Play songs stored on your device',
-                      fontWeight: FontWeight.w400,
+                      fontFamily: AppFonts.inter,
+                      fontWeight: AppFontWeights.regular,
                       fontSize: 14.sp,
                     )
                   ],
@@ -79,7 +85,8 @@ class _PermissionPageState extends State<PermissionPage> {
                     checkIconWidget(),
                     SizedBox(width: 5.w,),
                     Texts('Keep your playlists organized automatically',
-                      fontWeight: FontWeight.w400,
+                      fontFamily: AppFonts.inter,
+                      fontWeight: AppFontWeights.regular,
                       fontSize: 14.sp,
                     )
                   ],
