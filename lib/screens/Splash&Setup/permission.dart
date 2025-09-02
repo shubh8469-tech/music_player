@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:music_app/screens/Splash&Setup/sync_progress.dart';
 
 import '../../commonWidgets/buton.dart';
 import '../../commonWidgets/textWidget.dart';
@@ -99,7 +100,9 @@ class _PermissionPageState extends State<PermissionPage> {
               child: OvalButton(
                 text: "Open Settings",
                 onPressed: () {
-                  print("Button pressed!");
+                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context){
+                    return SyncProgress();
+                  }), (route) => false,);
                 },
                 backgroundColor: AppColors.primaryOrange,
                 textColor: AppColors.white,

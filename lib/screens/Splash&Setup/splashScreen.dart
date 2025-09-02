@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:music_app/screens/Splash&Setup/permission.dart';
 
+import '../../commonWidgets/textWidget.dart';
 import '../../generated/assets.dart';
 import '../../l10n/l10n.dart';
+import '../../themes/font.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -103,13 +105,12 @@ class _SplashScreenState extends State<SplashScreen>
                     bottom: _textPosition.value,
                     child: Opacity(
                       opacity: _textOpacity.value,
-                      child: Text(
+                      child: Texts(
                         S.of(context).musicPlayer,
-                        style: TextStyle(
-                          fontSize: 24.sp,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
+                        fontSize: 24.sp,
+                        fontFamily: AppFonts.manrope,
+                        fontWeight: AppFontWeights.semiBold,
+                        color: Colors.black87,
                       ),
                     ),
                   ),
