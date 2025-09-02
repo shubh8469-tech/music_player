@@ -21,5 +21,14 @@ class Assets {
   static const String pngLogo = 'assets/png/logo.png';
   static const String pngMusic = 'assets/png/music.png';
   static const String pngMusicDirectory = 'assets/png/musicDirectory.png';
+  static const String svgDrawer = 'assets/svg/drawer.svg';
+  static const String svgFavorites = 'assets/svg/favorites.svg';
+  static const String svgHome = 'assets/svg/home.svg';
+  static const String svgMostPlayed = 'assets/svg/mostPlayed.svg';
+  static const String svgMusicLibrary = 'assets/svg/musicLibrary.svg';
+  static const String svgRecentlyAdded = 'assets/svg/recentlyAdded.svg';
+  static const String svgSearch = 'assets/svg/search.svg';
+  static const String svgSetting = 'assets/svg/setting.svg';
+  static const String svgThemeBrush = 'assets/svg/themeBrush.svg';
 
 }

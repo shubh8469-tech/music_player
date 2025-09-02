@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_app/screens/Splash&Setup/permission.dart';
 import 'package:music_app/screens/Splash&Setup/splashScreen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:music_app/screens/dashboard/dashboardScreen.dart';
 import 'GlobalBloc/languageBloc/language_bloc.dart';
 import 'l10n/l10n.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
     return BlocBuilder<LanguageBloc, LanguageState>(
       builder: (context, state) {
         return MaterialApp(
+          debugShowCheckedModeBanner: false,
           title: 'Flutter Demo',
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -50,7 +52,7 @@ class MyApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          home: PermissionPage(),
+          home: DashboardScreen(),
         );
       },
     );

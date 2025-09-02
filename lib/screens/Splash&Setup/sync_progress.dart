@@ -71,7 +71,7 @@ class _SyncProgressState extends State<SyncProgress>
                 animation: _controller,
                 builder: (context, child) {
                   return Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                    padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 10.h),
                     child: Column(
                       children: [
                         Row(
@@ -101,8 +101,7 @@ class _SyncProgressState extends State<SyncProgress>
                           color: AppColors.primaryOrange,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        const SizedBox(height: 16),
-                        // Show percentage text
+                        SizedBox(height: 16.h),
                       ],
                     ),
                   );
