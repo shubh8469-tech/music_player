@@ -28,108 +28,111 @@ class _HomescreenState extends State<Homescreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.white,
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 18, vertical: 15),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Texts('Explore Playlists', fontSize: 18, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter),
-
-            SizedBox(height: 13),
-
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 15.h),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Texts('Explore Playlists', fontSize: 18.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter),
+          
+              SizedBox(height: 13.h),
+          
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(3, (index) {
+                    return GradientCard(
+                      height: 104.h,
+                      width: 104.w,
+                      colors: [colors[index].withValues(alpha: 0.21), colors[index]],
+                      borderRadius: 13.r,
+                      iconAsset: icons[index],
+                      iconSize: 40.r,
+                      title: categories[index],
+                      onTap: () {
+                        print("Most Played tapped!");
+                      },
+                      margin: 10.w,
+                    );
+                  }),
+                ),
+              ),
+          
+              SizedBox(height: 40.h),
+          
+              Row(
+                children: [
+                  Texts('Recently Played', fontSize: 18, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter),
+                  Spacer(),
+                  Texts('see all', fontSize: 14, fontWeight: AppFontWeights.regular, fontFamily: AppFonts.inter),
+                ],
+              ),
+          
+              SizedBox(height: 5.h),
+          
+              Column(
                 children: List.generate(3, (index) {
-                  return GradientCard(
-                    height: 104.h,
-                    width: 104.w,
-                    colors: [colors[index].withValues(alpha: 0.21), colors[index]],
-                    borderRadius: 13.r,
-                    iconAsset: icons[index],
-                    iconSize: 40.r,
-                    title: categories[index],
-                    onTap: () {
-                      print("Most Played tapped!");
-                    },
-                    margin: 10.w,
+                  return MusicListTile(
+                    margin: 7.w,
+                    height: 66.h,
+                    borderRadius: 10.r,
+                    backgroundColor: AppColors.musicTileBackgroundColor,
+                    cardHeight: 50.h,
+                    cardWidth: 50.w,
+                    cardRadius: 7.r,
+                    gradientColors: [colors[0].withValues(alpha: 0.21), colors[0]],
+                    cardIconAsset: musicIcons[index],
+                    cardIconSize: 32.r,
+                    isSvgCardIcon: musicIcons[index].contains('.svg'),
+                    title: 'Memories',
+                    subtitle: 'Artist Name - Folder',
+                    trailingIconAsset: Assets.svgPlayLogo,
+                    trailingIconHeight: 32.r,
+                    trailingIconWidth: 32.r,
+                    trailingMargin: 0,
+                    onTap: () => print("Tile tapped"),
+                    onPlayTap: () => print("Play tapped"),
                   );
                 }),
               ),
-            ),
-
-            SizedBox(height: 40),
-
-            Row(
-              children: [
-                Texts('Recently Played', fontSize: 18, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter),
-                Spacer(),
-                Texts('see all', fontSize: 14, fontWeight: AppFontWeights.regular, fontFamily: AppFonts.inter)
-              ],
-            ),
-
-            SizedBox(height: 5),
-
-            Column(
-              children: List.generate(3, (index) {
-                return MusicListTile(
-                  margin: 7,
-                  height: 66.h,
-                  borderRadius: 10.r,
-                  backgroundColor: Colors.grey.shade200,
-                  cardHeight: 50.h,
-                  cardWidth: 50.w,
-                  cardRadius: 7.r,
-                  gradientColors: [colors[0].withValues(alpha: 0.21), colors[0]],
-                  cardIconAsset: musicIcons[index],
-                  cardIconSize: 32.r,
-                  isSvgCardIcon: musicIcons[index].contains('.svg'),
-                  title: 'Memories',
-                  subtitle: 'Artist Name - Folder',
-                  trailingIconAsset: Assets.svgPlayLogo,
-                  trailingIconHeight: 32.r,
-                  trailingIconWidth: 32.r,
-                  trailingMargin: 0,
-                  onTap: () => print("Tile tapped"),
-                  onPlayTap: () => print("Play tapped"),
-                );
-              },),
-            ),
-
-            SizedBox(height: 38),
-
-            Row(
-              children: [
-                Texts('My PlayLists', fontSize: 18, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter),
-                Spacer(),
-                Texts('see all', fontSize: 14, fontWeight: AppFontWeights.regular, fontFamily: AppFonts.inter)
-              ],
-            ),
-
-            SizedBox(height: 5),
-
-            MusicListTile(
-              margin: 7,
-              height: 66.h,
-              borderRadius: 10.r,
-              backgroundColor: Colors.grey.shade200,
-              cardHeight: 50.h,
-              cardWidth: 50.w,
-              cardRadius: 7.r,
-              gradientColors: [colors[0].withValues(alpha: 0.21), colors[0]],
-              cardIconAsset: Assets.svgMusicIcon,
-              cardIconSize: 32.r,
-              title: 'Memories',
-              subtitle: 'Artist Name - Folder',
-              trailingIconAsset: Assets.svgMenuIcon,
-              trailingIconHeight: 15.h,
-              trailingIconWidth: 3.w,
-              trailingMargin: 10.w,
-              onTap: () => print("Tile tapped"),
-              onPlayTap: () => print("Play tapped"),
-            )
-          ],
+          
+              SizedBox(height: 38.h),
+          
+              Row(
+                children: [
+                  Texts('My PlayLists', fontSize: 18, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter),
+                  Spacer(),
+                  Texts('see all', fontSize: 14, fontWeight: AppFontWeights.regular, fontFamily: AppFonts.inter),
+                ],
+              ),
+          
+              SizedBox(height: 5.h),
+          
+              MusicListTile(
+                margin: 7.w,
+                height: 66.h,
+                borderRadius: 10.r,
+                backgroundColor: AppColors.musicTileBackgroundColor,
+                cardHeight: 50.h,
+                cardWidth: 50.w,
+                cardRadius: 7.r,
+                gradientColors: [colors[0].withValues(alpha: 0.21), colors[0]],
+                cardIconAsset: Assets.svgMusicIcon,
+                cardIconSize: 32.r,
+                title: 'Bollywood Hits',
+                subtitle: '23 Songs',
+                trailingIconAsset: Assets.svgMenuIcon,
+                trailingIconHeight: 15.h,
+                trailingIconWidth: 3.w,
+                trailingMargin: 10.w,
+                onTap: () => print("Tile tapped"),
+                onPlayTap: () => print("Play tapped"),
+              ),
+            ],
+          ),
         ),
       ),
     );

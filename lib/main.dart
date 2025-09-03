@@ -53,7 +53,7 @@ class MyApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          home: EditSongDetailsScreen(),
+          home: DashboardScreen(),
         );
       },
     );
