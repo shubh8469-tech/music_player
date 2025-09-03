@@ -27,6 +27,7 @@ class Assets {
   static const String svgFavorites = 'assets/svg/favorites.svg';
   static const String svgHome = 'assets/svg/home.svg';
   static const String svgMenuIcon = 'assets/svg/menuIcon.svg';
+  static const String svgIcBack = 'assets/svg/ic_back.svg';
   static const String svgMostPlayed = 'assets/svg/mostPlayed.svg';
   static const String svgMusicIcon = 'assets/svg/musicIcon.svg';
   static const String svgMusicLibrary = 'assets/svg/musicLibrary.svg';
