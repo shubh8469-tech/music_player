@@ -108,6 +108,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Music Player'**
   String get musicPlayer;
+
+  /// No description provided for @editDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Details'**
+  String get editDetails;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

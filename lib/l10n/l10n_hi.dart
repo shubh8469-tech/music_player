@@ -13,4 +13,7 @@ class SHi extends S {
 
   @override
   String get musicPlayer => 'संगीत बजाने वाला';
+
+  @override
+  String get editDetails => 'Edit Details';
 }

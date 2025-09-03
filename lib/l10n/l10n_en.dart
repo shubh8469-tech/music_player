@@ -13,4 +13,7 @@ class SEn extends S {
 
   @override
   String get musicPlayer => 'Music Player';
+
+  @override
+  String get editDetails => 'Edit Details';
 }
