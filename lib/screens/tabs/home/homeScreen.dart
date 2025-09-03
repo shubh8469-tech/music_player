@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
 
+import '../../../commonWidgets/MusicListTile.dart';
+import '../../../commonWidgets/gradientCard.dart';
 import '../../../commonWidgets/textWidget.dart';
+import '../../../generated/assets.dart';
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key});
@@ -11,16 +17,118 @@ class Homescreen extends StatefulWidget {
 }
 
 class _HomescreenState extends State<Homescreen> {
+  List<String> categories = ['Most Played', 'Recently Added', 'My Favorites'];
+
+  List<String> icons = [Assets.svgMostPlayed, Assets.svgRecentlyAdded, Assets.svgFavorites];
+
+  List<String> musicIcons = [Assets.svgMusicIcon, Assets.pngBand, Assets.pngBand2];
+
+  List<Color> colors = [AppColors.mildOrange, AppColors.mildBlue, AppColors.mildPink];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+        padding: EdgeInsets.symmetric(horizontal: 18, vertical: 15),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Texts('Explore Playlists', fontSize: 18, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter),
 
-            Texts('Explore Playlists', fontSize: 18, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter,),
+            SizedBox(height: 13),
 
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: List.generate(3, (index) {
+                  return GradientCard(
+                    height: 104.h,
+                    width: 104.w,
+                    colors: [colors[index].withValues(alpha: 0.21), colors[index]],
+                    borderRadius: 13.r,
+                    iconAsset: icons[index],
+                    iconSize: 40.r,
+                    title: categories[index],
+                    onTap: () {
+                      print("Most Played tapped!");
+                    },
+                    margin: 10.w,
+                  );
+                }),
+              ),
+            ),
+
+            SizedBox(height: 40),
+
+            Row(
+              children: [
+                Texts('Recently Played', fontSize: 18, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter),
+                Spacer(),
+                Texts('see all', fontSize: 14, fontWeight: AppFontWeights.regular, fontFamily: AppFonts.inter)
+              ],
+            ),
+
+            SizedBox(height: 5),
+
+            Column(
+              children: List.generate(3, (index) {
+                return MusicListTile(
+                  margin: 7,
+                  height: 66.h,
+                  borderRadius: 10.r,
+                  backgroundColor: Colors.grey.shade200,
+                  cardHeight: 50.h,
+                  cardWidth: 50.w,
+                  cardRadius: 7.r,
+                  gradientColors: [colors[0].withValues(alpha: 0.21), colors[0]],
+                  cardIconAsset: musicIcons[index],
+                  cardIconSize: 32.r,
+                  isSvgCardIcon: musicIcons[index].contains('.svg'),
+                  title: 'Memories',
+                  subtitle: 'Artist Name - Folder',
+                  trailingIconAsset: Assets.svgPlayLogo,
+                  trailingIconHeight: 32.r,
+                  trailingIconWidth: 32.r,
+                  trailingMargin: 0,
+                  onTap: () => print("Tile tapped"),
+                  onPlayTap: () => print("Play tapped"),
+                );
+              },),
+            ),
+
+            SizedBox(height: 38),
+
+            Row(
+              children: [
+                Texts('My PlayLists', fontSize: 18, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter),
+                Spacer(),
+                Texts('see all', fontSize: 14, fontWeight: AppFontWeights.regular, fontFamily: AppFonts.inter)
+              ],
+            ),
+
+            SizedBox(height: 5),
+
+            MusicListTile(
+              margin: 7,
+              height: 66.h,
+              borderRadius: 10.r,
+              backgroundColor: Colors.grey.shade200,
+              cardHeight: 50.h,
+              cardWidth: 50.w,
+              cardRadius: 7.r,
+              gradientColors: [colors[0].withValues(alpha: 0.21), colors[0]],
+              cardIconAsset: Assets.svgMusicIcon,
+              cardIconSize: 32.r,
+              title: 'Memories',
+              subtitle: 'Artist Name - Folder',
+              trailingIconAsset: Assets.svgMenuIcon,
+              trailingIconHeight: 15.h,
+              trailingIconWidth: 3.w,
+              trailingMargin: 10.w,
+              onTap: () => print("Tile tapped"),
+              onPlayTap: () => print("Play tapped"),
+            )
           ],
         ),
       ),

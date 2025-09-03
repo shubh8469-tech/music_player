@@ -17,6 +17,8 @@ class Assets {
   static const String manropeManropeMedium = 'assets/fonts/manrope/Manrope-Medium.ttf';
   static const String manropeManropeRegular = 'assets/fonts/manrope/Manrope-Regular.ttf';
   static const String manropeManropeSemiBold = 'assets/fonts/manrope/Manrope-SemiBold.ttf';
+  static const String pngBand = 'assets/png/band.png';
+  static const String pngBand2 = 'assets/png/band2.png';
   static const String pngFolder = 'assets/png/folder.png';
   static const String pngLogo = 'assets/png/logo.png';
   static const String pngMusic = 'assets/png/music.png';
@@ -24,8 +26,11 @@ class Assets {
   static const String svgDrawer = 'assets/svg/drawer.svg';
   static const String svgFavorites = 'assets/svg/favorites.svg';
   static const String svgHome = 'assets/svg/home.svg';
+  static const String svgMenuIcon = 'assets/svg/menuIcon.svg';
   static const String svgMostPlayed = 'assets/svg/mostPlayed.svg';
+  static const String svgMusicIcon = 'assets/svg/musicIcon.svg';
   static const String svgMusicLibrary = 'assets/svg/musicLibrary.svg';
+  static const String svgPlayLogo = 'assets/svg/playLogo.svg';
   static const String svgRecentlyAdded = 'assets/svg/recentlyAdded.svg';
   static const String svgSearch = 'assets/svg/search.svg';
   static const String svgSetting = 'assets/svg/setting.svg';

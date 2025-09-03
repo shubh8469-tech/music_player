@@ -12,7 +12,7 @@ void main() {
   runApp(
     ScreenUtilInit(
       // designSize should match your designer's artboard (example below).
-      designSize: const Size(360, 690),
+      designSize: const Size(378, 812),
       minTextAdapt: true, // adapt text for small screens / accessibility
       splitScreenMode: true, // support split screen
       builder: (context, child) {
