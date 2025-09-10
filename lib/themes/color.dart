@@ -9,8 +9,11 @@ class AppColors {
   static const Color musicTileBackgroundColor = Color(0xFFF1F1F1);
   static const Color black = Color(0xFF000000);
   static const Color blackText = Color(0xFF212529);
+  static const Color textColor = Color(0xFF212529);
 
   static const Color shuffleBackground = Color(0xFFDDDDDD);
   /// Grey Shades
   static const Color mediumDarkGrey = Color(0xFFCFC9C9);
+  static const Color bgGrey = Color(0x0);
+  static const Color greyBorder = Color(0x3000000);
 }

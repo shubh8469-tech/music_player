@@ -28,6 +28,7 @@ class Assets {
   static const String svgFilter = 'assets/svg/filter.svg';
   static const String svgHome = 'assets/svg/home.svg';
   static const String svgIcBack = 'assets/svg/ic_back.svg';
+  static const String svgIcTunes = 'assets/svg/ic_tunes.svg';
   static const String svgMenuIcon = 'assets/svg/menuIcon.svg';
   static const String svgMostPlayed = 'assets/svg/mostPlayed.svg';
   static const String svgMusicIcon = 'assets/svg/musicIcon.svg';

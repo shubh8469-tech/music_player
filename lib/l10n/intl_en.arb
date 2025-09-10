@@ -1,5 +1,14 @@
 {
   "chooseLanguage": "Choose language",
   "musicPlayer": "Music Player",
-  "editDetails":"Edit Details"
+  "editDetails":"Edit Details",
+  "changeCover":"Change Cover",
+  "title":"Title",
+  "album":"Album",
+  "artist":"Artist",
+  "genre":"Genre",
+  "trackNumber":"Track Number",
+  "cancel":"Cancel",
+  "save":"Save"
+
 }
