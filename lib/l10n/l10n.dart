@@ -114,6 +114,54 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Edit Details'**
   String get editDetails;
+
+  /// No description provided for @changeCover.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Cover'**
+  String get changeCover;
+
+  /// No description provided for @title.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get title;
+
+  /// No description provided for @album.
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get album;
+
+  /// No description provided for @artist.
+  ///
+  /// In en, this message translates to:
+  /// **'Artist'**
+  String get artist;
+
+  /// No description provided for @genre.
+  ///
+  /// In en, this message translates to:
+  /// **'Genre'**
+  String get genre;
+
+  /// No description provided for @trackNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Track Number'**
+  String get trackNumber;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {
