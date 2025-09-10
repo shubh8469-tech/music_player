@@ -4,6 +4,7 @@ import 'package:music_app/screens/Splash&Setup/permission.dart';
 import 'package:music_app/screens/Splash&Setup/splashScreen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:music_app/screens/dashboard/dashboardScreen.dart';
+import 'package:music_app/screens/tabs/library/libraryScreen.dart';
 import 'package:music_app/screens/tabs/songs_setting/edit_song_details_screen.dart';
 import 'GlobalBloc/languageBloc/language_bloc.dart';
 import 'l10n/l10n.dart';
@@ -53,7 +54,7 @@ class MyApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          home: EditSongDetailsScreen(),
+          home: SplashScreen(),
         );
       },
     );

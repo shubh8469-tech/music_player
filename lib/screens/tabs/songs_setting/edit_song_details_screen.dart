@@ -113,7 +113,7 @@ class _EditSongDetailsScreenState extends State<EditSongDetailsScreen> {
           padding: const EdgeInsets.only(bottom: 15.0, top: 10),
           child: TextFieldWidget(
             controller: titleController,
-            fillColor: AppColors.bgGrey.withValues(alpha: .2),
+            fillColor: AppColors.textColor.withValues(alpha: .2),
             wantListeners: true,
             cursorColor: AppColors.textColor,
             textStyleColor: AppColors.textColor,
@@ -138,7 +138,7 @@ class _EditSongDetailsScreenState extends State<EditSongDetailsScreen> {
           padding: const EdgeInsets.only(bottom: 15.0, top: 10),
           child: TextFieldWidget(
             controller: albumController,
-            fillColor: AppColors.bgGrey.withValues(alpha: .2),
+            fillColor: AppColors.textColor.withValues(alpha: .2),
             wantListeners: true,
             cursorColor: AppColors.textColor,
             textStyleColor:AppColors.textColor,
@@ -163,7 +163,7 @@ class _EditSongDetailsScreenState extends State<EditSongDetailsScreen> {
           padding: const EdgeInsets.only(bottom: 15.0, top: 10),
           child: TextFieldWidget(
             controller: artistController,
-            fillColor: AppColors.bgGrey.withValues(alpha: .2),
+            fillColor: AppColors.textColor.withValues(alpha: .2),
             wantListeners: true,
             cursorColor: AppColors.textColor,
             textStyleColor: AppColors.textColor,
@@ -188,7 +188,7 @@ class _EditSongDetailsScreenState extends State<EditSongDetailsScreen> {
           padding: const EdgeInsets.only(bottom: 15.0, top: 10),
           child: TextFieldWidget(
             controller: genreController,
-            fillColor: AppColors.bgGrey.withValues(alpha: .2),
+            fillColor: AppColors.textColor.withValues(alpha: .2),
             wantListeners: true,
             cursorColor: AppColors.textColor,
             textStyleColor: AppColors.textColor,
@@ -213,7 +213,7 @@ class _EditSongDetailsScreenState extends State<EditSongDetailsScreen> {
           padding: const EdgeInsets.only(bottom: 15.0, top: 10),
           child: TextFieldWidget(
             controller: trackController,
-            fillColor: AppColors.bgGrey.withValues(alpha: .2),
+            fillColor: AppColors.textColor.withValues(alpha: .2),
             wantListeners: true,
             cursorColor: AppColors.textColor,
             textStyleColor: AppColors.textColor,

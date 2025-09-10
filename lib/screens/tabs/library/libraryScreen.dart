@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:music_app/screens/tabs/library/playlists/playlist.dart';
 import 'package:music_app/screens/tabs/library/songs/songsList.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
+
+import 'albums/albumList.dart';
+import 'artist/artistScreen.dart';
+import 'folders/folders.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -29,8 +34,8 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
         children: [
           TabBar(
             controller: _tabController,
-            labelColor: AppColors.blackText,
-            unselectedLabelColor: AppColors.blackText,
+            labelColor: AppColors.textColor,
+            unselectedLabelColor: AppColors.textColor,
             labelStyle: TextStyle(
               fontSize: 15.sp,
               fontWeight: AppFontWeights.medium,
@@ -45,9 +50,9 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
             padding: EdgeInsets.zero,
             tabAlignment: TabAlignment.start,
             dividerColor: Colors.transparent,
-            indicator: const UnderlineTabIndicator(
-              borderSide: BorderSide(width: 3.0, color: Colors.orange),
-              insets: EdgeInsets.symmetric(horizontal: -8),
+            indicator: UnderlineTabIndicator(
+              borderSide: BorderSide(width: 3.0.w, color: Colors.orange),
+              insets: EdgeInsets.symmetric(horizontal: -8.w),
             ),
             tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
           ),
@@ -57,10 +62,10 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
               controller: _tabController,
               children: [
                 SongsList(),
-                Center(child: Text('Content for Tab 2')),
-                Center(child: Text('Content for Tab 3')),
-                Center(child: Text('Content for Tab 4')),
-                Center(child: Text('Content for Tab 5')),
+                PlayListScreen(),
+                FolderListScreen(),
+                AlbumListScreen(),
+                ArtistListScreen(),
               ],
             ),
           ),
