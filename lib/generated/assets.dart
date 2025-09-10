@@ -25,16 +25,20 @@ class Assets {
   static const String pngMusicDirectory = 'assets/png/musicDirectory.png';
   static const String svgDrawer = 'assets/svg/drawer.svg';
   static const String svgFavorites = 'assets/svg/favorites.svg';
+  static const String svgFilter = 'assets/svg/filter.svg';
   static const String svgHome = 'assets/svg/home.svg';
-  static const String svgMenuIcon = 'assets/svg/menuIcon.svg';
   static const String svgIcBack = 'assets/svg/ic_back.svg';
+  static const String svgMenuIcon = 'assets/svg/menuIcon.svg';
   static const String svgMostPlayed = 'assets/svg/mostPlayed.svg';
   static const String svgMusicIcon = 'assets/svg/musicIcon.svg';
   static const String svgMusicLibrary = 'assets/svg/musicLibrary.svg';
+  static const String svgPlay = 'assets/svg/play.svg';
   static const String svgPlayLogo = 'assets/svg/playLogo.svg';
   static const String svgRecentlyAdded = 'assets/svg/recentlyAdded.svg';
   static const String svgSearch = 'assets/svg/search.svg';
   static const String svgSetting = 'assets/svg/setting.svg';
+  static const String svgShuffle = 'assets/svg/shuffle.svg';
+  static const String svgSongsCount = 'assets/svg/songsCount.svg';
   static const String svgThemeBrush = 'assets/svg/themeBrush.svg';
 
 }

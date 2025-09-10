@@ -29,7 +29,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primaryOrange,
-        leadingWidth: 45.w, // Keep Material default
+        leadingWidth: 45.w,
+        toolbarHeight: 58.h,
         leading: Padding(
           padding: EdgeInsets.only(left: 22.w),
           child: SizedBox(width: 26.w, height: 26.h, child: SvgPicture.asset(Assets.svgDrawer, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn))),

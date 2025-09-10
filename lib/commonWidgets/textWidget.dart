@@ -15,7 +15,7 @@ class Texts extends StatelessWidget {
   const Texts(
       this.text, {
         super.key,
-        this.fontFamily = AppFonts.manrope,
+        this.fontFamily = AppFonts.inter,
         this.fontWeight = AppFontWeights.regular,
         this.fontSize = 14,
         this.color = Colors.black,
