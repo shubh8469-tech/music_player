@@ -48,19 +48,19 @@ class _EditSongDetailsScreenState extends State<EditSongDetailsScreen> {
                 onTap: () {},
                 margin: 10.w,
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 20.h),
               Container(
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: AppColors.black.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(80),
-                  border: Border.all(color: AppColors.black.withValues(alpha: 0.10), width: 1),
+                  borderRadius: BorderRadius.circular(80.r),
+                  border: Border.all(color: AppColors.black.withValues(alpha: 0.10), width: 1.w),
                 ),
-                height: 50,
-                width: 150,
+                height: 50.h,
+                width: 150.w,
                 child: Texts(S.of(context).changeCover, align: TextAlign.center),
               ),
-              SizedBox(height: 50),
+              SizedBox(height: 50.h),
               titleWidget(),
               albumWidget(),
               artistWidget(),
@@ -80,12 +80,19 @@ class _EditSongDetailsScreenState extends State<EditSongDetailsScreen> {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: AppColors.black.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(80),
+                borderRadius: BorderRadius.circular(80.r),
                 border: Border.all(color: AppColors.black.withValues(alpha: 0.10), width: 1),
               ),
               height: 50.w,
               width: 160.w,
-              child: Texts(S.of(context).cancel,fontSize: 14.sp, align: TextAlign.center,fontWeight: FontWeight.w500,color: AppColors.textColor,fontFamily: AppFonts.medium,),
+              child: Texts(
+                S.of(context).cancel,
+                fontSize: 14.sp,
+                align: TextAlign.center,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textColor,
+                fontFamily: AppFonts.medium,
+              ),
             ),
             Container(
               alignment: Alignment.center,
@@ -96,7 +103,14 @@ class _EditSongDetailsScreenState extends State<EditSongDetailsScreen> {
               ),
               height: 50.w,
               width: 160.w,
-              child: Texts(S.of(context).save,fontSize: 14.sp, align: TextAlign.center,color: AppColors.white,fontWeight: FontWeight.w500,fontFamily: AppFonts.medium,),
+              child: Texts(
+                S.of(context).save,
+                fontSize: 14.sp,
+                align: TextAlign.center,
+                color: AppColors.white,
+                fontWeight: FontWeight.w500,
+                fontFamily: AppFonts.medium,
+              ),
             ),
           ],
         ),
@@ -108,7 +122,7 @@ class _EditSongDetailsScreenState extends State<EditSongDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Texts(S.of(context).title, fontSize: 14, color: AppColors.textColor, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
+        Texts(S.of(context).title, fontSize: 14.sp, color: AppColors.textColor, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
         Padding(
           padding: const EdgeInsets.only(bottom: 15.0, top: 10),
           child: TextFieldWidget(
@@ -133,7 +147,7 @@ class _EditSongDetailsScreenState extends State<EditSongDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Texts(S.of(context).album, fontSize: 14, color: AppColors.textColor, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
+        Texts(S.of(context).album, fontSize: 14.sp, color: AppColors.textColor, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
         Padding(
           padding: const EdgeInsets.only(bottom: 15.0, top: 10),
           child: TextFieldWidget(
@@ -141,7 +155,7 @@ class _EditSongDetailsScreenState extends State<EditSongDetailsScreen> {
             fillColor: AppColors.bgGrey.withValues(alpha: .2),
             wantListeners: true,
             cursorColor: AppColors.textColor,
-            textStyleColor:AppColors.textColor,
+            textStyleColor: AppColors.textColor,
             textInputAction: TextInputAction.next,
             focusNode: albumFocusNode,
             hasFocus: albumFocusNode.hasFocus,
@@ -158,7 +172,7 @@ class _EditSongDetailsScreenState extends State<EditSongDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Texts(S.of(context).artist, fontSize: 14, color: AppColors.textColor, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
+        Texts(S.of(context).artist, fontSize: 14.sp, color: AppColors.textColor, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
         Padding(
           padding: const EdgeInsets.only(bottom: 15.0, top: 10),
           child: TextFieldWidget(
@@ -183,7 +197,7 @@ class _EditSongDetailsScreenState extends State<EditSongDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Texts(S.of(context).genre, fontSize: 14, color: AppColors.textColor, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
+        Texts(S.of(context).genre, fontSize: 14.sp, color: AppColors.textColor, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
         Padding(
           padding: const EdgeInsets.only(bottom: 15.0, top: 10),
           child: TextFieldWidget(
@@ -208,7 +222,7 @@ class _EditSongDetailsScreenState extends State<EditSongDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Texts(S.of(context).trackNumber, fontSize: 14, color: AppColors.textColor, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
+        Texts(S.of(context).trackNumber, fontSize: 14.sp, color: AppColors.textColor, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
         Padding(
           padding: const EdgeInsets.only(bottom: 15.0, top: 10),
           child: TextFieldWidget(

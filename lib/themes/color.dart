@@ -14,6 +14,6 @@ class AppColors {
   static const Color shuffleBackground = Color(0xFFDDDDDD);
   /// Grey Shades
   static const Color mediumDarkGrey = Color(0xFFCFC9C9);
-  static const Color bgGrey = Color(0x0);
+  static const Color bgGrey = Color(0xFF212529);
   static const Color greyBorder = Color(0x3000000);
 }
