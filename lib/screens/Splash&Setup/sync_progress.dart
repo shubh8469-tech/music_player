@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:music_app/screens/dashboard/dashboardScreen.dart';
+import 'package:go_router/go_router.dart';
 import 'package:music_app/themes/color.dart';
 
 import '../../commonWidgets/textWidget.dart';
@@ -29,9 +29,7 @@ class _SyncProgressState extends State<SyncProgress>
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context){
-          return DashboardScreen();
-        }), (route) => false,);
+        if (mounted) context.go('/dashboard');
       }
     });
   }
@@ -56,12 +54,8 @@ class _SyncProgressState extends State<SyncProgress>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset(
-                    Assets.pngLogo,
-                    height: 113.h,
-                    width: 113.w,
-                  ),
-                  SizedBox(height: 16.h,),
+                  Image.asset(Assets.pngLogo, height: 113.h, width: 113.w),
+                  SizedBox(height: 16.h),
                   Texts(
                     S.of(context).musicPlayer,
                     fontSize: 24.sp,
@@ -74,13 +68,16 @@ class _SyncProgressState extends State<SyncProgress>
             ),
             Positioned(
               left: 0,
-              right: 0,   // 👈 add this to stretch horizontally
+              right: 0, // 👈 add this to stretch horizontally
               bottom: 100,
               child: AnimatedBuilder(
                 animation: _controller,
                 builder: (context, child) {
                   return Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 10.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 40.w,
+                      vertical: 10.h,
+                    ),
                     child: Column(
                       children: [
                         Row(
@@ -102,7 +99,7 @@ class _SyncProgressState extends State<SyncProgress>
                             ),
                           ],
                         ),
-                        SizedBox(height: 10.h,),
+                        SizedBox(height: 10.h),
                         LinearProgressIndicator(
                           value: _controller.value, // goes from 0 → 1
                           minHeight: 10.h,

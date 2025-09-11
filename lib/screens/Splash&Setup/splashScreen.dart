@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:music_app/screens/Splash&Setup/permission.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../commonWidgets/textWidget.dart';
 import '../../generated/assets.dart';
@@ -33,9 +33,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context){
-          return PermissionPage();
-        }), (route) => false,);
+        if (mounted) context.go('/permission');
       }
     });
 
@@ -47,7 +45,10 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _logoScale = Tween<double>(begin: 0.5, end: 1.2).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.4, 1.0, curve: Curves.ease),),
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.4, 1.0, curve: Curves.ease),
+      ),
     );
 
     _textOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
