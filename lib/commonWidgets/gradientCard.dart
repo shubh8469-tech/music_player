@@ -45,35 +45,24 @@ class GradientCard extends StatelessWidget {
             margin: EdgeInsets.only(right: margin),
             height: height,
             width: width,
-            decoration: isSvg && isSvgColorNeeded ? BoxDecoration(
-              gradient: LinearGradient(
-                colors: colors,
-                begin: Alignment.bottomLeft,
-                end: Alignment.topRight,
-              ),
-              borderRadius: BorderRadius.circular(borderRadius),
-            ) : BoxDecoration(
-                borderRadius: BorderRadius.circular(borderRadius),
-              image: DecorationImage(image: AssetImage(iconAsset), )
-            ),
+            decoration: isSvg && isSvgColorNeeded
+                ? BoxDecoration(
+                    gradient: LinearGradient(colors: colors, begin: Alignment.bottomLeft, end: Alignment.topRight),
+                    borderRadius: BorderRadius.circular(borderRadius),
+                  )
+                : BoxDecoration(
+                    borderRadius: BorderRadius.circular(borderRadius),
+                    image: DecorationImage(image: AssetImage(iconAsset)),
+                  ),
             child: Center(
-              child: SvgPicture.asset(
-                iconAsset,
-                height: iconSize,
-                width: iconSize,
-              ),
+              child: isSvg ? SvgPicture.asset(iconAsset, height: iconSize, width: iconSize) : Image.asset(iconAsset, height: iconSize, width: iconSize),
             ),
           ),
           if (title != null)
-          Container(
-            margin: EdgeInsets.only(right: margin, top: 5.h),
-            child: Texts(
-              title.toString(),
-              fontFamily: AppFonts.inter,
-              fontWeight: AppFontWeights.medium,
-              fontSize: 14.sp,
+            Container(
+              margin: EdgeInsets.only(right: margin, top: 5.h),
+              child: Texts(title.toString(), fontFamily: AppFonts.inter, fontWeight: AppFontWeights.medium, fontSize: 14.sp),
             ),
-          )
         ],
       ),
     );
