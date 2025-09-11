@@ -5,10 +5,10 @@ class AppColors {
   static const Color mildOrange = Color(0xFFFF8500);
   static const Color mildBlue = Color(0xFF5D82DF);
   static const Color mildPink = Color(0xFFFD3D90);
+  static const Color mildYellow = Color(0xFFFFE401);
   static const Color white = Color(0xFFFFFFFF);
   static const Color musicTileBackgroundColor = Color(0xFFF1F1F1);
   static const Color black = Color(0xFF000000);
-  static const Color blackText = Color(0xFF212529);
   static const Color textColor = Color(0xFF212529);
 
   static const Color shuffleBackground = Color(0xFFDDDDDD);

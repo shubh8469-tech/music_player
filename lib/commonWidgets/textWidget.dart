@@ -11,6 +11,7 @@ class Texts extends StatelessWidget {
   final int? maxLines;
   final double? height;
   final TextDecoration? decoration;
+  final TextOverflow? overflow; // 👈 new parameter
 
   const Texts(
       this.text, {
@@ -23,6 +24,7 @@ class Texts extends StatelessWidget {
         this.maxLines,
         this.height,
         this.decoration,
+        this.overflow, // 👈 optional
       });
 
   @override
@@ -31,7 +33,8 @@ class Texts extends StatelessWidget {
       text,
       textAlign: align,
       maxLines: maxLines,
-      overflow: maxLines != null ? TextOverflow.ellipsis : null,
+      overflow: overflow ?? // 👈 priority to user
+          (maxLines != null ? TextOverflow.ellipsis : TextOverflow.clip),
       style: TextStyle(
         fontFamily: fontFamily,
         fontWeight: fontWeight,

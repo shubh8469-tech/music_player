@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // assuming you already made GradientCard
+import 'package:music_app/themes/color.dart';
 import 'gradientCard.dart';
 import 'textWidget.dart';
 import '../themes/font.dart';
@@ -17,14 +18,17 @@ class MusicListTile extends StatelessWidget {
   final double cardHeight;
   final double cardWidth;
   final double cardRadius;
-  final List<Color> gradientColors;
+  final List<Color>? noLogoGradientColor;
   final String cardIconAsset;
   final double cardIconSize;
   final bool isSvgCardIcon;
+  final bool isSvgColorNeeded;
 
   // Song Info
   final String title;
   final String subtitle;
+  final String songLength;
+  final bool songLengthRequired;
   final double titleSize;
   final double subtitleSize;
   final FontWeight titleWeight;
@@ -54,14 +58,16 @@ class MusicListTile extends StatelessWidget {
     required this.cardHeight,
     required this.cardWidth,
     required this.cardRadius,
-    required this.gradientColors,
+    this.noLogoGradientColor,
     required this.cardIconAsset,
     required this.cardIconSize,
     this.isSvgCardIcon = true,
+    this.isSvgColorNeeded = true,
 
     // Texts
     required this.title,
     required this.subtitle,
+    this.songLength = '',
     this.titleSize = 16,
     this.subtitleSize = 10,
     this.titleWeight = FontWeight.w500,
@@ -73,6 +79,7 @@ class MusicListTile extends StatelessWidget {
     required this.trailingIconWidth,
     required this.trailingMargin,
     this.isSvg = true,
+    this.songLengthRequired = false,
 
     this.onTap,
     this.onPlayTap,
@@ -100,11 +107,12 @@ class MusicListTile extends StatelessWidget {
               GradientCard(
                 height: cardHeight,
                 width: cardWidth,
-                colors: gradientColors,
+                colors: noLogoGradientColor ?? [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange],
                 borderRadius: cardRadius,
                 iconAsset: cardIconAsset,
                 iconSize: cardIconSize,
                 isSvg: isSvgCardIcon,
+                isSvgColorNeeded: isSvgColorNeeded,
                 margin: 0,
               ),
               SizedBox(width: spacing.w),
@@ -131,8 +139,13 @@ class MusicListTile extends StatelessWidget {
 
               const Spacer(),
 
+              Visibility(
+                visible: songLengthRequired,
+                child: Texts(songLength, fontSize: 10.sp, fontWeight: FontWeight.w400, ),
+              ),
+
               Container(
-                margin: EdgeInsets.only(right: trailingMargin),
+                margin: EdgeInsets.only(right: trailingMargin, left: 15.w),
                 child: GestureDetector(
                   onTap: onPlayTap,
                   child: SvgPicture.asset(

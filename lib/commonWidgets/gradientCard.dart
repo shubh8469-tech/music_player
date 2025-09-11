@@ -14,6 +14,7 @@ class GradientCard extends StatelessWidget {
   final double iconSize;
   final double margin;
   final bool isSvg;
+  final bool isSvgColorNeeded;
   final Color? iconColor;
   final VoidCallback? onTap;
 
@@ -27,6 +28,7 @@ class GradientCard extends StatelessWidget {
     required this.iconSize,
     required this.margin,
     this.isSvg = true,
+    this.isSvgColorNeeded = true,
     this.iconColor,
     this.onTap,
     this.title,
@@ -36,46 +38,43 @@ class GradientCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Align(
-        alignment: Alignment.center,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: EdgeInsets.only(right: margin),
-              height: height,
-              width: width,
-              decoration: isSvg ? BoxDecoration(
-                gradient: LinearGradient(
-                  colors: colors,
-                  begin: Alignment.bottomLeft,
-                  end: Alignment.topRight,
-                ),
-                borderRadius: BorderRadius.circular(borderRadius),
-              ) : BoxDecoration(
-                  borderRadius: BorderRadius.circular(borderRadius),
-                image: DecorationImage(image: AssetImage(iconAsset), )
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            margin: EdgeInsets.only(right: margin),
+            height: height,
+            width: width,
+            decoration: isSvg && isSvgColorNeeded ? BoxDecoration(
+              gradient: LinearGradient(
+                colors: colors,
+                begin: Alignment.bottomLeft,
+                end: Alignment.topRight,
               ),
-              child: Center(
-                child: SvgPicture.asset(
-                  iconAsset,
-                  height: iconSize,
-                  width: iconSize,
-                ),
+              borderRadius: BorderRadius.circular(borderRadius),
+            ) : BoxDecoration(
+                borderRadius: BorderRadius.circular(borderRadius),
+              image: DecorationImage(image: AssetImage(iconAsset), )
+            ),
+            child: Center(
+              child: SvgPicture.asset(
+                iconAsset,
+                height: iconSize,
+                width: iconSize,
               ),
             ),
-            if (title != null)
-            Container(
-              margin: EdgeInsets.only(right: margin, top: 5.h),
-              child: Texts(
-                title.toString(),
-                fontFamily: AppFonts.inter,
-                fontWeight: AppFontWeights.medium,
-                fontSize: 14.sp,
-              ),
-            )
-          ],
-        ),
+          ),
+          if (title != null)
+          Container(
+            margin: EdgeInsets.only(right: margin, top: 5.h),
+            child: Texts(
+              title.toString(),
+              fontFamily: AppFonts.inter,
+              fontWeight: AppFontWeights.medium,
+              fontSize: 14.sp,
+            ),
+          )
+        ],
       ),
     );
   }

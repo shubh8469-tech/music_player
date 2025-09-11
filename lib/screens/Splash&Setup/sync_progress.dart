@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:music_app/screens/dashboard/dashboardScreen.dart';
 import 'package:music_app/themes/color.dart';
 
 import '../../commonWidgets/textWidget.dart';
@@ -25,6 +26,14 @@ class _SyncProgressState extends State<SyncProgress>
       vsync: this,
       duration: const Duration(seconds: 5), // total time to reach 100%
     )..forward(); // start animation
+
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context){
+          return DashboardScreen();
+        }), (route) => false,);
+      }
+    });
   }
 
   @override
