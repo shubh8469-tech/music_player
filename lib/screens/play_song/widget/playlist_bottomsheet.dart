@@ -4,10 +4,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:music_app/themes/font.dart';
 
 import '../../../commonWidgets/MusicListTile.dart';
+import '../../../commonWidgets/bottom_button_two.dart';
 import '../../../commonWidgets/textWidget.dart';
 import '../../../generated/assets.dart';
 import '../../../l10n/l10n.dart';
 import '../../../themes/color.dart';
+import 'create_new_playlist_bottomsheet.dart';
 
 class PlaylistBottomSheet extends StatefulWidget {
   const PlaylistBottomSheet({super.key});
@@ -22,12 +24,6 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
   final List<Map<String, dynamic>> playlists = [
     {'title': 'Bollywood Hits', 'songs': 3},
     {'title': '90s Songs', 'songs': 6},
-    // {'title': 'Romantic Vibes', 'songs': 5},
-    // {'title': 'Workout Mix', 'songs': 8},
-    // {'title': 'Party Bangers', 'songs': 10},
-    // {'title': 'Chill Lofi', 'songs': 12},
-    // {'title': 'Road Trip', 'songs': 9},
-    // {'title': 'Focus Mode', 'songs': 4},
   ];
 
   @override
@@ -42,21 +38,19 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
         children: [
           SvgPicture.asset(Assets.svgIcLineBottom),
           SizedBox(height: 20.h),
-          // Title
           Texts('Add to playlist', fontSize: 18.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter),
           SizedBox(height: 16.h),
 
-          // ListView
           Flexible(
             child: ListView(
               shrinkWrap: true,
               children: [
-                // Create new playlist
                 ListTile(
                   leading: SvgPicture.asset(Assets.svgIcPlus),
                   title: Texts('Create new playlist', fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter),
                   onTap: () {
-                    // Handle create
+                    Navigator.of(context).pop();
+                    createNewPlayListWidget();
                   },
                 ),
                 SizedBox(height: 8.h),
@@ -95,49 +89,22 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
           ),
 
           SizedBox(height: 12.h),
-
+          BottomButtonTwo(leftBtnTitle: S.of(context).cancel, rightBtnTitle: "Add", lefBtnTap: () {}, rightBtnTap: () {}),
           // Action buttons
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: AppColors.black.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(80.r),
-                    border: Border.all(color: AppColors.black.withValues(alpha: 0.10), width: 1),
-                  ),
-                  height: 50.w,
-                  width: 160.w,
-                  child: Texts(
-                    S.of(context).cancel,
-                    fontSize: 14.sp,
-                    align: TextAlign.center,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textColor,
-                    fontFamily: AppFonts.medium,
-                  ),
-                ),
-              ),
-              SizedBox(width: 16.w),
-              Expanded(
-                child: Container(
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryOrange,
-                    borderRadius: BorderRadius.circular(80),
-                    border: Border.all(color: AppColors.black.withValues(alpha: 0.10), width: 1),
-                  ),
-                  height: 50.w,
-                  width: 160.w,
-                  child: Texts("Add", fontSize: 14.sp, align: TextAlign.center, color: AppColors.white, fontWeight: FontWeight.w500, fontFamily: AppFonts.medium),
-                ),
-              ),
-            ],
-          ),
           SizedBox(height: 16.h),
         ],
       ),
+    );
+  }
+
+  void createNewPlayListWidget() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
+      isScrollControlled: true,
+      builder: (_) => CreateNewPlaylistBottomSheet(),
     );
   }
 }

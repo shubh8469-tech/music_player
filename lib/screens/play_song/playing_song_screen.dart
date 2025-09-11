@@ -29,10 +29,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
           child: SizedBox(
             width: 26.w,
             height: 26.h,
-            child: SvgPicture.asset(
-              Assets.svgIcDownArrow,
-              colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
-            ),
+            child: SvgPicture.asset(Assets.svgIcDownArrow, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
           ),
         ),
         actions: [
@@ -46,24 +43,14 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
           ),
           IconButton(
             onPressed: () {},
-            icon: SvgPicture.asset(
-              Assets.svgIcDots,
-              height: 26.h,
-              width: 26.w,
-              colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
-            ),
+            icon: SvgPicture.asset(Assets.svgIcDots, height: 26.h, width: 26.w, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
           ),
         ],
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Image.asset(
-              Assets.pngIcframe,
-              width: 300.w,
-              height: 300.w,
-              fit: BoxFit.cover,
-            ),
+            Image.asset(Assets.pngIcframe, width: 300.w, height: 300.w, fit: BoxFit.cover),
             SizedBox(height: 15.h),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
@@ -91,33 +78,17 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Texts(
-                'As It Was',
-                fontSize: 20.sp,
-                color: AppColors.black,
-                fontWeight: FontWeight.w500,
-                fontFamily: AppFonts.inter,
-              ),
+              Texts('As It Was', fontSize: 20.sp, color: AppColors.black, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter),
               SizedBox(height: 4.h),
-              Texts(
-                'Harry Styles',
-                fontSize: 14.sp,
-                color: AppColors.textColor,
-                fontWeight: FontWeight.w400,
-                fontFamily: AppFonts.inter,
-              ),
+              Texts('Harry Styles', fontSize: 14.sp, color: AppColors.textColor, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
             ],
           ),
         ),
         GestureDetector(
-          onTap: (){
+          onTap: () {
             _showPlaylistBottomSheet(context);
           },
-          child: SvgPicture.asset(
-            Assets.svgIcPlaylist,
-            width: 30.w,
-            height: 30.h,
-          ),
+          child: SvgPicture.asset(Assets.svgIcPlaylist, width: 30.w, height: 30.h),
         ),
       ],
     );
@@ -126,18 +97,17 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
   void _showPlaylistBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
-      ),
+      backgroundColor: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
       isScrollControlled: true,
       builder: (_) => PlaylistBottomSheet(),
     );
   }
 
-
   Widget songPropertiesWidget() {
     return Padding(
-      padding:  EdgeInsets.symmetric(vertical: 8.h),
+      padding: EdgeInsets.symmetric(vertical: 8.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
@@ -153,105 +123,9 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
   Widget songProgressBarWidget() {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 25.h, horizontal: 12.w),
-      child: AudioPlayerWidget(
-        url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-      ),
-    );
-  }
-}
-
-
-/*
-class PlayingSongScreen extends StatefulWidget {
-  const PlayingSongScreen({super.key});
-
-  @override
-  State<PlayingSongScreen> createState() => _PlayingSongScreenState();
-}
-
-class _PlayingSongScreenState extends State<PlayingSongScreen> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryOrange,
-        leadingWidth: 45.w,
-        toolbarHeight: 52.h,
-        leading: Padding(
-          padding: EdgeInsets.only(left: 22.w),
-          child: SizedBox(
-            width: 26.w,
-            height: 26.h,
-            child: SvgPicture.asset(Assets.svgIcDownArrow, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
-          ),
-        ),
-        actions: [
-          SizedBox(
-            width: 40.w,
-            height: 40.h,
-            child: IconButton(
-              onPressed: () {},
-              icon: SvgPicture.asset(Assets.svgIcShirt, height: 26.h, width: 26.w),
-            ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: SvgPicture.asset(Assets.svgIcDots, height: 26.h, width: 26.w, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Image.asset(Assets.pngIcframe),
-            SizedBox(height: 15.h),
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              child: Column(children: [songTitlePlaylistWidget(), songPropertiesWidget()]),
-            ),
-            songProgressBarWidget(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget songTitlePlaylistWidget() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Texts('As It Was', fontSize: 20.sp, color: AppColors.black, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter),
-              Texts('Harry Styles', fontSize: 14.sp, color: AppColors.textColor, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
-            ],
-          ),
-        ),
-        Column(mainAxisAlignment: MainAxisAlignment.end, children: [SvgPicture.asset(Assets.svgIcPlaylist)]),
-      ],
-    );
-  }
-
-  Widget songPropertiesWidget() {
-    return Container(
-      margin: EdgeInsets.only(top: 100),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [SvgPicture.asset(Assets.svgIcQueue), SvgPicture.asset(Assets.svgIcTimer), SvgPicture.asset(Assets.svgIEquilizerc), SvgPicture.asset(Assets.svgFav)],
-      ),
-    );
-  }
-
-  Widget songProgressBarWidget() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 8),
       child: AudioPlayerWidget(url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'),
     );
   }
 }
-*/
+
+
