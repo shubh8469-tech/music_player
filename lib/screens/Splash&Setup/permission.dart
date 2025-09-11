@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:music_app/screens/Splash&Setup/sync_progress.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../commonWidgets/buton.dart';
 import '../../commonWidgets/textWidget.dart';
@@ -24,85 +24,84 @@ class _PermissionPageState extends State<PermissionPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.17,
-            ),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.17),
             Image.asset(
               Assets.pngMusicDirectory,
               height: 74.h,
               width: 64.w,
               fit: BoxFit.contain,
             ),
-            SizedBox(height: 25.h,),
+            SizedBox(height: 25.h),
             Texts(
               'Permission Required',
               fontFamily: AppFonts.manrope,
               fontWeight: AppFontWeights.bold,
               fontSize: 20.sp,
             ),
-            SizedBox(height: 17.h,),
+            SizedBox(height: 17.h),
             Texts(
               'To play your songs, we need permission to access music files stored on your device.',
               fontFamily: AppFonts.inter,
               fontWeight: AppFontWeights.regular,
               fontSize: 14.sp,
             ),
-            SizedBox(height: 25.h,),
+            SizedBox(height: 25.h),
             Texts(
               'This allows the app to:',
               fontFamily: AppFonts.inter,
               fontWeight: AppFontWeights.semiBold,
               fontSize: 16.sp,
             ),
-            SizedBox(height: 20.h,),
+            SizedBox(height: 20.h),
             Column(
               children: [
                 Row(
                   children: [
                     checkIconWidget(),
-                    SizedBox(width: 5.w,),
-                    Texts('Detect and list your offline music files',
+                    SizedBox(width: 5.w),
+                    Texts(
+                      'Detect and list your offline music files',
                       fontFamily: AppFonts.inter,
                       fontWeight: AppFontWeights.regular,
                       fontSize: 14.sp,
-                    )
+                    ),
                   ],
                 ),
-                SizedBox(height: 10.h,),
+                SizedBox(height: 10.h),
                 Row(
                   children: [
                     checkIconWidget(),
-                    SizedBox(width: 5.w,),
-                    Texts('Play songs stored on your device',
+                    SizedBox(width: 5.w),
+                    Texts(
+                      'Play songs stored on your device',
                       fontFamily: AppFonts.inter,
                       fontWeight: AppFontWeights.regular,
                       fontSize: 14.sp,
-                    )
+                    ),
                   ],
                 ),
-                SizedBox(height: 10.h,),
+                SizedBox(height: 10.h),
                 Row(
                   children: [
                     checkIconWidget(),
-                    SizedBox(width: 5.w,),
-                    Texts('Keep your playlists organized automatically',
+                    SizedBox(width: 5.w),
+                    Texts(
+                      'Keep your playlists organized automatically',
                       fontFamily: AppFonts.inter,
                       fontWeight: AppFontWeights.regular,
                       fontSize: 14.sp,
-                    )
+                    ),
                   ],
-                )
+                ),
               ],
             ),
 
-            SizedBox(height: 45.h,),
+            SizedBox(height: 45.h),
             Center(
               child: OvalButton(
                 text: "Open Settings",
                 onPressed: () {
-                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context){
-                    return SyncProgress();
-                  }), (route) => false,);
+                  context.go('/sync');
                 },
                 backgroundColor: AppColors.primaryOrange,
                 textColor: AppColors.white,
@@ -111,12 +110,16 @@ class _PermissionPageState extends State<PermissionPage> {
                 width: 343.w,
                 icon: Icons.arrow_forward,
               ),
-            )
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget checkIconWidget() => Icon(Icons.check_circle_outline, color: AppColors.primaryOrange, size: 20.sp,);
+  Widget checkIconWidget() => Icon(
+    Icons.check_circle_outline,
+    color: AppColors.primaryOrange,
+    size: 20.sp,
+  );
 }

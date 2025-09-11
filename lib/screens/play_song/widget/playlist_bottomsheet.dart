@@ -4,13 +4,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:music_app/themes/font.dart';
 
 import '../../../commonWidgets/MusicListTile.dart';
-import '../../../commonWidgets/gradientCard.dart';
 import '../../../commonWidgets/textWidget.dart';
 import '../../../generated/assets.dart';
 import '../../../l10n/l10n.dart';
 import '../../../themes/color.dart';
 
 class PlaylistBottomSheet extends StatefulWidget {
+  const PlaylistBottomSheet({super.key});
+
   @override
   _PlaylistBottomSheetState createState() => _PlaylistBottomSheetState();
 }
@@ -72,7 +73,7 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
                     cardHeight: 50.h,
                     cardWidth: 50.w,
                     cardRadius: 7.r,
-                    gradientColors: [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.primaryOrange],
+                    noLogoGradientColor: [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.primaryOrange],
                     cardIconAsset: Assets.svgMusicIcon,
                     cardIconSize: 32.r,
                     title: title,

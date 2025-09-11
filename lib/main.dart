@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:music_app/screens/play_song/playing_song_screen.dart';
-import 'package:music_app/screens/dashboard/dashboardScreen.dart';
-import 'package:music_app/screens/tabs/library/libraryScreen.dart';
-import 'package:music_app/screens/tabs/songs_setting/edit_song_details_screen.dart';
+import 'app_router.dart';
 import 'GlobalBloc/languageBloc/language_bloc.dart';
 import 'l10n/l10n.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,13 +16,11 @@ void main() {
       builder: (context, child) {
         // Provide your Bloc(s) after ScreenUtilInit so widgets can use .sp/.w in theme if needed
         return MultiBlocProvider(
-            providers: [
-              BlocProvider(create: (context) => LanguageBloc()),
-            ],
-            child: ScreenUtilInit(
-              designSize: const Size(375, 812),
-              child: const MyApp(),
-            )
+          providers: [BlocProvider(create: (context) => LanguageBloc())],
+          child: ScreenUtilInit(
+            designSize: const Size(375, 812),
+            child: const MyApp(),
+          ),
         );
       },
     ),
@@ -39,7 +34,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<LanguageBloc, LanguageState>(
       builder: (context, state) {
-        return MaterialApp(
+        return MaterialApp.router(
           debugShowCheckedModeBanner: false,
           title: 'Flutter Demo',
           theme: ThemeData(
@@ -53,7 +48,7 @@ class MyApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          home: PlayingSongScreen(),
+          routerConfig: appRouter,
         );
       },
     );
