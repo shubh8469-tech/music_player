@@ -40,13 +40,21 @@ class MusicListTile extends StatelessWidget {
   final double trailingIconWidth;
   final double trailingMargin;
   final bool isSvg;
+  final bool isLeading;
+
+  // info icons for menu
+  final String leadingIconAsset;
+  final double leadingIconHeight;
+  final double leadingIconWidth;
+  final double leadingMargin;
 
   final VoidCallback? onTap;
   final VoidCallback? onPlayTap;
+  final VoidCallback? onInfoTap;
 
   final double? margin;
 
-  const MusicListTile({
+  MusicListTile({
     super.key,
     required this.height,
     required this.borderRadius,
@@ -78,13 +86,22 @@ class MusicListTile extends StatelessWidget {
     required this.trailingIconHeight,
     required this.trailingIconWidth,
     required this.trailingMargin,
+
+    // leading
+    this.leadingIconAsset = '',
+    this.leadingIconHeight = 0,
+    this.leadingIconWidth = 0,
+    this.leadingMargin = 0,
+
     this.isSvg = true,
+    this.isLeading = false,
     this.songLengthRequired = false,
 
     this.onTap,
     this.onPlayTap,
+    this.onInfoTap,
 
-    this.margin = 5
+    this.margin = 5,
   });
 
   @override
@@ -95,10 +112,7 @@ class MusicListTile extends StatelessWidget {
         margin: EdgeInsets.symmetric(vertical: margin!),
         width: double.infinity,
         height: height,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(borderRadius),
-          color: backgroundColor,
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(borderRadius), color: backgroundColor),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: padding.w),
           child: Row(
@@ -122,18 +136,8 @@ class MusicListTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Texts(
-                    title,
-                    fontSize: titleSize.sp,
-                    fontWeight: titleWeight,
-                    fontFamily: AppFonts.inter,
-                  ),
-                  Texts(
-                    subtitle,
-                    fontSize: subtitleSize.sp,
-                    fontWeight: subtitleWeight,
-                    fontFamily: AppFonts.inter,
-                  ),
+                  Texts(title, fontSize: titleSize.sp, fontWeight: titleWeight, fontFamily: AppFonts.inter),
+                  Texts(subtitle, fontSize: subtitleSize.sp, fontWeight: subtitleWeight, fontFamily: AppFonts.inter),
                 ],
               ),
 
@@ -141,20 +145,29 @@ class MusicListTile extends StatelessWidget {
 
               Visibility(
                 visible: songLengthRequired,
-                child: Texts(songLength, fontSize: 10.sp, fontWeight: FontWeight.w400, ),
+                child: Texts(songLength, fontSize: 10.sp, fontWeight: FontWeight.w400),
+              ),
+
+              Visibility(
+                visible: isLeading,
+                child: Container(
+                  margin: EdgeInsets.only(right: leadingMargin, left: 15.w),
+                  child: GestureDetector(
+                    onTap: onInfoTap,
+                    child: SvgPicture.asset(leadingIconAsset, height: leadingIconHeight, width: leadingIconWidth),
+                  ),
+                ),
               ),
 
               Container(
                 margin: EdgeInsets.only(right: trailingMargin, left: 15.w),
                 child: GestureDetector(
                   onTap: onPlayTap,
-                  child: SvgPicture.asset(
-                    trailingIconAsset,
-                    height: trailingIconHeight,
-                    width: trailingIconHeight,
-                  )
+                  child: SvgPicture.asset(trailingIconAsset, height: trailingIconHeight, width: trailingIconWidth),
                 ),
-              )
+              ),
+
+
             ],
           ),
         ),

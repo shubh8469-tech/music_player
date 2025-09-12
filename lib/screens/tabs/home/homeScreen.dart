@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:music_app/commonWidgets/song_menu_screen.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
 
@@ -8,6 +9,7 @@ import '../../../commonWidgets/MusicListTile.dart';
 import '../../../commonWidgets/gradientCard.dart';
 import '../../../commonWidgets/textWidget.dart';
 import '../../../generated/assets.dart';
+import '../../../utills/globals.dart';
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key});
@@ -36,9 +38,9 @@ class _HomescreenState extends State<Homescreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Texts('Explore Playlists', fontSize: 18.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter),
-          
+
               SizedBox(height: 13.h),
-          
+
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -60,9 +62,9 @@ class _HomescreenState extends State<Homescreen> {
                   }),
                 ),
               ),
-          
+
               SizedBox(height: 40.h),
-          
+
               Row(
                 children: [
                   Texts('Recently Played', fontSize: 18, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter),
@@ -70,9 +72,9 @@ class _HomescreenState extends State<Homescreen> {
                   Texts('see all', fontSize: 14, fontWeight: AppFontWeights.regular, fontFamily: AppFonts.inter),
                 ],
               ),
-          
+
               SizedBox(height: 5.h),
-          
+
               Column(
                 children: List.generate(3, (index) {
                   return MusicListTile(
@@ -97,9 +99,9 @@ class _HomescreenState extends State<Homescreen> {
                   );
                 }),
               ),
-          
+
               SizedBox(height: 38.h),
-          
+
               Row(
                 children: [
                   Texts('My PlayLists', fontSize: 18, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter),
@@ -107,9 +109,9 @@ class _HomescreenState extends State<Homescreen> {
                   Texts('see all', fontSize: 14, fontWeight: AppFontWeights.regular, fontFamily: AppFonts.inter),
                 ],
               ),
-          
+
               SizedBox(height: 5.h),
-          
+
               MusicListTile(
                 margin: 7.w,
                 height: 66.h,
@@ -126,7 +128,16 @@ class _HomescreenState extends State<Homescreen> {
                 trailingIconHeight: 15.h,
                 trailingIconWidth: 3.w,
                 trailingMargin: 10.w,
-                onTap: () => print("Tile tapped"),
+                onTap: () => {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
+                    isScrollControlled: true,
+                    builder: (_) => SongMenuScreen(songMenuList: songMenuItems,isPlaying: false,),
+                  ),
+                },
                 onPlayTap: () => print("Play tapped"),
               ),
             ],

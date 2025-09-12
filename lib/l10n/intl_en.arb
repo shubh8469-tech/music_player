@@ -9,6 +9,18 @@
   "genre":"Genre",
   "trackNumber":"Track Number",
   "cancel":"Cancel",
-  "save":"Save"
+  "save":"Save",
+  "playNext": "Play next",
+  "addToQueue": "Add to queue",
+  "addToPlaylist": "Add to playlist",
+  "goToAlbum": "Go to album",
+  "goToArtist": "Go to artist",
+  "editDetails": "Edit details",
+  "setAsRingtone": "Set as ringtone",
+  "changeCover": "Change Cover",
+  "hideSong": "Hide song",
+  "deleteSong": "Delete song",
+  "speed": "Speed",
+  "keepScreenOn": "Keep screen on"
 
 }

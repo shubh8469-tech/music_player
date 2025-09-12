@@ -15,7 +15,7 @@ class SHi extends S {
   String get musicPlayer => 'संगीत बजाने वाला';
 
   @override
-  String get editDetails => 'Edit Details';
+  String get editDetails => 'Edit details';
 
   @override
   String get changeCover => 'Change Cover';
@@ -40,4 +40,34 @@ class SHi extends S {
 
   @override
   String get save => 'Save';
+
+  @override
+  String get playNext => 'Play next';
+
+  @override
+  String get addToQueue => 'Add to queue';
+
+  @override
+  String get addToPlaylist => 'Add to playlist';
+
+  @override
+  String get goToAlbum => 'Go to album';
+
+  @override
+  String get goToArtist => 'Go to artist';
+
+  @override
+  String get setAsRingtone => 'Set as ringtone';
+
+  @override
+  String get hideSong => 'Hide song';
+
+  @override
+  String get deleteSong => 'Delete song';
+
+  @override
+  String get speed => 'Speed';
+
+  @override
+  String get keepScreenOn => 'Keep screen on';
 }
