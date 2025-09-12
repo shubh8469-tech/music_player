@@ -100,12 +100,14 @@ class _SyncProgressState extends State<SyncProgress>
                           ],
                         ),
                         SizedBox(height: 10.h),
-                        LinearProgressIndicator(
-                          value: _controller.value, // goes from 0 → 1
-                          minHeight: 10.h,
-                          backgroundColor: AppColors.mediumDarkGrey,
-                          color: AppColors.primaryOrange,
+                        ClipRRect(
                           borderRadius: BorderRadius.circular(10),
+                          child: LinearProgressIndicator(
+                            value: _controller.value,
+                            minHeight: 10.h,
+                            backgroundColor: AppColors.mediumDarkGrey,
+                            color: AppColors.primaryOrange,
+                          ),
                         ),
                         SizedBox(height: 16.h),
                       ],

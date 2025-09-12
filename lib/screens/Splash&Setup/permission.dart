@@ -1,6 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:path/path.dart' as p;
 
 import '../../commonWidgets/buton.dart';
 import '../../commonWidgets/textWidget.dart';
@@ -16,6 +21,93 @@ class PermissionPage extends StatefulWidget {
 }
 
 class _PermissionPageState extends State<PermissionPage> {
+  final OnAudioQuery _audioQuery = OnAudioQuery();
+
+  // All scanned files
+  List<Map<String, String>> scannedFiles = [];
+
+  // Grouped by folder
+  final Map<String, List<Map<String, String>>> groupedByFolder = {};
+
+  Future<void> scanMusicFiles() async {
+    // 🔹 Request permission
+    if (Platform.isAndroid) {
+      PermissionStatus status;
+      if (await Permission.storage.isGranted) {
+        status = PermissionStatus.granted;
+      } else {
+        status = await Permission.audio.request();
+        if (!status.isGranted) {
+          status = await Permission.storage.request();
+        }
+      }
+
+      if (!status.isGranted) {
+        openAppSettings();
+        return;
+      }
+    }
+
+    // 🔹 Query songs
+    List<SongModel> songs = await _audioQuery.querySongs();
+
+    scannedFiles.clear();
+    groupedByFolder.clear();
+
+    for (final song in songs) {
+      final String path = song.data;
+
+      debugPrint("🎵 Title: ${song.title}");
+      debugPrint("👤 Artist: ${song.artist}");
+      debugPrint("💿 Album: ${song.album}");
+      debugPrint("📅 Year: ${song.dateAdded}");
+      debugPrint("⏱ Duration: ${song.duration} ms");
+      debugPrint("📂 Path: ${song.data}");
+      debugPrint("🆔 ID: ${song.id}");
+      debugPrint("==================================");
+
+      String folderPath = '';
+      String folderName = '';
+
+      try {
+        if (path.startsWith('content://')) {
+          final uri = Uri.parse(path);
+          if (uri.pathSegments.length >= 2) {
+            folderPath = uri.pathSegments
+                .sublist(0, uri.pathSegments.length - 1)
+                .join('/');
+            folderName = uri.pathSegments[uri.pathSegments.length - 2];
+          } else {
+            final idx = path.lastIndexOf('/');
+            folderName = idx >= 0 ? path.substring(idx + 1) : path;
+            folderPath = path;
+          }
+        } else {
+          folderPath = p.dirname(path);
+          folderName = p.basename(folderPath);
+        }
+      } catch (e) {
+        folderPath = '';
+        folderName = '';
+      }
+
+      final item = {
+        'title': song.title,
+        'path': path,
+        'folderPath': folderPath,
+        'folderName': folderName,
+      };
+
+      scannedFiles.add(item);
+      groupedByFolder.putIfAbsent(folderPath, () => []).add(item);
+    }
+
+    // Debug output
+    debugPrint("Found $scannedFiles");
+    debugPrint("Found ${scannedFiles.length} songs");
+    debugPrint("Found ${groupedByFolder.length} folders");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,17 +187,17 @@ class _PermissionPageState extends State<PermissionPage> {
                 ),
               ],
             ),
-
             SizedBox(height: 45.h),
             Center(
               child: OvalButton(
                 text: "Open Settings",
-                onPressed: () {
-                  context.go('/sync');
+                onPressed: () async {
+                  await scanMusicFiles(); // 🔹 Scan in background
+                  context.go('/sync'); // 🔹 Navigate as before
                 },
                 backgroundColor: AppColors.primaryOrange,
                 textColor: AppColors.white,
-                borderRadius: 50, // More oval
+                borderRadius: 50,
                 height: 48.h,
                 width: 343.w,
                 icon: Icons.arrow_forward,
