@@ -1,4 +1,24 @@
 {
-  "chooseLanguage": "भाषा चुनें",
-  "musicPlayer": "संगीत बजाने वाला"
+ "chooseLanguage": "भाषा चुनें",
+ "musicPlayer": "संगीत बजाने वाला",
+ "editDetails": "विवरण संपादित करें",
+ "changeCover": "कवर बदलें",
+ "title": "शीर्षक",
+ "album": "एल्बम",
+ "artist": "कलाकार",
+ "genre": "शैली",
+ "trackNumber": "ट्रैक संख्या",
+ "cancel": "रद्द करें",
+ "save": "सहेजें",
+ "playNext": "अगला चलाएं",
+ "addToQueue": "कतार में जोड़ें",
+ "addToPlaylist": "प्लेलिस्ट में जोड़ें",
+ "goToAlbum": "एल्बम पर जाएं",
+ "goToArtist": "कलाकार पर जाएं",
+ "setAsRingtone": "रिंगटोन के रूप में सेट करें",
+ "hideSong": "गाना छिपाएं",
+ "deleteSong": "गाना हटाएं",
+ "speed": "गति",
+ "keepScreenOn": "स्क्रीन चालू रखें"
+
 }

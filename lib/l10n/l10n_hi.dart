@@ -15,59 +15,59 @@ class SHi extends S {
   String get musicPlayer => 'संगीत बजाने वाला';
 
   @override
-  String get editDetails => 'Edit details';
+  String get editDetails => 'विवरण संपादित करें';
 
   @override
-  String get changeCover => 'Change Cover';
+  String get changeCover => 'कवर बदलें';
 
   @override
-  String get title => 'Title';
+  String get title => 'शीर्षक';
 
   @override
-  String get album => 'Album';
+  String get album => 'एल्बम';
 
   @override
-  String get artist => 'Artist';
+  String get artist => 'कलाकार';
 
   @override
-  String get genre => 'Genre';
+  String get genre => 'शैली';
 
   @override
-  String get trackNumber => 'Track Number';
+  String get trackNumber => 'ट्रैक संख्या';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'रद्द करें';
 
   @override
-  String get save => 'Save';
+  String get save => 'सहेजें';
 
   @override
-  String get playNext => 'Play next';
+  String get playNext => 'अगला चलाएं';
 
   @override
-  String get addToQueue => 'Add to queue';
+  String get addToQueue => 'कतार में जोड़ें';
 
   @override
-  String get addToPlaylist => 'Add to playlist';
+  String get addToPlaylist => 'प्लेलिस्ट में जोड़ें';
 
   @override
-  String get goToAlbum => 'Go to album';
+  String get goToAlbum => 'एल्बम पर जाएं';
 
   @override
-  String get goToArtist => 'Go to artist';
+  String get goToArtist => 'कलाकार पर जाएं';
 
   @override
-  String get setAsRingtone => 'Set as ringtone';
+  String get setAsRingtone => 'रिंगटोन के रूप में सेट करें';
 
   @override
-  String get hideSong => 'Hide song';
+  String get hideSong => 'गाना छिपाएं';
 
   @override
-  String get deleteSong => 'Delete song';
+  String get deleteSong => 'गाना हटाएं';
 
   @override
-  String get speed => 'Speed';
+  String get speed => 'गति';
 
   @override
-  String get keepScreenOn => 'Keep screen on';
+  String get keepScreenOn => 'स्क्रीन चालू रखें';
 }
