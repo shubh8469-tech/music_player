@@ -52,7 +52,7 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           name: AppRouteName.home.name,
           path: 'home',
-          builder: (context, state) => const Homescreen(),
+          builder: (context, state) => const HomeScreen(),
         ),
         GoRoute(
           name: AppRouteName.library.name,
