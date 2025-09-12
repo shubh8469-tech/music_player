@@ -112,7 +112,7 @@ abstract class S {
   /// No description provided for @editDetails.
   ///
   /// In en, this message translates to:
-  /// **'Edit Details'**
+  /// **'Edit details'**
   String get editDetails;
 
   /// No description provided for @changeCover.
@@ -162,6 +162,66 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Save'**
   String get save;
+
+  /// No description provided for @playNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Play next'**
+  String get playNext;
+
+  /// No description provided for @addToQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to queue'**
+  String get addToQueue;
+
+  /// No description provided for @addToPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to playlist'**
+  String get addToPlaylist;
+
+  /// No description provided for @goToAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to album'**
+  String get goToAlbum;
+
+  /// No description provided for @goToArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to artist'**
+  String get goToArtist;
+
+  /// No description provided for @setAsRingtone.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as ringtone'**
+  String get setAsRingtone;
+
+  /// No description provided for @hideSong.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide song'**
+  String get hideSong;
+
+  /// No description provided for @deleteSong.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete song'**
+  String get deleteSong;
+
+  /// No description provided for @speed.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed'**
+  String get speed;
+
+  /// No description provided for @keepScreenOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep screen on'**
+  String get keepScreenOn;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

@@ -3,7 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:music_app/screens/play_song/widget/audio_player.dart';
 import 'package:music_app/screens/play_song/widget/playlist_bottomsheet.dart';
+import 'package:music_app/utills/globals.dart';
 
+import '../../commonWidgets/song_menu_screen.dart';
 import '../../commonWidgets/textWidget.dart';
 import '../../generated/assets.dart';
 import '../../themes/color.dart';
@@ -42,7 +44,16 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
+                isScrollControlled: true,
+                builder: (_) => SongMenuScreen(songMenuList: songPlayingMenuItems,isPlaying: true,),
+              );
+            },
             icon: SvgPicture.asset(Assets.svgIcDots, height: 26.h, width: 26.w, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
           ),
         ],
@@ -127,5 +138,3 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
     );
   }
 }
-
-

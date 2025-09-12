@@ -1,0 +1,33 @@
+import 'package:music_app/app_router.dart';
+
+import '../generated/assets.dart';
+import '../l10n/l10n.dart';
+import '../model/song_menu_model.dart';
+
+final List<SongMenuItem> songMenuItems = [
+  SongMenuItem(icon: Assets.svgIcMenuPlaynext, title: S.of(rootNavigatorKey.currentContext!).playNext),
+  SongMenuItem(icon: Assets.svgIcMenuQueue, title: S.of(rootNavigatorKey.currentContext!).addToQueue),
+  SongMenuItem(icon: Assets.svgIcMenuPlaylist, title: S.of(rootNavigatorKey.currentContext!).addToPlaylist),
+  SongMenuItem(icon: Assets.svgIcGotoalbum, title: S.of(rootNavigatorKey.currentContext!).goToAlbum),
+  SongMenuItem(icon: Assets.svgIcArtist, title: S.of(rootNavigatorKey.currentContext!).goToArtist),
+  SongMenuItem(icon: Assets.svgIcEdit, title: S.of(rootNavigatorKey.currentContext!).editDetails),
+  SongMenuItem(icon: Assets.svgIcRingtone, title: S.of(rootNavigatorKey.currentContext!).setAsRingtone),
+  SongMenuItem(icon: Assets.svgIcCover, title: S.of(rootNavigatorKey.currentContext!).changeCover),
+  SongMenuItem(icon: Assets.svgIcHide, title: S.of(rootNavigatorKey.currentContext!).hideSong),
+  SongMenuItem(icon: Assets.svgIcDelete, title: S.of(rootNavigatorKey.currentContext!).deleteSong),
+];
+
+
+final List<SongMenuItem> songPlayingMenuItems = [
+  SongMenuItem(icon: Assets.svgIcGotoalbum, title: S.of(rootNavigatorKey.currentContext!).goToAlbum),
+  SongMenuItem(icon: Assets.svgIcArtist, title: S.of(rootNavigatorKey.currentContext!).goToArtist),
+  SongMenuItem(icon: Assets.svgIcSpeed, title: S.of(rootNavigatorKey.currentContext!).speed),
+  SongMenuItem(icon: Assets.svgIcKeepscreen, title: S.of(rootNavigatorKey.currentContext!).keepScreenOn),
+  SongMenuItem(icon: Assets.svgIcEdit, title: S.of(rootNavigatorKey.currentContext!).editDetails),
+  SongMenuItem(icon: Assets.svgIcRingtone, title: S.of(rootNavigatorKey.currentContext!).setAsRingtone),
+  SongMenuItem(icon: Assets.svgIcCover, title: S.of(rootNavigatorKey.currentContext!).changeCover),
+  SongMenuItem(icon: Assets.svgIcHide, title: S.of(rootNavigatorKey.currentContext!).hideSong),
+  SongMenuItem(icon: Assets.svgIcDelete, title: S.of(rootNavigatorKey.currentContext!).deleteSong),
+];
+
+
