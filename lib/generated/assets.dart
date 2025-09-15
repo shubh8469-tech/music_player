@@ -55,6 +55,8 @@ class Assets {
   static const String svgIcPlus = 'assets/svg/ic_plus.svg';
   static const String svgIcPrev = 'assets/svg/ic_prev.svg';
   static const String svgIcQueue = 'assets/svg/ic_queue.svg';
+  static const String svgIcRadioCheckl = 'assets/svg/ic_radio_checkl.svg';
+  static const String svgIcRadioUncheck = 'assets/svg/ic_radio_uncheck.svg';
   static const String svgIcRepeat = 'assets/svg/ic_repeat.svg';
   static const String svgIcRingtone = 'assets/svg/ic_ringtone.svg';
   static const String svgIcShare = 'assets/svg/ic_share.svg';

@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:music_app/app_router.dart';
 import 'package:music_app/commonWidgets/textWidget.dart';
+import 'package:music_app/screens/tabs/library/songs/sort_by_bottomsheet.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
+import 'package:path/path.dart';
 
 import '../../../../commonWidgets/MusicListTile.dart';
 import '../../../../generated/assets.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../../utills/globals.dart';
 
 class SongsList extends StatefulWidget {
   const SongsList({super.key});
@@ -32,7 +37,10 @@ class _SongsListState extends State<SongsList> {
     "The Weeknd",
     "Adele",
   ];
-  
+  String selectedSong = sortByItems[0].title;
+
+  int selectedIndex = 0; // or -1 if no default selection
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,9 +97,32 @@ class _SongsListState extends State<SongsList> {
                   Spacer(),
                   SvgPicture.asset(Assets.svgFilter),
                   SizedBox(width: 5.w,),
-                  Texts('Song Name', fontSize: 14.sp, fontWeight: AppFontWeights.regular, color: AppColors.textColor),
-                  SizedBox(width: 15.w,),
-                  Icon(Icons.arrow_upward)
+                  GestureDetector(
+                    onTap: (){
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
+                        isScrollControlled: true,
+                        builder: (_) => SortByBottomSheet( selectedIndex: selectedIndex,
+                            onItemSelected: (index) {
+                              setState(() {
+                                selectedIndex = index;
+                                selectedSong = sortByItems[index].title; // Optional: update selected song title
+                              });
+                            },),
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        Texts(selectedSong, fontSize: 14.sp, fontWeight: AppFontWeights.regular, color: AppColors.textColor),
+                        SizedBox(width: 15.w,),
+                        Icon(Icons.arrow_upward)
+                      ],
+                    ),
+                  ),
+
                 ],
               ),
               SizedBox(height: 35.h,),

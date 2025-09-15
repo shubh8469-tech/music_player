@@ -70,4 +70,25 @@ class SHi extends S {
 
   @override
   String get keepScreenOn => 'स्क्रीन चालू रखें';
+
+  @override
+  String get songName => 'Song Name';
+
+  @override
+  String get artistName => 'Artist Name';
+
+  @override
+  String get albumName => 'Album Song';
+
+  @override
+  String get folderName => 'Folder Name';
+
+  @override
+  String get addedTime => 'Added Time';
+
+  @override
+  String get playCount => 'Play Count';
+
+  @override
+  String get year => 'Year';
 }

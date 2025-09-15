@@ -222,6 +222,48 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Keep screen on'**
   String get keepScreenOn;
+
+  /// No description provided for @songName.
+  ///
+  /// In en, this message translates to:
+  /// **'Song Name'**
+  String get songName;
+
+  /// No description provided for @artistName.
+  ///
+  /// In en, this message translates to:
+  /// **'Artist Name'**
+  String get artistName;
+
+  /// No description provided for @albumName.
+  ///
+  /// In en, this message translates to:
+  /// **'Album Song'**
+  String get albumName;
+
+  /// No description provided for @folderName.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder Name'**
+  String get folderName;
+
+  /// No description provided for @addedTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Added Time'**
+  String get addedTime;
+
+  /// No description provided for @playCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Count'**
+  String get playCount;
+
+  /// No description provided for @year.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get year;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

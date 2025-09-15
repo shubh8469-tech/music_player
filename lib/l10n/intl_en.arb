@@ -21,5 +21,13 @@
   "hideSong": "Hide song",
   "deleteSong": "Delete song",
   "speed": "Speed",
-  "keepScreenOn": "Keep screen on"
+  "keepScreenOn": "Keep screen on",
+  "songName":"Song Name",
+  "artistName":"Artist Name",
+  "albumName":"Album Song",
+  "folderName":"Folder Name",
+  "addedTime":"Added Time",
+  "playCount":"Play Count",
+  "year":"Year"
+
 }
