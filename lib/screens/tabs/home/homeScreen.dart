@@ -11,14 +11,14 @@ import '../../../commonWidgets/textWidget.dart';
 import '../../../generated/assets.dart';
 import '../../../utills/globals.dart';
 
-class Homescreen extends StatefulWidget {
-  const Homescreen({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<Homescreen> createState() => _HomescreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomescreenState extends State<Homescreen> {
+class _HomeScreenState extends State<HomeScreen> {
   List<String> categories = ['Most Played', 'Recently Added', 'My Favorites'];
 
   List<String> icons = [Assets.svgMostPlayed, Assets.svgRecentlyAdded, Assets.svgFavorites];
@@ -135,7 +135,7 @@ class _HomescreenState extends State<Homescreen> {
                     elevation: 0,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
                     isScrollControlled: true,
-                    builder: (_) => SongMenuScreen(songMenuList: songMenuItems,isPlaying: false,),
+                    builder: (_) => SongMenuScreen(songMenuList: songMenuItems, isPlaying: false),
                   ),
                 },
                 onPlayTap: () => print("Play tapped"),

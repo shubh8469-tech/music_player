@@ -18,11 +18,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int currentIndex = 0;
 
-  List<Widget> screens = [
-    Homescreen(),
-    Center(child: Text('Search Screen')),
-    LibraryScreen()
-  ];
+  List<Widget> screens = [HomeScreen(), Center(child: Text('Search Screen')), LibraryScreen()];
 
   @override
   Widget build(BuildContext context) {
@@ -33,13 +29,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
         toolbarHeight: 58.h,
         leading: Padding(
           padding: EdgeInsets.only(left: 22.w),
-          child: SizedBox(width: 26.w, height: 26.h, child: SvgPicture.asset(Assets.svgDrawer, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn))),
+          child: SizedBox(
+            width: 26.w,
+            height: 26.h,
+            child: SvgPicture.asset(Assets.svgDrawer, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
+          ),
         ),
         actions: [
           SizedBox(
             width: 40.w,
             height: 40.h,
-            child: IconButton(onPressed: () {}, icon: SvgPicture.asset(Assets.svgThemeBrush, height: 26.h, width: 26.w)),
+            child: IconButton(
+              onPressed: () {},
+              icon: SvgPicture.asset(Assets.svgThemeBrush, height: 26.h, width: 26.w),
+            ),
           ),
           IconButton(
             onPressed: () {},
@@ -53,16 +56,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: BottomNavigationBar(
           selectedItemColor: AppColors.primaryOrange,
           unselectedItemColor: AppColors.black,
-          selectedLabelStyle: TextStyle(
-            fontSize: 12.sp,
-            fontFamily: AppFonts.inter,
-            fontWeight: AppFontWeights.regular,
-          ),
-          unselectedLabelStyle: TextStyle(
-            fontSize: 12.sp,
-            fontFamily: AppFonts.inter,
-            fontWeight: AppFontWeights.regular,
-          ),
+          selectedLabelStyle: TextStyle(fontSize: 12.sp, fontFamily: AppFonts.inter, fontWeight: AppFontWeights.regular),
+          unselectedLabelStyle: TextStyle(fontSize: 12.sp, fontFamily: AppFonts.inter, fontWeight: AppFontWeights.regular),
           backgroundColor: AppColors.white,
           currentIndex: currentIndex,
           onTap: (index) {
