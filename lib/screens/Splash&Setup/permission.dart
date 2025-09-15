@@ -64,6 +64,7 @@ class _PermissionPageState extends State<PermissionPage> {
       debugPrint("⏱ Duration: ${song.duration} ms");
       debugPrint("📂 Path: ${song.data}");
       debugPrint("🆔 ID: ${song.id}");
+      debugPrint("🆔 ID: ${song.genre}");
       debugPrint("==================================");
 
       String folderPath = '';
