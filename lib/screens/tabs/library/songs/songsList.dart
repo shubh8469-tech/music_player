@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:music_app/app_router.dart';
 import 'package:music_app/commonWidgets/textWidget.dart';
 import 'package:music_app/screens/tabs/library/songs/sort_by_bottomsheet.dart';
@@ -21,22 +22,13 @@ class SongsList extends StatefulWidget {
 }
 
 class _SongsListState extends State<SongsList> {
-
   List<Color> colors = [AppColors.mildOrange, AppColors.mildBlue, AppColors.mildPink];
 
-  List<String> musicIcons = [ Assets.pngBand2, Assets.svgMusicIcon, Assets.pngBand,];
+  List<String> musicIcons = [Assets.pngBand2, Assets.svgMusicIcon, Assets.pngBand];
 
-  List<String> songNames = [
-    "Shape of You",
-    "Blinding Lights",
-    "Rolling in the Deep",
-  ];
+  List<String> songNames = ["Shape of You", "Blinding Lights", "Rolling in the Deep"];
 
-  List<String> artistNames = [
-    "Ed Sheeran",
-    "The Weeknd",
-    "Adele",
-  ];
+  List<String> artistNames = ["Ed Sheeran", "The Weeknd", "Adele"];
   String selectedSong = sortByItems[0].title;
 
   int selectedIndex = 0; // or -1 if no default selection
@@ -57,81 +49,96 @@ class _SongsListState extends State<SongsList> {
                     alignment: Alignment.center,
                     height: 40.h,
                     width: 165.w,
-                    decoration: BoxDecoration(
-                      color: AppColors.shuffleBackground,
-                      borderRadius: BorderRadius.circular(100.r)
-                    ),
+                    decoration: BoxDecoration(color: AppColors.shuffleBackground, borderRadius: BorderRadius.circular(100.r)),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SvgPicture.asset(Assets.svgShuffle, height: 16.79.h, width: 17.77,),
-                        SizedBox(width: 10.w,),
-                        Texts('Shuffle', fontWeight: AppFontWeights.medium, fontSize: 14.sp, color: AppColors.black)
+                        SvgPicture.asset(Assets.svgShuffle, height: 16.79.h, width: 17.77),
+                        SizedBox(width: 10.w),
+                        Texts('Shuffle', fontWeight: AppFontWeights.medium, fontSize: 14.sp, color: AppColors.black),
                       ],
                     ),
                   ),
                   Container(
                     height: 40.h,
                     width: 165.w,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryOrange,
-                      borderRadius: BorderRadius.circular(100.r)
-                    ),
+                    decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(100.r)),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SvgPicture.asset(Assets.svgPlay, height: 16.79.h, width: 17.77,),
-                        SizedBox(width: 10.w,),
-                        Texts('Play', fontWeight: AppFontWeights.medium, fontSize: 14.sp, color: AppColors.white,)
+                        SvgPicture.asset(Assets.svgPlay, height: 16.79.h, width: 17.77),
+                        SizedBox(width: 10.w),
+                        Texts('Play', fontWeight: AppFontWeights.medium, fontSize: 14.sp, color: AppColors.white),
                       ],
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 25.h,),
+              SizedBox(height: 25.h),
               Row(
                 children: [
-                  SvgPicture.asset(Assets.svgSongsCount),
-                  SizedBox(width: 10.w,),
-                  Texts('20 Songs', fontSize: 14.sp, fontWeight: AppFontWeights.regular, color: AppColors.textColor),
+                  InkWell(
+                    onTap: () {
+                      context.push('/dashboard/select-song');
+                    },
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(Assets.svgSongsCount),
+                        SizedBox(width: 10.w),
+                        Texts('20 Songs', fontSize: 14.sp, fontWeight: AppFontWeights.regular, color: AppColors.textColor),
+                      ],
+                    ),
+                  ),
                   Spacer(),
                   SvgPicture.asset(Assets.svgFilter),
-                  SizedBox(width: 5.w,),
+                  SizedBox(width: 5.w),
                   GestureDetector(
-                    onTap: (){
+                    onTap: () {
                       showModalBottomSheet(
                         context: context,
                         backgroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
                         isScrollControlled: true,
-                        builder: (_) => SortByBottomSheet( selectedIndex: selectedIndex,
-                            onItemSelected: (index) {
-                              setState(() {
-                                selectedIndex = index;
-                                selectedSong = sortByItems[index].title; // Optional: update selected song title
-                              });
-                            },),
+                        builder: (_) => SortByBottomSheet(
+                          selectedIndex: selectedIndex,
+                          onItemSelected: (index) {
+                            setState(() {
+                              selectedIndex = index;
+                              selectedSong = sortByItems[index].title; // Optional: update selected song title
+                            });
+                          },
+                        ),
                       );
                     },
                     child: Row(
                       children: [
                         Texts(selectedSong, fontSize: 14.sp, fontWeight: AppFontWeights.regular, color: AppColors.textColor),
-                        SizedBox(width: 15.w,),
-                        Icon(Icons.arrow_upward)
+                        SizedBox(width: 15.w),
+                        Icon(Icons.arrow_upward),
                       ],
                     ),
                   ),
-
                 ],
               ),
-              SizedBox(height: 35.h,),
+              SizedBox(height: 35.h),
               Column(
                 children: List.generate(20, (index) {
-
-                  final image = (index % 2 == 0) ? musicIcons[0] : (index % 3 == 0) ? musicIcons[1] : musicIcons[2];
-                  final title = (index % 2 == 0) ? songNames[0] : (index % 3 == 0) ? songNames[1] : songNames[2];
-                  final subTitle = (index % 2 == 0) ? artistNames[0] : (index % 3 == 0) ? artistNames[1] : artistNames[2];
+                  final image = (index % 2 == 0)
+                      ? musicIcons[0]
+                      : (index % 3 == 0)
+                      ? musicIcons[1]
+                      : musicIcons[2];
+                  final title = (index % 2 == 0)
+                      ? songNames[0]
+                      : (index % 3 == 0)
+                      ? songNames[1]
+                      : songNames[2];
+                  final subTitle = (index % 2 == 0)
+                      ? artistNames[0]
+                      : (index % 3 == 0)
+                      ? artistNames[1]
+                      : artistNames[2];
 
                   return MusicListTile(
                     margin: 7.w,
@@ -141,7 +148,8 @@ class _SongsListState extends State<SongsList> {
                     cardHeight: 50.h,
                     cardWidth: 50.w,
                     cardRadius: 7.r,
-                    cardIconAsset: image,//Assets.svgMusicIcon,
+                    cardIconAsset: image,
+                    //Assets.svgMusicIcon,
                     cardIconSize: 32.r,
                     isSvgCardIcon: image.contains('.svg'),
                     title: title,
@@ -155,8 +163,8 @@ class _SongsListState extends State<SongsList> {
                     onTap: () => print("Tile tapped"),
                     onPlayTap: () => print("Play tapped"),
                   );
-                },),
-              )
+                }),
+              ),
             ],
           ),
         ),

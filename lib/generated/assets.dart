@@ -48,6 +48,9 @@ class Assets {
   static const String svgIcMenuPlaylist = 'assets/svg/ic_menu_playlist.svg';
   static const String svgIcMenuPlaynext = 'assets/svg/ic_menu_playnext.svg';
   static const String svgIcMenuQueue = 'assets/svg/ic_menu_queue.svg';
+  static const String svgIcNavDelete = 'assets/svg/ic_nav_delete.svg';
+  static const String svgIcNavPlay = 'assets/svg/ic_nav_play.svg';
+  static const String svgIcNavPlaylist = 'assets/svg/ic_nav_playlist.svg';
   static const String svgIcNext = 'assets/svg/ic_next.svg';
   static const String svgIcPause = 'assets/svg/ic_pause.svg';
   static const String svgIcPlay = 'assets/svg/ic_play.svg';
@@ -59,6 +62,7 @@ class Assets {
   static const String svgIcRadioUncheck = 'assets/svg/ic_radio_uncheck.svg';
   static const String svgIcRepeat = 'assets/svg/ic_repeat.svg';
   static const String svgIcRingtone = 'assets/svg/ic_ringtone.svg';
+  static const String svgIcSerach = 'assets/svg/ic_serach.svg';
   static const String svgIcShare = 'assets/svg/ic_share.svg';
   static const String svgIcShirt = 'assets/svg/ic_shirt.svg';
   static const String svgIcSpeed = 'assets/svg/ic_speed.svg';

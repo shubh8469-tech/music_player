@@ -208,7 +208,7 @@ abstract class S {
   /// No description provided for @deleteSong.
   ///
   /// In en, this message translates to:
-  /// **'Delete song'**
+  /// **'Delete Song'**
   String get deleteSong;
 
   /// No description provided for @speed.
@@ -264,6 +264,48 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Year'**
   String get year;
+
+  /// No description provided for @selectSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Songs'**
+  String get selectSongs;
+
+  /// No description provided for @searchSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Songs'**
+  String get searchSongs;
+
+  /// No description provided for @selectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select All'**
+  String get selectAll;
+
+  /// No description provided for @selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected'**
+  String get selected;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @play.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get play;
+
+  /// No description provided for @areYouSureDeleteSong.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete these 2 songs?'**
+  String get areYouSureDeleteSong;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

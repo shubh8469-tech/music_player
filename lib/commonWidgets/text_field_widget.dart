@@ -85,7 +85,6 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
         focusNode: widget.focusNode,
         cursorColor: widget.cursorColor ?? Theme.of(context).colorScheme.onSurface,
         cursorWidth: 1.0,
-
         textInputAction: widget.textInputAction ?? TextInputAction.next,
         obscureText: widget.isObscureText ?? false,
         onChanged: widget.onTextChanged,

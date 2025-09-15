@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:music_app/screens/tabs/library/songs/select_song_screen.dart';
 
 import 'screens/Splash&Setup/permission.dart';
 import 'screens/Splash&Setup/splashScreen.dart';
@@ -19,6 +20,7 @@ enum AppRouteName {
   home,
   library,
   editSongDetails,
+  selectSong
 }
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
@@ -68,6 +70,11 @@ final GoRouter appRouter = GoRouter(
           name: AppRouteName.editSongDetails.name,
           path: 'edit-song',
           builder: (context, state) => const EditSongDetailsScreen(),
+        ),
+        GoRoute(
+          name: AppRouteName.selectSong.name,
+          path: 'select-song',
+          builder: (context, state) => const SelectSongScreen(),
         ),
       ],
     ),

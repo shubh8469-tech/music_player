@@ -28,6 +28,14 @@
   "folderName":"Folder Name",
   "addedTime":"Added Time",
   "playCount":"Play Count",
-  "year":"Year"
+  "year":"Year",
+  "selectSongs":"Select Songs",
+  "searchSongs":"Search Songs",
+  "selectAll":"Select All",
+  "selected":"Selected",
+  "delete":"Delete",
+  "play":"Play",
+  "deleteSong":"Delete Song",
+  "areYouSureDeleteSong":"Are you sure you want to delete these 2 songs?"
 
 }

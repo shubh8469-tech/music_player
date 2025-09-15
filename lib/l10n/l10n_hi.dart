@@ -91,4 +91,26 @@ class SHi extends S {
 
   @override
   String get year => 'Year';
+
+  @override
+  String get selectSongs => 'Select Songs';
+
+  @override
+  String get searchSongs => 'Search Songs';
+
+  @override
+  String get selectAll => 'Select All';
+
+  @override
+  String get selected => 'Selected';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get play => 'Play';
+
+  @override
+  String get areYouSureDeleteSong =>
+      'Are you sure you want to delete these 2 songs?';
 }
