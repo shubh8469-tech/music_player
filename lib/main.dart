@@ -3,10 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'app_router.dart';
 import 'GlobalBloc/languageBloc/language_bloc.dart';
+import 'core/di/injection.dart';
 import 'l10n/l10n.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await initInjections(); // Initialize all DI bindings
+
   runApp(
     ScreenUtilInit(
       // designSize should match your designer's artboard (example below).
