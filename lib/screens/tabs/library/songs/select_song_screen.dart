@@ -11,6 +11,7 @@ import '../../../../commonWidgets/text_field_widget.dart';
 import '../../../../generated/assets.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../themes/color.dart';
+import '../../../../utills/snack_bar.dart';
 import '../../../play_song/widget/playlist_bottomsheet.dart';
 
 class SelectSongScreen extends StatefulWidget {
@@ -181,7 +182,13 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
                     elevation: 0,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
                     isScrollControlled: true,
-                    builder: (_) => DeleteSongBottomSheet(songCount: selectedCount,),
+                    builder: (_) => DeleteSongBottomSheet(songCount: selectedCount,isLeftBtnTap: (){},isRightBtnTap: (){
+                      showSnackBar(
+                        context, () {},
+                        message: "Delete Songs successfully!",
+                        alertBannerLocation: AlertBannerLocation.bottom
+                      );
+                    },),
                   );
                 },
                 child: Column(mainAxisSize: MainAxisSize.min, children: [SvgPicture.asset(Assets.svgIcNavDelete), SizedBox(height: 3), Texts(S.of(context).delete)]),

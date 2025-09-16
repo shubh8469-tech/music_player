@@ -10,7 +10,10 @@ import 'bottom_button_two.dart';
 
 class DeleteSongBottomSheet extends StatefulWidget {
   final int? songCount;
-  const DeleteSongBottomSheet({super.key, this.songCount});
+  final Function isLeftBtnTap;
+  final Function isRightBtnTap;
+
+  const DeleteSongBottomSheet({super.key, this.songCount, required this.isLeftBtnTap, required this.isRightBtnTap});
 
   @override
   _DeleteSongBottomSheetState createState() => _DeleteSongBottomSheetState();
@@ -31,10 +34,25 @@ class _DeleteSongBottomSheetState extends State<DeleteSongBottomSheet> {
           SizedBox(height: 30.h),
           Texts('Delete Song', fontSize: 18.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter),
           SizedBox(height: 30.h),
-          Texts('Are you sure you want to delete these ${widget.songCount} songs?', fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter,align: TextAlign.center,),
+          Texts(
+            'Are you sure you want to delete these ${widget.songCount} songs?',
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w500,
+            fontFamily: AppFonts.inter,
+            align: TextAlign.center,
+          ),
 
           SizedBox(height: 25.h),
-          BottomButtonTwo(leftBtnTitle: S.of(context).cancel, rightBtnTitle: S.of(context).delete, lefBtnTap: () {}, rightBtnTap: () {}),
+          BottomButtonTwo(
+            leftBtnTitle: S.of(context).cancel,
+            rightBtnTitle: S.of(context).delete,
+            lefBtnTap: () {
+              widget.isLeftBtnTap();
+            },
+            rightBtnTap: () {
+              widget.isRightBtnTap();
+            },
+          ),
           // Action buttons
         ],
       ),
