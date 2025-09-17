@@ -1,14 +1,18 @@
 import 'dart:io';
-
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path/path.dart' as p;
-
+import 'package:image/image.dart' as img;
 import '../../commonWidgets/buton.dart';
 import '../../commonWidgets/textWidget.dart';
+import '../../core/di/injection.dart';
+import '../../features/songs/data/models/song_model.dart';
+import '../../features/songs/domain/usecases/add_song.dart';
 import '../../generated/assets.dart';
 import '../../themes/color.dart';
 import '../../themes/font.dart';
@@ -30,7 +34,9 @@ class _PermissionPageState extends State<PermissionPage> {
   final Map<String, List<Map<String, String>>> groupedByFolder = {};
 
   Future<void> scanMusicFiles() async {
-    // 🔹 Request permission
+
+    final AddSong addSongUseCase = locator();
+
     if (Platform.isAndroid) {
       PermissionStatus status;
       if (await Permission.storage.isGranted) {
@@ -48,7 +54,6 @@ class _PermissionPageState extends State<PermissionPage> {
       }
     }
 
-    // 🔹 Query songs
     List<SongModel> songs = await _audioQuery.querySongs();
 
     scannedFiles.clear();
@@ -57,15 +62,16 @@ class _PermissionPageState extends State<PermissionPage> {
     for (final song in songs) {
       final String path = song.data;
 
-      debugPrint("🎵 Title: ${song.title}");
-      debugPrint("👤 Artist: ${song.artist}");
-      debugPrint("💿 Album: ${song.album}");
-      debugPrint("📅 Year: ${song.dateAdded}");
-      debugPrint("⏱ Duration: ${song.duration} ms");
-      debugPrint("📂 Path: ${song.data}");
-      debugPrint("🆔 ID: ${song.id}");
-      debugPrint("🆔 ID: ${song.genre}");
-      debugPrint("==================================");
+      final artworkBytes = await _audioQuery.queryArtwork(
+        song.id,
+        ArtworkType.AUDIO, // or ArtworkType.ALBUM
+      );
+
+      final appDocDir = await getApplicationDocumentsDirectory();
+      final artworkDir = Directory(p.join(appDocDir.path, 'artworks'));
+      if (!await artworkDir.exists()) {
+        await artworkDir.create();
+      }
 
       String folderPath = '';
       String folderName = '';
@@ -91,6 +97,28 @@ class _PermissionPageState extends State<PermissionPage> {
         folderPath = '';
         folderName = '';
       }
+
+      String artworkPath = '';
+      if (artworkBytes != null && artworkBytes.isNotEmpty) {
+        // 🔹 Save original bytes directly (no resizing)
+        final file = File(p.join(artworkDir.path, '${song.id}.jpg'));
+        await file.writeAsBytes(artworkBytes);
+        artworkPath = file.path;
+      }
+
+      final model = SongsModel(
+        id: song.id,
+        title: song.title,
+        artist: song.artist ?? '',
+        album: song.album ?? '',
+        genre: song.genre ?? '',
+        duration: song.duration ?? 0,
+        filePath: path,
+        folder: folderName,
+        artwork_path: artworkPath ?? ''
+      );
+
+      await addSongUseCase(model);
 
       final item = {
         'title': song.title,
@@ -198,7 +226,7 @@ class _PermissionPageState extends State<PermissionPage> {
                 },
                 backgroundColor: AppColors.primaryOrange,
                 textColor: AppColors.white,
-                borderRadius: 50,
+                borderRadius: 50.r,
                 height: 48.h,
                 width: 343.w,
                 icon: Icons.arrow_forward,

@@ -6,7 +6,8 @@ class Song {
   final String genre;
   final int duration;
   final String filePath;
-  final String? artworkPath;
+  final String? folder;
+  final String? artwork_path;
 
   Song({
     this.id,
@@ -16,6 +17,7 @@ class Song {
     required this.genre,
     required this.duration,
     required this.filePath,
-    this.artworkPath,
+    this.folder,
+    this.artwork_path,
   });
 }
