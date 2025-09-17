@@ -6,7 +6,6 @@ import 'package:music_app/themes/color.dart';
 
 import '../../../generated/assets.dart';
 
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -15,6 +14,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:music_app/themes/color.dart';
 
 import '../../../generated/assets.dart';
+import '../../tabs/music_service.dart';
 
 class AudioPlayerWidget extends StatefulWidget {
   final String url;
@@ -26,7 +26,8 @@ class AudioPlayerWidget extends StatefulWidget {
 }
 
 class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  final MusicPlayerService _musicService = MusicPlayerService();
+
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
   bool _isPlaying = false;
@@ -38,18 +39,25 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   }
 
   Future<void> _initAudio() async {
-    await _audioPlayer.setUrl(widget.url);
-
-    _audioPlayer.durationStream.listen((d) {
-      setState(() => _duration = d ?? Duration.zero);
+    // Listen to duration
+    _musicService.player.durationStream.listen((d) {
+      if (mounted) {
+        setState(() => _duration = d ?? Duration.zero);
+      }
     });
 
-    _audioPlayer.positionStream.listen((p) {
-      setState(() => _position = p);
+    // Listen to position
+    _musicService.player.positionStream.listen((p) {
+      if (mounted) {
+        setState(() => _position = p);
+      }
     });
 
-    _audioPlayer.playerStateStream.listen((state) {
-      setState(() => _isPlaying = state.playing);
+    // Listen to player state
+    _musicService.player.playerStateStream.listen((state) {
+      if (mounted) {
+        setState(() => _isPlaying = state.playing);
+      }
     });
   }
 
@@ -61,7 +69,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
 
   @override
   void dispose() {
-    _audioPlayer.dispose();
+    _musicService.player.dispose();
     super.dispose();
   }
 
@@ -77,7 +85,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
           activeColor: AppColors.black,
           onChanged: (value) {
             final position = Duration(milliseconds: value.round());
-            _audioPlayer.seek(position);
+            _musicService.player.seek(position);
           },
         ),
 
@@ -106,62 +114,34 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            SvgPicture.asset(
-              Assets.svgIcSuffle,
-              width: 28.w,
-              height: 28.h,
-            ),
-            SvgPicture.asset(
-              Assets.svgIcPrev,
-              width: 28.w,
-              height: 28.h,
-            ),
+            SvgPicture.asset(Assets.svgIcSuffle, width: 28.w, height: 28.h),
+            SvgPicture.asset(Assets.svgIcPrev, width: 28.w, height: 28.h),
 
             // Play/Pause Button with shadow
             GestureDetector(
               onTap: () {
-                _isPlaying ? _audioPlayer.pause() : _audioPlayer.play();
+                _isPlaying ? _musicService.player.pause() : _musicService.player.play();
               },
               child: Container(
                 width: 65.w,
                 height: 65.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.textColor.withValues(alpha: 0.2),
-                      blurRadius: 12.r,
-                      spreadRadius: 1.r,
-                      offset: Offset(0, 2.h),
-                    ),
-                  ],
+                  boxShadow: [BoxShadow(color: AppColors.textColor.withValues(alpha: 0.2), blurRadius: 12.r, spreadRadius: 1.r, offset: Offset(0, 2.h))],
                 ),
                 alignment: Alignment.center,
-                child: SvgPicture.asset(
-                  _isPlaying ? Assets.svgIcPause : Assets.svgIcPlay,
-                  height: 60.h,
-                  width: 60.w,
-                ),
+                child: SvgPicture.asset(_isPlaying ? Assets.svgIcPause : Assets.svgIcPlay, height: 60.h, width: 60.w),
               ),
             ),
 
-            SvgPicture.asset(
-              Assets.svgIcNext,
-              width: 28.w,
-              height: 28.h,
-            ),
-            SvgPicture.asset(
-              Assets.svgIcRepeat,
-              width: 28.w,
-              height: 28.h,
-            ),
+            SvgPicture.asset(Assets.svgIcNext, width: 28.w, height: 28.h),
+            SvgPicture.asset(Assets.svgIcRepeat, width: 28.w, height: 28.h),
           ],
         ),
       ],
     );
   }
 }
-
 
 /*
 class AudioPlayerWidget extends StatefulWidget {

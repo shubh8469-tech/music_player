@@ -2,6 +2,7 @@
 class Assets {
   Assets._();
 
+  static const String dbSetup = 'assets/db/setup.sql';
   static const String interInterBlack = 'assets/fonts/inter/Inter-Black.ttf';
   static const String interInterBold = 'assets/fonts/inter/Inter-Bold.ttf';
   static const String interInterExtraBold = 'assets/fonts/inter/Inter-ExtraBold.ttf';
@@ -24,6 +25,7 @@ class Assets {
   static const String pngLogo = 'assets/png/logo.png';
   static const String pngMusic = 'assets/png/music.png';
   static const String pngMusicDirectory = 'assets/png/musicDirectory.png';
+  static const String pngSongPlaying = 'assets/png/song_playing.gif';
   static const String svgAlbum = 'assets/svg/album.svg';
   static const String svgDirectory = 'assets/svg/directory.svg';
   static const String svgDrawer = 'assets/svg/drawer.svg';
@@ -52,8 +54,10 @@ class Assets {
   static const String svgIcNavPlay = 'assets/svg/ic_nav_play.svg';
   static const String svgIcNavPlaylist = 'assets/svg/ic_nav_playlist.svg';
   static const String svgIcNext = 'assets/svg/ic_next.svg';
+  static const String svgIcOverlayPause = 'assets/svg/ic_overlay_pause.svg';
   static const String svgIcPause = 'assets/svg/ic_pause.svg';
   static const String svgIcPlay = 'assets/svg/ic_play.svg';
+  static const String svgIcPlayingNext = 'assets/svg/ic_playingnext.svg';
   static const String svgIcPlaylist = 'assets/svg/ic_playlist.svg';
   static const String svgIcPlus = 'assets/svg/ic_plus.svg';
   static const String svgIcPrev = 'assets/svg/ic_prev.svg';

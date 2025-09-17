@@ -10,15 +10,37 @@ import '../../commonWidgets/textWidget.dart';
 import '../../generated/assets.dart';
 import '../../themes/color.dart';
 import '../../themes/font.dart';
+import '../tabs/music_service.dart';
+
+class PlayingSongArgs {
+  final List<String> songs;
+  final int currentIndex;
+
+  PlayingSongArgs({required this.songs, required this.currentIndex});
+}
 
 class PlayingSongScreen extends StatefulWidget {
-  const PlayingSongScreen({super.key});
+  const PlayingSongScreen({super.key, required this.songs, required this.currentIndex});
+
+  final List<String> songs;
+  final int currentIndex;
 
   @override
   State<PlayingSongScreen> createState() => _PlayingSongScreenState();
 }
 
 class _PlayingSongScreenState extends State<PlayingSongScreen> {
+  late MusicPlayerService musicService;
+
+  @override
+  void initState() {
+    super.initState();
+    musicService = MusicPlayerService();
+
+    // Start playing the song at currentIndex
+    musicService.setPlaylist(widget.songs, startIndex: widget.currentIndex);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,12 +48,17 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
         backgroundColor: AppColors.primaryOrange,
         leadingWidth: 45.w,
         toolbarHeight: 52.h,
-        leading: Padding(
-          padding: EdgeInsets.only(left: 22.w),
-          child: SizedBox(
-            width: 26.w,
-            height: 26.h,
-            child: SvgPicture.asset(Assets.svgIcDownArrow, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.of(context).pop();
+          },
+          child: Padding(
+            padding: EdgeInsets.only(left: 22.w),
+            child: SizedBox(
+              width: 26.w,
+              height: 26.h,
+              child: SvgPicture.asset(Assets.svgIcDownArrow, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
+            ),
           ),
         ),
         actions: [
@@ -51,7 +78,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
                 isScrollControlled: true,
-                builder: (_) => SongMenuScreen(songMenuList: songPlayingMenuItems,isPlaying: true,),
+                builder: (_) => SongMenuScreen(songMenuList: songPlayingMenuItems, isPlaying: true),
               );
             },
             icon: SvgPicture.asset(Assets.svgIcDots, height: 26.h, width: 26.w, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),

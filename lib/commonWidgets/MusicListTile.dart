@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // assuming you already made GradientCard
 import 'package:music_app/themes/color.dart';
+import '../generated/assets.dart';
 import 'gradientCard.dart';
 import 'textWidget.dart';
 import '../themes/font.dart';
@@ -41,6 +42,7 @@ class MusicListTile extends StatelessWidget {
   final double trailingMargin;
   final bool isSvg;
   final bool isLeading;
+  final bool isGifLoad;
 
   // info icons for menu
   final String leadingIconAsset;
@@ -96,6 +98,7 @@ class MusicListTile extends StatelessWidget {
     this.isSvg = true,
     this.isLeading = false,
     this.songLengthRequired = false,
+    this.isGifLoad = false,
 
     this.onTap,
     this.onPlayTap,
@@ -118,16 +121,30 @@ class MusicListTile extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              GradientCard(
-                height: cardHeight,
-                width: cardWidth,
-                colors: noLogoGradientColor ?? [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange],
-                borderRadius: cardRadius,
-                iconAsset: cardIconAsset,
-                iconSize: cardIconSize,
-                isSvg: isSvgCardIcon,
-                isSvgColorNeeded: isSvgColorNeeded,
-                margin: 0,
+              Stack(
+                children: [
+                  GradientCard(
+                    height: cardHeight,
+                    width: cardWidth,
+                    colors: noLogoGradientColor ?? [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange],
+                    borderRadius: cardRadius,
+                    iconAsset: cardIconAsset,
+                    iconSize: cardIconSize,
+                    isSvg: isSvgCardIcon,
+                    isSvgColorNeeded: isSvgColorNeeded,
+                    margin: 0,
+                  ),
+                  if (isGifLoad)
+                    Container(
+                      color: AppColors.white.withValues(alpha: .4),
+                      height: 55,
+                      width: 55,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 5),
+                        child: Image.asset(Assets.pngSongPlaying, fit: BoxFit.cover, height: 55, width: 55),
+                      ),
+                    ),
+                ],
               ),
               SizedBox(width: spacing.w),
 
@@ -166,8 +183,6 @@ class MusicListTile extends StatelessWidget {
                   child: SvgPicture.asset(trailingIconAsset, height: trailingIconHeight, width: trailingIconWidth),
                 ),
               ),
-
-
             ],
           ),
         ),
