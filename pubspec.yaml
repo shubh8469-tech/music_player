@@ -48,12 +48,14 @@ dependencies:
   get_it: ^8.2.0
   image: ^4.5.4
   path_provider: ^2.1.5
+  freezed_annotation: ^3.1.0
 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-    
+  freezed: ^3.2.3
+  build_runner: ^2.8.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'Blocs/languageBloc/language_bloc.dart';
 import 'app_router.dart';
-import 'GlobalBloc/languageBloc/language_bloc.dart';
 import 'core/di/injection.dart';
+import 'features/songs/bloc/songs_bloc.dart';
 import 'l10n/l10n.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -14,14 +15,17 @@ Future<void> main() async {
 
   runApp(
     ScreenUtilInit(
-      // designSize should match your designer's artboard (example below).
       designSize: const Size(378, 812),
-      minTextAdapt: true, // adapt text for small screens / accessibility
-      splitScreenMode: true, // support split screen
+      minTextAdapt: true,
+      splitScreenMode: true,
       builder: (context, child) {
-        // Provide your Bloc(s) after ScreenUtilInit so widgets can use .sp/.w in theme if needed
         return MultiBlocProvider(
-          providers: [BlocProvider(create: (context) => LanguageBloc())],
+          providers: [
+            BlocProvider(create: (context) => LanguageBloc()),
+            BlocProvider<SongsBloc>(
+              create: (_) => SongsBloc(locator())..add(const SongsEvent.getAllSongs()),
+            ),
+          ],
           child: ScreenUtilInit(
             designSize: const Size(375, 812),
             child: const MyApp(),
