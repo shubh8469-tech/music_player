@@ -1,4 +1,3 @@
-// data/repositories/song_repository_impl.dart
 import '../../domain/entities/song.dart';
 import '../../domain/repositories/song_repository.dart';
 import '../dataSource/song_local_data_source.dart';
@@ -11,15 +10,21 @@ class SongRepositoryImpl implements SongRepository {
 
   @override
   Future<void> addSong(Song song) async {
-    await localDataSource.insertSong(SongModel(
+    final songModel = SongsModel(
+      id: song.id,
       title: song.title,
       artist: song.artist,
       album: song.album,
       genre: song.genre,
       duration: song.duration,
       filePath: song.filePath,
-      artworkPath: song.artworkPath,
-    ));
+      folder: song.folder,
+      artwork_path: song.artwork_path,
+      createdTime: DateTime.now().toIso8601String(),
+      updatedTime: DateTime.now().toIso8601String(),
+    );
+
+    await localDataSource.insertSong(songModel);
   }
 
   @override

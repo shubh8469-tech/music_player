@@ -1,7 +1,10 @@
 import '../../domain/entities/song.dart';
 
-class SongModel extends Song {
-  SongModel({
+class SongsModel extends Song {
+  final String createdTime;
+  final String updatedTime;
+
+  SongsModel({
     int? id,
     required String title,
     required String artist,
@@ -9,20 +12,26 @@ class SongModel extends Song {
     required String genre,
     required int duration,
     required String filePath,
-    String? artworkPath,
-  }) : super(
-    id: id,
-    title: title,
-    artist: artist,
-    album: album,
-    genre: genre,
-    duration: duration,
-    filePath: filePath,
-    artworkPath: artworkPath,
-  );
+    String? folder,
+    String? artwork_path,
+    String? createdTime,
+    String? updatedTime,
+  })  : createdTime = createdTime ?? DateTime.now().toIso8601String(),
+        updatedTime = updatedTime ?? DateTime.now().toIso8601String(),
+        super(
+        id: id,
+        title: title,
+        artist: artist,
+        album: album,
+        genre: genre,
+        duration: duration,
+        filePath: filePath,
+        folder: folder,
+        artwork_path: artwork_path,
+      );
 
-  factory SongModel.fromMap(Map<String, dynamic> map) {
-    return SongModel(
+  factory SongsModel.fromMap(Map<String, dynamic> map) {
+    return SongsModel(
       id: map['id'],
       title: map['title'],
       artist: map['artist'] ?? '',
@@ -30,7 +39,10 @@ class SongModel extends Song {
       genre: map['genre'] ?? '',
       duration: map['duration'],
       filePath: map['file_path'],
-      artworkPath: map['artwork_path'],
+      folder: map['folder'],
+      artwork_path: map['artwork_path'],
+      createdTime: map['created_time'],
+      updatedTime: map['updated_time'],
     );
   }
 
@@ -43,7 +55,10 @@ class SongModel extends Song {
       'genre': genre,
       'duration': duration,
       'file_path': filePath,
-      'artwork_path': artworkPath,
+      'folder': folder,
+      'artwork_path': artwork_path,
+      'created_time': createdTime,
+      'updated_time': updatedTime,
     };
   }
 }

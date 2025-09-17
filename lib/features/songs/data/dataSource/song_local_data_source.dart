@@ -3,8 +3,8 @@ import '../../../../core/db/app_database.dart';
 import '../models/song_model.dart';
 
 abstract class SongLocalDataSource {
-  Future<int> insertSong(SongModel song);
-  Future<List<SongModel>> getAllSongs();
+  Future<int> insertSong(SongsModel song);
+  Future<List<SongsModel>> getAllSongs();
   Future<int> deleteSong(int id);
 }
 
@@ -14,16 +14,20 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
   SongLocalDataSourceImpl(this.db);
 
   @override
-  Future<int> insertSong(SongModel song) async {
+  Future<int> insertSong(SongsModel song) async {
     final db = await AppDatabase.instance();
-    return await db.insert('songs', song.toMap());
+    return await db.insert(
+      'songs',
+      song.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.ignore, // or replace
+    );
   }
 
   @override
-  Future<List<SongModel>> getAllSongs() async {
+  Future<List<SongsModel>> getAllSongs() async {
     final db = await AppDatabase.instance();
     final result = await db.query('songs');
-    return result.map((map) => SongModel.fromMap(map)).toList();
+    return result.map((map) => SongsModel.fromMap(map)).toList();
   }
 
   @override

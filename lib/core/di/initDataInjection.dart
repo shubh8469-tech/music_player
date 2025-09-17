@@ -10,17 +10,17 @@ import 'injection.dart';
 Future<void> initDataInjections() async {
   final db = await AppDatabase.instance();
 
-  getIt.registerLazySingleton<Database>(() => db);
+  locator.registerLazySingleton<Database>(() => db);
 
-  getIt.registerLazySingleton<SongLocalDataSource>(
-          () => SongLocalDataSourceImpl(getIt<Database>()));
+  locator.registerLazySingleton<SongLocalDataSource>(
+          () => SongLocalDataSourceImpl(locator<Database>()));
 
   // Repositories
-  getIt.registerLazySingleton<SongRepository>(
-          () => SongRepositoryImpl(getIt<SongLocalDataSource>()));
+  locator.registerLazySingleton<SongRepository>(
+          () => SongRepositoryImpl(locator<SongLocalDataSource>()));
 
   // Usecases (you can group or keep separate)
-  getIt.registerFactory(() => GetAllSongs(getIt<SongRepository>()));
-  getIt.registerFactory(() => AddSong(getIt<SongRepository>()));
+  locator.registerFactory(() => GetAllSongs(locator<SongRepository>()));
+  locator.registerFactory(() => AddSong(locator<SongRepository>()));
 
 }
