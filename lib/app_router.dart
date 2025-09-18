@@ -39,7 +39,6 @@ final GoRouter appRouter = GoRouter(
               key: state.pageKey,
               child: PlayingSongScreen(
                 songs: args.songs,
-                currentIndex: args.currentIndex,
               ),
               transitionDuration: const Duration(milliseconds: 500),
               reverseTransitionDuration: const Duration(milliseconds: 500),

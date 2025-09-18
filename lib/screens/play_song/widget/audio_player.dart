@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
@@ -17,9 +19,7 @@ import '../../../generated/assets.dart';
 import '../../tabs/music_service.dart';
 
 class AudioPlayerWidget extends StatefulWidget {
-  final String url;
-
-  const AudioPlayerWidget({super.key, required this.url});
+  const AudioPlayerWidget({super.key});
 
   @override
   State<AudioPlayerWidget> createState() => _AudioPlayerWidgetState();
@@ -27,6 +27,7 @@ class AudioPlayerWidget extends StatefulWidget {
 
 class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   final MusicPlayerService _musicService = MusicPlayerService();
+  late final StreamSubscription<PlayerState> _playerStateSub;
 
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
@@ -35,29 +36,20 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   @override
   void initState() {
     super.initState();
-    _initAudio();
-  }
 
-  Future<void> _initAudio() async {
-    // Listen to duration
+    // Duration updates
     _musicService.player.durationStream.listen((d) {
-      if (mounted) {
-        setState(() => _duration = d ?? Duration.zero);
-      }
+      if (mounted && d != null) setState(() => _duration = d);
     });
 
-    // Listen to position
+    // Position updates
     _musicService.player.positionStream.listen((p) {
-      if (mounted) {
-        setState(() => _position = p);
-      }
+      if (mounted) setState(() => _position = p);
     });
 
-    // Listen to player state
-    _musicService.player.playerStateStream.listen((state) {
-      if (mounted) {
-        setState(() => _isPlaying = state.playing);
-      }
+    // Playing state updates
+    _playerStateSub = _musicService.player.playerStateStream.listen((state) {
+      if (mounted) setState(() => _isPlaying = state.playing);
     });
   }
 
@@ -69,7 +61,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
 
   @override
   void dispose() {
-    _musicService.player.dispose();
+    _playerStateSub.cancel();
     super.dispose();
   }
 
@@ -115,7 +107,12 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             SvgPicture.asset(Assets.svgIcSuffle, width: 28.w, height: 28.h),
-            SvgPicture.asset(Assets.svgIcPrev, width: 28.w, height: 28.h),
+            GestureDetector(
+              onTap: () {
+                _musicService.previous();
+              },
+              child: SvgPicture.asset(Assets.svgIcPrev, width: 28.w, height: 28.h),
+            ),
 
             // Play/Pause Button with shadow
             GestureDetector(
@@ -134,7 +131,12 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
               ),
             ),
 
-            SvgPicture.asset(Assets.svgIcNext, width: 28.w, height: 28.h),
+            GestureDetector(
+              onTap: () {
+                _musicService.next();
+              },
+              child: SvgPicture.asset(Assets.svgIcNext, width: 28.w, height: 28.h),
+            ),
             SvgPicture.asset(Assets.svgIcRepeat, width: 28.w, height: 28.h),
           ],
         ),

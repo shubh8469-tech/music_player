@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -41,6 +43,9 @@ class _SongsListState extends State<SongsList> {
 
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
+  bool _showMiniPlayer = false;
+
+  late final StreamSubscription<Duration> _positionSub;
 
   @override
   void initState() {
@@ -49,15 +54,36 @@ class _SongsListState extends State<SongsList> {
     // Listen duration
     musicService.player.durationStream.listen((d) {
       if (d != null) {
-        setState(() => _duration = d);
+        if (mounted) {
+          setState(() => _duration = d);
+        }
       }
     });
 
     // Listen position
-    musicService.player.positionStream.listen((p) {
-      setState(() => _position = p);
+    _positionSub = musicService.player.positionStream.listen((p) {
+      if (mounted) {
+        setState(() => _position = p);
+      }
     });
   }
+
+  @override
+  void dispose() {
+    _positionSub.cancel(); // cancel subscription
+    super.dispose();
+  }
+
+  // "/storage/emulated/0/Documents/XMusic/Backups/All data backup/AutoBackup_20250917_144046690.wav",
+  // "/storage/emulated/0/Documents/XMusic/Backups/Playlist backup/AutoPlaylist_20250917_144046690.wav",
+
+  List<String> songPaths = [
+    "/storage/emulated/0/Download/apartment-buzzer-doorbell-sound-325245.mp3",
+    "/storage/emulated/0/Download/censor-beep-1sec-8112.mp3",
+    "/storage/emulated/0/BillieEilish-BIRDSOFAFEATHER(OfficialMusicVideo).mp3",
+    "/storage/emulated/0/Download/file_example_MP3_1MG.mp3",
+    "/storage/emulated/0/Download/file_example_MP3_700KB.mp3",
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -153,7 +179,7 @@ class _SongsListState extends State<SongsList> {
                     ),
                     SizedBox(height: 35.h),
                     Column(
-                      children: List.generate(20, (index) {
+                      children: List.generate(songPaths.length, (index) {
                         final image = (index % 2 == 0)
                             ? musicIcons[0]
                             : (index % 3 == 0)
@@ -170,32 +196,54 @@ class _SongsListState extends State<SongsList> {
                             ? artistNames[1]
                             : artistNames[2];
 
-                        return MusicListTile(
-                          margin: 7.w,
-                          height: 66.h,
-                          borderRadius: 10.r,
-                          backgroundColor: AppColors.musicTileBackgroundColor,
-                          cardHeight: 50.h,
-                          cardWidth: 50.w,
-                          cardRadius: 7.r,
-                          cardIconAsset: image,
-                          //Assets.svgMusicIcon,
-                          cardIconSize: 32.r,
-                          isSvgCardIcon: image.contains('.svg'),
-                          title: title,
-                          subtitle: subTitle,
-                          trailingIconAsset: Assets.svgMenuIcon,
-                          trailingIconHeight: 15.h,
-                          trailingIconWidth: 3.w,
-                          trailingMargin: 10.w,
-                          songLength: '5:20',
-                          songLengthRequired: true,
-                          isGifLoad: index == 1 ? true : false,
-                          onTap: () async {
-                            final musicService = MusicPlayerService();
-                            await musicService.setPlaylist(["/storage/emulated/0/Download/apartment-buzzer-doorbell-sound-325245.mp3"]);
+                        return StreamBuilder<int?>(
+                          stream: musicService.currentIndexStream, // listen to changes
+                          initialData: musicService.currentIndex,
+                          builder: (context, snapshot) {
+                            final playingIndex = snapshot.data ?? -1;
+
+                            return StreamBuilder<bool>(
+                              stream: musicService.isPlayingStream,
+                              initialData: musicService.isPlaying,
+                              builder: (context, playingSnap) {
+                                final isPlaying = playingSnap.data ?? false;
+                                final isCurrent = index == playingIndex && isPlaying;
+
+                                return MusicListTile(
+                                  margin: 7.w,
+                                  height: 66.h,
+                                  borderRadius: 10.r,
+                                  backgroundColor: AppColors.musicTileBackgroundColor,
+                                  cardHeight: 50.h,
+                                  cardWidth: 50.w,
+                                  cardRadius: 7.r,
+                                  cardIconAsset: image,
+                                  cardIconSize: 32.r,
+                                  isSvgCardIcon: image.contains('.svg'),
+                                  title: songPaths[index].split('/').last,
+                                  subtitle: subTitle,
+                                  trailingIconAsset: Assets.svgMenuIcon,
+                                  trailingIconHeight: 15.h,
+                                  trailingIconWidth: 3.w,
+                                  trailingMargin: 10.w,
+                                  songLength: '5:20',
+                                  songLengthRequired: true,
+
+                                  isGifLoad: isCurrent,
+
+                                  onTap: () async {
+                                    if (mounted) {
+                                      setState(() {
+                                        _showMiniPlayer = true; // show mini player
+                                      });
+                                    }
+                                    await musicService.setPlaylist(songPaths, startIndex: index);
+                                  },
+                                  onPlayTap: () => print("Play tapped"),
+                                );
+                              },
+                            );
                           },
-                          onPlayTap: () => print("Play tapped"),
                         );
                       }),
                     ),
@@ -204,125 +252,145 @@ class _SongsListState extends State<SongsList> {
               ),
             ),
           ),
-          GestureDetector(
-            onTap: () {
-              context.push(
-                '/dashboard/playing',
-                extra: PlayingSongArgs(songs: ["/storage/emulated/0/Download/apartment-buzzer-doorbell-sound-325245.mp3"], currentIndex: 0),
-              );
-            },
-            child: Column(
-              children: [
-                StreamBuilder<Duration>(
-                  stream: musicService.player.positionStream,
-                  builder: (context, snapshot) {
-                    final position = snapshot.data ?? Duration.zero;
-                    final total = musicService.player.duration ?? Duration.zero;
+          if (_showMiniPlayer)
+            GestureDetector(
+              onTap: () {
+                context.push('/dashboard/playing', extra: PlayingSongArgs(songs: musicService.songs));
+              },
+              child: Column(
+                children: [
+                  StreamBuilder<Duration>(
+                    stream: musicService.player.positionStream,
+                    builder: (context, snapshot) {
+                      final position = snapshot.data ?? Duration.zero;
+                      final total = musicService.player.duration ?? Duration.zero;
 
-                    double progress = (total.inMilliseconds > 0) ? position.inMilliseconds / total.inMilliseconds : 0.0;
+                      double progress = 0.0;
+                      if (total.inMilliseconds > 0) {
+                        progress = position.inMilliseconds / total.inMilliseconds;
+                      }
+                      return LinearProgressIndicator(
+                        value: progress.clamp(0.0, 1.0),
+                        minHeight: 4,
+                        backgroundColor: Colors.grey.shade300,
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryOrange),
+                      );
+                    },
+                  ),
 
-                    if (progress >= 1.0) progress = 0.0;
-
-                    return LinearProgressIndicator(
-                      value: progress,
-                      minHeight: 4,
-                      backgroundColor: Colors.grey.shade300,
-                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryOrange),
-                    );
-                  },
-                ),
-
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Stack(
-                        children: [
-                          GradientCard(
-                            height: 50.h,
-                            width: 50.w,
-                            borderRadius: 10.r,
-                            iconAsset: musicIcons[2],
-                            iconSize: 40.r,
-                            isSvg: false,
-                            onTap: () {
-                              print("Most Played tapped!");
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        /// Thumbnail + GIF
+                        StreamBuilder<PlayerState>(
+                          stream: musicService.player.playerStateStream,
+                          builder: (context, snapshot) {
+                            final isPlaying = snapshot.data?.playing ?? false;
+                            return Stack(
+                              children: [
+                                GradientCard(
+                                  height: 50.h,
+                                  width: 50.w,
+                                  borderRadius: 10.r,
+                                  iconAsset: musicIcons[2],
+                                  iconSize: 40.r,
+                                  isSvg: false,
+                                  margin: 10.w,
+                                  colors: [
+                                    AppColors.mildOrange.withValues(alpha: 0.21),
+                                    AppColors.mildOrange,
+                                  ],
+                                ),
+                                if (isPlaying)
+                                  Container(
+                                    color: AppColors.white.withValues(alpha: .4),
+                                    height: 55,
+                                    width: 55,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
+                                      child: Image.asset(
+                                        Assets.pngSongPlaying,
+                                        fit: BoxFit.cover,
+                                        height: 55,
+                                        width: 55,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
+                        SizedBox(width: 5.w),
+                        Expanded(
+                          child: StreamBuilder<int?>(
+                            stream: musicService.currentIndexStream,
+                            initialData: musicService.currentIndex,
+                            builder: (context, snapshot) {
+                              final index = snapshot.data ?? 0;
+                              final songName = musicService.songs.isNotEmpty ? musicService.songs[index].split('/').last : '';
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Texts(songName, fontSize: 14.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter, maxLines: 2, overflow: TextOverflow.ellipsis),
+                                  Texts('Unknown Artist', fontSize: 8.sp, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
+                                ],
+                              );
                             },
-                            margin: 10.w,
-                            colors: [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange],
                           ),
-                          Container(
-                            color: AppColors.white.withValues(alpha: .4),
-                            height: 55,
-                            width: 55,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
-                              child: Image.asset(Assets.pngSongPlaying, fit: BoxFit.cover, height: 55, width: 55),
+                        ),
+                        SizedBox(width: 12.w),
+                        Row(
+                          children: [
+                            SvgPicture.asset(Assets.svgIcQueue, width: 24.w, height: 24.h),
+                            SizedBox(width: 20.w),
+                            GestureDetector(
+                              onTap: () {
+                                musicService.next();
+                              },
+                              child: SvgPicture.asset(Assets.svgIcPlayingNext, width: 24.w, height: 24.h),
                             ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(width: 5.w),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Texts(songNames[2], fontSize: 14.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter),
-                          Texts(artistNames[2], fontSize: 8.sp, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
-                        ],
-                      ),
-                      const Spacer(),
-                      Row(
-                        children: [
-                          SvgPicture.asset(Assets.svgIcQueue, width: 24.w, height: 24.h),
-                          SizedBox(width: 20.w),
-                          GestureDetector(
-                            onTap: () {
-                              musicService.next();
-                            },
-                            child: SvgPicture.asset(Assets.svgIcPlayingNext, width: 24.w, height: 24.h),
-                          ),
-                          SizedBox(width: 20.w),
-                          GestureDetector(
-                            onTap: () async {
-                              if (musicService.isPlaying) {
-                                await musicService.pause();
-                              } else {
-                                await musicService.play();
-                              }
-                              setState(() {});
-                            },
-                            child: StreamBuilder<PlayerState>(
+                            SizedBox(width: 20.w),
+                            StreamBuilder<PlayerState>(
                               stream: musicService.player.playerStateStream,
                               builder: (context, snapshot) {
                                 final state = snapshot.data;
                                 final isPlaying = state?.playing ?? false;
-                                final isCompleted = state?.processingState == ProcessingState.completed;
 
                                 if (isPlaying) {
-                                  return SvgPicture.asset(Assets.svgIcOverlayPause, width: 26.w, height: 24.h);
+                                  return GestureDetector(
+                                    onTap: () => musicService.pause(),
+                                    child: SvgPicture.asset(
+                                      Assets.svgIcOverlayPause,
+                                      width: 26.w,
+                                      height: 24.h,
+                                    ),
+                                  );
                                 } else {
-                                  return SvgPicture.asset(
-                                    Assets.svgPlay,
-                                    width: 18.w,
-                                    height: 18.h,
-                                    colorFilter: const ColorFilter.mode(AppColors.primaryOrange, BlendMode.srcIn),
+                                  return GestureDetector(
+                                    onTap: () => musicService.play(),
+                                    child: SvgPicture.asset(
+                                      Assets.svgPlay,
+                                      width: 18.w,
+                                      height: 18.h,
+                                      colorFilter: const ColorFilter.mode(AppColors.primaryOrange, BlendMode.srcIn),
+                                    ),
                                   );
                                 }
                               },
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
 
-                      // Controls
-                    ],
+                        // Controls
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );

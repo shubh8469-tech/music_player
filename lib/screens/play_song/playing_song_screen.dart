@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:music_app/screens/play_song/widget/audio_player.dart';
 import 'package:music_app/screens/play_song/widget/playlist_bottomsheet.dart';
 import 'package:music_app/utills/globals.dart';
@@ -14,16 +15,14 @@ import '../tabs/music_service.dart';
 
 class PlayingSongArgs {
   final List<String> songs;
-  final int currentIndex;
 
-  PlayingSongArgs({required this.songs, required this.currentIndex});
+  PlayingSongArgs({required this.songs});
 }
 
 class PlayingSongScreen extends StatefulWidget {
-  const PlayingSongScreen({super.key, required this.songs, required this.currentIndex});
+  const PlayingSongScreen({super.key, required this.songs});
 
   final List<String> songs;
-  final int currentIndex;
 
   @override
   State<PlayingSongScreen> createState() => _PlayingSongScreenState();
@@ -37,8 +36,10 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
     super.initState();
     musicService = MusicPlayerService();
 
-    // Start playing the song at currentIndex
-    musicService.setPlaylist(widget.songs, startIndex: widget.currentIndex);
+    // Only set playlist if mini player has no songs
+    if (musicService.songs.isEmpty || musicService.songs != widget.songs) {
+      musicService.setPlaylist(widget.songs);
+    }
   }
 
   @override
@@ -116,9 +117,15 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Texts('As It Was', fontSize: 20.sp, color: AppColors.black, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter),
+              Texts(
+                musicService.songs.isNotEmpty ? musicService.songs[musicService.currentIndex].split('/').last : '',
+                fontSize: 20.sp,
+                color: AppColors.black,
+                fontWeight: FontWeight.w500,
+                fontFamily: AppFonts.inter,
+              ),
               SizedBox(height: 4.h),
-              Texts('Harry Styles', fontSize: 14.sp, color: AppColors.textColor, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
+              Texts('Unknown Artist', fontSize: 14.sp, color: AppColors.textColor, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
             ],
           ),
         ),
@@ -161,7 +168,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
   Widget songProgressBarWidget() {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 25.h, horizontal: 12.w),
-      child: AudioPlayerWidget(url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'),
+      child: AudioPlayerWidget(),
     );
   }
 }

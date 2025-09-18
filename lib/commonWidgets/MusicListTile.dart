@@ -140,7 +140,7 @@ class MusicListTile extends StatelessWidget {
                       height: 55,
                       width: 55,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 5),
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
                         child: Image.asset(Assets.pngSongPlaying, fit: BoxFit.cover, height: 55, width: 55),
                       ),
                     ),
@@ -149,17 +149,17 @@ class MusicListTile extends StatelessWidget {
               SizedBox(width: spacing.w),
 
               // Title + Subtitle
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Texts(title, fontSize: titleSize.sp, fontWeight: titleWeight, fontFamily: AppFonts.inter),
-                  Texts(subtitle, fontSize: subtitleSize.sp, fontWeight: subtitleWeight, fontFamily: AppFonts.inter),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Texts(title, fontSize: titleSize.sp, fontWeight: titleWeight, fontFamily: AppFonts.inter, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Texts(subtitle, fontSize: subtitleSize.sp, fontWeight: subtitleWeight, fontFamily: AppFonts.inter, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ],
+                ),
               ),
-
-              const Spacer(),
-
+              SizedBox(width: spacing.w),
               Visibility(
                 visible: songLengthRequired,
                 child: Texts(songLength, fontSize: 10.sp, fontWeight: FontWeight.w400),
