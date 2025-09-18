@@ -148,12 +148,11 @@ class MusicListTile extends StatelessWidget {
               ),
               SizedBox(width: spacing.w),
 
-              // Title + Subtitle
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Texts(title, fontSize: titleSize.sp, fontWeight: titleWeight, fontFamily: AppFonts.inter),
+                  SizedBox(width: 170.w, child: Texts(title, fontSize: titleSize.sp, fontWeight: titleWeight, fontFamily: AppFonts.inter, maxLines: 1, overflow: TextOverflow.ellipsis,)),
                   Texts(subtitle, fontSize: subtitleSize.sp, fontWeight: subtitleWeight, fontFamily: AppFonts.inter),
                 ],
               ),

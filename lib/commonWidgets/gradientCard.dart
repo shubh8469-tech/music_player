@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:music_app/commonWidgets/textWidget.dart';
 import 'package:music_app/themes/font.dart';
+
+import '../generated/assets.dart';
 
 class GradientCard extends StatelessWidget {
   final double height;
@@ -45,7 +49,7 @@ class GradientCard extends StatelessWidget {
             margin: EdgeInsets.only(right: margin),
             height: height,
             width: width,
-            decoration: isSvg && isSvgColorNeeded
+            decoration: iconAsset.isEmpty
                 ? BoxDecoration(
                     gradient: LinearGradient(colors: colors, begin: Alignment.bottomLeft, end: Alignment.topRight),
                     borderRadius: BorderRadius.circular(borderRadius),
@@ -55,7 +59,12 @@ class GradientCard extends StatelessWidget {
                     image: DecorationImage(image: AssetImage(iconAsset)),
                   ),
             child: Center(
-              child: isSvg ? SvgPicture.asset(iconAsset, height: iconSize, width: iconSize) : Image.asset(iconAsset, height: iconSize, width: iconSize),
+              child: iconAsset.isEmpty
+                  ? SvgPicture.asset(Assets.svgMusicIcon, height: iconSize, width: iconSize)
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(borderRadius),
+                      child: Image.file(File(iconAsset), fit: BoxFit.cover),
+                    ),
             ),
           ),
           if (title != null)
