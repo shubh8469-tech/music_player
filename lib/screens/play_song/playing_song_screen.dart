@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -33,6 +34,8 @@ class PlayingSongScreen extends StatefulWidget {
 
 class _PlayingSongScreenState extends State<PlayingSongScreen> {
   late MusicPlayerService musicService;
+  late final bool hasArtwork;
+  StreamSubscription<int?>? _indexSubscription;
 
   @override
   void initState() {
@@ -42,7 +45,20 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
     // Only set playlist if mini player has no songs
     if (musicService.songs.isEmpty || musicService.songs != widget.songs) {
       musicService.setPlaylist(widget.songs);
+
     }
+    _indexSubscription = musicService.currentIndexStream.listen((index) {
+      if (mounted) {
+        setState(() {
+          // Just trigger rebuild so UI reflects new song
+        });
+      }
+    });
+    final path = musicService.songs.isNotEmpty && musicService.currentIndex >= 0
+        ? musicService.songs[musicService.currentIndex].artwork_path
+        : null;
+
+    hasArtwork = path != null && path.isNotEmpty && File(path).existsSync();
   }
 
   @override
@@ -97,7 +113,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
         child: Column(
           children: [
             SizedBox(height: 25.h),
-            (File(currentSong?.artwork_path ?? '').existsSync())
+            hasArtwork
                 ? Image.file(File(currentSong!.artwork_path!), width: 300.w, height: 300.w, fit: BoxFit.cover)
                 : GradientCard(
                     width: 250.w,
@@ -128,33 +144,37 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
   }
 
   Widget songTitlePlaylistWidget(SongsModel? currentSong) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Texts(currentSong?.title ?? '', fontSize: 20.sp, color: AppColors.black, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter),
-              SizedBox(height: 4.h),
-              Texts(
-                currentSong?.artist.isNotEmpty == true ? currentSong!.artist : 'Unknown Artist',
-                fontSize: 14.sp,
-                color: AppColors.textColor,
-                fontWeight: FontWeight.w400,
-                fontFamily: AppFonts.inter,
-              ),
-            ],
+    return SizedBox(
+      height: 100,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Texts(currentSong?.title ?? '', fontSize: 20.sp, color: AppColors.black, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter,maxLines: 2,overflow: TextOverflow.ellipsis,),
+                SizedBox(height: 4.h),
+                Texts(
+                  currentSong?.artist.isNotEmpty == true ? currentSong!.artist : 'Unknown Artist',
+                  fontSize: 14.sp,
+                  color: AppColors.textColor,
+                  fontWeight: FontWeight.w400,
+                  fontFamily: AppFonts.inter,
+                ),
+              ],
+            ),
           ),
-        ),
-        GestureDetector(
-          onTap: () {
-            _showPlaylistBottomSheet(context);
-          },
-          child: SvgPicture.asset(Assets.svgIcPlaylist, width: 30.w, height: 30.h),
-        ),
-      ],
+          SizedBox(width: 15.w,),
+          GestureDetector(
+            onTap: () {
+              _showPlaylistBottomSheet(context);
+            },
+            child: Container(margin:EdgeInsets.only(bottom: 35.h),child: SvgPicture.asset(Assets.svgIcPlaylist, width: 30.w, height: 30.h)),
+          ),
+        ],
+      ),
     );
   }
 

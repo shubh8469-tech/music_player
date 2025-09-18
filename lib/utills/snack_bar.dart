@@ -30,7 +30,7 @@ dynamic showSnackBar(
 }) {
   // Build fallback child from `message` if `child` is not provided.
   final defaultPadding = padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 14);
-  final defaultMargin = margin ?? const EdgeInsets.only(left: 5, right:5,bottom: 50);
+  final defaultMargin = margin ?? const EdgeInsets.only(left: 5, right: 5, bottom: 50);
   final defaultBorderRadius = borderRadius ?? const BorderRadius.all(Radius.circular(8));
   final defaultTextStyle = messageStyle ?? const TextStyle(color: Colors.white, fontSize: 14);
 
@@ -40,13 +40,14 @@ dynamic showSnackBar(
       padding: defaultPadding,
       margin: defaultMargin,
       decoration: BoxDecoration(color: backgroundColor, borderRadius: defaultBorderRadius),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(
-            child: Text(message ?? '', style: defaultTextStyle, maxLines: 3, overflow: TextOverflow.ellipsis),
-          ),
-        ],
+      child: IntrinsicWidth(
+        stepWidth: 20,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(message ?? '', style: defaultTextStyle, maxLines: 3, overflow: TextOverflow.ellipsis),
+          ],
+        ),
       ),
     );
   }

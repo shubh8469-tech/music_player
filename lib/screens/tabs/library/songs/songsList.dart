@@ -355,7 +355,7 @@ class _SongsListState extends State<SongsList> {
                                       onTap: () {
                                         musicService.next();
                                       },
-                                      child: SvgPicture.asset(Assets.svgIcPlayingNext, width: 24.w, height: 24.h),
+                                      child: SvgPicture.asset(Assets.svgIcPlayingnext, width: 24.w, height: 24.h),
                                     ),
                                     SizedBox(width: 20.w),
                                     StreamBuilder<PlayerState>(

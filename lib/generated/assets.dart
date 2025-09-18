@@ -57,7 +57,7 @@ class Assets {
   static const String svgIcOverlayPause = 'assets/svg/ic_overlay_pause.svg';
   static const String svgIcPause = 'assets/svg/ic_pause.svg';
   static const String svgIcPlay = 'assets/svg/ic_play.svg';
-  static const String svgIcPlayingNext = 'assets/svg/ic_playingnext.svg';
+  static const String svgIcPlayingnext = 'assets/svg/ic_playingnext.svg';
   static const String svgIcPlaylist = 'assets/svg/ic_playlist.svg';
   static const String svgIcPlus = 'assets/svg/ic_plus.svg';
   static const String svgIcPrev = 'assets/svg/ic_prev.svg';
@@ -83,9 +83,13 @@ class Assets {
   static const String svgPlay = 'assets/svg/play.svg';
   static const String svgPlayLogo = 'assets/svg/playLogo.svg';
   static const String svgRecentlyAdded = 'assets/svg/recentlyAdded.svg';
+  static const String svgRepeatOff = 'assets/svg/repeat_off.svg';
+  static const String svgRepeatOn = 'assets/svg/repeat_on.svg';
+  static const String svgRepeatOnce = 'assets/svg/repeat_once.svg';
   static const String svgSearch = 'assets/svg/search.svg';
   static const String svgSetting = 'assets/svg/setting.svg';
   static const String svgShuffle = 'assets/svg/shuffle.svg';
+  static const String svgShuffleOff = 'assets/svg/shuffle_off.svg';
   static const String svgSongsCount = 'assets/svg/songsCount.svg';
   static const String svgThemeBrush = 'assets/svg/themeBrush.svg';
 
