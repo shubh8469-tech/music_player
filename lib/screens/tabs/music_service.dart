@@ -24,7 +24,6 @@ class MusicPlayerService {
 
   MusicPlayerService._internal() {
     player = AudioPlayer();
-
     player.playerStateStream.listen((state) async {
       if (state.processingState == ProcessingState.completed) {
         // If last song finishes → reset instead of full stop

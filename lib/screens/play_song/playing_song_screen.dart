@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -5,6 +7,7 @@ import 'package:music_app/screens/play_song/widget/audio_player.dart';
 import 'package:music_app/screens/play_song/widget/playlist_bottomsheet.dart';
 import 'package:music_app/utills/globals.dart';
 
+import '../../commonWidgets/gradientCard.dart';
 import '../../commonWidgets/song_menu_screen.dart';
 import '../../commonWidgets/textWidget.dart';
 import '../../features/songs/data/models/song_model.dart';
@@ -44,6 +47,10 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentSong = (musicService.songs.isNotEmpty && musicService.currentIndex >= 0) ? musicService.songs[musicService.currentIndex] : null;
+
+    print("currentSong?.artwork_path---->${currentSong?.artwork_path}");
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primaryOrange,
@@ -89,13 +96,25 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Image.asset(Assets.pngIcframe, width: 300.w, height: 300.w, fit: BoxFit.cover),
-            SizedBox(height: 15.h),
+            SizedBox(height: 25.h),
+            (File(currentSong?.artwork_path ?? '').existsSync())
+                ? Image.file(File(currentSong!.artwork_path!), width: 300.w, height: 300.w, fit: BoxFit.cover)
+                : GradientCard(
+                    width: 250.w,
+                    height: 250.w,
+                    borderRadius: 10.r,
+                    iconAsset: Assets.svgMusicIcon,
+                    iconSize: 100.r,
+                    isSvg: false,
+                    margin: 10.w,
+                    colors: [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange],
+                  ),
+            SizedBox(height: 25.h),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
               child: Column(
                 children: [
-                  songTitlePlaylistWidget(),
+                  songTitlePlaylistWidget(currentSong),
                   SizedBox(height: 30.h),
                   songPropertiesWidget(),
                 ],
@@ -108,7 +127,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
     );
   }
 
-  Widget songTitlePlaylistWidget() {
+  Widget songTitlePlaylistWidget(SongsModel? currentSong) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.start,
@@ -117,17 +136,15 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Texts(currentSong?.title ?? '', fontSize: 20.sp, color: AppColors.black, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter),
+              SizedBox(height: 4.h),
               Texts(
-                musicService.songs.isNotEmpty && musicService.currentIndex >= 0
-                    ? musicService.songs[musicService.currentIndex].title
-                    : '',
-                fontSize: 20.sp,
-                color: AppColors.black,
-                fontWeight: FontWeight.w500,
+                currentSong?.artist.isNotEmpty == true ? currentSong!.artist : 'Unknown Artist',
+                fontSize: 14.sp,
+                color: AppColors.textColor,
+                fontWeight: FontWeight.w400,
                 fontFamily: AppFonts.inter,
               ),
-              SizedBox(height: 4.h),
-              Texts('Unknown Artist', fontSize: 14.sp, color: AppColors.textColor, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
             ],
           ),
         ),

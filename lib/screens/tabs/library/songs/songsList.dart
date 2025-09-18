@@ -158,7 +158,7 @@ class _SongsListState extends State<SongsList> {
                                     children: [
                                       SvgPicture.asset(Assets.svgSongsCount),
                                       SizedBox(width: 10.w),
-                                      Texts("${songs.length}", fontSize: 14.sp, fontWeight: AppFontWeights.regular, color: AppColors.textColor),
+                                      Texts("${songs.length} songs", fontSize: 14.sp, fontWeight: AppFontWeights.regular, color: AppColors.textColor),
                                     ],
                                   ),
                                 ),
@@ -194,7 +194,7 @@ class _SongsListState extends State<SongsList> {
                                 ),
                               ],
                             ),
-                            SizedBox(height: 35.h),
+                            SizedBox(height: 15.h),
                             Column(
                               children: List.generate(songs.length, (index) {
                                 final image = (index % 2 == 0)
@@ -327,6 +327,7 @@ class _SongsListState extends State<SongsList> {
                                     builder: (context, snapshot) {
                                       final index = snapshot.data ?? 0;
                                       final songName = musicService.songs.isNotEmpty ? musicService.songs[index].title.split('/').last : '';
+                                      final artistName = musicService.songs.isNotEmpty ? musicService.songs[index].artist : '';
                                       return Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         mainAxisAlignment: MainAxisAlignment.center,
@@ -339,7 +340,7 @@ class _SongsListState extends State<SongsList> {
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                          Texts('Unknown Artist', fontSize: 8.sp, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
+                                          Texts(artistName, fontSize: 8.sp, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
                                         ],
                                       );
                                     },
