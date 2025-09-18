@@ -49,7 +49,7 @@ class GradientCard extends StatelessWidget {
             margin: EdgeInsets.only(right: margin),
             height: height,
             width: width,
-            decoration: iconAsset.isEmpty
+            decoration: iconAsset.isEmpty || iconAsset.contains('.svg')
                 ? BoxDecoration(
                     gradient: LinearGradient(colors: colors, begin: Alignment.bottomLeft, end: Alignment.topRight),
                     borderRadius: BorderRadius.circular(borderRadius),
@@ -59,7 +59,7 @@ class GradientCard extends StatelessWidget {
                     image: DecorationImage(image: AssetImage(iconAsset)),
                   ),
             child: Center(
-              child: iconAsset.isEmpty
+              child: iconAsset.isEmpty || iconAsset.contains('.svg')
                   ? SvgPicture.asset(Assets.svgMusicIcon, height: iconSize, width: iconSize)
                   : ClipRRect(
                       borderRadius: BorderRadius.circular(borderRadius),

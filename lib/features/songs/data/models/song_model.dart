@@ -10,7 +10,7 @@ class SongsModel extends Song {
     required String artist,
     required String album,
     required String genre,
-    required int duration,
+    required String duration,
     required String filePath,
     String? folder,
     String? artwork_path,
