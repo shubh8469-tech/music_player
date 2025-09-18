@@ -17,7 +17,7 @@ final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(deb
 
 final GoRouter appRouter = GoRouter(
   navigatorKey: rootNavigatorKey,
-  initialLocation: '/permission',
+  initialLocation: '/dashboard',
   routes: [
     GoRoute(name: AppRouteName.splash.name, path: '/splash', builder: (context, state) => const SplashScreen()),
     GoRoute(name: AppRouteName.permission.name, path: '/permission', builder: (context, state) => const PermissionPage()),

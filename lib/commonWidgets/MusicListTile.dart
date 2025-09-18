@@ -159,6 +159,7 @@ class MusicListTile extends StatelessWidget {
                   ],
                 ),
               ),
+
               SizedBox(width: spacing.w),
               Visibility(
                 visible: songLengthRequired,

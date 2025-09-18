@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:music_app/screens/play_song/widget/audio_player.dart';
 import 'package:music_app/screens/play_song/widget/playlist_bottomsheet.dart';
 import 'package:music_app/utills/globals.dart';
 
 import '../../commonWidgets/song_menu_screen.dart';
 import '../../commonWidgets/textWidget.dart';
+import '../../features/songs/data/models/song_model.dart';
 import '../../generated/assets.dart';
 import '../../themes/color.dart';
 import '../../themes/font.dart';
 import '../tabs/music_service.dart';
 
 class PlayingSongArgs {
-  final List<String> songs;
+  final List<SongsModel> songs;
 
   PlayingSongArgs({required this.songs});
 }
@@ -22,7 +22,7 @@ class PlayingSongArgs {
 class PlayingSongScreen extends StatefulWidget {
   const PlayingSongScreen({super.key, required this.songs});
 
-  final List<String> songs;
+  final List<SongsModel> songs;
 
   @override
   State<PlayingSongScreen> createState() => _PlayingSongScreenState();
@@ -118,7 +118,9 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Texts(
-                musicService.songs.isNotEmpty ? musicService.songs[musicService.currentIndex].split('/').last : '',
+                musicService.songs.isNotEmpty && musicService.currentIndex >= 0
+                    ? musicService.songs[musicService.currentIndex].title
+                    : '',
                 fontSize: 20.sp,
                 color: AppColors.black,
                 fontWeight: FontWeight.w500,
