@@ -112,10 +112,10 @@ class _PermissionPageState extends State<PermissionPage> {
         artist: song.artist ?? '',
         album: song.album ?? '',
         genre: song.genre ?? '',
-        duration: formatDuration(song.duration ?? 0),
+        duration: song.duration ?? 0,
         filePath: path,
         folder: folderName,
-        artwork_path: artworkPath ?? ''
+        artwork_path: artworkPath
       );
 
       await addSongUseCase(model);
@@ -135,14 +135,6 @@ class _PermissionPageState extends State<PermissionPage> {
     debugPrint("Found $scannedFiles");
     debugPrint("Found ${scannedFiles.length} songs");
     debugPrint("Found ${groupedByFolder.length} folders");
-  }
-
-  String formatDuration(int durationMs) {
-    final duration = Duration(milliseconds: durationMs);
-    final minutes = duration.inMinutes;
-    final seconds = duration.inSeconds % 60;
-    final secondsStr = seconds.toString().padLeft(2, '0'); // ensures 2 digits
-    return '$minutes:$secondsStr';
   }
 
   @override

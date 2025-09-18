@@ -4,7 +4,7 @@ class Song {
   final String artist;
   final String album;
   final String genre;
-  final String duration;
+  final int duration;
   final String filePath;
   final String? folder;
   final String? artwork_path;

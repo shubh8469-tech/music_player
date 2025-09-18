@@ -15,6 +15,7 @@ import 'package:music_app/themes/font.dart';
 import 'package:path/path.dart';
 
 import '../../../../commonWidgets/MusicListTile.dart';
+import '../../../../commonWidgets/common_functions.dart';
 import '../../../../commonWidgets/gradientCard.dart';
 import '../../../../features/songs/bloc/songs_bloc.dart';
 import '../../../../generated/assets.dart';
@@ -232,7 +233,7 @@ class _SongsListState extends State<SongsList> {
                                           trailingIconHeight: 15.h,
                                           trailingIconWidth: 3.w,
                                           trailingMargin: 10.w,
-                                          songLength: songs[index].duration.toString(),
+                                          songLength: formatDuration(songs[index].duration),
                                           songLengthRequired: true,
                                           isGifLoad: isCurrent,
                                           onTap: () async {
