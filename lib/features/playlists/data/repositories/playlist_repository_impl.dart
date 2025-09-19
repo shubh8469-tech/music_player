@@ -1,0 +1,49 @@
+import 'package:music_app/features/songs/data/models/song_model.dart';
+
+import '../../domain/entities/playlist.dart';
+import '../../domain/repositories/playlist_repository.dart';
+import '../dataSource/playlist_local_data_source.dart';
+import '../models/playlist_model.dart';
+
+class PlaylistRepositoryImpl implements PlaylistRepository {
+  final PlaylistLocalDataSource localDataSource;
+
+  PlaylistRepositoryImpl(this.localDataSource);
+
+  @override
+  Future<void> addPlaylist(String name) async {
+    final playlist = PlaylistModel(
+      name: name,
+      createdTime: DateTime.now(),
+      updatedTime: DateTime.now(),
+      songCount: 0,
+    );
+    await localDataSource.insertPlaylist(playlist);
+  }
+
+  @override
+  Future<List<Playlist>> fetchAllPlaylists() async {
+    return await localDataSource.getAllPlaylists();
+  }
+
+  @override
+  Future<void> deletePlaylist(int id) async {
+    await localDataSource.deletePlaylist(id);
+  }
+
+  /// 🎵 Playlist songs handling
+  @override
+  Future<void> addSongToPlaylist(int playlistId, int songId, int position) {
+    return localDataSource.addSongToPlaylist(playlistId, songId, position);
+  }
+
+  @override
+  Future<void> removeSongFromPlaylist(int playlistId, int songId) {
+    return localDataSource.removeSongFromPlaylist(playlistId, songId);
+  }
+
+  @override
+  Future<List<SongsModel>> getSongsForPlaylist(int playlistId) {
+    return localDataSource.getSongsForPlaylist(playlistId);
+  }
+}

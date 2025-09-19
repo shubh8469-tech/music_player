@@ -9,7 +9,7 @@ class BottomButtonTwo extends StatefulWidget {
   final String? leftBtnTitle;
   final String? rightBtnTitle;
   final VoidCallback? lefBtnTap;
-  final VoidCallback? rightBtnTap;
+  final Function? rightBtnTap;
 
   const BottomButtonTwo({super.key, this.leftBtnTitle, this.rightBtnTitle, this.lefBtnTap, this.rightBtnTap});
 

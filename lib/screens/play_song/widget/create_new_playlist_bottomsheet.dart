@@ -1,7 +1,11 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:music_app/commonWidgets/bottom_button_two.dart';
+import 'package:music_app/features/playlists/bloc/playlist_bloc.dart';
 import 'package:music_app/themes/font.dart';
 
 import '../../../commonWidgets/textWidget.dart';
@@ -57,7 +61,9 @@ class _CreateNewPlaylistBottomSheetState extends State<CreateNewPlaylistBottomSh
           ),
           SizedBox(height: 25.h),
 
-          BottomButtonTwo(leftBtnTitle: S.of(context).cancel, rightBtnTitle: "Create", lefBtnTap: () {}, rightBtnTap: () {}),
+          BottomButtonTwo(leftBtnTitle: S.of(context).cancel, rightBtnTitle: "Create", lefBtnTap: () {}, rightBtnTap: () {
+            context.read<PlaylistBloc>().add(PlaylistEvent.addPlaylist(playlistNameController.text));
+          }),
         ],
       ),
     );

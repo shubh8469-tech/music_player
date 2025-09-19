@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:music_app/features/playlists/bloc/playlist_bloc.dart';
 import 'Blocs/languageBloc/language_bloc.dart';
 import 'app_router.dart';
 import 'core/di/injection.dart';
@@ -11,7 +12,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await initInjections(); // Initialize all DI bindings
+  await initInjections();
 
   runApp(
     ScreenUtilInit(
@@ -24,6 +25,9 @@ Future<void> main() async {
             BlocProvider(create: (context) => LanguageBloc()),
             BlocProvider<SongsBloc>(
               create: (_) => SongsBloc(locator())..add(const SongsEvent.getAllSongs()),
+            ),
+            BlocProvider<PlaylistBloc>(
+              create: (_) => PlaylistBloc(locator())..add(const PlaylistEvent.fetchAllPlaylists()),
             ),
           ],
           child: ScreenUtilInit(

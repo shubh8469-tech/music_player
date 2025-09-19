@@ -169,7 +169,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
           SizedBox(width: 15.w,),
           GestureDetector(
             onTap: () {
-              _showPlaylistBottomSheet(context);
+              _showPlaylistBottomSheet(context, currentSong);
             },
             child: Container(margin:EdgeInsets.only(bottom: 35.h),child: SvgPicture.asset(Assets.svgIcPlaylist, width: 30.w, height: 30.h)),
           ),
@@ -178,14 +178,14 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
     );
   }
 
-  void _showPlaylistBottomSheet(BuildContext context) {
+  void _showPlaylistBottomSheet(BuildContext context, SongsModel? currentSong) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
       isScrollControlled: true,
-      builder: (_) => PlaylistBottomSheet(),
+      builder: (_) => PlaylistBottomSheet(songId: currentSong!.id!,),
     );
   }
 

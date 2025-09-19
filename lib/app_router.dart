@@ -57,11 +57,6 @@ final GoRouter appRouter = GoRouter(
             );
           },
         ),
-        // GoRoute(
-        //   name: AppRouteName.playing.name,
-        //   path: 'playing',
-        //   builder: (context, state) => const PlayingSongScreen(),
-        // ),
         GoRoute(name: AppRouteName.editSongDetails.name, path: 'edit-song', builder: (context, state) => const EditSongDetailsScreen()),
         GoRoute(name: AppRouteName.selectSong.name, path: 'select-song', builder: (context, state) => const SelectSongScreen()),
       ],

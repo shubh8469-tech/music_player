@@ -1,0 +1,806 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'playlist_bloc.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+/// @nodoc
+mixin _$PlaylistEvent {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlaylistEvent);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'PlaylistEvent()';
+}
+
+
+}
+
+/// @nodoc
+class $PlaylistEventCopyWith<$Res>  {
+$PlaylistEventCopyWith(PlaylistEvent _, $Res Function(PlaylistEvent) __);
+}
+
+
+/// Adds pattern-matching-related methods to [PlaylistEvent].
+extension PlaylistEventPatterns on PlaylistEvent {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _AddPlaylist value)?  addPlaylist,TResult Function( _AddSongToPlaylist value)?  addSongToPlaylist,TResult Function( _FetchAllPlaylists value)?  fetchAllPlaylists,TResult Function( _DeletePlaylist value)?  deletePlaylist,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AddPlaylist() when addPlaylist != null:
+return addPlaylist(_that);case _AddSongToPlaylist() when addSongToPlaylist != null:
+return addSongToPlaylist(_that);case _FetchAllPlaylists() when fetchAllPlaylists != null:
+return fetchAllPlaylists(_that);case _DeletePlaylist() when deletePlaylist != null:
+return deletePlaylist(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _AddPlaylist value)  addPlaylist,required TResult Function( _AddSongToPlaylist value)  addSongToPlaylist,required TResult Function( _FetchAllPlaylists value)  fetchAllPlaylists,required TResult Function( _DeletePlaylist value)  deletePlaylist,}){
+final _that = this;
+switch (_that) {
+case _AddPlaylist():
+return addPlaylist(_that);case _AddSongToPlaylist():
+return addSongToPlaylist(_that);case _FetchAllPlaylists():
+return fetchAllPlaylists(_that);case _DeletePlaylist():
+return deletePlaylist(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _AddPlaylist value)?  addPlaylist,TResult? Function( _AddSongToPlaylist value)?  addSongToPlaylist,TResult? Function( _FetchAllPlaylists value)?  fetchAllPlaylists,TResult? Function( _DeletePlaylist value)?  deletePlaylist,}){
+final _that = this;
+switch (_that) {
+case _AddPlaylist() when addPlaylist != null:
+return addPlaylist(_that);case _AddSongToPlaylist() when addSongToPlaylist != null:
+return addSongToPlaylist(_that);case _FetchAllPlaylists() when fetchAllPlaylists != null:
+return fetchAllPlaylists(_that);case _DeletePlaylist() when deletePlaylist != null:
+return deletePlaylist(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String name)?  addPlaylist,TResult Function( int playlistId,  int songId,  int position)?  addSongToPlaylist,TResult Function()?  fetchAllPlaylists,TResult Function( int id)?  deletePlaylist,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AddPlaylist() when addPlaylist != null:
+return addPlaylist(_that.name);case _AddSongToPlaylist() when addSongToPlaylist != null:
+return addSongToPlaylist(_that.playlistId,_that.songId,_that.position);case _FetchAllPlaylists() when fetchAllPlaylists != null:
+return fetchAllPlaylists();case _DeletePlaylist() when deletePlaylist != null:
+return deletePlaylist(_that.id);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String name)  addPlaylist,required TResult Function( int playlistId,  int songId,  int position)  addSongToPlaylist,required TResult Function()  fetchAllPlaylists,required TResult Function( int id)  deletePlaylist,}) {final _that = this;
+switch (_that) {
+case _AddPlaylist():
+return addPlaylist(_that.name);case _AddSongToPlaylist():
+return addSongToPlaylist(_that.playlistId,_that.songId,_that.position);case _FetchAllPlaylists():
+return fetchAllPlaylists();case _DeletePlaylist():
+return deletePlaylist(_that.id);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String name)?  addPlaylist,TResult? Function( int playlistId,  int songId,  int position)?  addSongToPlaylist,TResult? Function()?  fetchAllPlaylists,TResult? Function( int id)?  deletePlaylist,}) {final _that = this;
+switch (_that) {
+case _AddPlaylist() when addPlaylist != null:
+return addPlaylist(_that.name);case _AddSongToPlaylist() when addSongToPlaylist != null:
+return addSongToPlaylist(_that.playlistId,_that.songId,_that.position);case _FetchAllPlaylists() when fetchAllPlaylists != null:
+return fetchAllPlaylists();case _DeletePlaylist() when deletePlaylist != null:
+return deletePlaylist(_that.id);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _AddPlaylist implements PlaylistEvent {
+  const _AddPlaylist(this.name);
+  
+
+ final  String name;
+
+/// Create a copy of PlaylistEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AddPlaylistCopyWith<_AddPlaylist> get copyWith => __$AddPlaylistCopyWithImpl<_AddPlaylist>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AddPlaylist&&(identical(other.name, name) || other.name == name));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,name);
+
+@override
+String toString() {
+  return 'PlaylistEvent.addPlaylist(name: $name)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$AddPlaylistCopyWith<$Res> implements $PlaylistEventCopyWith<$Res> {
+  factory _$AddPlaylistCopyWith(_AddPlaylist value, $Res Function(_AddPlaylist) _then) = __$AddPlaylistCopyWithImpl;
+@useResult
+$Res call({
+ String name
+});
+
+
+
+
+}
+/// @nodoc
+class __$AddPlaylistCopyWithImpl<$Res>
+    implements _$AddPlaylistCopyWith<$Res> {
+  __$AddPlaylistCopyWithImpl(this._self, this._then);
+
+  final _AddPlaylist _self;
+  final $Res Function(_AddPlaylist) _then;
+
+/// Create a copy of PlaylistEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? name = null,}) {
+  return _then(_AddPlaylist(
+null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _AddSongToPlaylist implements PlaylistEvent {
+  const _AddSongToPlaylist(this.playlistId, this.songId, this.position);
+  
+
+ final  int playlistId;
+ final  int songId;
+ final  int position;
+
+/// Create a copy of PlaylistEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AddSongToPlaylistCopyWith<_AddSongToPlaylist> get copyWith => __$AddSongToPlaylistCopyWithImpl<_AddSongToPlaylist>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AddSongToPlaylist&&(identical(other.playlistId, playlistId) || other.playlistId == playlistId)&&(identical(other.songId, songId) || other.songId == songId)&&(identical(other.position, position) || other.position == position));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,playlistId,songId,position);
+
+@override
+String toString() {
+  return 'PlaylistEvent.addSongToPlaylist(playlistId: $playlistId, songId: $songId, position: $position)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$AddSongToPlaylistCopyWith<$Res> implements $PlaylistEventCopyWith<$Res> {
+  factory _$AddSongToPlaylistCopyWith(_AddSongToPlaylist value, $Res Function(_AddSongToPlaylist) _then) = __$AddSongToPlaylistCopyWithImpl;
+@useResult
+$Res call({
+ int playlistId, int songId, int position
+});
+
+
+
+
+}
+/// @nodoc
+class __$AddSongToPlaylistCopyWithImpl<$Res>
+    implements _$AddSongToPlaylistCopyWith<$Res> {
+  __$AddSongToPlaylistCopyWithImpl(this._self, this._then);
+
+  final _AddSongToPlaylist _self;
+  final $Res Function(_AddSongToPlaylist) _then;
+
+/// Create a copy of PlaylistEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? playlistId = null,Object? songId = null,Object? position = null,}) {
+  return _then(_AddSongToPlaylist(
+null == playlistId ? _self.playlistId : playlistId // ignore: cast_nullable_to_non_nullable
+as int,null == songId ? _self.songId : songId // ignore: cast_nullable_to_non_nullable
+as int,null == position ? _self.position : position // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _FetchAllPlaylists implements PlaylistEvent {
+  const _FetchAllPlaylists();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FetchAllPlaylists);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'PlaylistEvent.fetchAllPlaylists()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class _DeletePlaylist implements PlaylistEvent {
+  const _DeletePlaylist(this.id);
+  
+
+ final  int id;
+
+/// Create a copy of PlaylistEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$DeletePlaylistCopyWith<_DeletePlaylist> get copyWith => __$DeletePlaylistCopyWithImpl<_DeletePlaylist>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DeletePlaylist&&(identical(other.id, id) || other.id == id));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id);
+
+@override
+String toString() {
+  return 'PlaylistEvent.deletePlaylist(id: $id)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$DeletePlaylistCopyWith<$Res> implements $PlaylistEventCopyWith<$Res> {
+  factory _$DeletePlaylistCopyWith(_DeletePlaylist value, $Res Function(_DeletePlaylist) _then) = __$DeletePlaylistCopyWithImpl;
+@useResult
+$Res call({
+ int id
+});
+
+
+
+
+}
+/// @nodoc
+class __$DeletePlaylistCopyWithImpl<$Res>
+    implements _$DeletePlaylistCopyWith<$Res> {
+  __$DeletePlaylistCopyWithImpl(this._self, this._then);
+
+  final _DeletePlaylist _self;
+  final $Res Function(_DeletePlaylist) _then;
+
+/// Create a copy of PlaylistEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? id = null,}) {
+  return _then(_DeletePlaylist(
+null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+mixin _$PlaylistState {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlaylistState);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'PlaylistState()';
+}
+
+
+}
+
+/// @nodoc
+class $PlaylistStateCopyWith<$Res>  {
+$PlaylistStateCopyWith(PlaylistState _, $Res Function(PlaylistState) __);
+}
+
+
+/// Adds pattern-matching-related methods to [PlaylistState].
+extension PlaylistStatePatterns on PlaylistState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial value)?  initial,TResult Function( _Loading value)?  loading,TResult Function( _Loaded value)?  loaded,TResult Function( _Error value)?  error,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _Initial() when initial != null:
+return initial(_that);case _Loading() when loading != null:
+return loading(_that);case _Loaded() when loaded != null:
+return loaded(_that);case _Error() when error != null:
+return error(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial value)  initial,required TResult Function( _Loading value)  loading,required TResult Function( _Loaded value)  loaded,required TResult Function( _Error value)  error,}){
+final _that = this;
+switch (_that) {
+case _Initial():
+return initial(_that);case _Loading():
+return loading(_that);case _Loaded():
+return loaded(_that);case _Error():
+return error(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial value)?  initial,TResult? Function( _Loading value)?  loading,TResult? Function( _Loaded value)?  loaded,TResult? Function( _Error value)?  error,}){
+final _that = this;
+switch (_that) {
+case _Initial() when initial != null:
+return initial(_that);case _Loading() when loading != null:
+return loading(_that);case _Loaded() when loaded != null:
+return loaded(_that);case _Error() when error != null:
+return error(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<Playlist> playlists)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _Initial() when initial != null:
+return initial();case _Loading() when loading != null:
+return loading();case _Loaded() when loaded != null:
+return loaded(_that.playlists);case _Error() when error != null:
+return error(_that.message);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<Playlist> playlists)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+switch (_that) {
+case _Initial():
+return initial();case _Loading():
+return loading();case _Loaded():
+return loaded(_that.playlists);case _Error():
+return error(_that.message);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<Playlist> playlists)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+switch (_that) {
+case _Initial() when initial != null:
+return initial();case _Loading() when loading != null:
+return loading();case _Loaded() when loaded != null:
+return loaded(_that.playlists);case _Error() when error != null:
+return error(_that.message);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _Initial implements PlaylistState {
+  const _Initial();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Initial);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'PlaylistState.initial()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class _Loading implements PlaylistState {
+  const _Loading();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loading);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'PlaylistState.loading()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class _Loaded implements PlaylistState {
+  const _Loaded(final  List<Playlist> playlists): _playlists = playlists;
+  
+
+ final  List<Playlist> _playlists;
+ List<Playlist> get playlists {
+  if (_playlists is EqualUnmodifiableListView) return _playlists;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_playlists);
+}
+
+
+/// Create a copy of PlaylistState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$LoadedCopyWith<_Loaded> get copyWith => __$LoadedCopyWithImpl<_Loaded>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&const DeepCollectionEquality().equals(other._playlists, _playlists));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_playlists));
+
+@override
+String toString() {
+  return 'PlaylistState.loaded(playlists: $playlists)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$LoadedCopyWith<$Res> implements $PlaylistStateCopyWith<$Res> {
+  factory _$LoadedCopyWith(_Loaded value, $Res Function(_Loaded) _then) = __$LoadedCopyWithImpl;
+@useResult
+$Res call({
+ List<Playlist> playlists
+});
+
+
+
+
+}
+/// @nodoc
+class __$LoadedCopyWithImpl<$Res>
+    implements _$LoadedCopyWith<$Res> {
+  __$LoadedCopyWithImpl(this._self, this._then);
+
+  final _Loaded _self;
+  final $Res Function(_Loaded) _then;
+
+/// Create a copy of PlaylistState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? playlists = null,}) {
+  return _then(_Loaded(
+null == playlists ? _self._playlists : playlists // ignore: cast_nullable_to_non_nullable
+as List<Playlist>,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _Error implements PlaylistState {
+  const _Error(this.message);
+  
+
+ final  String message;
+
+/// Create a copy of PlaylistState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ErrorCopyWith<_Error> get copyWith => __$ErrorCopyWithImpl<_Error>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Error&&(identical(other.message, message) || other.message == message));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,message);
+
+@override
+String toString() {
+  return 'PlaylistState.error(message: $message)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ErrorCopyWith<$Res> implements $PlaylistStateCopyWith<$Res> {
+  factory _$ErrorCopyWith(_Error value, $Res Function(_Error) _then) = __$ErrorCopyWithImpl;
+@useResult
+$Res call({
+ String message
+});
+
+
+
+
+}
+/// @nodoc
+class __$ErrorCopyWithImpl<$Res>
+    implements _$ErrorCopyWith<$Res> {
+  __$ErrorCopyWithImpl(this._self, this._then);
+
+  final _Error _self;
+  final $Res Function(_Error) _then;
+
+/// Create a copy of PlaylistState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? message = null,}) {
+  return _then(_Error(
+null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+// dart format on

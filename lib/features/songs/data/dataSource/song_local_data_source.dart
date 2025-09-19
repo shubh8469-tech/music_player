@@ -15,7 +15,6 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
 
   @override
   Future<int> insertSong(SongsModel song) async {
-    final db = await AppDatabase.instance();
     return await db.insert(
       'songs',
       song.toMap(),
@@ -25,14 +24,12 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
 
   @override
   Future<List<SongsModel>> getAllSongs() async {
-    final db = await AppDatabase.instance();
     final result = await db.query('songs');
     return result.map((map) => SongsModel.fromMap(map)).toList();
   }
 
   @override
   Future<int> deleteSong(int id) async {
-    final db = await AppDatabase.instance();
     return await db.delete('songs', where: 'id = ?', whereArgs: [id]);
   }
 }

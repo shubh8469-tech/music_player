@@ -49,9 +49,7 @@ class _DeleteSongBottomSheetState extends State<DeleteSongBottomSheet> {
             lefBtnTap: () {
               widget.isLeftBtnTap();
             },
-            rightBtnTap: () {
-              widget.isRightBtnTap();
-            },
+            rightBtnTap: widget.isRightBtnTap(),
           ),
           // Action buttons
         ],

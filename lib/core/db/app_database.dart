@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -13,6 +15,10 @@ class AppDatabase {
       onCreate: (db, version) async {
         final schema = await rootBundle.loadString('assets/db/setup.sql');
         final statements = _splitSqlStatements(schema);
+        for (var i = 0; i < statements.length; i++) {
+          log('Statement #$i:\n${statements[i]}');
+        }
+        log('Executing ${statements.length} --Statement $statements --Statements SQL statements for DB setup.');
         for (final stmt in statements) {
           if (stmt.trim().isNotEmpty) {
             await db.execute(stmt);
@@ -30,20 +36,23 @@ class AppDatabase {
 List<String> _splitSqlStatements(String script) {
   final List<String> statements = [];
   final StringBuffer current = StringBuffer();
-
   bool insideTriggerBlock = false;
 
-  for (final String rawLine in script.split('\n')) {
-    final String line = rawLine.trimRight();
-    if (line.trim().isEmpty) {
-      // Preserve blank lines within statements for readability
-      if (current.isNotEmpty) current.writeln();
+  for (final rawLine in script.split('\n')) {
+    final line = rawLine.trimRight();
+
+    // Ignore full-line comments
+    if (line.trim().startsWith('--')) {
       continue;
     }
 
-    final String upper = line.toUpperCase();
+    if (line.trim().isEmpty) {
+      continue;
+    }
 
-    // Detect start of a trigger
+    final upper = line.toUpperCase();
+
+    // Detect start of trigger
     if (!insideTriggerBlock && upper.contains('CREATE TRIGGER')) {
       insideTriggerBlock = true;
     }
@@ -51,14 +60,15 @@ List<String> _splitSqlStatements(String script) {
     current.writeln(line);
 
     if (insideTriggerBlock) {
-      // End of trigger is marked by END;
-      if (RegExp(r"\\bEND\\s*;\\s*$", caseSensitive: false).hasMatch(line)) {
+      // End of trigger block
+      if (line.trim().toUpperCase() == 'END;' ||
+          line.trim().toUpperCase().endsWith('END;')) {
         statements.add(current.toString().trim());
         current.clear();
         insideTriggerBlock = false;
       }
     } else {
-      // For regular statements, terminate at a trailing semicolon
+      // Normal statement ends with ;
       if (line.trim().endsWith(';')) {
         statements.add(current.toString().trim());
         current.clear();
@@ -66,9 +76,9 @@ List<String> _splitSqlStatements(String script) {
     }
   }
 
-  final String leftover = current.toString().trim();
-  if (leftover.isNotEmpty) {
-    statements.add(leftover);
+  // Add last leftover
+  if (current.isNotEmpty) {
+    statements.add(current.toString().trim());
   }
 
   return statements;

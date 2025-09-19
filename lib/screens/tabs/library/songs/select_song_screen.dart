@@ -166,7 +166,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
                     elevation: 0,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
                     isScrollControlled: true,
-                    builder: (_) => PlaylistBottomSheet(),
+                    builder: (_) => PlaylistBottomSheet(songId: 0,),
                   );
                 },
                 child: Column(

@@ -44,6 +44,7 @@ END;
 CREATE TABLE IF NOT EXISTS playlists (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    song_count INTEGER NOT NULL DEFAULT 0,
     created_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')),
     updated_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))
 );
@@ -70,3 +71,23 @@ CREATE TABLE IF NOT EXISTS playlist_songs (
     FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE CASCADE,
     FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
 );
+
+CREATE TRIGGER IF NOT EXISTS playlist_song_insert_trigger
+AFTER INSERT ON playlist_songs
+FOR EACH ROW
+BEGIN
+    UPDATE playlists
+    SET song_count = song_count + 1,
+        updated_time = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')
+    WHERE id = NEW.playlist_id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS playlist_song_delete_trigger
+AFTER DELETE ON playlist_songs
+FOR EACH ROW
+BEGIN
+    UPDATE playlists
+    SET song_count = song_count - 1,
+        updated_time = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')
+    WHERE id = OLD.playlist_id;
+END;
