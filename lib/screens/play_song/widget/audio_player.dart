@@ -110,7 +110,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
             GestureDetector(
               onTap: () async {
                 await _musicService.toggleShuffle();
-                showSnackBar(context, () {}, message: "shuffle ${_musicService.isShuffleEnabled ? "on" : "off"}", alertBannerLocation: AlertBannerLocation.bottom);
+                showSnackBar(context, () {}, message: "Shuffle ${_musicService.isShuffleEnabled ? "On" : "Off"}", alertBannerLocation: AlertBannerLocation.bottom);
               },
               child: SvgPicture.asset(_musicService.isShuffleEnabled ? Assets.svgIcSuffle : Assets.svgShuffleOff, width: 28.w, height: 28.h),
             ),
@@ -147,6 +147,16 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
             GestureDetector(
               onTap: () {
                 _musicService.toggleRepeat();
+                showSnackBar(
+                  context,
+                  () {},
+                  message: _musicService.loopMode == LoopMode.off
+                      ? "Repeat off"
+                      : _musicService.loopMode == LoopMode.all
+                      ? "Loop all"
+                      : "Repeat current",
+                  alertBannerLocation: AlertBannerLocation.bottom,
+                );
               },
               child: SvgPicture.asset(
                 _musicService.loopMode == LoopMode.off

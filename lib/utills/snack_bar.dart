@@ -32,7 +32,7 @@ dynamic showSnackBar(
   final defaultPadding = padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 14);
   final defaultMargin = margin ?? const EdgeInsets.only(left: 5, right: 5, bottom: 50);
   final defaultBorderRadius = borderRadius ?? const BorderRadius.all(Radius.circular(8));
-  final defaultTextStyle = messageStyle ?? const TextStyle(color: Colors.white, fontSize: 14);
+  final defaultTextStyle = messageStyle ?? const TextStyle(color: Colors.white, fontSize: 14,fontWeight: FontWeight.w500,);
 
   Widget builtChild() {
     if (child != null) return child!;
@@ -44,8 +44,16 @@ dynamic showSnackBar(
         stepWidth: 20,
         child: Row(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(message ?? '', style: defaultTextStyle, maxLines: 3, overflow: TextOverflow.ellipsis),
+            Text(
+              message ?? '',
+              style: defaultTextStyle,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              // also helps center multi-line text
+            ),
           ],
         ),
       ),
@@ -230,12 +238,21 @@ class __OverlayItemState extends State<_OverlayItem> with TickerProviderStateMix
         child: Transform.scale(
           scale: scaleAnim.value,
           child: Container(
-            width: double.infinity,
             margin: const EdgeInsets.only(top: 10),
-            constraints: BoxConstraints(maxWidth: widget.maxWidth ?? MediaQuery.of(context).size.width * 0.8),
-            child: GestureDetector(
-              onTap: () => widget.onTap(),
-              child: Material(color: Colors.transparent, child: widget.child),
+            child: IntrinsicWidth(
+              stepWidth: 20,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: widget.maxWidth ?? MediaQuery.of(context).size.width * 0.8,
+                ),
+                child: GestureDetector(
+                  onTap: () => widget.onTap(),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: widget.child,
+                  ),
+                ),
+              ),
             ),
           ),
         ),

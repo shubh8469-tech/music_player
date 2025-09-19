@@ -133,9 +133,9 @@ class MusicPlayerService {
   // Cycle Loop mode Off → All → One → Off
   Future<void> toggleRepeat() async {
     if (_loopMode == LoopMode.off) {
-      _loopMode = LoopMode.all;
-    } else if (_loopMode == LoopMode.all) {
       _loopMode = LoopMode.one;
+    } else if (_loopMode == LoopMode.one) {
+      _loopMode = LoopMode.all;
     } else {
       _loopMode = LoopMode.off;
     }
