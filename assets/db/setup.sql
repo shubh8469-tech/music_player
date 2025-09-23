@@ -23,6 +23,9 @@ CREATE TABLE IF NOT EXISTS songs (
     file_path TEXT NOT NULL,
     folder TEXT,
     artwork_path TEXT,
+    play_count INTEGER NOT NULL DEFAULT 0,
+    last_played DATETIME,
+    is_favorite INTEGER NOT NULL DEFAULT 0,
     created_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')),
     updated_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))
 );
@@ -45,6 +48,8 @@ CREATE TABLE IF NOT EXISTS playlists (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     song_count INTEGER NOT NULL DEFAULT 0,
+    is_system INTEGER NOT NULL DEFAULT 0,
+    system_key TEXT UNIQUE,
     created_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')),
     updated_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))
 );
@@ -59,6 +64,26 @@ BEGIN
     SET updated_time = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')
     WHERE id = OLD.id;
 END;
+
+---------------------------------------------------------------------------
+-- Seed system playlists (Most Played, Recently Added, Recently Played, My Favorites)
+---------------------------------------------------------------------------
+
+INSERT INTO playlists (name, is_system, system_key)
+SELECT 'Most Played', 1, 'most_played'
+WHERE NOT EXISTS (SELECT 1 FROM playlists WHERE system_key = 'most_played');
+
+INSERT INTO playlists (name, is_system, system_key)
+SELECT 'Recently Added', 1, 'recently_added'
+WHERE NOT EXISTS (SELECT 1 FROM playlists WHERE system_key = 'recently_added');
+
+INSERT INTO playlists (name, is_system, system_key)
+SELECT 'Recently Played', 1, 'recently_played'
+WHERE NOT EXISTS (SELECT 1 FROM playlists WHERE system_key = 'recently_played');
+
+INSERT INTO playlists (name, is_system, system_key)
+SELECT 'My Favorites', 1, 'favorites'
+WHERE NOT EXISTS (SELECT 1 FROM playlists WHERE system_key = 'favorites');
 
 ---------------------------------------------------------------------------
 -- Playlist_songs table

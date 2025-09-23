@@ -4,6 +4,8 @@ class Playlist {
   final int songCount;
   final DateTime createdTime;
   final DateTime updatedTime;
+  final bool? isSystem;
+  final String? systemKey;
 
   Playlist({
     required this.id,
@@ -11,5 +13,7 @@ class Playlist {
     required this.songCount,
     required this.createdTime,
     required this.updatedTime,
+    this.isSystem,
+    this.systemKey,
   });
 }

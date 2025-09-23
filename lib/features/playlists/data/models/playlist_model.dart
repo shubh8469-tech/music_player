@@ -7,6 +7,8 @@ class PlaylistModel extends Playlist {
     required super.songCount,
     required super.createdTime,
     required super.updatedTime,
+    super.isSystem,
+    super.systemKey,
   });
 
   factory PlaylistModel.fromMap(Map<String, dynamic> map) {
@@ -16,6 +18,8 @@ class PlaylistModel extends Playlist {
       songCount: map['song_count'],
       createdTime: DateTime.parse(map['created_time']),
       updatedTime: DateTime.parse(map['updated_time']),
+      isSystem: (map['is_system'] ?? 0) == 1,
+      systemKey: map['system_key'],
     );
   }
 
@@ -26,6 +30,8 @@ class PlaylistModel extends Playlist {
       'song_count': songCount,
       'created_time': createdTime.toIso8601String(),
       'updated_time': updatedTime.toIso8601String(),
+      'is_system': (isSystem ?? false) ? 1 : 0,
+      'system_key': systemKey,
     };
   }
 }

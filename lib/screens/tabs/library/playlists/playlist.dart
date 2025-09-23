@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:music_app/themes/color.dart';
 
@@ -7,6 +8,11 @@ import '../../../../commonWidgets/MusicListTile.dart';
 import '../../../../commonWidgets/textWidget.dart';
 import '../../../../generated/assets.dart';
 import '../../../../themes/font.dart';
+import '../../../../features/playlists/bloc/playlist_bloc.dart';
+import '../../../../features/playlists/domain/entities/playlist.dart' as domain;
+import 'package:go_router/go_router.dart';
+import '../../music_service.dart';
+import 'dart:async';
 
 class PlayListScreen extends StatefulWidget {
   const PlayListScreen({super.key});
@@ -16,19 +22,54 @@ class PlayListScreen extends StatefulWidget {
 }
 
 class _PlayListScreenState extends State<PlayListScreen> {
+  final List<String> systemOrder = [
+    'most_played',
+    'recently_added',
+    'recently_played',
+    'favorites',
+  ];
+  final Map<String, String> systemIcon = {
+    'most_played': Assets.svgMostPlayed,
+    'recently_added': Assets.svgRecentlyAdded,
+    'recently_played': Assets.svgRecentlyAdded,
+    'favorites': Assets.svgFavorites,
+  };
+  final Map<String, Color> systemColor = {
+    'most_played': AppColors.mildOrange,
+    'recently_added': AppColors.mildBlue,
+    'recently_played': AppColors.mildYellow,
+    'favorites': AppColors.mildPink,
+  };
 
-  List<String> categories = ['Most Played', 'Recently Added', 'Recently Added', 'My Favorites'];
+  StreamSubscription<void>? _libChangedSub;
 
-  List<String> icons = [Assets.svgMostPlayed, Assets.svgRecentlyAdded, Assets.svgRecentlyAdded, Assets.svgFavorites];
+  @override
+  void initState() {
+    super.initState();
+    // Listen once per screen lifecycle
+    _libChangedSub = MusicPlayerService().libraryChanged.listen((_) {
+      if (!mounted) return;
+      context.read<PlaylistBloc>().add(const PlaylistEvent.fetchAllPlaylists());
+    });
+  }
 
-  List<Color> colors = [AppColors.mildOrange, AppColors.mildBlue, AppColors.mildYellow, AppColors.mildPink,];
+  @override
+  void dispose() {
+    _libChangedSub?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: Padding(
-        padding: EdgeInsets.only(left: 20.w, right: 20.w, top: 30.h, bottom: 1.h),
+        padding: EdgeInsets.only(
+          left: 20.w,
+          right: 20.w,
+          top: 30.h,
+          bottom: 1.h,
+        ),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,77 +77,160 @@ class _PlayListScreenState extends State<PlayListScreen> {
               Row(
                 children: [
                   SvgPicture.asset(Assets.svgSongsCount),
-                  SizedBox(width: 10.w,),
-                  Texts('5 Playlists', fontSize: 14.sp, fontWeight: AppFontWeights.regular, color: AppColors.textColor),
+                  SizedBox(width: 10.w),
+                  BlocBuilder<PlaylistBloc, PlaylistState>(
+                    builder: (context, state) {
+                      int total = 0;
+                      state.maybeWhen(
+                        loaded: (playlists) => total = playlists.length,
+                        orElse: () {},
+                      );
+                      return Texts(
+                        '$total Playlists',
+                        fontSize: 14.sp,
+                        fontWeight: AppFontWeights.regular,
+                        color: AppColors.textColor,
+                      );
+                    },
+                  ),
                   Spacer(),
                   Container(
                     height: 24.h,
                     width: 24.w,
                     decoration: BoxDecoration(
                       color: AppColors.mediumDarkGrey.withAlpha(100),
-                      borderRadius: BorderRadius.circular(4.r)
+                      borderRadius: BorderRadius.circular(4.r),
                     ),
                     child: Icon(Icons.add),
                   ),
-                  SizedBox(width: 15.w,),
-                  SvgPicture.asset(Assets.svgMenuIcon)
+                  SizedBox(width: 15.w),
+                  SvgPicture.asset(Assets.svgMenuIcon),
                 ],
               ),
-              SizedBox(height: 33.h,),
-              Column(
-                children: List.generate(categories.length, (index) {
-          
-                  return MusicListTile(
-                    margin: 7.w,
-                    height: 66.h,
-                    borderRadius: 10.r,
-                    backgroundColor: AppColors.musicTileBackgroundColor,
-                    cardHeight: 50.h,
-                    cardWidth: 50.w,
-                    cardRadius: 7.r,
-                    cardIconAsset: icons[index],
-                    cardIconSize: 32.r,
-                    isSvgCardIcon: icons[index].contains('.svg'),
-                    title: categories[index],
-                    noLogoGradientColor: [colors[index].withValues(alpha: 0.21), colors[index]],
-                    subtitle: '15 Songs',
-                    trailingIconAsset: Assets.svgMenuIcon,
-                    trailingIconHeight: 15.h,
-                    trailingIconWidth: 3.w,
-                    trailingMargin: 10.w,
-                    songLength: '5:20',
-                    songLengthRequired: true,
-                    onTap: () => print("Tile tapped"),
-                    onPlayTap: () => print("Play tapped"),
+              SizedBox(height: 33.h),
+              BlocBuilder<PlaylistBloc, PlaylistState>(
+                builder: (context, state) {
+                  return state.maybeWhen(
+                    loaded: (allPlaylists) {
+                      final systemPlaylists = allPlaylists
+                          .where((p) => (p.isSystem == true))
+                          .cast<domain.Playlist>()
+                          .toList();
+                      // Order
+                      systemPlaylists.sort((a, b) {
+                        final ai = systemOrder.indexOf(a.systemKey ?? '');
+                        final bi = systemOrder.indexOf(b.systemKey ?? '');
+                        return ai.compareTo(bi);
+                      });
+
+                      return Column(
+                        children: List.generate(systemPlaylists.length, (
+                          index,
+                        ) {
+                          final p = systemPlaylists[index];
+                          final icon =
+                              systemIcon[p.systemKey] ?? Assets.svgMusicIcon;
+                          final color =
+                              systemColor[p.systemKey] ?? AppColors.mildBlue;
+                          return MusicListTile(
+                            margin: 7.w,
+                            height: 66.h,
+                            borderRadius: 10.r,
+                            backgroundColor: AppColors.musicTileBackgroundColor,
+                            cardHeight: 50.h,
+                            cardWidth: 50.w,
+                            cardRadius: 7.r,
+                            cardIconAsset: icon,
+                            cardIconSize: 32.r,
+                            isSvgCardIcon: icon.contains('.svg'),
+                            title: p.name,
+                            noLogoGradientColor: [
+                              color.withValues(alpha: 0.21),
+                              color,
+                            ],
+                            subtitle: '${p.songCount} Songs',
+                            trailingIconAsset: Assets.svgMenuIcon,
+                            trailingIconHeight: 15.h,
+                            trailingIconWidth: 3.w,
+                            trailingMargin: 10.w,
+                            songLength: '5:20',
+                            songLengthRequired: true,
+                            onTap: () {
+                              context.push(
+                                '/dashboard/playlist-detail',
+                                extra: p,
+                              );
+                            },
+                            onPlayTap: () => print("Play tapped"),
+                          );
+                        }),
+                      );
+                    },
+                    orElse: () => Column(),
                   );
-                },),
+                },
               ),
-              SizedBox(height: 33.h,),
-              Texts('My PlayLists (2)', fontSize: 18, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter),
-              SizedBox(height: 15.h,),
-              Column(
-                children: List.generate(2, (index) {
-                  return MusicListTile(
-                    margin: 7.w,
-                    height: 66.h,
-                    borderRadius: 10.r,
-                    backgroundColor: AppColors.musicTileBackgroundColor,
-                    cardHeight: 50.h,
-                    cardWidth: 50.w,
-                    cardRadius: 7.r,
-                    cardIconAsset: Assets.svgMusicIcon,
-                    cardIconSize: 32.r,
-                    title: 'Bollywood Hits',
-                    subtitle: '23 Songs',
-                    trailingIconAsset: Assets.svgMenuIcon,
-                    trailingIconHeight: 15.h,
-                    trailingIconWidth: 3.w,
-                    trailingMargin: 10.w,
-                    onTap: () => print("Tile tapped"),
-                    onPlayTap: () => print("Play tapped"),
+              SizedBox(height: 33.h),
+              BlocBuilder<PlaylistBloc, PlaylistState>(
+                builder: (context, state) {
+                  int userCount = 0;
+                  state.maybeWhen(
+                    loaded: (all) => userCount = all
+                        .where((p) => (p.isSystem != true))
+                        .length,
+                    orElse: () {},
                   );
-                },),
-              )
+                  return Texts(
+                    'My PlayLists ($userCount)',
+                    fontSize: 18,
+                    fontWeight: AppFontWeights.medium,
+                    fontFamily: AppFonts.inter,
+                  );
+                },
+              ),
+              SizedBox(height: 15.h),
+              BlocBuilder<PlaylistBloc, PlaylistState>(
+                builder: (context, state) {
+                  return state.maybeWhen(
+                    loaded: (allPlaylists) {
+                      final userPlaylists = allPlaylists
+                          .where((p) => (p.isSystem != true))
+                          .cast<domain.Playlist>()
+                          .toList();
+                      return Column(
+                        children: List.generate(userPlaylists.length, (index) {
+                          final p = userPlaylists[index];
+                          return MusicListTile(
+                            margin: 7.w,
+                            height: 66.h,
+                            borderRadius: 10.r,
+                            backgroundColor: AppColors.musicTileBackgroundColor,
+                            cardHeight: 50.h,
+                            cardWidth: 50.w,
+                            cardRadius: 7.r,
+                            cardIconAsset: Assets.svgMusicIcon,
+                            cardIconSize: 32.r,
+                            title: p.name,
+                            subtitle: '${p.songCount} Songs',
+                            trailingIconAsset: Assets.svgMenuIcon,
+                            trailingIconHeight: 15.h,
+                            trailingIconWidth: 3.w,
+                            trailingMargin: 10.w,
+                            onTap: () {
+                              context.push(
+                                '/dashboard/playlist-detail',
+                                extra: p,
+                              );
+                            },
+                            onPlayTap: () => print("Play tapped"),
+                          );
+                        }),
+                      );
+                    },
+                    orElse: () => Column(),
+                  );
+                },
+              ),
             ],
           ),
         ),

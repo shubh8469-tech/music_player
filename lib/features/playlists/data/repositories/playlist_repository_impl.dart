@@ -23,7 +23,10 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
 
   @override
   Future<List<Playlist>> fetchAllPlaylists() async {
-    return await localDataSource.getAllPlaylists();
+    final userPlaylists = await localDataSource.getAllPlaylists();
+    final systemPlaylists = await localDataSource
+        .getSystemPlaylistsWithCounts();
+    return [...systemPlaylists, ...userPlaylists];
   }
 
   @override
@@ -45,5 +48,15 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
   @override
   Future<List<SongsModel>> getSongsForPlaylist(int playlistId) {
     return localDataSource.getSongsForPlaylist(playlistId);
+  }
+
+  @override
+  Future<List<SongsModel>> getSongsForSystemPlaylist(String systemKey) {
+    return localDataSource.getSongsForSystemPlaylist(systemKey);
+  }
+
+  @override
+  Future<void> reorderPlaylistSongs(int playlistId, List<int> songIdsInOrder) {
+    return localDataSource.reorderPlaylistSongs(playlistId, songIdsInOrder);
   }
 }

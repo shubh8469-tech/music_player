@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:music_app/features/playlists/data/models/playlist_model.dart';
 
 import '../domain/entities/playlist.dart';
 import '../domain/repositories/playlist_repository.dart';
@@ -13,24 +12,23 @@ class PlaylistBloc extends Bloc<PlaylistEvent, PlaylistState> {
   final PlaylistRepository repository;
 
   PlaylistBloc(this.repository) : super(const PlaylistState.initial()) {
-
     on<_AddPlaylist>((event, emit) async {
-      try{
+      try {
         emit(const PlaylistState.loading());
         repository.addPlaylist(event.name);
         final playlists = await repository.fetchAllPlaylists();
         emit(PlaylistState.loaded(playlists));
-      }catch(e){
+      } catch (e) {
         emit(PlaylistState.error(e.toString()));
       }
     });
 
     on<_FetchAllPlaylists>((event, emit) async {
-      try{
+      try {
         emit(const PlaylistState.loading());
         final playlists = await repository.fetchAllPlaylists();
         emit(PlaylistState.loaded(playlists));
-      }catch(e){
+      } catch (e) {
         emit(PlaylistState.error(e.toString()));
       }
     });
@@ -48,7 +46,11 @@ class PlaylistBloc extends Bloc<PlaylistEvent, PlaylistState> {
 
     on<_AddSongToPlaylist>((event, emit) async {
       try {
-        await repository.addSongToPlaylist(event.playlistId, event.songId, event.position);
+        await repository.addSongToPlaylist(
+          event.playlistId,
+          event.songId,
+          event.position,
+        );
         final songs = await repository.fetchAllPlaylists();
         emit(PlaylistState.loaded(songs));
       } catch (e) {
@@ -56,5 +58,6 @@ class PlaylistBloc extends Bloc<PlaylistEvent, PlaylistState> {
       }
     });
 
+    // To refresh from UI, re-dispatch fetchAllPlaylists()
   }
 }

@@ -10,6 +10,9 @@ abstract class PlaylistLocalDataSource {
   Future<void> addSongToPlaylist(int playlistId, int songId, int position);
   Future<void> removeSongFromPlaylist(int playlistId, int songId);
   Future<List<SongsModel>> getSongsForPlaylist(int playlistId);
+  Future<List<PlaylistModel>> getSystemPlaylistsWithCounts();
+  Future<List<SongsModel>> getSongsForSystemPlaylist(String systemKey);
+  Future<void> reorderPlaylistSongs(int playlistId, List<int> songIdsInOrder);
 }
 
 class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
@@ -28,33 +31,33 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
 
   @override
   Future<List<PlaylistModel>> getAllPlaylists() async {
-    final result = await db.query('playlists', orderBy: 'created_time DESC');
+    final result = await db.query(
+      'playlists',
+      where: 'is_system = 0',
+      orderBy: 'created_time DESC',
+    );
     return result.map((map) => PlaylistModel.fromMap(map)).toList();
   }
 
   @override
   Future<int> deletePlaylist(int id) async {
-    return await db.delete(
-      'playlists',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    return await db.delete('playlists', where: 'id = ?', whereArgs: [id]);
   }
 
-/// --------------------------
-/// 🎵 Playlist Songs Methods
-/// --------------------------
+  /// --------------------------
+  /// 🎵 Playlist Songs Methods
+  /// --------------------------
 
-  Future<void> addSongToPlaylist(int playlistId, int songId, int position) async {
-    await db.insert(
-      'playlist_songs',
-      {
-        'playlist_id': playlistId,
-        'song_id': songId,
-        'position': position,
-      },
-      conflictAlgorithm: ConflictAlgorithm.ignore,
-    );
+  Future<void> addSongToPlaylist(
+    int playlistId,
+    int songId,
+    int position,
+  ) async {
+    await db.insert('playlist_songs', {
+      'playlist_id': playlistId,
+      'song_id': songId,
+      'position': position,
+    }, conflictAlgorithm: ConflictAlgorithm.ignore);
   }
 
   Future<void> removeSongFromPlaylist(int playlistId, int songId) async {
@@ -66,14 +69,125 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
   }
 
   Future<List<SongsModel>> getSongsForPlaylist(int playlistId) async {
-    final result = await db.rawQuery('''
+    final result = await db.rawQuery(
+      '''
       SELECT s.* FROM songs s
       INNER JOIN playlist_songs ps ON s.id = ps.song_id
       WHERE ps.playlist_id = ?
       ORDER BY ps.position ASC
-    ''', [playlistId]);
+    ''',
+      [playlistId],
+    );
 
     return result.map((row) => SongsModel.fromMap(row)).toList();
   }
-}
 
+  @override
+  Future<List<PlaylistModel>> getSystemPlaylistsWithCounts() async {
+    // We calculate counts dynamically per system_key
+    final List<PlaylistModel> systemPlaylists = [];
+
+    final maps = await db.query('playlists', where: 'is_system = 1');
+
+    // Calculate for each system playlist key
+    for (final row in maps) {
+      final String key = (row['system_key'] as String?) ?? '';
+      int count = 0;
+
+      if (key == 'most_played') {
+        final res = await db.rawQuery(
+          "SELECT COUNT(*) as c FROM songs WHERE play_count > 0",
+        );
+        count = Sqflite.firstIntValue(res) ?? 0;
+      } else if (key == 'recently_added') {
+        final res = await db.rawQuery(
+          "SELECT COUNT(*) as c FROM songs WHERE datetime(created_time) >= datetime('now','-3 days')",
+        );
+        count = Sqflite.firstIntValue(res) ?? 0;
+      } else if (key == 'recently_played') {
+        final res = await db.rawQuery(
+          "SELECT COUNT(*) as c FROM songs WHERE last_played IS NOT NULL",
+        );
+        count = Sqflite.firstIntValue(res) ?? 0;
+      } else if (key == 'favorites') {
+        final res = await db.rawQuery(
+          "SELECT COUNT(*) as c FROM songs WHERE is_favorite = 1",
+        );
+        count = Sqflite.firstIntValue(res) ?? 0;
+      }
+
+      final playlist = PlaylistModel(
+        id: row['id'] as int,
+        name: row['name'] as String,
+        songCount: count,
+        createdTime: DateTime.parse(row['created_time'] as String),
+        updatedTime: DateTime.parse(row['updated_time'] as String),
+        isSystem: (row['is_system'] as int? ?? 0) == 1,
+        systemKey: row['system_key'] as String?,
+      );
+      systemPlaylists.add(playlist);
+    }
+
+    return systemPlaylists;
+  }
+
+  @override
+  Future<List<SongsModel>> getSongsForSystemPlaylist(String systemKey) async {
+    if (systemKey == 'most_played') {
+      final res = await db.rawQuery('''
+        SELECT * FROM songs
+        WHERE play_count > 0
+        ORDER BY play_count DESC, last_played DESC NULLS LAST
+        ''');
+      return res.map((row) => SongsModel.fromMap(row)).toList();
+    }
+
+    if (systemKey == 'recently_added') {
+      final res = await db.rawQuery('''
+        SELECT * FROM songs
+        WHERE datetime(created_time) >= datetime('now','-3 days')
+        ORDER BY datetime(created_time) DESC
+        ''');
+      return res.map((row) => SongsModel.fromMap(row)).toList();
+    }
+
+    if (systemKey == 'recently_played') {
+      final res = await db.rawQuery('''
+        SELECT * FROM songs
+        WHERE last_played IS NOT NULL
+        ORDER BY datetime(last_played) DESC
+        ''');
+      return res.map((row) => SongsModel.fromMap(row)).toList();
+    }
+
+    if (systemKey == 'favorites') {
+      final res = await db.rawQuery('''
+        SELECT * FROM songs
+        WHERE is_favorite = 1
+        ORDER BY datetime(updated_time) DESC
+        ''');
+      return res.map((row) => SongsModel.fromMap(row)).toList();
+    }
+
+    return [];
+  }
+
+  @override
+  Future<void> reorderPlaylistSongs(
+    int playlistId,
+    List<int> songIdsInOrder,
+  ) async {
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+      for (int i = 0; i < songIdsInOrder.length; i++) {
+        batch.update(
+          'playlist_songs',
+          {'position': i},
+          where: 'playlist_id = ? AND song_id = ?',
+          whereArgs: [playlistId, songIdsInOrder[i]],
+        );
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+}

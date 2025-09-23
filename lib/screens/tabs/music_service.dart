@@ -4,6 +4,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../features/songs/data/models/song_model.dart';
+import '../../core/db/app_database.dart';
 
 class MusicPlayerService {
   static final MusicPlayerService _instance = MusicPlayerService._internal();
@@ -11,6 +12,12 @@ class MusicPlayerService {
   factory MusicPlayerService() => _instance;
   late AudioPlayer player;
   List<SongsModel> songs = [];
+
+  // Emits events when library-affecting stats change (e.g., play_count/last_played)
+  final StreamController<void> _libraryChangedController =
+      StreamController<void>.broadcast();
+  Stream<void> get libraryChanged => _libraryChangedController.stream;
+  int? _lastUpdatedSongId;
 
   // Loop and Shuffle state variables
   LoopMode _loopMode = LoopMode.off;
@@ -21,6 +28,17 @@ class MusicPlayerService {
   // expose current index
   int get currentIndex => player.currentIndex ?? -1;
   Stream<int?> get currentIndexStream => player.currentIndexStream;
+  int? get currentSongId {
+    final idx = currentIndex;
+    if (idx >= 0 && idx < songs.length) return songs[idx].id;
+    return null;
+  }
+
+  Stream<int?> get currentSongIdStream => player.currentIndexStream.map((i) {
+    final idx = i ?? -1;
+    if (idx >= 0 && idx < songs.length) return songs[idx].id;
+    return null;
+  });
 
   // expose play state
   bool get isPlaying => player.playing;
@@ -40,15 +58,57 @@ class MusicPlayerService {
         if (currentIndex >= (songs.length - 1)) {
           await player.seek(Duration.zero);
           await player.play();
-        }else{
+        } else {
           await player.seekToNext();
           await player.play();
         }
       }
     });
+
+    // When playback starts for a song, update stats in DB
+    player.playingStream.listen((isPlaying) async {
+      if (isPlaying) {
+        final idx = currentIndex;
+        if (idx >= 0 && idx < songs.length) {
+          final current = songs[idx];
+          if (_lastUpdatedSongId == current.id) return;
+          try {
+            final db = await AppDatabase.instance();
+            await db.rawUpdate(
+              "UPDATE songs SET play_count = play_count + 1, last_played = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW') WHERE id = ?",
+              [current.id],
+            );
+            // Notify listeners (e.g., playlist counts for system playlists)
+            _libraryChangedController.add(null);
+            _lastUpdatedSongId = current.id;
+          } catch (_) {}
+        }
+      }
+    });
+
+    player.currentIndexStream.listen((i) async {
+      final idx = i ?? -1;
+      if (!player.playing) return;
+      if (idx < 0 || idx >= songs.length) return;
+      final current = songs[idx];
+      if (_lastUpdatedSongId == current.id) return;
+      try {
+        final db = await AppDatabase.instance();
+        await db.rawUpdate(
+          "UPDATE songs SET play_count = play_count + 1, last_played = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW') WHERE id = ?",
+          [current.id],
+        );
+        _libraryChangedController.add(null);
+        _lastUpdatedSongId = current.id;
+      } catch (_) {}
+    });
   }
 
-  Future<void> setPlaylist(List<SongsModel> songModels, {int startIndex = 0}) async {
+  Future<void> setPlaylist(
+    List<SongsModel> songModels, {
+    int startIndex = 0,
+    bool autoPlay = true,
+  }) async {
     if (songModels.isEmpty) return;
     songs = songModels;
 
@@ -65,7 +125,9 @@ class MusicPlayerService {
                 artist: song.artist,
                 album: song.album,
                 duration: Duration(milliseconds: song.duration),
-                artUri: song.artwork_path != null ? Uri.file(song.artwork_path!) : null,
+                artUri: song.artwork_path != null
+                    ? Uri.file(song.artwork_path!)
+                    : null,
               ),
             ),
           )
@@ -73,11 +135,18 @@ class MusicPlayerService {
     );
 
     await player.setAudioSource(playlist, initialIndex: startIndex);
+    // Ensure shuffle mode stays applied on new source
+    await player.setShuffleModeEnabled(_isShuffleEnabled);
+    if (_isShuffleEnabled) {
+      await player.shuffle();
+    }
 
     // Wait for duration to be loaded before starting play
     await player.durationStream.firstWhere((d) => d != null);
 
-    await player.play();
+    if (autoPlay) {
+      await player.play();
+    }
   }
 
   Future<void> play() async {
@@ -96,7 +165,7 @@ class MusicPlayerService {
     if (currentIndex < songs.length - 1) {
       await player.seekToNext();
       await player.play();
-    }else{
+    } else {
       // Loop to the first song
       await player.seek(Duration.zero, index: 0);
       await player.play();
@@ -126,7 +195,33 @@ class MusicPlayerService {
 
     // If enabling shuffle, immediately shuffle the playlist order
     if (_isShuffleEnabled) {
+      // shuffle indices and jump to a random index to start randomized playback
       await player.shuffle();
+      final total = songs.length;
+      if (total > 0) {
+        final randomIndex = (DateTime.now().millisecondsSinceEpoch % total);
+        await player.seek(Duration.zero, index: randomIndex);
+      }
+    }
+  }
+
+  Future<void> ensureShuffleOnAndReshuffle() async {
+    if (!_isShuffleEnabled) {
+      _isShuffleEnabled = true;
+      await player.setShuffleModeEnabled(true);
+    }
+    await player.shuffle();
+    final total = songs.length;
+    if (total > 0 && player.currentIndex == null) {
+      final randomIndex = (DateTime.now().millisecondsSinceEpoch % total);
+      await player.seek(Duration.zero, index: randomIndex);
+    }
+  }
+
+  Future<void> ensureShuffleOff() async {
+    if (_isShuffleEnabled) {
+      _isShuffleEnabled = false;
+      await player.setShuffleModeEnabled(false);
     }
   }
 
@@ -141,5 +236,4 @@ class MusicPlayerService {
     }
     await player.setLoopMode(_loopMode);
   }
-
 }

@@ -6,8 +6,11 @@ abstract class PlaylistRepository {
   Future<void> addPlaylist(String name);
   Future<List<Playlist>> fetchAllPlaylists();
   Future<void> deletePlaylist(int id);
+
   /// 🎵 Playlist songs
   Future<void> addSongToPlaylist(int playlistId, int songId, int position);
   Future<void> removeSongFromPlaylist(int playlistId, int songId);
   Future<List<SongsModel>> getSongsForPlaylist(int playlistId);
+  Future<List<SongsModel>> getSongsForSystemPlaylist(String systemKey);
+  Future<void> reorderPlaylistSongs(int playlistId, List<int> songIdsInOrder);
 }

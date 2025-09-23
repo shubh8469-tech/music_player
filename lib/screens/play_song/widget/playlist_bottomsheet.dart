@@ -122,7 +122,6 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
                             );
                           }),
                         )
-
                       ],
                     ),
                   ),
