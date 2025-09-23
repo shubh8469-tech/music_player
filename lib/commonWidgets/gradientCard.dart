@@ -56,7 +56,6 @@ class GradientCard extends StatelessWidget {
                   )
                 : BoxDecoration(
                     borderRadius: BorderRadius.circular(borderRadius),
-                    image: DecorationImage(image: AssetImage(iconAsset)),
                   ),
             child: Center(
               child: iconAsset.isEmpty || iconAsset.contains('.svg')

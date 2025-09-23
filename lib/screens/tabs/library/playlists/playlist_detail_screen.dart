@@ -175,11 +175,24 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     GestureDetector(
                       onTap: () async {
                         if (_songs.isEmpty) return;
-                        // Shuffle current UI order, keep current song playing
-                        final shuffled = List<SongsModel>.from(_songs);
-                        shuffled.shuffle(Random());
-                        await _player.ensureShuffleOff();
-                        await _applyOrderAndKeepCurrent(shuffled);
+                        // Enable shuffle and start a random song without changing UI order
+                        final total = _songs.length;
+                        int randomIndex = 0;
+                        if (total > 1) {
+                          final current = _player.currentIndex;
+                          randomIndex = Random().nextInt(total);
+                          if (current >= 0 && current < total && total > 1) {
+                            while (randomIndex == current) {
+                              randomIndex = Random().nextInt(total);
+                            }
+                          }
+                        }
+                        await _player.ensureShuffleOnAndReshuffle();
+                        await _player.setPlaylist(
+                          _songs,
+                          startIndex: randomIndex,
+                          autoPlay: true,
+                        );
                       },
                       child: Container(
                         alignment: Alignment.center,
