@@ -98,8 +98,8 @@ class MiniPlayerBar extends StatelessWidget {
                               if (isPlaying)
                                 Container(
                                   color: AppColors.white.withValues(alpha: .4),
-                                  height: 55,
-                                  width: 55,
+                                  height: 50.h,
+                                  width: 50.w,
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 8.0,

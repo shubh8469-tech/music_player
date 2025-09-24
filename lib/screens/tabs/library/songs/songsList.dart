@@ -328,6 +328,9 @@ class _SongsListState extends State<SongsList> {
                                 );
                               }),
                             ),
+                            SizedBox(
+                              height: 90.h,
+                            )
                           ],
                         ),
                       ),

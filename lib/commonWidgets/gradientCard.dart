@@ -59,7 +59,7 @@ class GradientCard extends StatelessWidget {
                   ),
             child: Center(
               child: iconAsset.isEmpty || iconAsset.contains('.svg')
-                  ? SvgPicture.asset(Assets.svgMusicIcon, height: iconSize, width: iconSize)
+                  ? SvgPicture.asset(iconAsset.isEmpty ? Assets.svgMusicIcon : iconAsset, height: iconSize, width: iconSize)
                   : ClipRRect(
                       borderRadius: BorderRadius.circular(borderRadius),
                       child: Image.file(File(iconAsset), fit: BoxFit.cover),

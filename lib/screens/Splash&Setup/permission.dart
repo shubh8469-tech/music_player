@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -105,30 +106,35 @@ class _PermissionPageState extends State<PermissionPage> {
         await file.writeAsBytes(artworkBytes);
         artworkPath = file.path;
       }
+      
+      log('songs duration: ${song.duration} ${song.title}');
 
-      final model = SongsModel(
-        id: song.id,
-        title: song.title,
-        artist: song.artist ?? '',
-        album: song.album ?? '',
-        genre: song.genre ?? '',
-        duration: song.duration ?? 0,
-        filePath: path,
-        folder: folderName,
-        artwork_path: artworkPath
-      );
+      if((song.duration ?? 0) >= 1000) {
 
-      await addSongUseCase(model);
+        final model = SongsModel(
+            id: song.id,
+            title: song.title,
+            artist: song.artist ?? '',
+            album: song.album ?? '',
+            genre: song.genre ?? '',
+            duration: song.duration ?? 0,
+            filePath: path,
+            folder: folderName,
+            artwork_path: artworkPath
+        );
 
-      final item = {
-        'title': song.title,
-        'path': path,
-        'folderPath': folderPath,
-        'folderName': folderName,
-      };
+        await addSongUseCase(model);
 
-      scannedFiles.add(item);
-      groupedByFolder.putIfAbsent(folderPath, () => []).add(item);
+        final item = {
+          'title': song.title,
+          'path': path,
+          'folderPath': folderPath,
+          'folderName': folderName,
+        };
+
+        scannedFiles.add(item);
+        groupedByFolder.putIfAbsent(folderPath, () => []).add(item);
+      }
     }
 
     // Debug output

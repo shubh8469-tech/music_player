@@ -231,6 +231,7 @@ class _PlayListScreenState extends State<PlayListScreen> {
                   );
                 },
               ),
+              SizedBox(height: 90.h),
             ],
           ),
         ),

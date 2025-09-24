@@ -136,8 +136,8 @@ class MusicListTile extends StatelessWidget {
                   ),
                   if (isGifLoad)
                     Container(
-                      height: 57,
-                      width: 55,
+                      height: cardHeight,
+                      width: cardWidth,
                       decoration: BoxDecoration(borderRadius: BorderRadius.circular(8.r), color: AppColors.white.withValues(alpha: .4)),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
