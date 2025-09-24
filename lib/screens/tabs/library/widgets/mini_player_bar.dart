@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -75,45 +76,83 @@ class MiniPlayerBar extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      StreamBuilder<bool>(
-                        stream: musicService.isPlayingStream,
-                        initialData: musicService.isPlaying,
-                        builder: (context, snapshot) {
-                          final isPlaying = snapshot.data ?? false;
-                          return Stack(
-                            children: [
-                              GradientCard(
-                                height: 50.h,
-                                width: 50.w,
-                                borderRadius: 10.r,
-                                iconAsset: Assets.svgMusicIcon,
-                                iconSize: 40.r,
-                                isSvg: true,
-                                margin: 10.w,
-                                colors: [
-                                  AppColors.mildOrange.withValues(alpha: 0.21),
-                                  AppColors.mildOrange,
+                      StreamBuilder<int?>(
+                        stream: musicService.currentIndexStream,
+                        initialData: musicService.currentIndex,
+                        builder: (context, indexSnap) {
+                          return StreamBuilder<bool>(
+                            stream: musicService.isPlayingStream,
+                            initialData: musicService.isPlaying,
+                            builder: (context, playingSnap) {
+                              final isPlaying = playingSnap.data ?? false;
+                              final index = indexSnap.data ?? 0;
+                              final currentSong = musicService.songs.isNotEmpty
+                                  ? musicService.songs[index]
+                                  : null;
+                              final hasArtwork =
+                                  currentSong?.artwork_path != null &&
+                                      currentSong!.artwork_path!.isNotEmpty;
+
+                              return Stack(
+                                children: [
+                                  // Show artwork if available, otherwise show default gradient card
+                                  if (hasArtwork)
+                                    Container(
+                                      height: 50.h,
+                                      width: 50.w,
+                                      margin: EdgeInsets.all(10.w),
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(10.r),
+                                        image: DecorationImage(
+                                          image: FileImage(
+                                              File(currentSong.artwork_path!)),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    Container(
+                                      margin: EdgeInsets.all(10.w),
+                                      child: GradientCard(
+                                        height: 50.h,
+                                        width: 50.w,
+                                        borderRadius: 10.r,
+                                        iconAsset: Assets.svgMusicIcon,
+                                        iconSize: 40.r,
+                                        isSvg: true,
+                                        margin: 10.w,
+                                        colors: [
+                                          AppColors.mildOrange
+                                              .withValues(alpha: 0.21),
+                                          AppColors.mildOrange,
+                                        ],
+                                      ),
+                                    ),
+                                  // Show playing animation overlay when playing
+                                  if (isPlaying)
+                                    Container(
+                                      color:
+                                          AppColors.white.withValues(alpha: .4),
+                                      height: 50.h,
+                                      width: 50.w,
+                                      margin: EdgeInsets.all(10.w),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8.0,
+                                          vertical: 5,
+                                        ),
+                                        child: Image.asset(
+                                          Assets.pngSongPlaying,
+                                          fit: BoxFit.cover,
+                                          height: 55,
+                                          width: 55,
+                                        ),
+                                      ),
+                                    ),
                                 ],
-                              ),
-                              if (isPlaying)
-                                Container(
-                                  color: AppColors.white.withValues(alpha: .4),
-                                  height: 50.h,
-                                  width: 50.w,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0,
-                                      vertical: 5,
-                                    ),
-                                    child: Image.asset(
-                                      Assets.pngSongPlaying,
-                                      fit: BoxFit.cover,
-                                      height: 55,
-                                      width: 55,
-                                    ),
-                                  ),
-                                ),
-                            ],
+                              );
+                            },
                           );
                         },
                       ),
@@ -126,8 +165,8 @@ class MiniPlayerBar extends StatelessWidget {
                             final index = snapshot.data ?? 0;
                             final songName = musicService.songs.isNotEmpty
                                 ? musicService.songs[index].title
-                                      .split('/')
-                                      .last
+                                    .split('/')
+                                    .last
                                 : '';
                             final artistName = musicService.songs.isNotEmpty
                                 ? musicService.songs[index].artist

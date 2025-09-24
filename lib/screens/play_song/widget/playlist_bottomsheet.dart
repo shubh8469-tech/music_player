@@ -1,9 +1,11 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:music_app/themes/font.dart';
-
+import '../../../../features/playlists/domain/entities/playlist.dart' as domain;
 import '../../../commonWidgets/MusicListTile.dart';
 import '../../../commonWidgets/bottom_button_two.dart';
 import '../../../commonWidgets/textWidget.dart';
@@ -25,24 +27,25 @@ class PlaylistBottomSheet extends StatefulWidget {
 class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
   int selectedPlaylist = 0;
 
-  final List<Map<String, dynamic>> playlistsStatic = [
-    {'title': 'Bollywood Hits', 'songs': 3},
-    {'title': '90s Songs', 'songs': 6},
-  ];
-
   @override
   Widget build(BuildContext context) {
     final double maxHeight = 0.75.sh;
 
     return BlocBuilder<PlaylistBloc, PlaylistState>(
       builder: (context, state) {
-        return state.when(
+        return state.maybeWhen(
           initial: () => const SizedBox.shrink(),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (message) => Center(
             child: Text(message, style: const TextStyle(color: Colors.red, fontSize: 16)),
           ),
-          loaded: (playlists) {
+
+          loaded: (allPlayLists) {
+            final playlists = allPlayLists
+                .where((p) => (p.isSystem != true))
+                .cast<domain.Playlist>()
+                .toList();
+
             return Container(
               constraints: BoxConstraints(maxHeight: maxHeight),
               padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 10.h, bottom: MediaQuery.of(context).viewInsets.bottom + 16.h),
@@ -112,7 +115,7 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
                                     lefBtnTap: () {},
                                     rightBtnTap: () {
                                       addSongToPlaylist(
-                                         playlistId: playlist.id!, songId: widget.songId, position: playlist.songCount,
+                                         playlistId: selectedPlaylist, songId: widget.songId, position: playlist.songCount,
                                       );
                                     },
                                   ),
@@ -129,12 +132,14 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
               ),
             );
           },
+          orElse: () => Container()
         );
       },
     );
   }
 
   void addSongToPlaylist({required int playlistId, required int songId, required int position}) {
+    log('Adding song $songId to playlist $playlistId at position $position');
     context.read<PlaylistBloc>().add(PlaylistEvent.addSongToPlaylist(playlistId, songId, position));
     // Navigator.of(context).pop();
   }
