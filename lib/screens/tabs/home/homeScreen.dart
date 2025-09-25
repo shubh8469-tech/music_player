@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,7 +14,7 @@ import '../../../commonWidgets/textWidget.dart';
 import '../../../generated/assets.dart';
 import '../../../utills/globals.dart';
 import '../../../screens/tabs/music_service.dart';
-import 'bloc/home_bloc.dart';
+import '../../../features/playlists/bloc/playlist_bloc.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,19 +29,19 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String> icons = [
     Assets.svgMostPlayed,
     Assets.svgRecentlyAdded,
-    Assets.svgFavorites
+    Assets.svgFavorites,
   ];
 
   List<String> musicIcons = [
     Assets.svgMusicIcon,
     Assets.pngBand,
-    Assets.pngBand2
+    Assets.pngBand2,
   ];
 
   List<Color> colors = [
     AppColors.mildOrange,
     AppColors.mildBlue,
-    AppColors.mildPink
+    AppColors.mildPink,
   ];
 
   final MusicPlayerService musicService = MusicPlayerService();
@@ -47,14 +49,17 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // HomeBloc is now provided by the main app, no need to create or dispose
+    // Fetch songs for recently played system playlist
+    context.read<PlaylistBloc>().add(
+      const PlaylistEvent.fetchSongsForSystemPlaylist('recently_played'),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      body: BlocBuilder<HomeBloc, HomeState>(
+      body: BlocBuilder<PlaylistBloc, PlaylistState>(
         builder: (context, state) {
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 15.h),
@@ -62,10 +67,12 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Texts('Explore Playlists',
-                      fontSize: 18.sp,
-                      fontWeight: AppFontWeights.medium,
-                      fontFamily: AppFonts.inter),
+                  Texts(
+                    'Explore Playlists',
+                    fontSize: 18.sp,
+                    fontWeight: AppFontWeights.medium,
+                    fontFamily: AppFonts.inter,
+                  ),
                   SizedBox(height: 13.h),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -74,20 +81,23 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: List.generate(3, (index) {
                         // Find the corresponding system playlist
                         final systemPlaylist = state.maybeWhen(
-                          loaded: (recentlyPlayedSongs, userPlaylists,
-                                  systemPlaylists) =>
-                              systemPlaylists.isNotEmpty
-                                  ? systemPlaylists.firstWhere(
+                          loaded: (playlists, systemPlaylistSongs) =>
+                              playlists.isNotEmpty
+                              ? playlists
+                                    .where((p) => p.isSystem == true)
+                                    .firstWhere(
                                       (p) =>
                                           p.systemKey ==
                                           [
                                             'most_played',
                                             'recently_added',
-                                            'favorites'
+                                            'favorites',
                                           ][index],
-                                      orElse: () => systemPlaylists.first,
+                                      orElse: () => playlists
+                                          .where((p) => p.isSystem == true)
+                                          .first,
                                     )
-                                  : null,
+                              : null,
                           orElse: () => null,
                         );
 
@@ -96,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           width: 104.w,
                           colors: [
                             colors[index].withValues(alpha: 0.21),
-                            colors[index]
+                            colors[index],
                           ],
                           borderRadius: 13.r,
                           iconAsset: icons[index],
@@ -118,29 +128,40 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(height: 40.h),
                   Row(
                     children: [
-                      Texts('Recently Played',
-                          fontSize: 18.sp,
-                          fontWeight: AppFontWeights.medium,
-                          fontFamily: AppFonts.inter),
+                      Texts(
+                        'Recently Played',
+                        fontSize: 18.sp,
+                        fontWeight: AppFontWeights.medium,
+                        fontFamily: AppFonts.inter,
+                      ),
                       Spacer(),
-                      Texts('see all',
-                          fontSize: 14.sp,
-                          fontWeight: AppFontWeights.regular,
-                          fontFamily: AppFonts.inter),
+                      Texts(
+                        'see all',
+                        fontSize: 14.sp,
+                        fontWeight: AppFontWeights.regular,
+                        fontFamily: AppFonts.inter,
+                      ),
                     ],
                   ),
                   SizedBox(height: 5.h),
                   state.when(
                     initial: () => Center(child: CircularProgressIndicator()),
                     loading: () => Center(child: CircularProgressIndicator()),
-                    loaded:
-                        (recentlyPlayedSongs, userPlaylists, systemPlaylists) {
+                    loaded: (playlists, systemPlaylistSongs) {
+                      // Get recently played songs from the system playlist songs
+                      final recentlyPlayedSongs =
+                          systemPlaylistSongs?['recently_played'] ?? [];
+
+                      log('recentlyPlayedSongs length: ${recentlyPlayedSongs.length}');
+
                       if (recentlyPlayedSongs.isEmpty) {
-                        return Text('No recently played songs',
-                            style: TextStyle(color: Colors.grey));
+                        return Text(
+                          'No recently played songs',
+                          style: TextStyle(color: Colors.grey),
+                        );
                       }
                       return Column(
-                        children: recentlyPlayedSongs.map((song) {
+                        children: recentlyPlayedSongs.take(3).map((song) {
                           return StreamBuilder<int?>(
                             stream: musicService.currentSongIdStream,
                             initialData: musicService.currentSongId,
@@ -164,7 +185,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     cardHeight: 50.h,
                                     cardWidth: 50.w,
                                     cardRadius: 7.r,
-                                    cardIconAsset: song.artwork_path ??
+                                    cardIconAsset:
+                                        song.artwork_path ??
                                         Assets.svgMusicIcon,
                                     cardIconSize: 32.r,
                                     isSvgCardIcon: (song.artwork_path ?? '')
@@ -180,9 +202,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     isGifLoad: isCurrentlyPlaying,
                                     onTap: () async {
                                       await musicService.setPlaylist(
-                                          recentlyPlayedSongs,
-                                          startIndex: recentlyPlayedSongs
-                                              .indexOf(song));
+                                        recentlyPlayedSongs,
+                                        startIndex: recentlyPlayedSongs.indexOf(
+                                          song,
+                                        ),
+                                      );
                                       await musicService.play();
                                     },
                                     onPlayTap: () async {
@@ -190,9 +214,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                         await musicService.pause();
                                       } else {
                                         await musicService.setPlaylist(
-                                            recentlyPlayedSongs,
-                                            startIndex: recentlyPlayedSongs
-                                                .indexOf(song));
+                                          recentlyPlayedSongs,
+                                          startIndex: recentlyPlayedSongs
+                                              .indexOf(song),
+                                        );
                                         await musicService.play();
                                       }
                                     },
@@ -209,29 +234,39 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(height: 38.h),
                   Row(
                     children: [
-                      Texts('My PlayLists',
-                          fontSize: 18.sp,
-                          fontWeight: AppFontWeights.medium,
-                          fontFamily: AppFonts.inter),
+                      Texts(
+                        'My PlayLists',
+                        fontSize: 18.sp,
+                        fontWeight: AppFontWeights.medium,
+                        fontFamily: AppFonts.inter,
+                      ),
                       Spacer(),
-                      Texts('see all',
-                          fontSize: 14.sp,
-                          fontWeight: AppFontWeights.regular,
-                          fontFamily: AppFonts.inter),
+                      Texts(
+                        'see all',
+                        fontSize: 14.sp,
+                        fontWeight: AppFontWeights.regular,
+                        fontFamily: AppFonts.inter,
+                      ),
                     ],
                   ),
                   SizedBox(height: 5.h),
                   state.when(
                     initial: () => Center(child: CircularProgressIndicator()),
                     loading: () => Center(child: CircularProgressIndicator()),
-                    loaded:
-                        (recentlyPlayedSongs, userPlaylists, systemPlaylists) {
+                    loaded: (playlists, systemPlaylistSongs) {
+                      // Get user playlists (non-system playlists)
+                      final userPlaylists = playlists
+                          .where((p) => p.isSystem == false)
+                          .toList();
+
                       if (userPlaylists.isEmpty) {
-                        return Text('No user playlists',
-                            style: TextStyle(color: Colors.grey));
+                        return Text(
+                          'No user playlists',
+                          style: TextStyle(color: Colors.grey),
+                        );
                       }
                       return Column(
-                        children: userPlaylists.map((playlist) {
+                        children: userPlaylists.take(3).map((playlist) {
                           return MusicListTile(
                             margin: 7.w,
                             height: 66.h,
@@ -244,23 +279,26 @@ class _HomeScreenState extends State<HomeScreen> {
                             cardIconSize: 32.r,
                             title: playlist.name,
                             subtitle: '${playlist.songCount} Songs',
-                            trailingIconAsset: Assets.svgMenuIcon,
-                            trailingIconHeight: 15.h,
-                            trailingIconWidth: 3.w,
-                            trailingMargin: 10.w,
-                            onTap: () => {
+                            trailingIconAsset: Assets.svgPlayLogo,
+                            trailingIconHeight: 32.r,
+                            trailingIconWidth: 32.r,
+                            trailingMargin: 0,
+                            onTap: () {
                               showModalBottomSheet(
                                 context: context,
                                 backgroundColor: Colors.white,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(40))),
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(40),
+                                  ),
+                                ),
                                 isScrollControlled: true,
                                 builder: (_) => SongMenuScreen(
-                                    songMenuList: songMenuItems,
-                                    isPlaying: false),
-                              ),
+                                  songMenuList: songMenuItems,
+                                  isPlaying: false,
+                                ),
+                              );
                             },
                             onPlayTap: () =>
                                 print("Play tapped: ${playlist.name}"),
@@ -270,9 +308,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     error: (message) => Text('Error: $message'),
                   ),
-                  SizedBox(
-                    height: 90.h,
-                  )
+                  SizedBox(height: 90.h),
                 ],
               ),
             ),

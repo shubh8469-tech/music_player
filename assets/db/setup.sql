@@ -116,3 +116,23 @@ BEGIN
         updated_time = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')
     WHERE id = OLD.playlist_id;
 END;
+
+---------------------------------------------------------------------------
+-- Queue table
+---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS queue (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    song_id INTEGER NOT NULL,
+    position INTEGER NOT NULL,
+    is_playing INTEGER DEFAULT 0,
+    next_song_id INTEGER,
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    playlist_id INTEGER,
+    FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE,
+    FOREIGN KEY (next_song_id) REFERENCES songs(id) ON DELETE SET NULL,
+    FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_queue_position ON queue(position);
+CREATE INDEX IF NOT EXISTS idx_queue_song_id ON queue(song_id);
+CREATE INDEX IF NOT EXISTS idx_queue_is_playing ON queue(is_playing);

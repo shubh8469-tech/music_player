@@ -42,15 +42,25 @@ class _PlayListScreenState extends State<PlayListScreen> {
   };
 
   StreamSubscription<void>? _libChangedSub;
+  DateTime? _lastRefreshTime;
 
   @override
   void initState() {
     super.initState();
-    // Listen once per screen lifecycle
-    _libChangedSub = MusicPlayerService().libraryChanged.listen((_) {
-      if (!mounted) return;
-      context.read<PlaylistBloc>().add(const PlaylistEvent.fetchAllPlaylists());
-    });
+    // Listen once per screen lifecycle with debounce
+    // _libChangedSub = MusicPlayerService().libraryChanged.listen((_) {
+    //   if (!mounted) return;
+    //
+    //   // Debounce: Only refresh if last refresh was more than 1 second ago
+    //   final now = DateTime.now();
+    //   if (_lastRefreshTime == null ||
+    //       now.difference(_lastRefreshTime!).inSeconds > 1) {
+    //     _lastRefreshTime = now;
+    //     context.read<PlaylistBloc>().add(
+    //       const PlaylistEvent.refreshPlaylists(),
+    //     );
+    //   }
+    // });
   }
 
   @override
@@ -82,7 +92,8 @@ class _PlayListScreenState extends State<PlayListScreen> {
                     builder: (context, state) {
                       int total = 0;
                       state.maybeWhen(
-                        loaded: (playlists) => total = playlists.length,
+                        loaded: (playlists, systemPlaylistSongs) =>
+                            total = playlists.length,
                         orElse: () {},
                       );
                       return Texts(
@@ -111,7 +122,7 @@ class _PlayListScreenState extends State<PlayListScreen> {
               BlocBuilder<PlaylistBloc, PlaylistState>(
                 builder: (context, state) {
                   return state.maybeWhen(
-                    loaded: (allPlaylists) {
+                    loaded: (allPlaylists, systemPlaylistSongs) {
                       final systemPlaylists = allPlaylists
                           .where((p) => (p.isSystem == true))
                           .cast<domain.Playlist>()
@@ -175,7 +186,7 @@ class _PlayListScreenState extends State<PlayListScreen> {
                 builder: (context, state) {
                   int userCount = 0;
                   state.maybeWhen(
-                    loaded: (all) => userCount = all
+                    loaded: (all, systemPlaylistSongs) => userCount = all
                         .where((p) => (p.isSystem != true))
                         .length,
                     orElse: () {},
@@ -192,7 +203,7 @@ class _PlayListScreenState extends State<PlayListScreen> {
               BlocBuilder<PlaylistBloc, PlaylistState>(
                 builder: (context, state) {
                   return state.maybeWhen(
-                    loaded: (allPlaylists) {
+                    loaded: (allPlaylists, systemPlaylistSongs) {
                       final userPlaylists = allPlaylists
                           .where((p) => (p.isSystem != true))
                           .cast<domain.Playlist>()

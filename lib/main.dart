@@ -7,8 +7,6 @@ import 'Blocs/languageBloc/language_bloc.dart';
 import 'app_router.dart';
 import 'core/di/injection.dart';
 import 'features/songs/bloc/songs_bloc.dart';
-import 'screens/tabs/home/bloc/home_bloc.dart';
-import 'screens/tabs/music_service.dart';
 import 'l10n/l10n.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:just_audio_background/just_audio_background.dart';
@@ -52,14 +50,9 @@ Future<void> main() async {
                   SongsBloc(locator())..add(const SongsEvent.getAllSongs()),
             ),
             BlocProvider<PlaylistBloc>(
-              create: (_) => PlaylistBloc(locator())
-                ..add(const PlaylistEvent.fetchAllPlaylists()),
-            ),
-            BlocProvider<HomeBloc>(
-              create: (_) => HomeBloc(
-                playlistRepository: locator(),
-                musicService: MusicPlayerService(),
-              )..add(const HomeEvent.loadData()),
+              create: (_) =>
+                  PlaylistBloc(locator())
+                    ..add(const PlaylistEvent.fetchAllPlaylists()),
             ),
           ],
           child: ScreenUtilInit(

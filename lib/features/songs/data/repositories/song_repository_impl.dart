@@ -36,4 +36,23 @@ class SongRepositoryImpl implements SongRepository {
   Future<void> removeSong(int id) async {
     await localDataSource.deleteSong(id);
   }
+
+  @override
+  Future<void> updateSong(Song song) async {
+    final songModel = SongsModel(
+      id: song.id,
+      title: song.title,
+      artist: song.artist,
+      album: song.album,
+      genre: song.genre,
+      duration: song.duration,
+      filePath: song.filePath,
+      folder: song.folder,
+      artwork_path: song.artwork_path,
+      createdTime: DateTime.now().toIso8601String(),
+      updatedTime: DateTime.now().toIso8601String(),
+    );
+
+    await localDataSource.updateSong(songModel);
+  }
 }

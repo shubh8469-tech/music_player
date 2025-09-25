@@ -1,8 +1,6 @@
 import 'dart:async';
-
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
-
 import '../../features/songs/data/models/song_model.dart';
 import '../../core/db/app_database.dart';
 

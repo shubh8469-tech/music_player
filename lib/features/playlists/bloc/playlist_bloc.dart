@@ -1,8 +1,9 @@
+import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-
 import '../domain/entities/playlist.dart';
 import '../domain/repositories/playlist_repository.dart';
+import '../../songs/data/models/song_model.dart';
 
 part 'playlist_event.dart';
 part 'playlist_state.dart';
@@ -10,10 +11,15 @@ part 'playlist_bloc.freezed.dart';
 
 class PlaylistBloc extends Bloc<PlaylistEvent, PlaylistState> {
   final PlaylistRepository repository;
+  bool _isRefreshing = false;
+  int? _favoritesPlaylistId;
+
+  int? get favoritesPlaylistId => _favoritesPlaylistId;
 
   PlaylistBloc(this.repository) : super(const PlaylistState.initial()) {
     on<_AddPlaylist>((event, emit) async {
       try {
+        log('Adding playlist: ${event.name}');
         emit(const PlaylistState.loading());
         repository.addPlaylist(event.name);
         final playlists = await repository.fetchAllPlaylists();
@@ -25,6 +31,7 @@ class PlaylistBloc extends Bloc<PlaylistEvent, PlaylistState> {
 
     on<_FetchAllPlaylists>((event, emit) async {
       try {
+        log('Fetching all playlists inside bloc');
         emit(const PlaylistState.loading());
         final playlists = await repository.fetchAllPlaylists();
         emit(PlaylistState.loaded(playlists));
@@ -53,6 +60,122 @@ class PlaylistBloc extends Bloc<PlaylistEvent, PlaylistState> {
         );
         final songs = await repository.fetchAllPlaylists();
         emit(PlaylistState.loaded(songs));
+      } catch (e) {
+        emit(PlaylistState.error(e.toString()));
+      }
+    });
+
+    on<_RemoveSongFromPlaylist>((event, emit) async {
+      try {
+        await repository.removeSongFromPlaylist(event.playlistId, event.songId);
+        final songs = await repository.fetchAllPlaylists();
+        emit(PlaylistState.loaded(songs));
+      } catch (e) {
+        emit(PlaylistState.error(e.toString()));
+      }
+    });
+
+    on<_RefreshPlaylists>((event, emit) async {
+      try {
+        // Prevent multiple simultaneous refreshes
+        if (_isRefreshing) return;
+
+        log('Refreshing playlist:');
+
+        // Only refresh if we have loaded data (don't show loading)
+        if (state is _Loaded) {
+          _isRefreshing = true;
+          final playlists = await repository.fetchAllPlaylists();
+          // Only emit if the data has actually changed
+          final currentState = state as _Loaded;
+
+          // Get songs for the specific system playlist
+          final songs = await repository.getSongsForSystemPlaylist(
+            'recently_played',
+          );
+
+          // Create a map with the system key and its songs
+          final systemPlaylistSongs = <String, List<SongsModel>>{
+            'recently_played': songs,
+          };
+
+          if (currentState.playlists != playlists) {
+            emit(
+              PlaylistState.loaded(
+                playlists,
+                systemPlaylistSongs: systemPlaylistSongs,
+              ),
+            );
+          }
+          _isRefreshing = false;
+        } else if (state is _Initial) {
+          // If we're in initial state, do a normal fetch
+          _isRefreshing = true;
+          emit(const PlaylistState.loading());
+          final playlists = await repository.fetchAllPlaylists();
+          // Get songs for the specific system playlist
+          final songs = await repository.getSongsForSystemPlaylist(
+            'recently_played',
+          );
+
+          // Create a map with the system key and its songs
+          final systemPlaylistSongs = <String, List<SongsModel>>{
+            'recently_played': songs,
+          };
+          emit(
+            PlaylistState.loaded(
+              playlists,
+              systemPlaylistSongs: systemPlaylistSongs,
+            ),
+          );
+          _isRefreshing = false;
+        }
+        // If we're already loading or in error state, don't do anything
+      } catch (e) {
+        _isRefreshing = false;
+        // Don't emit error state, just keep current state
+        print('Error refreshing playlists: $e');
+      }
+    });
+
+    on<_FetchSongsForSystemPlaylist>((event, emit) async {
+      try {
+        log('Fetching songs for system playlist: ${event.systemKey}');
+
+        // Get current playlists
+        final playlists = await repository.fetchAllPlaylists();
+
+        // Get songs for the specific system playlist
+        final songs = await repository.getSongsForSystemPlaylist(
+          event.systemKey,
+        );
+
+        // Create a map with the system key and its songs
+        final systemPlaylistSongs = <String, List<SongsModel>>{
+          event.systemKey: songs,
+        };
+
+        emit(
+          PlaylistState.loaded(
+            playlists,
+            systemPlaylistSongs: systemPlaylistSongs,
+          ),
+        );
+      } catch (e) {
+        emit(PlaylistState.error(e.toString()));
+      }
+    });
+
+    on<_GetFavoritesPlaylistId>((event, emit) async {
+      try {
+        final playlists = await repository.fetchAllPlaylists();
+        final favoritesPlaylist = playlists.firstWhere(
+          (playlist) => playlist.systemKey == 'favorites',
+          orElse: () => throw Exception('Favorites playlist not found'),
+        );
+        _favoritesPlaylistId = favoritesPlaylist.id!;
+        // Emit the current state with the favorites playlist ID available
+        emit(PlaylistState.loaded(playlists));
       } catch (e) {
         emit(PlaylistState.error(e.toString()));
       }

@@ -1,11 +1,11 @@
 import 'package:sqflite/sqflite.dart';
-import '../../../../core/db/app_database.dart';
 import '../models/song_model.dart';
 
 abstract class SongLocalDataSource {
   Future<int> insertSong(SongsModel song);
   Future<List<SongsModel>> getAllSongs();
   Future<int> deleteSong(int id);
+  Future<int> updateSong(SongsModel song);
 }
 
 class SongLocalDataSourceImpl implements SongLocalDataSource {
@@ -31,5 +31,15 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
   @override
   Future<int> deleteSong(int id) async {
     return await db.delete('songs', where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<int> updateSong(SongsModel song) async {
+    return await db.update(
+      'songs',
+      song.toMap(),
+      where: 'id = ?',
+      whereArgs: [song.id],
+    );
   }
 }

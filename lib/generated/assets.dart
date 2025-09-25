@@ -30,6 +30,7 @@ class Assets {
   static const String svgDirectory = 'assets/svg/directory.svg';
   static const String svgDrawer = 'assets/svg/drawer.svg';
   static const String svgFav = 'assets/svg/fav.svg';
+  static const String svgFavOn = 'assets/svg/fav_on.svg';
   static const String svgFavorites = 'assets/svg/favorites.svg';
   static const String svgFilter = 'assets/svg/filter.svg';
   static const String svgHome = 'assets/svg/home.svg';
@@ -88,6 +89,7 @@ class Assets {
   static const String svgRepeatOn = 'assets/svg/repeat_on.svg';
   static const String svgRepeatOnce = 'assets/svg/repeat_once.svg';
   static const String svgSearch = 'assets/svg/search.svg';
+  static const String svgSelectListIcon = 'assets/svg/selectListIcon.svg';
   static const String svgSetting = 'assets/svg/setting.svg';
   static const String svgShuffle = 'assets/svg/shuffle.svg';
   static const String svgShuffleOff = 'assets/svg/shuffle_off.svg';

@@ -5,4 +5,5 @@ abstract class SongRepository {
   Future<void> addSong(Song song);
   Future<List<Song>> fetchAllSongs();
   Future<void> removeSong(int id);
+  Future<void> updateSong(Song song);
 }

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:music_app/features/songs/data/models/song_model.dart';
 
 import '../../domain/entities/playlist.dart';
@@ -37,6 +39,7 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
   /// 🎵 Playlist songs handling
   @override
   Future<void> addSongToPlaylist(int playlistId, int songId, int position) {
+    log('Adding song $songId to playlist $playlistId at position $position');
     return localDataSource.addSongToPlaylist(playlistId, songId, position);
   }
 

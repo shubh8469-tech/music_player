@@ -37,10 +37,13 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
           initial: () => const SizedBox.shrink(),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (message) => Center(
-            child: Text(message, style: const TextStyle(color: Colors.red, fontSize: 16)),
+            child: Text(
+              message,
+              style: const TextStyle(color: Colors.red, fontSize: 16),
+            ),
           ),
 
-          loaded: (allPlayLists) {
+          loaded: (allPlayLists, systemPlaylistSongs) {
             final playlists = allPlayLists
                 .where((p) => (p.isSystem != true))
                 .cast<domain.Playlist>()
@@ -48,13 +51,23 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
 
             return Container(
               constraints: BoxConstraints(maxHeight: maxHeight),
-              padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 10.h, bottom: MediaQuery.of(context).viewInsets.bottom + 16.h),
+              padding: EdgeInsets.only(
+                left: 16.w,
+                right: 16.w,
+                top: 10.h,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SvgPicture.asset(Assets.svgIcLineBottom),
                   SizedBox(height: 20.h),
-                  Texts('Add to playlist', fontSize: 18.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter),
+                  Texts(
+                    'Add to playlist',
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: AppFonts.inter,
+                  ),
                   SizedBox(height: 16.h),
 
                   Flexible(
@@ -63,7 +76,12 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
                       children: [
                         ListTile(
                           leading: SvgPicture.asset(Assets.svgIcPlus),
-                          title: Texts('Create new playlist', fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter),
+                          title: Texts(
+                            'Create new playlist',
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: AppFonts.inter,
+                          ),
                           onTap: () {
                             // Navigator.of(context).pop();
                             createNewPlayListWidget();
@@ -81,20 +99,25 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
                                   margin: 7.w,
                                   height: 66.h,
                                   borderRadius: 10.r,
-                                  backgroundColor: AppColors.musicTileBackgroundColor,
+                                  backgroundColor:
+                                      AppColors.musicTileBackgroundColor,
                                   cardHeight: 50.h,
                                   cardWidth: 50.w,
                                   cardRadius: 7.r,
                                   noLogoGradientColor: [
-                                    AppColors.mildOrange.withValues(alpha: 0.21),
+                                    AppColors.mildOrange.withValues(
+                                      alpha: 0.21,
+                                    ),
                                     AppColors.primaryOrange,
                                   ],
                                   cardIconAsset: Assets.svgMusicIcon,
                                   cardIconSize: 32.r,
                                   title: playlist.name,
-                                  subtitle: "${playlist.songCount} Songs", // <-- fixed subtitle
-                                  trailingIconAsset:
-                                  isSelected ? Assets.svgIcCheck : Assets.svgIcUncheck,
+                                  subtitle:
+                                      "${playlist.songCount} Songs", // <-- fixed subtitle
+                                  trailingIconAsset: isSelected
+                                      ? Assets.svgIcCheck
+                                      : Assets.svgIcUncheck,
                                   trailingIconHeight: 20.h,
                                   trailingIconWidth: 10.w,
                                   trailingMargin: 2.w,
@@ -115,7 +138,9 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
                                     lefBtnTap: () {},
                                     rightBtnTap: () {
                                       addSongToPlaylist(
-                                         playlistId: selectedPlaylist, songId: widget.songId, position: playlist.songCount,
+                                        playlistId: selectedPlaylist,
+                                        songId: widget.songId,
+                                        position: playlist.songCount,
                                       );
                                     },
                                   ),
@@ -124,7 +149,7 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
                               ],
                             );
                           }),
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -132,15 +157,21 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
               ),
             );
           },
-          orElse: () => Container()
+          orElse: () => Container(child: Text('$state')),
         );
       },
     );
   }
 
-  void addSongToPlaylist({required int playlistId, required int songId, required int position}) {
+  void addSongToPlaylist({
+    required int playlistId,
+    required int songId,
+    required int position,
+  }) {
     log('Adding song $songId to playlist $playlistId at position $position');
-    context.read<PlaylistBloc>().add(PlaylistEvent.addSongToPlaylist(playlistId, songId, position));
+    context.read<PlaylistBloc>().add(
+      PlaylistEvent.addSongToPlaylist(playlistId, songId, position),
+    );
     // Navigator.of(context).pop();
   }
 
@@ -149,7 +180,9 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
       context: context,
       backgroundColor: Colors.white,
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
+      ),
       isScrollControlled: true,
       builder: (_) => CreateNewPlaylistBottomSheet(),
     );

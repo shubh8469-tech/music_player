@@ -30,13 +30,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
   ];
 
   StreamSubscription<void>? _libChangedSub;
+  DateTime? _lastRefreshTime;
 
   @override
   void initState() {
     super.initState();
     _libChangedSub = MusicPlayerService().libraryChanged.listen((_) {
       if (!mounted) return;
-      context.read<PlaylistBloc>().add(const PlaylistEvent.fetchAllPlaylists());
+      // context.read<PlaylistBloc>().add(const PlaylistEvent.fetchAllPlaylists());
+      final now = DateTime.now();
+      if (_lastRefreshTime == null ||
+          now.difference(_lastRefreshTime!).inSeconds > 1) {
+        _lastRefreshTime = now;
+        context.read<PlaylistBloc>().add(
+          const PlaylistEvent.refreshPlaylists(),
+        );
+      }
     });
   }
 

@@ -5,7 +5,7 @@ class SongsModel extends Song {
   final String updatedTime;
   final int playCount;
   final String? lastPlayed;
-  final bool isFavorite;
+  bool isFavorite;
 
   SongsModel({
     int? id,
