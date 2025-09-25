@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -320,7 +321,9 @@ class _SongsListState extends State<SongsList> {
                                               startIndex: index,
                                             );
                                           },
-                                          onPlayTap: () => print("Play tapped"),
+                                          onPlayTap: () async {
+                                           log('Tapped play on ${songs[index].title}');
+                                          },
                                         );
                                       },
                                     );
@@ -328,9 +331,7 @@ class _SongsListState extends State<SongsList> {
                                 );
                               }),
                             ),
-                            SizedBox(
-                              height: 90.h,
-                            )
+                            SizedBox(height: 90.h),
                           ],
                         ),
                       ),

@@ -1,20 +1,27 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:music_app/commonWidgets/textWidget.dart';
+import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/themes/font.dart';
 import '../generated/assets.dart';
 import '../l10n/l10n.dart';
 import '../model/song_menu_model.dart';
+import '../screens/tabs/music_service.dart';
 import '../themes/color.dart';
 import 'MusicListTile.dart';
 
 class SongMenuScreen extends StatefulWidget {
   final List<SongMenuItem> songMenuList;
   final bool isPlaying;
+  List<SongsModel>? songsList;
+  SongsModel? currentSong;
+  int? songIndex;
 
-  const SongMenuScreen({super.key, required this.songMenuList, required this.isPlaying});
+  SongMenuScreen({super.key, required this.songMenuList, required this.isPlaying, this.songsList, this.currentSong, this.songIndex});
 
   @override
   State<SongMenuScreen> createState() => _SongMenuScreenState();
@@ -51,7 +58,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                     noLogoGradientColor: [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.primaryOrange],
                     cardIconAsset: Assets.svgMusicIcon,
                     cardIconSize: 32.r,
-                    title: "As it Was",
+                    title: "As it Was ${widget.songIndex}",
                     subtitle: "5:20 - 120kbps",
                     trailingIconAsset: Assets.svgIcShare,
                     trailingIconHeight: 25.h,
@@ -96,15 +103,20 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     },
                                   )
                                 : null,
-                            onTap: songItem.title == S.of(context).keepScreenOn
-                                ? null
-                                : () {
-                                    if (songItem.title == 'Edit details') {
-                                      context.push('/dashboard/edit-song');
-                                    } else {
-                                      context.push('/dashboard/playing');
-                                    }
-                                  },
+                            onTap: () {
+                              if(songItem.title == S.of(context).keepScreenOn){
+                                if (songItem.title == 'Edit details') {
+                                  context.push('/dashboard/edit-song');
+                                } else {
+                                  context.push('/dashboard/playing');
+                                }
+                              }
+                              else if(songItem.title == S.of(context).playNext){
+                                var musicService = MusicPlayerService();
+                                final updatedList = moveItem<SongsModel>(widget.songsList ?? [], widget.songIndex ?? 0, musicService.currentIndex);
+                                musicService.songs = updatedList;
+                              }
+                            },
                           ),
                           if (showDivider)
                             Padding(
@@ -147,4 +159,34 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
       ),
     );
   }
+
+  List<SongsModel> moveItem<T>(List<SongsModel> list, int oldIndex, int newIndex) {
+    final n = list.length;
+    if (n == 0) return list;
+    if (oldIndex < 0 || oldIndex >= n) return list; // invalid source
+
+    if(oldIndex > newIndex){
+      int targetIndex = newIndex + 1;
+      if (targetIndex < 0) targetIndex = 0;
+      if (targetIndex >= n) targetIndex = n - 1;
+
+      final item = list.removeAt(oldIndex);
+      list.insert(targetIndex, item);
+    }
+    else{
+      int targetIndex = oldIndex;
+      list.forEach((element) {
+        log('${element.title}');
+      },);
+      final item = list.removeAt(oldIndex);
+      log('--- ${item.title} ---');
+      list.insert(targetIndex, item);
+      list.forEach((element) {
+        log('${element.title}');
+      },); 
+    }
+
+    return list;
+  }
+
 }

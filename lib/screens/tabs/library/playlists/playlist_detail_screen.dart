@@ -1,3 +1,4 @@
+import 'dart:developer' as logS;
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -127,10 +128,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             onTap: () async {
               await _player.setPlaylist(list, startIndex: index);
               await _player.play();
+
             },
             onPlayTap: () async {
-              await _player.setPlaylist(list, startIndex: index);
-              await _player.play();
+              logS.log('Playing song id: ${song.id}');
             },
           ),
         );

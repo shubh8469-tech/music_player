@@ -115,7 +115,10 @@ class MusicListTile extends StatelessWidget {
         margin: EdgeInsets.symmetric(vertical: margin!),
         width: double.infinity,
         height: height,
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(borderRadius), color: backgroundColor),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(borderRadius),
+          color: backgroundColor,
+        ),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: padding.w),
           child: Row(
@@ -126,7 +129,12 @@ class MusicListTile extends StatelessWidget {
                   GradientCard(
                     height: cardHeight,
                     width: cardWidth,
-                    colors: noLogoGradientColor ?? [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange],
+                    colors:
+                        noLogoGradientColor ??
+                        [
+                          AppColors.mildOrange.withValues(alpha: 0.21),
+                          AppColors.mildOrange,
+                        ],
                     borderRadius: cardRadius,
                     iconAsset: cardIconAsset,
                     iconSize: cardIconSize,
@@ -138,10 +146,21 @@ class MusicListTile extends StatelessWidget {
                     Container(
                       height: cardHeight,
                       width: cardWidth,
-                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(8.r), color: AppColors.white.withValues(alpha: .4)),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8.r),
+                        color: AppColors.white.withValues(alpha: .4),
+                      ),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
-                        child: Image.asset(Assets.pngSongPlaying, fit: BoxFit.cover, height: 55, width: 55),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0,
+                          vertical: 5,
+                        ),
+                        child: Image.asset(
+                          Assets.pngSongPlaying,
+                          fit: BoxFit.cover,
+                          height: 55,
+                          width: 55,
+                        ),
                       ),
                     ),
                 ],
@@ -154,8 +173,22 @@ class MusicListTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Texts(title, fontSize: titleSize.sp, fontWeight: titleWeight, fontFamily: AppFonts.inter, maxLines: 1, overflow: TextOverflow.ellipsis),
-                    Texts(subtitle, fontSize: subtitleSize.sp, fontWeight: subtitleWeight, fontFamily: AppFonts.inter, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Texts(
+                      title,
+                      fontSize: titleSize.sp,
+                      fontWeight: titleWeight,
+                      fontFamily: AppFonts.inter,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Texts(
+                      subtitle,
+                      fontSize: subtitleSize.sp,
+                      fontWeight: subtitleWeight,
+                      fontFamily: AppFonts.inter,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
               ),
@@ -163,7 +196,11 @@ class MusicListTile extends StatelessWidget {
               SizedBox(width: spacing.w),
               Visibility(
                 visible: songLengthRequired,
-                child: Texts(songLength, fontSize: 10.sp, fontWeight: FontWeight.w400),
+                child: Texts(
+                  songLength,
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
 
               Visibility(
@@ -171,8 +208,13 @@ class MusicListTile extends StatelessWidget {
                 child: Container(
                   margin: EdgeInsets.only(right: leadingMargin, left: 15.w),
                   child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
                     onTap: onInfoTap,
-                    child: SvgPicture.asset(leadingIconAsset, height: leadingIconHeight, width: leadingIconWidth),
+                    child: SvgPicture.asset(
+                      leadingIconAsset,
+                      height: leadingIconHeight,
+                      width: leadingIconWidth,
+                    ),
                   ),
                 ),
               ),
@@ -180,8 +222,23 @@ class MusicListTile extends StatelessWidget {
               Container(
                 margin: EdgeInsets.only(right: trailingMargin, left: 15.w),
                 child: GestureDetector(
-                  onTap: onPlayTap,
-                  child: SvgPicture.asset(trailingIconAsset, height: trailingIconHeight, width: trailingIconWidth),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    print('Play button tapped!');
+                    if (onPlayTap != null) {
+                      onPlayTap!();
+                    }
+                  },
+                  child: Container(
+                    width: trailingIconWidth + 20, // Add extra touch area
+                    height: trailingIconHeight + 20,
+                    alignment: Alignment.center,
+                    child: SvgPicture.asset(
+                      trailingIconAsset,
+                      height: trailingIconHeight,
+                      width: trailingIconWidth,
+                    ),
+                  ),
                 ),
               ),
             ],
