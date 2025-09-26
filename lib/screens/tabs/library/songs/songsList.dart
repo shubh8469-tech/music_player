@@ -18,6 +18,7 @@ import 'package:music_app/themes/font.dart';
 import '../../../../commonWidgets/MusicListTile.dart';
 import '../../../../commonWidgets/common_functions.dart';
 // import '../../../../commonWidgets/gradientCard.dart';
+import '../../../../commonWidgets/song_menu_screen.dart';
 import '../../../../features/songs/bloc/songs_bloc.dart';
 import '../../../../generated/assets.dart';
 // import '../../../../l10n/l10n.dart';
@@ -282,8 +283,10 @@ class _SongsListState extends State<SongsList> {
                                         final isPlaying =
                                             playingSnap.data ?? false;
                                         final isCurrent =
-                                            isPlaying &&
+                                            // isPlaying &&
                                             (songs[index].id == currentId);
+
+                                        log('playing or not $isPlaying');
 
                                         return MusicListTile(
                                           margin: 7.w,
@@ -322,7 +325,24 @@ class _SongsListState extends State<SongsList> {
                                             );
                                           },
                                           onPlayTap: () async {
-                                           log('Tapped play on ${songs[index].title}');
+                                            showModalBottomSheet(
+                                              context: context,
+                                              backgroundColor: Colors.white,
+                                              elevation: 0,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.vertical(
+                                                  top: Radius.circular(40.r),
+                                                ),
+                                              ),
+                                              isScrollControlled: true,
+                                              builder: (_) => SongMenuScreen(
+                                                songMenuList: songMenuItems,
+                                                isPlaying: false,
+                                                currentSong: songs[index],
+                                                songIndex: index,
+                                                songsList: songs,
+                                              ),
+                                            );
                                           },
                                         );
                                       },

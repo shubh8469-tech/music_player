@@ -15,6 +15,11 @@ class MusicPlayerService {
   final StreamController<void> _libraryChangedController =
       StreamController<void>.broadcast();
   Stream<void> get libraryChanged => _libraryChangedController.stream;
+
+  // Emits events when the songs list changes (e.g., when songs are added/removed/reordered)
+  final StreamController<List<SongsModel>> _songsChangedController =
+      StreamController<List<SongsModel>>.broadcast();
+  Stream<List<SongsModel>> get songsChanged => _songsChangedController.stream;
   int? _lastUpdatedSongId;
 
   // Loop and Shuffle state variables
@@ -109,6 +114,9 @@ class MusicPlayerService {
   }) async {
     if (songModels.isEmpty) return;
     songs = songModels;
+
+    // Notify listeners that the songs list has changed
+    _songsChangedController.add(songs);
 
     final playlist = ConcatenatingAudioSource(
       useLazyPreparation: true,

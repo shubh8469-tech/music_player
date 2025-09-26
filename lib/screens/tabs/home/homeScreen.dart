@@ -174,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   final isPlaying = playingSnap.data ?? false;
                                   final isCurrent = song.id == currentId;
                                   final isCurrentlyPlaying =
-                                      isCurrent && isPlaying;
+                                      isCurrent;// && isPlaying;
 
                                   return MusicListTile(
                                     margin: 7.w,
@@ -193,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         .contains('.svg'),
                                     title: song.title,
                                     subtitle: '${song.artist} - ${song.album}',
-                                    trailingIconAsset: isCurrentlyPlaying
+                                    trailingIconAsset: isCurrent && isPlaying
                                         ? Assets.svgPause
                                         : Assets.svgPlayLogo,
                                     trailingIconHeight: 32.r,
@@ -210,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       await musicService.play();
                                     },
                                     onPlayTap: () async {
-                                      if (isCurrentlyPlaying) {
+                                      if (isCurrent && isPlaying) {
                                         await musicService.pause();
                                       } else {
                                         await musicService.setPlaylist(

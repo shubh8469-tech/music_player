@@ -128,7 +128,6 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             onTap: () async {
               await _player.setPlaylist(list, startIndex: index);
               await _player.play();
-
             },
             onPlayTap: () async {
               logS.log('Playing song id: ${song.id}');
@@ -176,23 +175,43 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     GestureDetector(
                       onTap: () async {
                         if (_songs.isEmpty) return;
-                        // Enable shuffle and start a random song without changing UI order
-                        final total = _songs.length;
-                        int randomIndex = 0;
-                        if (total > 1) {
-                          final current = _player.currentIndex;
-                          randomIndex = Random().nextInt(total);
-                          if (current >= 0 && current < total && total > 1) {
-                            while (randomIndex == current) {
-                              randomIndex = Random().nextInt(total);
-                            }
+
+                        // Get current playing song info before shuffling
+                        final currentSongId = _player.currentSongId;
+                        final wasPlaying = _player.isPlaying;
+
+                        // Create shuffled list for UI
+                        final shuffledSongs = List<SongsModel>.from(_songs);
+                        shuffledSongs.shuffle();
+
+                        // Find the position of the currently playing song in the shuffled list
+                        int startIndex = 0;
+                        if (currentSongId != null) {
+                          final currentIndex = shuffledSongs.indexWhere(
+                            (song) => song.id == currentSongId,
+                          );
+                          if (currentIndex >= 0) {
+                            startIndex = currentIndex;
+                          } else {
+                            // If current song not found, pick a random index
+                            startIndex = Random().nextInt(shuffledSongs.length);
                           }
+                        } else {
+                          // If no current song, pick a random index
+                          startIndex = Random().nextInt(shuffledSongs.length);
                         }
+
+                        // Update UI with shuffled order
+                        setState(() {
+                          _songs = shuffledSongs;
+                        });
+
+                        // Enable shuffle mode and set playlist with shuffled order
                         await _player.ensureShuffleOnAndReshuffle();
                         await _player.setPlaylist(
-                          _songs,
-                          startIndex: randomIndex,
-                          autoPlay: true,
+                          shuffledSongs,
+                          startIndex: startIndex,
+                          autoPlay: wasPlaying,
                         );
                       },
                       child: Container(

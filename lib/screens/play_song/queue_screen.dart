@@ -28,8 +28,10 @@ class _QueueScreenState extends State<QueueScreen> {
   Set<int> selectedSongs = {};
   bool isShuffleEnabled = false;
   bool isRepeatEnabled = false;
-  String repeatMode = 'off'; // 'off', 'all', 'one'
+  String repeatMode = 'off';
   StreamSubscription<int?>? _indexSubscription;
+  StreamSubscription<bool>? _shuffleSubscription;
+  StreamSubscription<List<SongsModel>>? _songsSubscription;
 
   @override
   void initState() {
@@ -37,10 +39,33 @@ class _QueueScreenState extends State<QueueScreen> {
     musicService = MusicPlayerService();
     _loadQueueSongs();
 
+    // Sync shuffle state with music service
+    isShuffleEnabled = musicService.isShuffleEnabled;
+
     // Listen to current index changes to update UI
     _indexSubscription = musicService.currentIndexStream.listen((index) {
       if (mounted) {
         setState(() {});
+      }
+    });
+
+    // Listen to shuffle state changes
+    _shuffleSubscription = musicService.isPlayingStream
+        .map((_) => musicService.isShuffleEnabled)
+        .listen((shuffleEnabled) {
+          if (mounted) {
+            setState(() {
+              isShuffleEnabled = shuffleEnabled;
+            });
+          }
+        });
+
+    // Listen to songs list changes
+    _songsSubscription = musicService.songsChanged.listen((newSongs) {
+      if (mounted) {
+        setState(() {
+          queueSongs = List.from(newSongs);
+        });
       }
     });
   }
@@ -48,6 +73,8 @@ class _QueueScreenState extends State<QueueScreen> {
   @override
   void dispose() {
     _indexSubscription?.cancel();
+    _shuffleSubscription?.cancel();
+    _songsSubscription?.cancel();
     super.dispose();
   }
 
@@ -87,6 +114,62 @@ class _QueueScreenState extends State<QueueScreen> {
     });
     // Update music service with new order
     musicService.setPlaylist(queueSongs);
+  }
+
+  void _toggleShuffle() async {
+    if (queueSongs.isEmpty) return;
+
+    // Get current playing song info before shuffling
+    final currentSongId = musicService.currentSongId;
+    final wasPlaying = musicService.isPlaying;
+
+    if (!isShuffleEnabled) {
+      // Enable shuffle - rearrange the queue
+      final shuffledSongs = List<SongsModel>.from(queueSongs);
+      shuffledSongs.shuffle();
+
+      // Find the position of the currently playing song in the shuffled list
+      int startIndex = 0;
+      if (currentSongId != null) {
+        final currentIndex = shuffledSongs.indexWhere(
+          (song) => song.id == currentSongId,
+        );
+        if (currentIndex >= 0) {
+          startIndex = currentIndex;
+        } else {
+          // If current song not found, pick a random index
+          startIndex =
+              (DateTime.now().millisecondsSinceEpoch % shuffledSongs.length);
+        }
+      } else {
+        // If no current song, pick a random index
+        startIndex =
+            (DateTime.now().millisecondsSinceEpoch % shuffledSongs.length);
+      }
+
+      // Update UI with shuffled order
+      setState(() {
+        queueSongs = shuffledSongs;
+        isShuffleEnabled = true;
+      });
+
+      // Enable shuffle mode and set playlist with shuffled order
+      await musicService.ensureShuffleOnAndReshuffle();
+      await musicService.setPlaylist(
+        shuffledSongs,
+        startIndex: startIndex,
+        autoPlay: wasPlaying,
+      );
+    } else {
+      // Disable shuffle - restore original order
+      setState(() {
+        isShuffleEnabled = false;
+      });
+
+      await musicService.ensureShuffleOff();
+      // Reload the original queue order
+      _loadQueueSongs();
+    }
   }
 
   @override
@@ -143,95 +226,76 @@ class _QueueScreenState extends State<QueueScreen> {
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
             child: Row(
               children: [
-                // Selection info and current playing position
                 Row(
                   children: [
                     SvgPicture.asset(Assets.svgSongsCount),
                     SizedBox(width: 8.w),
-                    Texts(
-                      "${selectedSongs.length}/${queueSongs.length}",
-                      fontSize: 14.sp,
-                      color: AppColors.textColor,
-                      fontWeight: FontWeight.w400,
-                      fontFamily: AppFonts.inter,
-                    ),
                     if (queueSongs.isNotEmpty &&
                         musicService.currentIndex >= 0) ...[
-                      SizedBox(width: 16.w),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 8.w,
-                          vertical: 4.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryOrange.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Texts(
-                          "${musicService.currentIndex + 1} of ${queueSongs.length}",
-                          fontSize: 12.sp,
-                          color: AppColors.primaryOrange,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: AppFonts.inter,
-                        ),
+                      Texts(
+                        "${musicService.currentIndex + 1}/${queueSongs.length}",
+                        fontSize: 14.sp,
+                        color: AppColors.textColor,
+                        fontWeight: FontWeight.w400,
+                        fontFamily: AppFonts.inter,
                       ),
                     ],
                   ],
                 ),
-                // const Spacer(),
-                // Row(
-                //   children: [
-                //     GestureDetector(
-                //       onTap: _toggleShuffle,
-                //       child: Container(
-                //         padding: EdgeInsets.all(8.w),
-                //         decoration: BoxDecoration(
-                //           color: isShuffleEnabled
-                //               ? AppColors.primaryOrange
-                //               : AppColors.shuffleBackground,
-                //           borderRadius: BorderRadius.circular(20.r),
-                //         ),
-                //         child: SvgPicture.asset(
-                //           Assets.svgShuffle,
-                //           width: 20.w,
-                //           height: 20.h,
-                //           colorFilter: ColorFilter.mode(
-                //             isShuffleEnabled
-                //                 ? AppColors.white
-                //                 : AppColors.textColor,
-                //             BlendMode.srcIn,
-                //           ),
-                //         ),
-                //       ),
-                //     ),
-                //     SizedBox(width: 12.w),
-                //     GestureDetector(
-                //       onTap: _toggleRepeat,
-                //       child: Container(
-                //         padding: EdgeInsets.all(8.w),
-                //         decoration: BoxDecoration(
-                //           color: isRepeatEnabled
-                //               ? AppColors.primaryOrange
-                //               : AppColors.shuffleBackground,
-                //           borderRadius: BorderRadius.circular(20.r),
-                //         ),
-                //         child: SvgPicture.asset(
-                //           repeatMode == 'one'
-                //               ? Assets.svgRepeatOnce
-                //               : Assets.svgIcRepeat,
-                //           width: 20.w,
-                //           height: 20.h,
-                //           colorFilter: ColorFilter.mode(
-                //             isRepeatEnabled
-                //                 ? AppColors.white
-                //                 : AppColors.textColor,
-                //             BlendMode.srcIn,
-                //           ),
-                //         ),
-                //       ),
-                //     ),
-                //   ],
-                // ),
+                const Spacer(),
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: _toggleShuffle,
+                      child: Container(
+                        padding: EdgeInsets.all(8.w),
+                        decoration: BoxDecoration(
+                          color: isShuffleEnabled
+                              ? AppColors.primaryOrange
+                              : AppColors.shuffleBackground,
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
+                        child: SvgPicture.asset(
+                          Assets.svgShuffle,
+                          width: 20.w,
+                          height: 20.h,
+                          colorFilter: ColorFilter.mode(
+                            isShuffleEnabled
+                                ? AppColors.white
+                                : AppColors.textColor,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    GestureDetector(
+                      // onTap: _toggleRepeat,
+                      child: Container(
+                        padding: EdgeInsets.all(8.w),
+                        decoration: BoxDecoration(
+                          color: isRepeatEnabled
+                              ? AppColors.primaryOrange
+                              : AppColors.shuffleBackground,
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
+                        child: SvgPicture.asset(
+                          repeatMode == 'one'
+                              ? Assets.svgRepeatOnce
+                              : Assets.svgIcRepeat,
+                          width: 20.w,
+                          height: 20.h,
+                          colorFilter: ColorFilter.mode(
+                            isRepeatEnabled
+                                ? AppColors.white
+                                : AppColors.textColor,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -308,7 +372,6 @@ class _QueueScreenState extends State<QueueScreen> {
                               ? FontWeight.w600
                               : FontWeight.w500,
                           onTap: () async {
-                            // Play the selected song
                             musicService.setPlaylist(
                               queueSongs,
                               startIndex: index,

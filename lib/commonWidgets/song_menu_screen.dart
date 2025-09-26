@@ -104,17 +104,52 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                   )
                                 : null,
                             onTap: () {
-                              if(songItem.title == S.of(context).keepScreenOn){
+                              var musicService = MusicPlayerService();
+                              if (songItem.title == S.of(context).keepScreenOn) {
                                 if (songItem.title == 'Edit details') {
                                   context.push('/dashboard/edit-song');
                                 } else {
                                   context.push('/dashboard/playing');
                                 }
-                              }
-                              else if(songItem.title == S.of(context).playNext){
-                                var musicService = MusicPlayerService();
-                                final updatedList = moveItem<SongsModel>(widget.songsList ?? [], widget.songIndex ?? 0, musicService.currentIndex);
-                                musicService.songs = updatedList;
+                              } else if (songItem.title == S.of(context).playNext) {
+                                // Add song to play next (insert after current song)
+                                final currentIndex = musicService.currentIndex;
+                                final insertIndex = currentIndex + 1;
+
+                                // Create a new list with the song inserted at the correct position
+                                final newSongsList = List<SongsModel>.from(musicService.songs);
+
+                                // Check if song is already in the queue
+                                final existingIndex = newSongsList.indexWhere((song) => song.id == widget.currentSong!.id);
+
+                                if (existingIndex != -1) {
+                                  // Song already exists, move it to the correct position
+                                  final songToMove = newSongsList.removeAt(existingIndex);
+                                  final adjustedInsertIndex = existingIndex < insertIndex ? insertIndex - 1 : insertIndex;
+                                  newSongsList.insert(adjustedInsertIndex, songToMove);
+                                } else {
+                                  // Song doesn't exist, insert it
+                                  newSongsList.insert(insertIndex, widget.currentSong!);
+                                }
+
+                                // Update the music service with the new playlist
+                                musicService.setPlaylist(newSongsList, autoPlay: false, startIndex: !(existingIndex > musicService.currentIndex) ? musicService.currentIndex - 1 : musicService.currentIndex);
+                                Navigator.pop(context);
+                              } else if (songItem.title == S.of(context).addToQueue) {
+                                // Add song to end of queue
+                                final newSongsList = List<SongsModel>.from(musicService.songs);
+
+                                // Check if song is already in the queue
+                                final existingIndex = newSongsList.indexWhere((song) => song.id == widget.currentSong!.id);
+
+                                if (existingIndex == -1) {
+                                  // Song doesn't exist, add it to the end
+                                  newSongsList.add(widget.currentSong!);
+                                  musicService.setPlaylist(newSongsList, autoPlay: false);
+                                }
+                                Navigator.pop(context);
+                              } else if (songItem.title == S.of(context).addToPlaylist) {
+                                Navigator.pop(context);
                               }
                             },
                           ),
@@ -159,34 +194,4 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
       ),
     );
   }
-
-  List<SongsModel> moveItem<T>(List<SongsModel> list, int oldIndex, int newIndex) {
-    final n = list.length;
-    if (n == 0) return list;
-    if (oldIndex < 0 || oldIndex >= n) return list; // invalid source
-
-    if(oldIndex > newIndex){
-      int targetIndex = newIndex + 1;
-      if (targetIndex < 0) targetIndex = 0;
-      if (targetIndex >= n) targetIndex = n - 1;
-
-      final item = list.removeAt(oldIndex);
-      list.insert(targetIndex, item);
-    }
-    else{
-      int targetIndex = oldIndex;
-      list.forEach((element) {
-        log('${element.title}');
-      },);
-      final item = list.removeAt(oldIndex);
-      log('--- ${item.title} ---');
-      list.insert(targetIndex, item);
-      list.forEach((element) {
-        log('${element.title}');
-      },); 
-    }
-
-    return list;
-  }
-
 }

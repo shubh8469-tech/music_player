@@ -81,6 +81,7 @@ class Assets {
   static const String svgMostPlayed = 'assets/svg/mostPlayed.svg';
   static const String svgMusicIcon = 'assets/svg/musicIcon.svg';
   static const String svgMusicLibrary = 'assets/svg/musicLibrary.svg';
+  static const String svgNewPause = 'assets/svg/newPause.svg';
   static const String svgPause = 'assets/svg/pause.svg';
   static const String svgPlay = 'assets/svg/play.svg';
   static const String svgPlayLogo = 'assets/svg/playLogo.svg';

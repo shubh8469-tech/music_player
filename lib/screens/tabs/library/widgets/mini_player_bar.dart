@@ -8,6 +8,7 @@ import '../../../../generated/assets.dart';
 import '../../../../themes/color.dart';
 import '../../../../themes/font.dart';
 import '../../../play_song/playing_song_screen.dart';
+import '../../../play_song/queue_navigation_helper.dart';
 import '../../music_service.dart';
 import '../../../../commonWidgets/gradientCard.dart';
 import '../../../../commonWidgets/textWidget.dart';
@@ -197,10 +198,15 @@ class MiniPlayerBar extends StatelessWidget {
                       SizedBox(width: 12.w),
                       Row(
                         children: [
-                          SvgPicture.asset(
-                            Assets.svgIcQueue,
-                            width: 24.w,
-                            height: 24.h,
+                          GestureDetector(
+                            onTap: () {
+                              QueueNavigationHelper.navigateToQueueScreen(context);
+                            },
+                            child: SvgPicture.asset(
+                              Assets.svgIcQueue,
+                              width: 24.w,
+                              height: 24.h,
+                            ),
                           ),
                           SizedBox(width: 20.w),
                           GestureDetector(
@@ -223,9 +229,13 @@ class MiniPlayerBar extends StatelessWidget {
                                 return GestureDetector(
                                   onTap: () => musicService.pause(),
                                   child: SvgPicture.asset(
-                                    Assets.svgIcOverlayPause,
-                                    width: 26.w,
-                                    height: 24.h,
+                                    Assets.svgNewPause,
+                                    height: 19.h,
+                                    width: 19.w,
+                                    colorFilter: const ColorFilter.mode(
+                                      AppColors.primaryOrange,
+                                      BlendMode.srcIn,
+                                    ),
                                   ),
                                 );
                               } else {
@@ -233,8 +243,8 @@ class MiniPlayerBar extends StatelessWidget {
                                   onTap: () => musicService.play(),
                                   child: SvgPicture.asset(
                                     Assets.svgPlay,
-                                    width: 18.w,
-                                    height: 18.h,
+                                    height: 20.h,
+                                    width: 20.w,
                                     colorFilter: const ColorFilter.mode(
                                       AppColors.primaryOrange,
                                       BlendMode.srcIn,
