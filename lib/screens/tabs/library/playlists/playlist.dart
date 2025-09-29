@@ -5,12 +5,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:music_app/themes/color.dart';
 
 import '../../../../commonWidgets/MusicListTile.dart';
+import '../../../../commonWidgets/song_menu_screen.dart';
 import '../../../../commonWidgets/textWidget.dart';
 import '../../../../generated/assets.dart';
 import '../../../../themes/font.dart';
 import '../../../../features/playlists/bloc/playlist_bloc.dart';
 import '../../../../features/playlists/domain/entities/playlist.dart' as domain;
 import 'package:go_router/go_router.dart';
+import '../../../../utills/globals.dart';
 import '../../music_service.dart';
 import 'dart:async';
 
@@ -172,7 +174,27 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                 extra: p,
                               );
                             },
-                            onPlayTap: () => print("Play tapped"),
+                            onPlayTap: () {
+                              showModalBottomSheet(
+                                context: context,
+                                backgroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(40.r),
+                                  ),
+                                ),
+                                isScrollControlled: true,
+                                builder: (_) => SongMenuScreen(
+                                  songMenuList: playlistMenuItems,
+                                  isPlaying: false,
+                                  currentSong: null,
+                                  songIndex: index,
+                                  songsList: [],
+                                  maxHeight: 0.79.sh,
+                                )
+                              );
+                            },
                           );
                         }),
                       );
@@ -233,7 +255,27 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                 extra: p,
                               );
                             },
-                            onPlayTap: () => print("Play tapped"),
+                            onPlayTap: () {
+                              showModalBottomSheet(
+                                  context: context,
+                                  backgroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(40.r),
+                                    ),
+                                  ),
+                                  isScrollControlled: true,
+                                  builder: (_) => SongMenuScreen(
+                                    songMenuList: playlistMenuItems,
+                                    isPlaying: false,
+                                    currentSong: null,
+                                    songIndex: index,
+                                    songsList: [],
+                                    maxHeight: 0.79.sh,
+                                  )
+                              );
+                            },
                           );
                         }),
                       );

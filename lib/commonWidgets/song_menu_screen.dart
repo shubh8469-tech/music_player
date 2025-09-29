@@ -7,9 +7,12 @@ import 'package:go_router/go_router.dart';
 import 'package:music_app/commonWidgets/textWidget.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/themes/font.dart';
+import '../core/di/injection.dart';
+import '../features/playlists/domain/repositories/playlist_repository.dart';
 import '../generated/assets.dart';
 import '../l10n/l10n.dart';
 import '../model/song_menu_model.dart';
+import '../screens/play_song/widget/playlist_bottomsheet.dart';
 import '../screens/tabs/music_service.dart';
 import '../themes/color.dart';
 import 'MusicListTile.dart';
@@ -20,8 +23,23 @@ class SongMenuScreen extends StatefulWidget {
   List<SongsModel>? songsList;
   SongsModel? currentSong;
   int? songIndex;
+  bool isSystemPlaylist;
+  String? systemKeyOrId;
+  String? from;
+  double maxHeight;
 
-  SongMenuScreen({super.key, required this.songMenuList, required this.isPlaying, this.songsList, this.currentSong, this.songIndex});
+  SongMenuScreen({
+    super.key,
+    required this.songMenuList,
+    required this.isPlaying,
+    this.songsList,
+    this.currentSong,
+    this.songIndex,
+    this.maxHeight = 0.87,
+    this.isSystemPlaylist = true,
+    this.systemKeyOrId,
+    this.from,
+  });
 
   @override
   State<SongMenuScreen> createState() => _SongMenuScreenState();
@@ -32,10 +50,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final double maxHeight = 0.87.sh;
-
     return Container(
-      constraints: BoxConstraints(maxHeight: maxHeight),
+      constraints: BoxConstraints(maxHeight: widget.maxHeight),
       padding: EdgeInsets.only(top: 10.h, bottom: MediaQuery.of(context).viewInsets.bottom + 16.h),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -103,7 +119,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     },
                                   )
                                 : null,
-                            onTap: () {
+                            onTap: () async {
                               var musicService = MusicPlayerService();
                               if (songItem.title == S.of(context).keepScreenOn) {
                                 if (songItem.title == 'Edit details') {
@@ -133,7 +149,11 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                 }
 
                                 // Update the music service with the new playlist
-                                musicService.setPlaylist(newSongsList, autoPlay: false, startIndex: !(existingIndex > musicService.currentIndex) ? musicService.currentIndex - 1 : musicService.currentIndex);
+                                musicService.setPlaylist(
+                                  newSongsList,
+                                  autoPlay: false,
+                                  startIndex: !(existingIndex > musicService.currentIndex) ? musicService.currentIndex - 1 : musicService.currentIndex,
+                                );
                                 Navigator.pop(context);
                               } else if (songItem.title == S.of(context).addToQueue) {
                                 // Add song to end of queue
@@ -149,7 +169,20 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                 }
                                 Navigator.pop(context);
                               } else if (songItem.title == S.of(context).addToPlaylist) {
-                                Navigator.pop(context);
+                                if(widget.from == 'playlist'){
+                                  List<SongsModel> _songs = [];
+                                  final _repo = locator<PlaylistRepository>();
+                                  if (widget.isSystemPlaylist) {
+                                    _songs = await _repo.getSongsForSystemPlaylist(
+                                      widget.systemKeyOrId ?? '',
+                                    );
+                                  } else {
+                                    _songs = await _repo.getSongsForPlaylist(int.parse(widget.systemKeyOrId!));
+                                  }
+                                }
+                                else{
+                                  _showPlaylistBottomSheet(context, widget.currentSong);
+                                }
                               }
                             },
                           ),
@@ -192,6 +225,17 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
           SizedBox(height: 25.h),
         ],
       ),
+    );
+  }
+
+  void _showPlaylistBottomSheet(BuildContext context, SongsModel? currentSong) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
+      isScrollControlled: true,
+      builder: (_) => PlaylistBottomSheet(songId: currentSong!.id!),
     );
   }
 }

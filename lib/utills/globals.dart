@@ -29,6 +29,16 @@ final List<SongMenuItem> songPlayingMenuItems = [
   SongMenuItem(icon: Assets.svgIcDelete, title: S.of(rootNavigatorKey.currentContext!).deleteSong),
 ];
 
+final List<SongMenuItem> playlistMenuItems = [
+  SongMenuItem(icon: Assets.svgPlayBlackBorder, title: S.of(rootNavigatorKey.currentContext!).play),
+  SongMenuItem(icon: Assets.svgIcMenuPlaynext, title: S.of(rootNavigatorKey.currentContext!).playNext),
+  SongMenuItem(icon: Assets.svgIcMenuQueue, title: S.of(rootNavigatorKey.currentContext!).addToQueue),
+  SongMenuItem(icon: Assets.svgIcMenuPlaylist, title: S.of(rootNavigatorKey.currentContext!).addToPlaylist),
+  SongMenuItem(icon: Assets.svgIcEdit, title: S.of(rootNavigatorKey.currentContext!).editDetails),
+  SongMenuItem(icon: Assets.svgIcCover, title: S.of(rootNavigatorKey.currentContext!).changeCover),
+  SongMenuItem(icon: Assets.svgIcDelete, title: S.of(rootNavigatorKey.currentContext!).delete),
+];
+
 final List<SongMenuItem> sortByItems = [
   SongMenuItem(icon: "", title: S.of(rootNavigatorKey.currentContext!).songName),
   SongMenuItem(icon: "", title: S.of(rootNavigatorKey.currentContext!).artistName),
