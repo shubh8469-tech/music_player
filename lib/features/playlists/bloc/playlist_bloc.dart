@@ -65,9 +65,41 @@ class PlaylistBloc extends Bloc<PlaylistEvent, PlaylistState> {
       }
     });
 
+    on<_AddMultipleSongsToPlaylist>((event, emit) async {
+      try {
+        log(
+          'Adding ${event.songIds.length} songs to playlist ${event.playlistId}',
+        );
+        await repository.addMultipleSongsToPlaylist(
+          event.playlistId,
+          event.songIds,
+        );
+        final songs = await repository.fetchAllPlaylists();
+        emit(PlaylistState.loaded(songs));
+      } catch (e) {
+        emit(PlaylistState.error(e.toString()));
+      }
+    });
+
     on<_RemoveSongFromPlaylist>((event, emit) async {
       try {
         await repository.removeSongFromPlaylist(event.playlistId, event.songId);
+        final songs = await repository.fetchAllPlaylists();
+        emit(PlaylistState.loaded(songs));
+      } catch (e) {
+        emit(PlaylistState.error(e.toString()));
+      }
+    });
+
+    on<_RemoveMultipleSongsFromPlaylist>((event, emit) async {
+      try {
+        log(
+          'Removing ${event.songIds.length} songs from playlist ${event.playlistId}',
+        );
+        await repository.removeMultipleSongsFromPlaylist(
+          event.playlistId,
+          event.songIds,
+        );
         final songs = await repository.fetchAllPlaylists();
         emit(PlaylistState.loaded(songs));
       } catch (e) {

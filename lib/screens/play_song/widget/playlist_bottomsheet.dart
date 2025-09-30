@@ -10,15 +10,26 @@ import '../../../commonWidgets/MusicListTile.dart';
 import '../../../commonWidgets/bottom_button_two.dart';
 import '../../../commonWidgets/textWidget.dart';
 import '../../../features/playlists/bloc/playlist_bloc.dart';
+import '../../../features/songs/data/models/song_model.dart';
 import '../../../generated/assets.dart';
 import '../../../l10n/l10n.dart';
 import '../../../themes/color.dart';
 import 'create_new_playlist_bottomsheet.dart';
 
 class PlaylistBottomSheet extends StatefulWidget {
-  const PlaylistBottomSheet({super.key, required this.songId});
+  const PlaylistBottomSheet({
+    super.key,
+    this.songId,
+    this.songsList,
+    this.removeFromPlaylistId,
+  }) : assert(
+         songId != null || songsList != null,
+         'Either songId or songsList must be provided',
+       );
 
-  final int songId;
+  final int? songId;
+  final List<SongsModel>? songsList;
+  final int? removeFromPlaylistId;
 
   @override
   _PlaylistBottomSheetState createState() => _PlaylistBottomSheetState();
@@ -26,6 +37,7 @@ class PlaylistBottomSheet extends StatefulWidget {
 
 class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
   int selectedPlaylist = 0;
+  bool _isAddingSongs = false;
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +151,6 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
                                     rightBtnTap: () {
                                       addSongToPlaylist(
                                         playlistId: selectedPlaylist,
-                                        songId: widget.songId,
                                         position: playlist.songCount,
                                       );
                                     },
@@ -165,14 +176,70 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
 
   void addSongToPlaylist({
     required int playlistId,
-    required int songId,
     required int position,
-  }) {
-    log('Adding song $songId to playlist $playlistId at position $position');
-    context.read<PlaylistBloc>().add(
-      PlaylistEvent.addSongToPlaylist(playlistId, songId, position),
-    );
-    // Navigator.of(context).pop();
+  }) async {
+    // Prevent multiple simultaneous executions
+    if (_isAddingSongs) return;
+    _isAddingSongs = true;
+
+    try {
+      // Store the bloc reference before any async operations
+      final playlistBloc = context.read<PlaylistBloc>();
+
+      if (widget.songsList != null && widget.songsList!.isNotEmpty) {
+        // Add multiple songs using the new batch method
+        log('Adding ${widget.songsList!.length} songs to playlist $playlistId');
+        final songIds = widget.songsList!.map((song) => song.id!).toList();
+        playlistBloc.add(
+          PlaylistEvent.addMultipleSongsToPlaylist(playlistId, songIds),
+        );
+
+        // If we need to remove songs from source playlist, do it after adding
+        if (widget.removeFromPlaylistId != null) {
+          log(
+            'Removing songs from source playlist ${widget.removeFromPlaylistId}',
+          );
+          playlistBloc.add(
+            PlaylistEvent.removeMultipleSongsFromPlaylist(
+              widget.removeFromPlaylistId!,
+              songIds,
+            ),
+          );
+        }
+      } else if (widget.songId != null) {
+        // Add single song
+        if (!mounted) return;
+
+        log(
+          'Adding song ${widget.songId} to playlist $playlistId at position $position',
+        );
+        playlistBloc.add(
+          PlaylistEvent.addSongToPlaylist(playlistId, widget.songId!, position),
+        );
+
+        // If we need to remove song from source playlist, do it after adding
+        if (widget.removeFromPlaylistId != null) {
+          log(
+            'Removing song from source playlist ${widget.removeFromPlaylistId}',
+          );
+          playlistBloc.add(
+            PlaylistEvent.removeSongFromPlaylist(
+              widget.removeFromPlaylistId!,
+              widget.songId!,
+            ),
+          );
+        }
+      }
+
+      // Close the bottom sheet if still mounted
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      log('Error adding songs to playlist: $e');
+    } finally {
+      _isAddingSongs = false;
+    }
   }
 
   void createNewPlayListWidget() {

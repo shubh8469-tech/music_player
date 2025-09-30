@@ -224,7 +224,6 @@ class MusicListTile extends StatelessWidget {
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () {
-                    print('Play button tapped!');
                     if (onPlayTap != null) {
                       onPlayTap!();
                     }

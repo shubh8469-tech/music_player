@@ -286,8 +286,6 @@ class _SongsListState extends State<SongsList> {
                                             // isPlaying &&
                                             (songs[index].id == currentId);
 
-                                        log('playing or not $isPlaying');
-
                                         return MusicListTile(
                                           margin: 7.w,
                                           height: 66.h,
@@ -341,6 +339,7 @@ class _SongsListState extends State<SongsList> {
                                                 currentSong: songs[index],
                                                 songIndex: index,
                                                 songsList: songs,
+                                                maxHeight: 0.87.sh,
                                               ),
                                             );
                                           },

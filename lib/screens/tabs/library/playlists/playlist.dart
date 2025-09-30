@@ -46,6 +46,8 @@ class _PlayListScreenState extends State<PlayListScreen> {
   StreamSubscription<void>? _libChangedSub;
   DateTime? _lastRefreshTime;
 
+  var musicService = MusicPlayerService();
+
   @override
   void initState() {
     super.initState();
@@ -188,10 +190,12 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                 builder: (_) => SongMenuScreen(
                                   songMenuList: playlistMenuItems,
                                   isPlaying: false,
-                                  currentSong: null,
+                                  currentSong: musicService.currentIndex != -1 ? musicService.songs[musicService.currentIndex] : null,
                                   songIndex: index,
                                   songsList: [],
-                                  maxHeight: 0.79.sh,
+                                  maxHeight: musicService.currentIndex != -1 ? 0.79.sh : 0.66.sh,
+                                  from: 'playlist',
+                                  systemKeyOrId: p.systemKey,
                                 )
                               );
                             },
@@ -269,10 +273,12 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                   builder: (_) => SongMenuScreen(
                                     songMenuList: playlistMenuItems,
                                     isPlaying: false,
-                                    currentSong: null,
+                                    currentSong: musicService.currentIndex != -1 ? musicService.songs[musicService.currentIndex] : null,
                                     songIndex: index,
                                     songsList: [],
                                     maxHeight: 0.79.sh,
+                                    from: 'playlist',
+                                    systemKeyOrId: p.id.toString(),
                                   )
                               );
                             },

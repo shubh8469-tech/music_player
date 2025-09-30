@@ -8,7 +8,12 @@ abstract class PlaylistLocalDataSource {
   Future<List<PlaylistModel>> getAllPlaylists();
   Future<int> deletePlaylist(int id);
   Future<void> addSongToPlaylist(int playlistId, int songId, int position);
+  Future<void> addMultipleSongsToPlaylist(int playlistId, List<int> songIds);
   Future<void> removeSongFromPlaylist(int playlistId, int songId);
+  Future<void> removeMultipleSongsFromPlaylist(
+    int playlistId,
+    List<int> songIds,
+  );
   Future<List<SongsModel>> getSongsForPlaylist(int playlistId);
   Future<List<PlaylistModel>> getSystemPlaylistsWithCounts();
   Future<List<SongsModel>> getSongsForSystemPlaylist(String systemKey);
@@ -48,6 +53,7 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
   /// 🎵 Playlist Songs Methods
   /// --------------------------
 
+  @override
   Future<void> addSongToPlaylist(
     int playlistId,
     int songId,
@@ -60,6 +66,34 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
     }, conflictAlgorithm: ConflictAlgorithm.ignore);
   }
 
+  @override
+  Future<void> addMultipleSongsToPlaylist(
+    int playlistId,
+    List<int> songIds,
+  ) async {
+    // Get current song count for position calculation
+    final currentSongs = await db.query(
+      'playlist_songs',
+      columns: ['song_id'],
+      where: 'playlist_id = ?',
+      whereArgs: [playlistId],
+    );
+
+    int startPosition = currentSongs.length;
+
+    // Use batch insert for better performance and atomicity
+    final batch = db.batch();
+    for (int i = 0; i < songIds.length; i++) {
+      batch.insert('playlist_songs', {
+        'playlist_id': playlistId,
+        'song_id': songIds[i],
+        'position': startPosition + i,
+      }, conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
+    await batch.commit(noResult: true);
+  }
+
+  @override
   Future<void> removeSongFromPlaylist(int playlistId, int songId) async {
     await db.delete(
       'playlist_songs',
@@ -68,6 +102,24 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
     );
   }
 
+  @override
+  Future<void> removeMultipleSongsFromPlaylist(
+    int playlistId,
+    List<int> songIds,
+  ) async {
+    // Use batch delete for better performance
+    final batch = db.batch();
+    for (final songId in songIds) {
+      batch.delete(
+        'playlist_songs',
+        where: 'playlist_id = ? AND song_id = ?',
+        whereArgs: [playlistId, songId],
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
+  @override
   Future<List<SongsModel>> getSongsForPlaylist(int playlistId) async {
     final result = await db.rawQuery(
       '''

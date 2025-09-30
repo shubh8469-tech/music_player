@@ -44,8 +44,23 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
   }
 
   @override
+  Future<void> addMultipleSongsToPlaylist(int playlistId, List<int> songIds) {
+    log('Adding ${songIds.length} songs to playlist $playlistId');
+    return localDataSource.addMultipleSongsToPlaylist(playlistId, songIds);
+  }
+
+  @override
   Future<void> removeSongFromPlaylist(int playlistId, int songId) {
     return localDataSource.removeSongFromPlaylist(playlistId, songId);
+  }
+
+  @override
+  Future<void> removeMultipleSongsFromPlaylist(
+    int playlistId,
+    List<int> songIds,
+  ) {
+    log('Removing ${songIds.length} songs from playlist $playlistId');
+    return localDataSource.removeMultipleSongsFromPlaylist(playlistId, songIds);
   }
 
   @override

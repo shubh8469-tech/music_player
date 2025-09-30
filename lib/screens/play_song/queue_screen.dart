@@ -177,32 +177,13 @@ class _QueueScreenState extends State<QueueScreen> {
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryOrange,
-        leadingWidth: 45.w,
-        toolbarHeight: 52.h,
-        leading: GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
-          child: Padding(
-            padding: EdgeInsets.only(left: 22.w),
-            child: SizedBox(
-              width: 26.w,
-              height: 26.h,
-              child: SvgPicture.asset(
-                Assets.svgIcBack,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.white,
-                  BlendMode.srcIn,
-                ),
-              ),
-            ),
-          ),
-        ),
+        backgroundColor: AppColors.white,
+        elevation: 0,
         title: Texts(
           "Playing Queue",
-          fontSize: 16.sp,
-          color: AppColors.white,
-          fontWeight: FontWeight.w500,
-          fontFamily: AppFonts.manrope,
+          fontSize: 18.sp,
+          fontWeight: AppFontWeights.medium,
+          fontFamily: AppFonts.inter,
         ),
         actions: [
           IconButton(
@@ -211,10 +192,6 @@ class _QueueScreenState extends State<QueueScreen> {
               Assets.svgIcDelete,
               height: 26.h,
               width: 26.w,
-              colorFilter: const ColorFilter.mode(
-                AppColors.white,
-                BlendMode.srcIn,
-              ),
             ),
           ),
         ],
@@ -394,6 +371,7 @@ class _QueueScreenState extends State<QueueScreen> {
                                 currentSong: song,
                                 songIndex: index,
                                 songsList: queueSongs,
+                                maxHeight: 0.87.sh,
                               ),
                             );
                           },

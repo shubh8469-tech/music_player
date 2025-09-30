@@ -10,6 +10,8 @@ import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/screens/tabs/music_service.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
+import '../../../../commonWidgets/song_menu_screen.dart';
+import '../../../../utills/globals.dart';
 import '../widgets/mini_player_bar.dart';
 
 import '../../../../commonWidgets/MusicListTile.dart';
@@ -115,7 +117,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             cardHeight: 50.h,
             cardWidth: 50.w,
             cardRadius: 7.r,
-            cardIconAsset: Assets.svgMusicIcon,
+            cardIconAsset: song.artwork_path!,
             cardIconSize: 32.r,
             isSvgCardIcon: true,
             title: song.title,
@@ -130,7 +132,27 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               await _player.play();
             },
             onPlayTap: () async {
-              logS.log('Playing song id: ${song.id}');
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(40.r),
+                  ),
+                ),
+                isScrollControlled: true,
+                builder: (_) => SongMenuScreen(
+                  songMenuList: songMenuItems,
+                  isPlaying: false,
+                  currentSong: song,
+                  songIndex: index,
+                  songsList: list,
+                  maxHeight: 0.87.sh,
+                  systemKeyOrId: widget.playlist.id.toString(),
+                  from: 'playlist',
+                ),
+              );
             },
           ),
         );
@@ -165,7 +187,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               left: 20.w,
               right: 20.w,
               top: 10.h,
-              bottom: 80.h,
+              bottom: _player.isPlaying ? 80.h : 10.h,
             ),
             child: Column(
               children: [
@@ -210,7 +232,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                         await _player.ensureShuffleOnAndReshuffle();
                         await _player.setPlaylist(
                           shuffledSongs,
-                          startIndex: startIndex,
+                          startIndex: 0,
                           autoPlay: wasPlaying,
                         );
                       },
