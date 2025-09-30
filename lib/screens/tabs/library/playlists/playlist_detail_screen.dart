@@ -2,6 +2,7 @@ import 'dart:developer' as logS;
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:music_app/features/playlists/domain/entities/playlist.dart'
@@ -16,6 +17,7 @@ import '../widgets/mini_player_bar.dart';
 
 import '../../../../commonWidgets/MusicListTile.dart';
 import '../../../../commonWidgets/textWidget.dart';
+import '../../../../features/playlists/bloc/playlist_bloc.dart';
 import '../../../../features/playlists/domain/repositories/playlist_repository.dart';
 import '../../../../generated/assets.dart';
 import '../../../../core/di/injection.dart';
@@ -150,6 +152,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   songsList: list,
                   maxHeight: 0.87.sh,
                   systemKeyOrId: widget.playlist.id.toString(),
+                  isSystemPlaylist: _isSystem,
                   from: 'playlist',
                 ),
               );
@@ -162,163 +165,191 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: AppBar(
+    return BlocListener<PlaylistBloc, PlaylistState>(
+      listener: (context, state) {
+        // Reload songs when playlist state changes (e.g., song removed)
+        state.maybeWhen(
+          loaded: (playlists, systemPlaylistSongs) {
+            // Reload songs to reflect any changes
+            _loadSongs();
+          },
+          orElse: () {},
+        );
+      },
+      child: Scaffold(
         backgroundColor: AppColors.white,
-        elevation: 0,
-        title: Texts(
-          widget.playlist.name,
-          fontSize: 18.sp,
-          fontWeight: AppFontWeights.medium,
-          fontFamily: AppFonts.inter,
-        ),
-        actions: [
-          Padding(
-            padding: EdgeInsets.only(right: 12.w),
-            child: SvgPicture.asset(Assets.svgMenuIcon),
+        appBar: AppBar(
+          backgroundColor: AppColors.white,
+          elevation: 0,
+          title: Texts(
+            widget.playlist.name,
+            fontSize: 18.sp,
+            fontWeight: AppFontWeights.medium,
+            fontFamily: AppFonts.inter,
           ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          Padding(
-            padding: EdgeInsets.only(
-              left: 20.w,
-              right: 20.w,
-              top: 10.h,
-              bottom: _player.isPlaying ? 80.h : 10.h,
+          actions: [
+            Padding(
+              padding: EdgeInsets.only(right: 12.w),
+              child: SvgPicture.asset(Assets.svgMenuIcon),
             ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GestureDetector(
-                      onTap: () async {
-                        if (_songs.isEmpty) return;
+          ],
+        ),
+        body: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(
+                left: 20.w,
+                right: 20.w,
+                top: 10.h,
+                bottom: _player.isPlaying ? 80.h : 10.h,
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          if (_songs.isEmpty) return;
 
-                        // Get current playing song info before shuffling
-                        final currentSongId = _player.currentSongId;
-                        final wasPlaying = _player.isPlaying;
+                          // Get current playing song info before shuffling
+                          final currentSongId = _player.currentSongId;
+                          final wasPlaying = _player.isPlaying;
 
-                        // Create shuffled list for UI
-                        final shuffledSongs = List<SongsModel>.from(_songs);
-                        shuffledSongs.shuffle();
+                          // Create shuffled list for UI
+                          final shuffledSongs = List<SongsModel>.from(_songs);
+                          shuffledSongs.shuffle();
 
-                        // Find the position of the currently playing song in the shuffled list
-                        int startIndex = 0;
-                        if (currentSongId != null) {
-                          final currentIndex = shuffledSongs.indexWhere(
-                            (song) => song.id == currentSongId,
-                          );
-                          if (currentIndex >= 0) {
-                            startIndex = currentIndex;
+                          // Find the position of the currently playing song in the shuffled list
+                          int startIndex = 0;
+                          if (currentSongId != null) {
+                            final currentIndex = shuffledSongs.indexWhere(
+                              (song) => song.id == currentSongId,
+                            );
+                            if (currentIndex >= 0) {
+                              startIndex = currentIndex;
+                            } else {
+                              // If current song not found, pick a random index
+                              startIndex = Random().nextInt(
+                                shuffledSongs.length,
+                              );
+                            }
                           } else {
-                            // If current song not found, pick a random index
+                            // If no current song, pick a random index
                             startIndex = Random().nextInt(shuffledSongs.length);
                           }
-                        } else {
-                          // If no current song, pick a random index
-                          startIndex = Random().nextInt(shuffledSongs.length);
+
+                          // Update UI with shuffled order
+                          setState(() {
+                            _songs = shuffledSongs;
+                          });
+
+                          // Enable shuffle mode and set playlist with shuffled order
+                          await _player.ensureShuffleOnAndReshuffle();
+                          await _player.setPlaylist(
+                            shuffledSongs,
+                            startIndex: 0,
+                            autoPlay: wasPlaying,
+                          );
+                        },
+                        child: Container(
+                          alignment: Alignment.center,
+                          height: 40.h,
+                          width: 165.w,
+                          decoration: BoxDecoration(
+                            color: AppColors.shuffleBackground,
+                            borderRadius: BorderRadius.circular(100.r),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SvgPicture.asset(
+                                Assets.svgShuffle,
+                                height: 16.79.h,
+                                width: 17.77,
+                              ),
+                              SizedBox(width: 10.w),
+                              Texts(
+                                'Shuffle',
+                                fontWeight: AppFontWeights.medium,
+                                fontSize: 14.sp,
+                                color: AppColors.black,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () async {
+                          if (_baseSongs.isEmpty) return;
+                          await _player.ensureShuffleOff();
+                          await _applyOrderAndKeepCurrent(
+                            List<SongsModel>.from(_baseSongs),
+                          );
+                        },
+                        child: Container(
+                          height: 40.h,
+                          width: 165.w,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryOrange,
+                            borderRadius: BorderRadius.circular(100.r),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SvgPicture.asset(
+                                Assets.svgPlay,
+                                height: 16.79.h,
+                                width: 17.77,
+                              ),
+                              SizedBox(width: 10.w),
+                              Texts(
+                                'Play',
+                                fontWeight: AppFontWeights.medium,
+                                fontSize: 14.sp,
+                                color: AppColors.white,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 15.h),
+                  Expanded(
+                    child: Builder(
+                      builder: (context) {
+                        if (_songs.isEmpty) {
+                          return Center(
+                            child: Texts(
+                              'No songs available',
+                              fontSize: 16,
+                              fontWeight: AppFontWeights.regular,
+                              fontFamily: AppFonts.inter,
+                            ),
+                          );
                         }
 
-                        // Update UI with shuffled order
-                        setState(() {
-                          _songs = shuffledSongs;
-                        });
+                        if (_isSystem) {
+                          // Enable manual drag for system playlists (session-only order)
+                          return ReorderableListView.builder(
+                            itemCount: _songs.length,
+                            onReorder: _reorderSystemSong,
+                            buildDefaultDragHandles: false,
+                            itemBuilder: (context, index) {
+                              final song = _songs[index];
+                              return ReorderableDelayedDragStartListener(
+                                key: ValueKey(song.id),
+                                index: index,
+                                child: _songTile(_songs, index),
+                              );
+                            },
+                          );
+                        }
 
-                        // Enable shuffle mode and set playlist with shuffled order
-                        await _player.ensureShuffleOnAndReshuffle();
-                        await _player.setPlaylist(
-                          shuffledSongs,
-                          startIndex: 0,
-                          autoPlay: wasPlaying,
-                        );
-                      },
-                      child: Container(
-                        alignment: Alignment.center,
-                        height: 40.h,
-                        width: 165.w,
-                        decoration: BoxDecoration(
-                          color: AppColors.shuffleBackground,
-                          borderRadius: BorderRadius.circular(100.r),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SvgPicture.asset(
-                              Assets.svgShuffle,
-                              height: 16.79.h,
-                              width: 17.77,
-                            ),
-                            SizedBox(width: 10.w),
-                            Texts(
-                              'Shuffle',
-                              fontWeight: AppFontWeights.medium,
-                              fontSize: 14.sp,
-                              color: AppColors.black,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () async {
-                        if (_baseSongs.isEmpty) return;
-                        await _player.ensureShuffleOff();
-                        await _applyOrderAndKeepCurrent(
-                          List<SongsModel>.from(_baseSongs),
-                        );
-                      },
-                      child: Container(
-                        height: 40.h,
-                        width: 165.w,
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryOrange,
-                          borderRadius: BorderRadius.circular(100.r),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SvgPicture.asset(
-                              Assets.svgPlay,
-                              height: 16.79.h,
-                              width: 17.77,
-                            ),
-                            SizedBox(width: 10.w),
-                            Texts(
-                              'Play',
-                              fontWeight: AppFontWeights.medium,
-                              fontSize: 14.sp,
-                              color: AppColors.white,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 15.h),
-                Expanded(
-                  child: Builder(
-                    builder: (context) {
-                      if (_songs.isEmpty) {
-                        return Center(
-                          child: Texts(
-                            'No songs available',
-                            fontSize: 16,
-                            fontWeight: AppFontWeights.regular,
-                            fontFamily: AppFonts.inter,
-                          ),
-                        );
-                      }
-
-                      if (_isSystem) {
-                        // Enable manual drag for system playlists (session-only order)
                         return ReorderableListView.builder(
                           itemCount: _songs.length,
-                          onReorder: _reorderSystemSong,
+                          onReorder: _reorderSong,
                           buildDefaultDragHandles: false,
                           itemBuilder: (context, index) {
                             final song = _songs[index];
@@ -329,29 +360,15 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                             );
                           },
                         );
-                      }
-
-                      return ReorderableListView.builder(
-                        itemCount: _songs.length,
-                        onReorder: _reorderSong,
-                        buildDefaultDragHandles: false,
-                        itemBuilder: (context, index) {
-                          final song = _songs[index];
-                          return ReorderableDelayedDragStartListener(
-                            key: ValueKey(song.id),
-                            index: index,
-                            child: _songTile(_songs, index),
-                          );
-                        },
-                      );
-                    },
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Positioned(left: 0, right: 0, bottom: 0, child: MiniPlayerBar()),
-        ],
+            Positioned(left: 0, right: 0, bottom: 0, child: MiniPlayerBar()),
+          ],
+        ),
       ),
     );
   }

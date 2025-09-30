@@ -317,18 +317,15 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                   // Remove song from current playlist
                                   if (widget.currentSong != null) {
                                     try {
-                                      final _repo =
-                                          locator<PlaylistRepository>();
-                                      await _repo.removeSongFromPlaylist(
-                                        int.parse(widget.systemKeyOrId!),
-                                        widget.currentSong!.id!,
-                                      );
-
-                                      // Refresh playlist state to update UI
+                                      // Use PlaylistBloc event instead of direct repository call
+                                      // This automatically handles state updates
                                       final playlistBloc = context
                                           .read<PlaylistBloc>();
                                       playlistBloc.add(
-                                        PlaylistEvent.fetchAllPlaylists(),
+                                        PlaylistEvent.removeSongFromPlaylist(
+                                          int.parse(widget.systemKeyOrId!),
+                                          widget.currentSong!.id!,
+                                        ),
                                       );
 
                                       // Show success message
