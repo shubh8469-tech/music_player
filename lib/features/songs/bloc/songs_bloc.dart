@@ -1,8 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
 
 import '../data/dataSource/song_local_data_source.dart';
+import '../../playlists/domain/repositories/playlist_repository.dart';
 
 part 'songs_event.dart';
 part 'songs_state.dart';
@@ -10,8 +12,14 @@ part 'songs_bloc.freezed.dart';
 
 class SongsBloc extends Bloc<SongsEvent, SongsState> {
   final SongLocalDataSource localDataSource;
+  final PlaylistRepository playlistRepository;
+  final VoidCallback? onPlaylistRefresh;
 
-  SongsBloc(this.localDataSource) : super(const SongsState.initial()) {
+  SongsBloc(
+    this.localDataSource,
+    this.playlistRepository, {
+    this.onPlaylistRefresh,
+  }) : super(const SongsState.initial()) {
     on<_AddSong>((event, emit) async {
       try {
         emit(const SongsState.loading());
@@ -36,7 +44,16 @@ class SongsBloc extends Bloc<SongsEvent, SongsState> {
     on<_RemoveSong>((event, emit) async {
       try {
         emit(const SongsState.loading());
+
+        // Remove song from all playlists first
+        await playlistRepository.removeSongFromAllPlaylists(event.id);
+
+        // Then remove song from songs table
         await localDataSource.deleteSong(event.id);
+
+        // Trigger playlist refresh to update counts
+        onPlaylistRefresh?.call();
+
         final songs = await localDataSource.getAllSongs();
         emit(SongsState.loaded(songs));
       } catch (e) {

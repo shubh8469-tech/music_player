@@ -14,6 +14,7 @@ abstract class PlaylistLocalDataSource {
     int playlistId,
     List<int> songIds,
   );
+  Future<void> removeSongFromAllPlaylists(int songId);
   Future<List<SongsModel>> getSongsForPlaylist(int playlistId);
   Future<List<PlaylistModel>> getSystemPlaylistsWithCounts();
   Future<List<SongsModel>> getSongsForSystemPlaylist(String systemKey);
@@ -117,6 +118,16 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
       );
     }
     await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeSongFromAllPlaylists(int songId) async {
+    // Remove song from all playlists
+    await db.delete(
+      'playlist_songs',
+      where: 'song_id = ?',
+      whereArgs: [songId],
+    );
   }
 
   @override

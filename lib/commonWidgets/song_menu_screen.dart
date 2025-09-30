@@ -374,6 +374,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                         ),
                                         TextButton(
                                           onPressed: () async {
+
                                             Navigator.pop(
                                               context,
                                             ); // Close dialog

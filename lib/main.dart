@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:music_app/features/playlists/bloc/playlist_bloc.dart';
+import 'package:music_app/features/playlists/domain/repositories/playlist_repository.dart';
 import 'Blocs/languageBloc/language_bloc.dart';
 import 'app_router.dart';
 import 'core/di/injection.dart';
 import 'features/songs/bloc/songs_bloc.dart';
+import 'features/songs/data/dataSource/song_local_data_source.dart';
 import 'l10n/l10n.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:just_audio_background/just_audio_background.dart';
@@ -45,14 +47,22 @@ Future<void> main() async {
         return MultiBlocProvider(
           providers: [
             BlocProvider(create: (context) => LanguageBloc()),
-            BlocProvider<SongsBloc>(
-              create: (_) =>
-                  SongsBloc(locator())..add(const SongsEvent.getAllSongs()),
-            ),
             BlocProvider<PlaylistBloc>(
               create: (_) =>
                   PlaylistBloc(locator())
                     ..add(const PlaylistEvent.fetchAllPlaylists()),
+            ),
+            BlocProvider<SongsBloc>(
+              create: (context) => SongsBloc(
+                locator<SongLocalDataSource>(),
+                locator<PlaylistRepository>(),
+                onPlaylistRefresh: () {
+                  // Trigger playlist refresh when song is deleted
+                  context.read<PlaylistBloc>().add(
+                    const PlaylistEvent.fetchAllPlaylists(),
+                  );
+                },
+              )..add(const SongsEvent.getAllSongs()),
             ),
           ],
           child: ScreenUtilInit(

@@ -15,6 +15,7 @@ abstract class PlaylistRepository {
     int playlistId,
     List<int> songIds,
   );
+  Future<void> removeSongFromAllPlaylists(int songId);
   Future<List<SongsModel>> getSongsForPlaylist(int playlistId);
   Future<List<SongsModel>> getSongsForSystemPlaylist(String systemKey);
   Future<void> reorderPlaylistSongs(int playlistId, List<int> songIdsInOrder);

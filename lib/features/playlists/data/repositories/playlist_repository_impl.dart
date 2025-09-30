@@ -64,6 +64,12 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
   }
 
   @override
+  Future<void> removeSongFromAllPlaylists(int songId) {
+    log('Removing song $songId from all playlists');
+    return localDataSource.removeSongFromAllPlaylists(songId);
+  }
+
+  @override
   Future<List<SongsModel>> getSongsForPlaylist(int playlistId) {
     return localDataSource.getSongsForPlaylist(playlistId);
   }
