@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,7 @@ import 'package:music_app/model/song_menu_model.dart';
 import 'package:music_app/themes/font.dart';
 
 import '../../../../commonWidgets/bottom_button_two.dart';
+import '../../../../features/songs/bloc/songs_bloc.dart';
 import '../../../../generated/assets.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../utills/globals.dart';
@@ -83,7 +85,11 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
                     rightBtnTitle: "Done",
                     lefBtnTap: () {},
                     rightBtnTap: () {
+                      context.read<SongsBloc>().add(SongsEvent.sortSongs(localSelectedIndex));
                       widget.onItemSelected(localSelectedIndex);
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (Navigator.canPop(context)) Navigator.pop(context);
+                      });
                     },
                   ),
                 ),

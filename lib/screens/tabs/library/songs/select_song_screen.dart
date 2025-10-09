@@ -150,50 +150,53 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12.0),
-          margin: const EdgeInsets.symmetric(horizontal: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Column(mainAxisSize: MainAxisSize.min, children: [SvgPicture.asset(Assets.svgIcNavPlay), SizedBox(height: 3), Texts(S.of(context).play)]),
-              GestureDetector(
-                onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    backgroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
-                    isScrollControlled: true,
-                    builder: (_) => PlaylistBottomSheet(songId: 0,),
-                  );
-                },
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [SvgPicture.asset(Assets.svgIcNavPlaylist), SizedBox(height: 3), Texts(S.of(context).addToPlaylist)],
+      bottomNavigationBar: Visibility(
+        visible: selectedCount > 0,
+        child: SafeArea(
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            margin: const EdgeInsets.symmetric(horizontal: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Column(mainAxisSize: MainAxisSize.min, children: [SvgPicture.asset(Assets.svgIcNavPlay), SizedBox(height: 3), Texts(S.of(context).play)]),
+                GestureDetector(
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
+                      isScrollControlled: true,
+                      builder: (_) => PlaylistBottomSheet(songId: 0,),
+                    );
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [SvgPicture.asset(Assets.svgIcNavPlaylist), SizedBox(height: 3), Texts(S.of(context).addToPlaylist)],
+                  ),
                 ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    backgroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
-                    isScrollControlled: true,
-                    builder: (_) => DeleteSongBottomSheet(songCount: selectedCount,isLeftBtnTap: (){},isRightBtnTap: (){
-                      showSnackBar(
-                        context, () {},
-                        message: "Delete Songs successfully!",
-                        alertBannerLocation: AlertBannerLocation.bottom
-                      );
-                    },),
-                  );
-                },
-                child: Column(mainAxisSize: MainAxisSize.min, children: [SvgPicture.asset(Assets.svgIcNavDelete), SizedBox(height: 3), Texts(S.of(context).delete)]),
-              ),
-            ],
+                GestureDetector(
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
+                      isScrollControlled: true,
+                      builder: (_) => DeleteSongBottomSheet(songCount: selectedCount,isLeftBtnTap: (){},isRightBtnTap: (){
+                        showSnackBar(
+                          context, () {},
+                          message: "Delete Songs successfully!",
+                          alertBannerLocation: AlertBannerLocation.bottom
+                        );
+                      },),
+                    );
+                  },
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [SvgPicture.asset(Assets.svgIcNavDelete), SizedBox(height: 3), Texts(S.of(context).delete)]),
+                ),
+              ],
+            ),
           ),
         ),
       ),
