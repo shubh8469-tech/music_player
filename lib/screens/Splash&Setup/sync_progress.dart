@@ -1,8 +1,16 @@
+import 'dart:developer';
+import 'dart:io';
+import 'package:on_audio_query/on_audio_query.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
+import '../../core/di/injection.dart';
+import '../../core/services/app_state_service.dart';
+import '../../features/songs/data/models/song_model.dart';
+import '../../features/songs/domain/usecases/add_song.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:music_app/themes/color.dart';
-
 import '../../commonWidgets/textWidget.dart';
 import '../../generated/assets.dart';
 import '../../l10n/l10n.dart';
@@ -19,6 +27,116 @@ class _SyncProgressState extends State<SyncProgress>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
+  final OnAudioQuery _audioQuery = OnAudioQuery();
+
+  // All scanned files
+  List<Map<String, String>> scannedFiles = [];
+
+  // Grouped by folder
+  final Map<String, List<Map<String, String>>> groupedByFolder = {};
+
+  // Track if sync was successful
+  bool _syncSuccessful = false;
+
+  Future<void> scanMusicFiles() async {
+    try {
+      final AddSong addSongUseCase = locator();
+
+      List<SongModel> songs = await _audioQuery.querySongs();
+
+      scannedFiles.clear();
+      groupedByFolder.clear();
+
+      for (final song in songs) {
+        final String path = song.data;
+
+        final artworkBytes = await _audioQuery.queryArtwork(
+          song.id,
+          ArtworkType.AUDIO, // or ArtworkType.ALBUM
+        );
+
+        final appDocDir = await getApplicationDocumentsDirectory();
+        final artworkDir = Directory(p.join(appDocDir.path, 'artworks'));
+        if (!await artworkDir.exists()) {
+          await artworkDir.create();
+        }
+
+        String folderPath = '';
+        String folderName = '';
+
+        try {
+          if (path.startsWith('content://')) {
+            final uri = Uri.parse(path);
+            if (uri.pathSegments.length >= 2) {
+              folderPath = uri.pathSegments
+                  .sublist(0, uri.pathSegments.length - 1)
+                  .join('/');
+              folderName = uri.pathSegments[uri.pathSegments.length - 2];
+            } else {
+              final idx = path.lastIndexOf('/');
+              folderName = idx >= 0 ? path.substring(idx + 1) : path;
+              folderPath = path;
+            }
+          } else {
+            folderPath = p.dirname(path);
+            folderName = p.basename(folderPath);
+          }
+        } catch (e) {
+          folderPath = '';
+          folderName = '';
+        }
+
+        String artworkPath = '';
+        if (artworkBytes != null && artworkBytes.isNotEmpty) {
+          // 🔹 Save original bytes directly (no resizing)
+          final file = File(p.join(artworkDir.path, '${song.id}.jpg'));
+          await file.writeAsBytes(artworkBytes);
+          artworkPath = file.path;
+        }
+
+        log('songs duration: ${song.duration} ${song.title}');
+
+        if ((song.duration ?? 0) >= 1000) {
+          final model = SongsModel(
+            id: song.id,
+            title: song.title,
+            artist: song.artist ?? '',
+            album: song.album ?? '',
+            genre: song.genre ?? '',
+            duration: song.duration ?? 0,
+            filePath: path,
+            folder: folderName,
+            artwork_path: artworkPath,
+          );
+
+          await addSongUseCase(model);
+
+          final item = {
+            'title': song.title,
+            'path': path,
+            'folderPath': folderPath,
+            'folderName': folderName,
+          };
+
+          scannedFiles.add(item);
+          groupedByFolder.putIfAbsent(folderPath, () => []).add(item);
+        }
+      }
+
+      // Debug output
+      debugPrint("Found $scannedFiles");
+      debugPrint("Found ${scannedFiles.length} songs");
+      debugPrint("Found ${groupedByFolder.length} folders");
+
+      // Mark sync as successful
+      _syncSuccessful = true;
+    } catch (e) {
+      // Log error but don't mark sync as successful
+      log('Error during sync: $e');
+      _syncSuccessful = false;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -27,8 +145,16 @@ class _SyncProgressState extends State<SyncProgress>
       duration: const Duration(seconds: 5), // total time to reach 100%
     )..forward(); // start animation
 
-    _controller.addStatusListener((status) {
+    scanMusicFiles();
+
+    _controller.addStatusListener((status) async {
       if (status == AnimationStatus.completed) {
+        // Only save sync completed state if sync was successful
+        if (_syncSuccessful) {
+          final appStateService = locator<AppStateService>();
+          await appStateService.setSyncCompleted(true);
+        }
+
         if (mounted) context.go('/dashboard');
       }
     });

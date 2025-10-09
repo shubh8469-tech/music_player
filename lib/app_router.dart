@@ -31,7 +31,7 @@ final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
 
 final GoRouter appRouter = GoRouter(
   navigatorKey: rootNavigatorKey,
-  initialLocation: '/permission',
+  initialLocation: '/splash',
   routes: [
     GoRoute(
       name: AppRouteName.splash.name,
