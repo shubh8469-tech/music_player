@@ -59,7 +59,7 @@ class _FolderListScreenState extends State<FolderListScreen> {
                     title: folderName[index],
                     subtitle: '23 Songs',
                     trailingIconAsset: Assets.svgMenuIcon,
-                    trailingIconHeight: 15.h,
+                    trailingIconHeight: 22.5.h,
                     trailingIconWidth: 3.w,
                     trailingMargin: 10.w,
                     onTap: () => print("Tile tapped"),

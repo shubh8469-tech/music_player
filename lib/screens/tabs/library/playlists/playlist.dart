@@ -165,7 +165,7 @@ class _PlayListScreenState extends State<PlayListScreen> {
                             ],
                             subtitle: '${p.songCount} Songs',
                             trailingIconAsset: Assets.svgMenuIcon,
-                            trailingIconHeight: 15.h,
+                            trailingIconHeight: 22.5.h,
                             trailingIconWidth: 3.w,
                             trailingMargin: 10.w,
                             songLength: '5:20',
@@ -250,7 +250,7 @@ class _PlayListScreenState extends State<PlayListScreen> {
                             title: p.name,
                             subtitle: '${p.songCount} Songs',
                             trailingIconAsset: Assets.svgMenuIcon,
-                            trailingIconHeight: 15.h,
+                            trailingIconHeight: 22.5.h,
                             trailingIconWidth: 3.w,
                             trailingMargin: 10.w,
                             onTap: () {

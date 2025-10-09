@@ -302,7 +302,7 @@ class _SongsListState extends State<SongsList> {
                                           title: songs[index].title,
                                           subtitle: songs[index].artist,
                                           trailingIconAsset: Assets.svgMenuIcon,
-                                          trailingIconHeight: 15.h,
+                                          trailingIconHeight: 22.5.h,
                                           trailingIconWidth: 3.w,
                                           trailingMargin: 10.w,
                                           songLength: formatDuration(
