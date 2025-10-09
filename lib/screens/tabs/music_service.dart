@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:developer';
+import 'dart:math' hide log;
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../features/songs/data/models/song_model.dart';
@@ -12,39 +14,45 @@ class MusicPlayerService {
   List<SongsModel> songs = [];
 
   // Emits events when library-affecting stats change (e.g., play_count/last_played)
-  final StreamController<void> _libraryChangedController =
-      StreamController<void>.broadcast();
+  final StreamController<void> _libraryChangedController = StreamController<void>.broadcast();
+
   Stream<void> get libraryChanged => _libraryChangedController.stream;
 
   // Emits events when the songs list changes (e.g., when songs are added/removed/reordered)
-  final StreamController<List<SongsModel>> _songsChangedController =
-      StreamController<List<SongsModel>>.broadcast();
+  final StreamController<List<SongsModel>> _songsChangedController = StreamController<List<SongsModel>>.broadcast();
+
   Stream<List<SongsModel>> get songsChanged => _songsChangedController.stream;
   int? _lastUpdatedSongId;
 
   // Loop and Shuffle state variables
   LoopMode _loopMode = LoopMode.off;
   bool _isShuffleEnabled = false;
+
   bool get isShuffleEnabled => _isShuffleEnabled;
+
   LoopMode get loopMode => _loopMode;
 
   // expose current index
   int get currentIndex => player.currentIndex ?? -1;
+
   Stream<int?> get currentIndexStream => player.currentIndexStream;
+
   int? get currentSongId {
     final idx = currentIndex;
     if (idx >= 0 && idx < songs.length) return songs[idx].id;
     return null;
   }
 
-  Stream<int?> get currentSongIdStream => player.currentIndexStream.map((i) {
-    final idx = i ?? -1;
-    if (idx >= 0 && idx < songs.length) return songs[idx].id;
-    return null;
-  });
+  Stream<int?> get currentSongIdStream =>
+      player.currentIndexStream.map((i) {
+        final idx = i ?? -1;
+        if (idx >= 0 && idx < songs.length) return songs[idx].id;
+        return null;
+      });
 
   // expose play state
   bool get isPlaying => player.playing;
+
   Stream<bool> get isPlayingStream => player.playingStream;
 
   MusicPlayerService._internal() {
@@ -77,10 +85,7 @@ class MusicPlayerService {
           if (_lastUpdatedSongId == current.id) return;
           try {
             final db = await AppDatabase.instance();
-            await db.rawUpdate(
-              "UPDATE songs SET play_count = play_count + 1, last_played = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW') WHERE id = ?",
-              [current.id],
-            );
+            await db.rawUpdate("UPDATE songs SET play_count = play_count + 1, last_played = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW') WHERE id = ?", [current.id]);
             // Notify listeners (e.g., playlist counts for system playlists)
             _libraryChangedController.add(null);
             _lastUpdatedSongId = current.id;
@@ -97,49 +102,67 @@ class MusicPlayerService {
       if (_lastUpdatedSongId == current.id) return;
       try {
         final db = await AppDatabase.instance();
-        await db.rawUpdate(
-          "UPDATE songs SET play_count = play_count + 1, last_played = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW') WHERE id = ?",
-          [current.id],
-        );
+        await db.rawUpdate("UPDATE songs SET play_count = play_count + 1, last_played = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW') WHERE id = ?", [current.id]);
         _libraryChangedController.add(null);
         _lastUpdatedSongId = current.id;
       } catch (_) {}
     });
   }
 
-  Future<void> setPlaylist(
-    List<SongsModel> songModels, {
-    int startIndex = 0,
-    bool autoPlay = true,
-  }) async {
+  Future<void> setPlaylist(List<SongsModel> songModels, {int startIndex = 0, bool autoPlay = true}) async {
     if (songModels.isEmpty) return;
     songs = songModels;
 
     // Notify listeners that the songs list has changed
     _songsChangedController.add(songs);
 
+    // final playlist = ConcatenatingAudioSource(
+    //   useLazyPreparation: true,
+    //   children: songModels
+    //       .map(
+    //         (song) => AudioSource.uri(
+    //           Uri.file(song.filePath),
+    //           tag: MediaItem(
+    //             // Optional: metadata for mini player / lock screen
+    //             id: song.id?.toString() ?? '',
+    //             title: song.title,
+    //             artist: song.artist,
+    //             album: song.album,
+    //             duration: Duration(milliseconds: song.duration),
+    //             artUri: song.artwork_path != null
+    //                 ? Uri.file(song.artwork_path!)
+    //                 : null,
+    //           ),
+    //         ),
+    //       )
+    //       .toList(),
+    // );
     final playlist = ConcatenatingAudioSource(
       useLazyPreparation: true,
-      children: songModels
-          .map(
-            (song) => AudioSource.uri(
-              Uri.file(song.filePath),
-              tag: MediaItem(
-                // Optional: metadata for mini player / lock screen
-                id: song.id?.toString() ?? '',
-                title: song.title,
-                artist: song.artist,
-                album: song.album,
-                duration: Duration(milliseconds: song.duration),
-                artUri: song.artwork_path != null
-                    ? Uri.file(song.artwork_path!)
-                    : null,
-              ),
-            ),
-          )
-          .toList(),
-    );
+      children: songModels.map((song) {
+        Uri? artUri;
+        try {
+          if (song.artwork_path != null && song.artwork_path!.isNotEmpty) {
+            // Prevent invalid URIs
+            artUri = Uri.file(song.artwork_path!);
+          }
+        } catch (e) {
+          log("Error loading artUri: ${e.toString()}");
+        }
 
+        return AudioSource.uri(
+          Uri.file(song.filePath),
+          tag: MediaItem(
+            id: song.id?.toString() ?? '',
+            title: song.title,
+            artist: song.artist,
+            album: song.album,
+            duration: Duration(milliseconds: song.duration),
+            artUri: artUri, // ✅ only if valid
+          ),
+        );
+      }).toList(),
+    );
     await player.setAudioSource(playlist, initialIndex: startIndex);
     // Ensure shuffle mode stays applied on new source
     await player.setShuffleModeEnabled(_isShuffleEnabled);
@@ -205,41 +228,69 @@ class MusicPlayerService {
       await player.shuffle();
       final total = songs.length;
       if (total > 0) {
-        final randomIndex = (DateTime.now().millisecondsSinceEpoch % total);
+        final randomIndex = (DateTime
+            .now()
+            .millisecondsSinceEpoch % total);
         await player.seek(Duration.zero, index: randomIndex);
       }
     }
   }
 
-  Future<void> ensureShuffleOnAndReshuffle() async {
+
+  Future<void> ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition() async {
     if (!_isShuffleEnabled) {
       _isShuffleEnabled = true;
       await player.setShuffleModeEnabled(true);
+      log('Shuffle mode enabled');
     }
-    await player.shuffle();
+
+    await player.shuffle(); // shuffle with the default internal RNG
+    log('Playlist shuffled');
     final total = songs.length;
-    if (total > 0 && player.currentIndex == null) {
-      final randomIndex = (DateTime.now().millisecondsSinceEpoch % total);
+    if (total > 0) {
+      // Use a new Random to pick a random start index every time
+      final randomIndex = Random().nextInt(total);
+      log('Seeking to random index $randomIndex');
       await player.seek(Duration.zero, index: randomIndex);
+
+      await player.currentIndexStream.firstWhere((idx) => idx == randomIndex);
+      log('Seek to random index complete');
     }
   }
 
-  Future<void> ensureShuffleOff() async {
-    if (_isShuffleEnabled) {
-      _isShuffleEnabled = false;
-      await player.setShuffleModeEnabled(false);
-    }
-  }
+    Future<void> ensureShuffleOnAndReshuffle() async {
+      if (!_isShuffleEnabled) {
+        _isShuffleEnabled = true;
+        await player.setShuffleModeEnabled(true);
+        log('Shuffle mode enabled');
+      }
 
-  // Cycle Loop mode Off → All → One → Off
-  Future<void> toggleRepeat() async {
-    if (_loopMode == LoopMode.off) {
-      _loopMode = LoopMode.one;
-    } else if (_loopMode == LoopMode.one) {
-      _loopMode = LoopMode.all;
-    } else {
-      _loopMode = LoopMode.off;
+      await player.shuffle();
+      final total = songs.length;
+      if (total > 0 && player.currentIndex == null) {
+        final randomIndex = (DateTime
+            .now()
+            .millisecondsSinceEpoch % total);
+        await player.seek(Duration.zero, index: randomIndex);
+      }
     }
-    await player.setLoopMode(_loopMode);
+
+    Future<void> ensureShuffleOff() async {
+      if (_isShuffleEnabled) {
+        _isShuffleEnabled = false;
+        await player.setShuffleModeEnabled(false);
+      }
+    }
+
+    // Cycle Loop mode Off → All → One → Off
+    Future<void> toggleRepeat() async {
+      if (_loopMode == LoopMode.off) {
+        _loopMode = LoopMode.one;
+      } else if (_loopMode == LoopMode.one) {
+        _loopMode = LoopMode.all;
+      } else {
+        _loopMode = LoopMode.off;
+      }
+      await player.setLoopMode(_loopMode);
+    }
   }
-}

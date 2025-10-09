@@ -7,4 +7,6 @@ class SongsEvent with _$SongsEvent {
   const factory SongsEvent.removeSong(int id) = _RemoveSong;
   const factory SongsEvent.updateSongFavorite(int songId, bool isFavorite) =
       _UpdateSongFavorite;
+  const factory SongsEvent.sortSongs(int sortIndex) = _SortSongs;
+
 }
