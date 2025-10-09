@@ -18,6 +18,7 @@ import '../model/song_menu_model.dart';
 import '../screens/play_song/widget/playlist_bottomsheet.dart';
 import '../screens/tabs/music_service.dart';
 import '../themes/color.dart';
+import '../utills/snack_bar.dart';
 import 'MusicListTile.dart';
 import 'common_functions.dart';
 
@@ -171,7 +172,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                 } else {
                                   context.push('/dashboard/playing');
                                 }
-                              } else if (songItem.title ==
+                              }
+                              else if (songItem.title ==
                                   S.of(context).playNext) {
                                 // Add song to play next (insert after current song)
                                 final currentIndex = musicService.currentIndex;
@@ -220,7 +222,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       : musicService.currentIndex,
                                 );
                                 Navigator.pop(context);
-                              } else if (songItem.title ==
+                              }
+                              else if (songItem.title ==
                                   S.of(context).addToQueue) {
                                 if (widget.from == 'playlist') {
                                   List<SongsModel> _songs = [];
@@ -277,7 +280,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                 }
 
                                 Navigator.pop(context);
-                              } else if (songItem.title ==
+                              }
+                              else if (songItem.title ==
                                   S.of(context).addToPlaylist) {
                                 if (widget.from == 'playlist') {
                                   List<SongsModel> _songs = [];
@@ -311,45 +315,54 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     widget.currentSong,
                                   );
                                 }
-                              } else if (songItem.title ==
+                              }
+                              else if (songItem.title ==
                                   S.of(context).deleteSong) {
-                                if (widget.from == 'playlist') {
+                                if (widget.from == 'playlist_in') {
                                   // Remove song from current playlist
                                   if (widget.currentSong != null) {
                                     try {
                                       // Use PlaylistBloc event instead of direct repository call
                                       // This automatically handles state updates
-                                      final playlistBloc = context
-                                          .read<PlaylistBloc>();
-                                      playlistBloc.add(
-                                        PlaylistEvent.removeSongFromPlaylist(
-                                          int.parse(widget.systemKeyOrId!),
-                                          widget.currentSong!.id!,
-                                        ),
-                                      );
 
-                                      // Show success message
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            'Song removed from playlist',
+                                      if (widget.isSystemPlaylist) {
+                                        showSnackBar(
+                                          context,
+                                          () {},
+                                          message:
+                                              'Song cannot be deleted from system playlist',
+                                          alertBannerLocation:
+                                              AlertBannerLocation.bottom,
+                                        );
+                                      } else {
+                                        final playlistBloc = context
+                                            .read<PlaylistBloc>();
+                                        playlistBloc.add(
+                                          PlaylistEvent.removeSongFromPlaylist(
+                                            int.parse(widget.systemKeyOrId!),
+                                            widget.currentSong!.id!,
                                           ),
-                                          backgroundColor: Colors.green,
-                                        ),
-                                      );
+                                        );
+
+                                        // Show success message
+                                        showSnackBar(
+                                          context,
+                                          () {},
+                                          message: 'Song removed from playlist',
+                                          alertBannerLocation:
+                                              AlertBannerLocation.bottom,
+                                        );
+                                      }
                                     } catch (e) {
                                       // Show error message
-                                      ScaffoldMessenger.of(
+                                      showSnackBar(
                                         context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            'Failed to remove song: $e',
-                                          ),
-                                          backgroundColor: Colors.red,
-                                        ),
+                                        () {},
+                                        message:
+                                            'Failed to remove playlist: $e',
+                                        backgroundColor: Colors.red,
+                                        alertBannerLocation:
+                                            AlertBannerLocation.bottom,
                                       );
                                     }
 
@@ -374,7 +387,6 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                         ),
                                         TextButton(
                                           onPressed: () async {
-
                                             Navigator.pop(
                                               context,
                                             ); // Close dialog
@@ -393,28 +405,26 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                                 );
 
                                                 // Show success message
-                                                ScaffoldMessenger.of(
+                                                showSnackBar(
                                                   context,
-                                                ).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
+                                                  () {},
+                                                  message:
                                                       'Song removed from library',
-                                                    ),
-                                                    backgroundColor:
-                                                        Colors.green,
-                                                  ),
+                                                  alertBannerLocation:
+                                                      AlertBannerLocation
+                                                          .bottom,
                                                 );
                                               } catch (e) {
                                                 // Show error message
-                                                ScaffoldMessenger.of(
+                                                showSnackBar(
                                                   context,
-                                                ).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
+                                                  () {},
+                                                  message:
                                                       'Failed to remove song: $e',
-                                                    ),
-                                                    backgroundColor: Colors.red,
-                                                  ),
+                                                  backgroundColor: Colors.red,
+                                                  alertBannerLocation:
+                                                      AlertBannerLocation
+                                                          .bottom,
                                                 );
                                               }
                                             }
@@ -427,6 +437,67 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                         ),
                                       ],
                                     ),
+                                  );
+                                }
+                              }
+                              else if (songItem.title ==
+                                  S.of(context).deletePlaylist){
+                                if (!widget.isSystemPlaylist) {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: Text('Delete Song'),
+                                      content: Text(
+                                        'Are you sure you want to delete the playlist?',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          child: Text('Cancel'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () async {
+                                            Navigator.pop(
+                                              context,
+                                            ); // Close dialog
+
+                                            // Remove song from app database only
+                                            final playlistBloc = context
+                                                .read<PlaylistBloc>();
+                                            playlistBloc.add(
+                                              PlaylistEvent.deletePlaylist(
+                                                int.parse(widget.systemKeyOrId!),
+                                              ),
+                                            );
+
+                                            // Show success message
+                                            showSnackBar(
+                                              context,
+                                                  () {},
+                                              message: 'Song removed from playlist',
+                                              alertBannerLocation:
+                                              AlertBannerLocation.bottom,
+                                            );
+
+                                            Navigator.pop(
+                                              context,
+                                            ); // Close menu
+                                          },
+                                          child: Text('Delete'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                                else{
+                                  showSnackBar(
+                                    context,
+                                    () {},
+                                    message:
+                                        'System playlist cannot be deleted',
+                                    alertBannerLocation:
+                                        AlertBannerLocation.bottom,
                                   );
                                 }
                               }

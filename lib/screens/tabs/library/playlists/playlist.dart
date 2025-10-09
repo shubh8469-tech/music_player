@@ -196,6 +196,7 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                   maxHeight: musicService.currentIndex != -1 ? 0.79.sh : 0.66.sh,
                                   from: 'playlist',
                                   systemKeyOrId: p.systemKey,
+                                  isSystemPlaylist: true,
                                 )
                               );
                             },
@@ -279,6 +280,7 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                     maxHeight: 0.79.sh,
                                     from: 'playlist',
                                     systemKeyOrId: p.id.toString(),
+                                    isSystemPlaylist: false,
                                   )
                               );
                             },

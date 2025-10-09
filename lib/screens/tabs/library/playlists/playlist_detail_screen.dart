@@ -151,9 +151,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   songIndex: index,
                   songsList: list,
                   maxHeight: 0.87.sh,
-                  systemKeyOrId: widget.playlist.id.toString(),
+                  systemKeyOrId: widget.playlist.isSystem! ? widget.playlist.systemKey : widget.playlist.id.toString(),
                   isSystemPlaylist: _isSystem,
-                  from: 'playlist',
+                  from: 'playlist_in',
                 ),
               );
             },

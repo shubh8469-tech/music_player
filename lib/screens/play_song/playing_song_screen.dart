@@ -19,6 +19,7 @@ import '../../features/songs/data/models/song_model.dart';
 import '../../generated/assets.dart';
 import '../../themes/color.dart';
 import '../../themes/font.dart';
+import '../../utills/snack_bar.dart';
 import '../tabs/music_service.dart';
 
 class PlayingSongArgs {
@@ -105,22 +106,25 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
         isFavorite = newFavoriteStatus;
       });
 
-      musicService.songs[musicService.currentIndex].isFavorite = newFavoriteStatus;
+      musicService.songs[musicService.currentIndex].isFavorite =
+          newFavoriteStatus;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            newFavoriteStatus ? 'Added to favorites' : 'Removed from favorites',
-          ),
-          backgroundColor: AppColors.primaryOrange,
-        ),
+      showSnackBar(
+        context,
+        () {},
+        message: newFavoriteStatus
+            ? 'Added to favorites'
+            : 'Removed from favorites',
+        backgroundColor: AppColors.primaryOrange,
+        alertBannerLocation: AlertBannerLocation.bottom,
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error updating favorites: $e'),
-          backgroundColor: Colors.red,
-        ),
+      showSnackBar(
+        context,
+        () {},
+        message: 'Error updating favorites: $e',
+        backgroundColor: Colors.red,
+        alertBannerLocation: AlertBannerLocation.bottom,
       );
     }
   }
@@ -210,7 +214,11 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
                 isScrollControlled: true,
                 builder: (_) => SongMenuScreen(
                   songMenuList: songPlayingMenuItems,
-                  isPlaying: true,
+                  isPlaying: musicService.isPlaying,
+                  maxHeight: 0.87.sh,
+                  currentSong: currentSong,
+                  songIndex: 0,
+                  songsList: [],
                 ),
               );
             },

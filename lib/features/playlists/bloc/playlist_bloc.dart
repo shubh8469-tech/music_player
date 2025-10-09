@@ -42,10 +42,18 @@ class PlaylistBloc extends Bloc<PlaylistEvent, PlaylistState> {
 
     on<_DeletePlaylist>((event, emit) async {
       try {
-        emit(const PlaylistState.loading());
+        // emit(const PlaylistState.loading());
         await repository.deletePlaylist(event.id);
-        final songs = await repository.fetchAllPlaylists();
-        emit(PlaylistState.loaded(songs));
+        final playlist = await repository.fetchAllPlaylists();
+        final songs = await repository.getSongsForSystemPlaylist(
+          'recently_played',
+        );
+
+        // Create a map with the system key and its songs
+        final systemPlaylistSongs = <String, List<SongsModel>>{
+          'recently_played': songs,
+        };
+        emit(PlaylistState.loaded(playlist, systemPlaylistSongs: systemPlaylistSongs));
       } catch (e) {
         emit(PlaylistState.error(e.toString()));
       }

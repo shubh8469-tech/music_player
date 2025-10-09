@@ -36,6 +36,7 @@
   "delete":"Delete",
   "play":"Play",
   "deleteSong":"Delete Song",
+  "deletePlaylist":"Delete Playlist",
   "areYouSureDeleteSong":"Are you sure you want to delete these 2 songs?"
 
 }

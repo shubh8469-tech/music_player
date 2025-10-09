@@ -7,6 +7,7 @@ import 'package:music_app/generated/assets.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
 import 'package:music_app/screens/tabs/music_service.dart';
+import 'package:music_app/utills/snack_bar.dart';
 
 class SelectQueueScreen extends StatefulWidget {
   const SelectQueueScreen({super.key});
@@ -122,13 +123,12 @@ class _SelectQueueScreenState extends State<SelectQueueScreen> {
 
     // Show playlist selection bottom sheet
     // This would typically show a list of playlists to add to
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Add to playlist functionality would be implemented here',
-        ),
-        backgroundColor: AppColors.primaryOrange,
-      ),
+    showSnackBar(
+      context,
+      () {},
+      message: 'Add to playlist functionality would be implemented here',
+      backgroundColor: AppColors.primaryOrange,
+      alertBannerLocation: AlertBannerLocation.bottom,
     );
   }
 

@@ -17,19 +17,14 @@ import '../../../themes/color.dart';
 import 'create_new_playlist_bottomsheet.dart';
 
 class PlaylistBottomSheet extends StatefulWidget {
-  const PlaylistBottomSheet({
-    super.key,
-    this.songId,
-    this.songsList,
-    this.removeFromPlaylistId,
-  }) : assert(
-         songId != null || songsList != null,
-         'Either songId or songsList must be provided',
-       );
+  const PlaylistBottomSheet({super.key, this.songId, this.songsList})
+    : assert(
+        songId != null || songsList != null,
+        'Either songId or songsList must be provided',
+      );
 
   final int? songId;
   final List<SongsModel>? songsList;
-  final int? removeFromPlaylistId;
 
   @override
   _PlaylistBottomSheetState createState() => _PlaylistBottomSheetState();
@@ -193,19 +188,6 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
         playlistBloc.add(
           PlaylistEvent.addMultipleSongsToPlaylist(playlistId, songIds),
         );
-
-        // If we need to remove songs from source playlist, do it after adding
-        if (widget.removeFromPlaylistId != null) {
-          log(
-            'Removing songs from source playlist ${widget.removeFromPlaylistId}',
-          );
-          playlistBloc.add(
-            PlaylistEvent.removeMultipleSongsFromPlaylist(
-              widget.removeFromPlaylistId!,
-              songIds,
-            ),
-          );
-        }
       } else if (widget.songId != null) {
         // Add single song
         if (!mounted) return;
@@ -216,19 +198,6 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
         playlistBloc.add(
           PlaylistEvent.addSongToPlaylist(playlistId, widget.songId!, position),
         );
-
-        // If we need to remove song from source playlist, do it after adding
-        if (widget.removeFromPlaylistId != null) {
-          log(
-            'Removing song from source playlist ${widget.removeFromPlaylistId}',
-          );
-          playlistBloc.add(
-            PlaylistEvent.removeSongFromPlaylist(
-              widget.removeFromPlaylistId!,
-              widget.songId!,
-            ),
-          );
-        }
       }
 
       // Close the bottom sheet if still mounted

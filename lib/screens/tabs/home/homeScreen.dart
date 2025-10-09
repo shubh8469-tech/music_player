@@ -279,29 +279,40 @@ class _HomeScreenState extends State<HomeScreen> {
                             cardIconSize: 32.r,
                             title: playlist.name,
                             subtitle: '${playlist.songCount} Songs',
-                            trailingIconAsset: Assets.svgPlayLogo,
-                            trailingIconHeight: 32.r,
-                            trailingIconWidth: 32.r,
+                            trailingIconAsset: Assets.svgMenuIcon,
+                            trailingIconHeight: 22.5.h,
+                            trailingIconWidth: 3.w,
                             trailingMargin: 0,
                             onTap: () {
-                              showModalBottomSheet(
+                              context.push(
+                                '/dashboard/playlist-detail',
+                                extra: playlist,
+                              );
+                            },
+                            onPlayTap: () {
+                            showModalBottomSheet(
                                 context: context,
                                 backgroundColor: Colors.white,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(40),
+                                    top: Radius.circular(40.r),
                                   ),
                                 ),
                                 isScrollControlled: true,
                                 builder: (_) => SongMenuScreen(
-                                  songMenuList: songMenuItems,
+                                  songMenuList: playlistMenuItems,
                                   isPlaying: false,
-                                ),
-                              );
-                            },
-                            onPlayTap: () =>
-                                print("Play tapped: ${playlist.name}"),
+                                  currentSong: musicService.currentIndex != -1 ? musicService.songs[musicService.currentIndex] : null,
+                                  songIndex: 0,
+                                  songsList: [],
+                                  maxHeight: 0.79.sh,
+                                  from: 'playlist',
+                                  systemKeyOrId: playlist.id.toString(),
+                                  isSystemPlaylist: false,
+                                )
+                            );
+                          },
                           );
                         }).toList(),
                       );

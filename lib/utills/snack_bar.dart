@@ -4,6 +4,9 @@ import '../themes/color.dart';
 
 enum AlertBannerLocation { top, bottom }
 
+// Global reference to track the currently active snackbar
+OverlayEntry? _activeSnackbarOverlay;
+
 dynamic showSnackBar(
   BuildContext context,
   VoidCallback onTap, {
@@ -28,25 +31,46 @@ dynamic showSnackBar(
   bool safeAreaLeftEnabled = true,
   bool safeAreaRightEnabled = true,
 }) {
+  // Dismiss the previous snackbar immediately if it exists
+  if (_activeSnackbarOverlay != null) {
+    try {
+      _activeSnackbarOverlay?.remove();
+      _activeSnackbarOverlay = null;
+    } catch (e) {
+      // Ignore if already removed
+    }
+  }
+
   // Build fallback child from `message` if `child` is not provided.
-  final defaultPadding = padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 14);
-  final defaultMargin = margin ?? const EdgeInsets.only(left: 5, right: 5, bottom: 50);
-  final defaultBorderRadius = borderRadius ?? const BorderRadius.all(Radius.circular(8));
-  final defaultTextStyle = messageStyle ?? const TextStyle(color: Colors.white, fontSize: 14,fontWeight: FontWeight.w500,);
+  final defaultPadding =
+      padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 14);
+  final defaultMargin =
+      margin ?? const EdgeInsets.only(left: 5, right: 5, bottom: 50);
+  final defaultBorderRadius =
+      borderRadius ?? const BorderRadius.all(Radius.circular(8));
+  final defaultTextStyle =
+      messageStyle ??
+      const TextStyle(
+        color: Colors.white,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+      );
 
   Widget builtChild() {
-    if (child != null) return child!;
+    if (child != null) return child;
     return Container(
       padding: defaultPadding,
       margin: defaultMargin,
-      decoration: BoxDecoration(color: backgroundColor, borderRadius: defaultBorderRadius),
-      child: IntrinsicWidth(
-        stepWidth: 20,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: defaultBorderRadius,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Flexible(
+            child: Text(
               message ?? '',
               style: defaultTextStyle,
               maxLines: 3,
@@ -54,8 +78,8 @@ dynamic showSnackBar(
               textAlign: TextAlign.center,
               // also helps center multi-line text
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -64,7 +88,9 @@ dynamic showSnackBar(
   overlay = OverlayEntry(
     builder: (context) {
       return Align(
-        alignment: alertBannerLocation == AlertBannerLocation.top ? Alignment.topCenter : Alignment.bottomCenter,
+        alignment: alertBannerLocation == AlertBannerLocation.top
+            ? Alignment.topCenter
+            : Alignment.bottomCenter,
         child: SafeArea(
           top: safeAreaTopEnabled,
           bottom: safeAreaBottomEnabled,
@@ -75,13 +101,24 @@ dynamic showSnackBar(
             curveScaleDownAnim: curveScaleDownAnim ?? Curves.decelerate,
             curveScaleUpAnim: curveScaleUpAnim ?? Curves.easeOutBack,
             curveTranslateAnim: curveTranslateAnim ?? Curves.ease,
-            durationOfScalingUp: durationOfScalingUp ?? const Duration(milliseconds: 400),
-            durationOfScalingDown: durationOfScalingDown ?? const Duration(milliseconds: 250),
-            durationOfLeavingScreenBySwipe: durationOfLeavingScreenBySwipe ?? const Duration(milliseconds: 1500),
+            durationOfScalingUp:
+                durationOfScalingUp ?? const Duration(milliseconds: 400),
+            durationOfScalingDown:
+                durationOfScalingDown ?? const Duration(milliseconds: 250),
+            durationOfLeavingScreenBySwipe:
+                durationOfLeavingScreenBySwipe ??
+                const Duration(milliseconds: 1500),
             alertBannerLocation: alertBannerLocation,
             maxWidth: maxLength,
             overlay: overlay,
-            duration: durationOfStayingOnScreen ?? const Duration(milliseconds: 3500),
+            duration:
+                durationOfStayingOnScreen ?? const Duration(milliseconds: 3500),
+            onRemove: () {
+              // Clear the global reference when this overlay is removed
+              if (_activeSnackbarOverlay == overlay) {
+                _activeSnackbarOverlay = null;
+              }
+            },
             child: Container(
               // ensure proper width/constraints will be applied within _OverlayItem
               child: builtChild(),
@@ -92,7 +129,9 @@ dynamic showSnackBar(
     },
   );
 
-  Overlay.of(context)?.insert(overlay);
+  // Store reference to the current overlay
+  _activeSnackbarOverlay = overlay;
+  Overlay.of(context).insert(overlay);
 }
 
 class _OverlayItem extends StatefulWidget {
@@ -109,6 +148,7 @@ class _OverlayItem extends StatefulWidget {
     required this.curveScaleDownAnim,
     required this.curveScaleUpAnim,
     required this.curveTranslateAnim,
+    required this.onRemove,
     this.maxWidth,
   }) : super(key: key);
 
@@ -148,11 +188,15 @@ class _OverlayItem extends StatefulWidget {
   /// Curve of translation (moving on y-axis) animation.
   final Curve curveTranslateAnim;
 
+  /// Callback when the overlay is removed.
+  final VoidCallback onRemove;
+
   @override
   State<_OverlayItem> createState() => __OverlayItemState();
 }
 
-class __OverlayItemState extends State<_OverlayItem> with TickerProviderStateMixin {
+class __OverlayItemState extends State<_OverlayItem>
+    with TickerProviderStateMixin {
   // Initialize the translation animations/controllers.
   late AnimationController translateAnimController;
   late Animation translateAnim;
@@ -164,10 +208,24 @@ class __OverlayItemState extends State<_OverlayItem> with TickerProviderStateMix
   /// Set parameters of animations in initState.
   @override
   void initState() {
-    translateAnimController = AnimationController(vsync: this, duration: widget.durationOfLeavingScreenBySwipe);
-    translateAnim = CurvedAnimation(parent: translateAnimController, curve: widget.curveTranslateAnim);
-    scaleAnimController = AnimationController(vsync: this, duration: widget.durationOfScalingUp, reverseDuration: widget.durationOfScalingDown);
-    scaleAnim = CurvedAnimation(parent: scaleAnimController, curve: widget.curveScaleUpAnim, reverseCurve: widget.curveScaleDownAnim);
+    translateAnimController = AnimationController(
+      vsync: this,
+      duration: widget.durationOfLeavingScreenBySwipe,
+    );
+    translateAnim = CurvedAnimation(
+      parent: translateAnimController,
+      curve: widget.curveTranslateAnim,
+    );
+    scaleAnimController = AnimationController(
+      vsync: this,
+      duration: widget.durationOfScalingUp,
+      reverseDuration: widget.durationOfScalingDown,
+    );
+    scaleAnim = CurvedAnimation(
+      parent: scaleAnimController,
+      curve: widget.curveScaleUpAnim,
+      reverseCurve: widget.curveScaleDownAnim,
+    );
     startAnim();
     super.initState();
   }
@@ -185,7 +243,10 @@ class __OverlayItemState extends State<_OverlayItem> with TickerProviderStateMix
   /// AKA: Hides the alert_banner via animation.
   void reverseAnimEarly() {
     if (!mounted || widget.overlay == null) return;
-    translateAnimController.forward().then((value) => widget.overlay!.remove());
+    translateAnimController.forward().then((value) {
+      widget.overlay!.remove();
+      widget.onRemove();
+    });
     translateAnimController.addListener(() => setState(() {}));
   }
 
@@ -197,7 +258,10 @@ class __OverlayItemState extends State<_OverlayItem> with TickerProviderStateMix
     scaleAnimController.forward().then((_) async {
       await Future.delayed(widget.duration);
       if (!mounted || widget.overlay == null) return;
-      scaleAnimController.reverse().then((value) => widget.overlay!.remove());
+      scaleAnimController.reverse().then((value) {
+        widget.overlay!.remove();
+        widget.onRemove();
+      });
     });
     scaleAnimController.addListener(() => setState(() {}));
   }
@@ -211,24 +275,32 @@ class __OverlayItemState extends State<_OverlayItem> with TickerProviderStateMix
       offset: Offset(
         0,
         widget.alertBannerLocation == AlertBannerLocation.top
-            ? (translateAnim.value * -MediaQuery.of(context).size.height + (_swipeDy <= 0 ? _swipeDy : 0))
-            : (translateAnim.value * MediaQuery.of(context).size.height + (_swipeDy >= 0 ? _swipeDy : 0)),
+            ? (translateAnim.value * -MediaQuery.of(context).size.height +
+                  (_swipeDy <= 0 ? _swipeDy : 0))
+            : (translateAnim.value * MediaQuery.of(context).size.height +
+                  (_swipeDy >= 0 ? _swipeDy : 0)),
       ),
       // Triggers for controlling the animations are handled via a GestureDetector.
       child: GestureDetector(
         onVerticalDragEnd: (details) {
-          if (widget.alertBannerLocation == AlertBannerLocation.top ? _swipeDy < 0 : _swipeDy > 0) {
+          if (widget.alertBannerLocation == AlertBannerLocation.top
+              ? _swipeDy < 0
+              : _swipeDy > 0) {
             reverseAnimEarly();
           }
         },
         onVerticalDragCancel: () {
-          if (widget.alertBannerLocation == AlertBannerLocation.top ? _swipeDy <= 0 : _swipeDy >= 0) {
+          if (widget.alertBannerLocation == AlertBannerLocation.top
+              ? _swipeDy <= 0
+              : _swipeDy >= 0) {
             reverseAnimEarly();
           }
         },
         onVerticalDragUpdate: (details) {
           if (translateAnim.value != 0) return;
-          if (widget.alertBannerLocation == AlertBannerLocation.top ? (details.delta.dy <= 0 || _swipeDy < 0) : (details.delta.dy >= 0 || _swipeDy > 0)) {
+          if (widget.alertBannerLocation == AlertBannerLocation.top
+              ? (details.delta.dy <= 0 || _swipeDy < 0)
+              : (details.delta.dy >= 0 || _swipeDy > 0)) {
             setState(() {
               _swipeDy += details.delta.dy;
             });
@@ -239,19 +311,14 @@ class __OverlayItemState extends State<_OverlayItem> with TickerProviderStateMix
           scale: scaleAnim.value,
           child: Container(
             margin: const EdgeInsets.only(top: 10),
-            child: IntrinsicWidth(
-              stepWidth: 20,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: widget.maxWidth ?? MediaQuery.of(context).size.width * 0.8,
-                ),
-                child: GestureDetector(
-                  onTap: () => widget.onTap(),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: widget.child,
-                  ),
-                ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth:
+                    widget.maxWidth ?? MediaQuery.of(context).size.width * 0.8,
+              ),
+              child: GestureDetector(
+                onTap: () => widget.onTap(),
+                child: Material(color: Colors.transparent, child: widget.child),
               ),
             ),
           ),

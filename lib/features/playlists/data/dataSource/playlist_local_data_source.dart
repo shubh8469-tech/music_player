@@ -47,7 +47,11 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
 
   @override
   Future<int> deletePlaylist(int id) async {
+
+    await db.delete('playlist_songs', where: 'playlist_id = ?', whereArgs: [id]);
+
     return await db.delete('playlists', where: 'id = ?', whereArgs: [id]);
+
   }
 
   /// --------------------------
@@ -200,7 +204,7 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
       final res = await db.rawQuery('''
         SELECT * FROM songs
         WHERE play_count > 0
-        ORDER BY play_count DESC, last_played DESC NULLS LAST
+        ORDER BY play_count DESC, last_played IS NULL, last_played DESC
         ''');
       return res.map((row) => SongsModel.fromMap(row)).toList();
     }
