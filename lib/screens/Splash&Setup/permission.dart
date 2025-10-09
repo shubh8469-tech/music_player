@@ -1,19 +1,10 @@
-import 'dart:developer';
 import 'dart:io';
-import 'dart:typed_data';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:on_audio_query/on_audio_query.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:path/path.dart' as p;
-import 'package:image/image.dart' as img;
 import '../../commonWidgets/buton.dart';
 import '../../commonWidgets/textWidget.dart';
-import '../../core/di/injection.dart';
-import '../../features/songs/data/models/song_model.dart';
-import '../../features/songs/domain/usecases/add_song.dart';
 import '../../generated/assets.dart';
 import '../../themes/color.dart';
 import '../../themes/font.dart';
@@ -26,18 +17,8 @@ class PermissionPage extends StatefulWidget {
 }
 
 class _PermissionPageState extends State<PermissionPage> {
-  final OnAudioQuery _audioQuery = OnAudioQuery();
 
-  // All scanned files
-  List<Map<String, String>> scannedFiles = [];
-
-  // Grouped by folder
-  final Map<String, List<Map<String, String>>> groupedByFolder = {};
-
-  Future<void> scanMusicFiles() async {
-
-    final AddSong addSongUseCase = locator();
-
+  void permissionLib() async {
     if (Platform.isAndroid) {
       PermissionStatus status;
       if (await Permission.storage.isGranted) {
@@ -49,99 +30,18 @@ class _PermissionPageState extends State<PermissionPage> {
         }
       }
 
-      if (!status.isGranted) {
-        openAppSettings();
-        return;
+      if (status.isGranted) {
+        if (mounted) context.go('/sync');
       }
     }
-
-    List<SongModel> songs = await _audioQuery.querySongs();
-
-    scannedFiles.clear();
-    groupedByFolder.clear();
-
-    for (final song in songs) {
-      final String path = song.data;
-
-      final artworkBytes = await _audioQuery.queryArtwork(
-        song.id,
-        ArtworkType.AUDIO, // or ArtworkType.ALBUM
-      );
-
-      final appDocDir = await getApplicationDocumentsDirectory();
-      final artworkDir = Directory(p.join(appDocDir.path, 'artworks'));
-      if (!await artworkDir.exists()) {
-        await artworkDir.create();
-      }
-
-      String folderPath = '';
-      String folderName = '';
-
-      try {
-        if (path.startsWith('content://')) {
-          final uri = Uri.parse(path);
-          if (uri.pathSegments.length >= 2) {
-            folderPath = uri.pathSegments
-                .sublist(0, uri.pathSegments.length - 1)
-                .join('/');
-            folderName = uri.pathSegments[uri.pathSegments.length - 2];
-          } else {
-            final idx = path.lastIndexOf('/');
-            folderName = idx >= 0 ? path.substring(idx + 1) : path;
-            folderPath = path;
-          }
-        } else {
-          folderPath = p.dirname(path);
-          folderName = p.basename(folderPath);
-        }
-      } catch (e) {
-        folderPath = '';
-        folderName = '';
-      }
-
-      String artworkPath = '';
-      if (artworkBytes != null && artworkBytes.isNotEmpty) {
-        // 🔹 Save original bytes directly (no resizing)
-        final file = File(p.join(artworkDir.path, '${song.id}.jpg'));
-        await file.writeAsBytes(artworkBytes);
-        artworkPath = file.path;
-      }
-      
-      log('songs duration: ${song.duration} ${song.title}');
-
-      if((song.duration ?? 0) >= 1000) {
-
-        final model = SongsModel(
-            id: song.id,
-            title: song.title,
-            artist: song.artist ?? '',
-            album: song.album ?? '',
-            genre: song.genre ?? '',
-            duration: song.duration ?? 0,
-            filePath: path,
-            folder: folderName,
-            artwork_path: artworkPath
-        );
-
-        await addSongUseCase(model);
-
-        final item = {
-          'title': song.title,
-          'path': path,
-          'folderPath': folderPath,
-          'folderName': folderName,
-        };
-
-        scannedFiles.add(item);
-        groupedByFolder.putIfAbsent(folderPath, () => []).add(item);
-      }
-    }
-
-    // Debug output
-    debugPrint("Found $scannedFiles");
-    debugPrint("Found ${scannedFiles.length} songs");
-    debugPrint("Found ${groupedByFolder.length} folders");
   }
+
+  @override
+  void initState() {
+    permissionLib();
+    super.initState();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -227,8 +127,26 @@ class _PermissionPageState extends State<PermissionPage> {
               child: OvalButton(
                 text: "Open Settings",
                 onPressed: () async {
-                  await scanMusicFiles(); // 🔹 Scan in background
-                  context.go('/sync'); // 🔹 Navigate as before
+                  if (Platform.isAndroid) {
+                    PermissionStatus status;
+                    if (await Permission.storage.isGranted) {
+                      status = PermissionStatus.granted;
+                    } else {
+                      status = await Permission.audio.request();
+                      if (!status.isGranted) {
+                        status = await Permission.storage.request();
+                      }
+                    }
+
+                    if (!status.isGranted) {
+                      openAppSettings();
+                      return;
+                    }
+                    else{
+                      if (mounted) context.go('/sync');
+                    }
+                  }
+                  // context.go('/sync'); // 🔹 Navigate as before
                 },
                 backgroundColor: AppColors.primaryOrange,
                 textColor: AppColors.white,
