@@ -5,6 +5,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import '../../commonWidgets/buton.dart';
 import '../../commonWidgets/textWidget.dart';
+import '../../core/di/injection.dart';
+import '../../core/services/app_state_service.dart';
 import '../../generated/assets.dart';
 import '../../themes/color.dart';
 import '../../themes/font.dart';
@@ -17,7 +19,6 @@ class PermissionPage extends StatefulWidget {
 }
 
 class _PermissionPageState extends State<PermissionPage> {
-
   void permissionLib() async {
     if (Platform.isAndroid) {
       PermissionStatus status;
@@ -31,6 +32,10 @@ class _PermissionPageState extends State<PermissionPage> {
       }
 
       if (status.isGranted) {
+        // Save permission granted state
+        final appStateService = locator<AppStateService>();
+        await appStateService.setPermissionGranted(true);
+
         if (mounted) context.go('/sync');
       }
     }
@@ -41,7 +46,6 @@ class _PermissionPageState extends State<PermissionPage> {
     permissionLib();
     super.initState();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -141,8 +145,11 @@ class _PermissionPageState extends State<PermissionPage> {
                     if (!status.isGranted) {
                       openAppSettings();
                       return;
-                    }
-                    else{
+                    } else {
+                      // Save permission granted state
+                      final appStateService = locator<AppStateService>();
+                      await appStateService.setPermissionGranted(true);
+
                       if (mounted) context.go('/sync');
                     }
                   }

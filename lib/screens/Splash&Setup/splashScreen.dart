@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../commonWidgets/textWidget.dart';
+import '../../core/di/injection.dart';
+import '../../core/services/app_state_service.dart';
 import '../../generated/assets.dart';
 import '../../l10n/l10n.dart';
 import '../../themes/font.dart';
@@ -33,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        if (mounted) context.go('/permission');
+        _navigateToNextScreen();
       }
     });
 
@@ -68,6 +70,31 @@ class _SplashScreenState extends State<SplashScreen>
     Future.delayed(const Duration(milliseconds: 500), () {
       _controller.forward();
     });
+  }
+
+  /// Determines the next screen based on app state
+  Future<void> _navigateToNextScreen() async {
+    if (!mounted) return;
+
+    final appStateService = locator<AppStateService>();
+
+    // Check if sync has been completed
+    final syncCompleted = await appStateService.isSyncCompleted();
+    if (syncCompleted) {
+      if (mounted) context.go('/dashboard');
+      return;
+    }
+
+    // Check if permission has been granted
+    final permissionGranted = await appStateService.isPermissionGranted();
+    if (permissionGranted) {
+      // Permission granted but sync not completed, go to sync
+      if (mounted) context.go('/sync');
+      return;
+    }
+
+    // No permission yet, go to permission screen
+    if (mounted) context.go('/permission');
   }
 
   @override
