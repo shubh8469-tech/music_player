@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:music_app/features/playlists/domain/entities/playlist.dart'
     as domain;
 import 'package:music_app/features/songs/data/models/song_model.dart';
@@ -189,6 +190,17 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             fontFamily: AppFonts.inter,
           ),
           actions: [
+            // Show "Add Songs" button only for non-system playlists
+            if (!_isSystem)
+              GestureDetector(
+                onTap: () {
+                  context.push('/dashboard/add-songs', extra: widget.playlist);
+                },
+                child: Padding(
+                  padding: EdgeInsets.only(right: 16.w),
+                  child: Icon(Icons.add, color: AppColors.black, size: 24),
+                ),
+              ),
             Padding(
               padding: EdgeInsets.only(right: 12.w),
               child: SvgPicture.asset(Assets.svgMenuIcon),

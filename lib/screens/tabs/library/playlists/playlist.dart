@@ -16,6 +16,9 @@ import '../../../../utills/globals.dart';
 import '../../music_service.dart';
 import 'dart:async';
 
+import 'create_playlist_bottom_sheet.dart';
+import 'create_playlist_screen.dart';
+
 class PlayListScreen extends StatefulWidget {
   const PlayListScreen({super.key});
 
@@ -118,14 +121,19 @@ class _PlayListScreenState extends State<PlayListScreen> {
                     ),
                   ),
                   Spacer(),
-                  Container(
-                    height: 24.h,
-                    width: 24.w,
-                    decoration: BoxDecoration(
-                      color: AppColors.mediumDarkGrey.withAlpha(100),
-                      borderRadius: BorderRadius.circular(4.r),
+                  GestureDetector(
+                    onTap: (){
+                      CreatePlaylistBottomSheet.show(context);  
+                    },
+                    child: Container(
+                      height: 24.h,
+                      width: 24.w,
+                      decoration: BoxDecoration(
+                        color: AppColors.mediumDarkGrey.withAlpha(100),
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                      child: Icon(Icons.add),
                     ),
-                    child: Icon(Icons.add),
                   ),
                   SizedBox(width: 15.w),
                   SvgPicture.asset(Assets.svgMenuIcon),

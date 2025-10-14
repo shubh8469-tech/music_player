@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:music_app/screens/tabs/library/songs/select_song_screen.dart';
+import 'package:music_app/screens/tabs/library/songs/add_songs_screen.dart';
+import 'package:music_app/screens/tabs/library/playlists/create_playlist_screen.dart';
 import 'package:music_app/screens/tabs/library/playlists/playlist_detail_screen.dart';
 import 'package:music_app/screens/tabs/library/playlists/select_playlist_screen.dart';
 
@@ -23,6 +25,8 @@ enum AppRouteName {
   library,
   editSongDetails,
   selectSong,
+  addSongs,
+  createPlaylist,
   selectPlaylist,
   playlistDetail,
 }
@@ -107,6 +111,19 @@ final GoRouter appRouter = GoRouter(
           name: AppRouteName.selectSong.name,
           path: 'select-song',
           builder: (context, state) => const SelectSongScreen(),
+        ),
+        GoRoute(
+          name: AppRouteName.addSongs.name,
+          path: 'add-songs',
+          builder: (context, state) {
+            final playlist = state.extra as dynamic;
+            return AddSongsScreen(playlist: playlist);
+          },
+        ),
+        GoRoute(
+          name: AppRouteName.createPlaylist.name,
+          path: 'create-playlist',
+          builder: (context, state) => const CreatePlaylistScreen(),
         ),
         GoRoute(
           name: AppRouteName.selectPlaylist.name,
