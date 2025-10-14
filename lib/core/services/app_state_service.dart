@@ -35,3 +35,4 @@ class AppStateService {
     await _prefs.remove(_keySyncCompleted);
   }
 }
+

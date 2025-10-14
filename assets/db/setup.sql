@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS songs (
     artist TEXT,
     album TEXT,
     genre TEXT,
+    year INTEGER,
     duration INTEGER,
     file_path TEXT NOT NULL,
     folder TEXT,

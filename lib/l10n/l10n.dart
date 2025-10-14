@@ -301,6 +301,12 @@ abstract class S {
   /// **'Play'**
   String get play;
 
+  /// No description provided for @deletePlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Playlist'**
+  String get deletePlaylist;
+
   /// No description provided for @areYouSureDeleteSong.
   ///
   /// In en, this message translates to:

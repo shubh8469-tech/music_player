@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import '../../core/di/injection.dart';
 import '../../core/services/app_state_service.dart';
 import '../../features/songs/data/models/song_model.dart';
@@ -97,12 +98,74 @@ class _SyncProgressState extends State<SyncProgress>
         log('songs duration: ${song.duration} ${song.title}');
 
         if ((song.duration ?? 0) >= 1000) {
+          // Try to extract year from song metadata
+          int? songYear;
+
+          // FIRST PRIORITY: Try to read year from audio file metadata (ID3 tags, etc.)
+          // This only works for regular file paths (not content:// URIs)
+          if (!path.startsWith('content://')) {
+            try {
+              final file = File(path);
+              if (await file.exists()) {
+                final metadata = await MetadataRetriever.fromFile(file);
+
+                if (metadata.year != null) {
+                  final yearValue = metadata.year!;
+
+                  // Validate year is in reasonable range
+                  if (yearValue > 1900 &&
+                      yearValue <= DateTime.now().year + 1) {
+                    songYear = yearValue;
+                    log(
+                      '✅ Year from audio metadata for ${song.title}: $songYear',
+                    );
+                  }
+                }
+              }
+            } catch (e) {
+              log('Failed to read audio metadata for ${song.title}: $e');
+            }
+          }
+
+          // SECOND PRIORITY: Check dateAdded from media store
+          if (songYear == null) {
+            try {
+              if (song.dateAdded != null && song.dateAdded! > 0) {
+                songYear = DateTime.fromMillisecondsSinceEpoch(
+                  song.dateAdded! * 1000,
+                ).year;
+                log('Year from dateAdded for ${song.title}: $songYear');
+              }
+            } catch (e) {
+              log(
+                'Failed to extract year from dateAdded for ${song.title}: $e',
+              );
+            }
+          }
+
+          // LAST RESORT: Use file's last modified date
+          if (songYear == null && !path.startsWith('content://')) {
+            try {
+              final file = File(path);
+              if (await file.exists()) {
+                final lastModified = await file.lastModified();
+                songYear = lastModified.year;
+                log('Year from file modification for ${song.title}: $songYear');
+              }
+            } catch (e) {
+              log(
+                'Failed to extract year from file system for ${song.title}: $e',
+              );
+            }
+          }
+
           final model = SongsModel(
             id: song.id,
             title: song.title,
             artist: song.artist ?? '',
             album: song.album ?? '',
             genre: song.genre ?? '',
+            year: songYear,
             duration: song.duration ?? 0,
             filePath: path,
             folder: folderName,

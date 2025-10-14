@@ -24,7 +24,7 @@ class AppBarWithIconTitle extends StatelessWidget implements PreferredSizeWidget
       actions: [
         if (isActionBtnDisplay == true)
           IconButton(
-            icon: SvgPicture.asset(Assets.svgIcDots, height: 26.h, width: 26.w, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
+            icon: SvgPicture.asset(Assets.svgIcDots, height: 30.h, width: 30.w, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
             onPressed: () => {onTapAction!()},
           ),
       ],

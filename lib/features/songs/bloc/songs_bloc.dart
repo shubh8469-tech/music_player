@@ -19,7 +19,11 @@ class SongsBloc extends Bloc<SongsEvent, SongsState> {
   final PlaylistRepository playlistRepository;
   final VoidCallback? onPlaylistRefresh;
 
-  SongsBloc(this.localDataSource, this.playlistRepository, {this.onPlaylistRefresh}) : super(const SongsState.initial()) {
+  SongsBloc(
+    this.localDataSource,
+    this.playlistRepository, {
+    this.onPlaylistRefresh,
+  }) : super(const SongsState.initial()) {
     on<_AddSong>((event, emit) async {
       try {
         emit(const SongsState.loading());
@@ -75,6 +79,7 @@ class SongsBloc extends Bloc<SongsEvent, SongsState> {
             artist: songs[songIndex].artist,
             album: songs[songIndex].album,
             genre: songs[songIndex].genre,
+            year: songs[songIndex].year,
             duration: songs[songIndex].duration,
             filePath: songs[songIndex].filePath,
             folder: songs[songIndex].folder,
@@ -104,30 +109,70 @@ class SongsBloc extends Bloc<SongsEvent, SongsState> {
         final songs = await localDataSource.getAllSongs();
 
         List<SongsModel> sortedSongs = List.from(songs);
+        final isAscending = event.sortOrder == 0;
 
         switch (event.sortIndex) {
           case 0: // Song Name
-            sortedSongs.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+            sortedSongs.sort(
+              (a, b) => isAscending
+                  ? a.title.toLowerCase().compareTo(b.title.toLowerCase())
+                  : b.title.toLowerCase().compareTo(a.title.toLowerCase()),
+            );
             break;
           case 1: // Artist
             sortedSongs = List.from(songs)
               ..sort((a, b) {
-                final aArtist = a.artist == '<unknown>' ? 'zzz' : a.artist.toLowerCase();
-                final bArtist = b.artist == '<unknown>' ? 'zzz' : b.artist.toLowerCase();
-                return aArtist.toLowerCase().compareTo(bArtist.toLowerCase());
+                final aArtist = a.artist == '<unknown>'
+                    ? 'zzz'
+                    : a.artist.toLowerCase();
+                final bArtist = b.artist == '<unknown>'
+                    ? 'zzz'
+                    : b.artist.toLowerCase();
+                return isAscending
+                    ? aArtist.toLowerCase().compareTo(bArtist.toLowerCase())
+                    : bArtist.toLowerCase().compareTo(aArtist.toLowerCase());
               });
             break;
           case 2: // Album
-            sortedSongs.sort((a, b) => a.album.toLowerCase().compareTo(b.album.toLowerCase()));
+            sortedSongs.sort(
+              (a, b) => isAscending
+                  ? a.album.toLowerCase().compareTo(b.album.toLowerCase())
+                  : b.album.toLowerCase().compareTo(a.album.toLowerCase()),
+            );
             break;
           case 3: // Folder
-            sortedSongs.sort((a, b) => a.folder!.toLowerCase().compareTo(b.folder!.toLowerCase()));
+            sortedSongs.sort(
+              (a, b) => isAscending
+                  ? a.folder!.toLowerCase().compareTo(b.folder!.toLowerCase())
+                  : b.folder!.toLowerCase().compareTo(a.folder!.toLowerCase()),
+            );
             break;
           case 4: // Added Time
-            sortedSongs.sort((a, b) => a.createdTime.compareTo(b.createdTime));
+            sortedSongs.sort(
+              (a, b) => isAscending
+                  ? a.createdTime.compareTo(b.createdTime)
+                  : b.createdTime.compareTo(a.createdTime),
+            );
             break;
           case 5: // Play Count
-            sortedSongs.sort((a, b) => (b.playCount ?? 0).compareTo(a.playCount ?? 0));
+            sortedSongs.sort(
+              (a, b) => isAscending
+                  ? a.playCount.compareTo(b.playCount)
+                  : b.playCount.compareTo(a.playCount),
+            );
+            break;
+          case 6: // Year
+            sortedSongs.sort((a, b) {
+              final aYear = a.year ?? 0;
+              final bYear = b.year ?? 0;
+              // Songs without year go to the end
+              if (aYear == 0 && bYear == 0) return 0;
+              if (aYear == 0) return 1;
+              if (bYear == 0) return -1;
+              return isAscending
+                  ? aYear.compareTo(bYear)
+                  : bYear.compareTo(aYear);
+            });
             break;
           default:
             break;
@@ -136,13 +181,15 @@ class SongsBloc extends Bloc<SongsEvent, SongsState> {
         emit(SongsState.loaded(sortedSongs));
 
         // Optional: log to verify
-        log("Songs sorted by ${event.sortIndex}:");
+        log(
+          "Songs sorted by ${event.sortIndex} (${isAscending ? 'Ascending' : 'Descending'}):",
+        );
         for (var s in sortedSongs) {
           log("----------------------------------");
           log("${s.title} - ${s.artist} - ${s.album}");
           log("${s.folder} - ${s.createdTime} - ${s.playCount}");
+          log("Year: ${s.year}");
           log("----------------------------------");
-          // log("${s.year}");
         }
       } catch (e) {
         emit(SongsState.error(e.toString()));

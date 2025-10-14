@@ -131,14 +131,14 @@ return sortSongs(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( SongsModel song)?  addSong,TResult Function()?  getAllSongs,TResult Function( int id)?  removeSong,TResult Function( int songId,  bool isFavorite)?  updateSongFavorite,TResult Function( int sortIndex)?  sortSongs,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( SongsModel song)?  addSong,TResult Function()?  getAllSongs,TResult Function( int id)?  removeSong,TResult Function( int songId,  bool isFavorite)?  updateSongFavorite,TResult Function( int sortIndex,  int sortOrder)?  sortSongs,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AddSong() when addSong != null:
 return addSong(_that.song);case _GetAllSongs() when getAllSongs != null:
 return getAllSongs();case _RemoveSong() when removeSong != null:
 return removeSong(_that.id);case _UpdateSongFavorite() when updateSongFavorite != null:
 return updateSongFavorite(_that.songId,_that.isFavorite);case _SortSongs() when sortSongs != null:
-return sortSongs(_that.sortIndex);case _:
+return sortSongs(_that.sortIndex,_that.sortOrder);case _:
   return orElse();
 
 }
@@ -156,14 +156,14 @@ return sortSongs(_that.sortIndex);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( SongsModel song)  addSong,required TResult Function()  getAllSongs,required TResult Function( int id)  removeSong,required TResult Function( int songId,  bool isFavorite)  updateSongFavorite,required TResult Function( int sortIndex)  sortSongs,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( SongsModel song)  addSong,required TResult Function()  getAllSongs,required TResult Function( int id)  removeSong,required TResult Function( int songId,  bool isFavorite)  updateSongFavorite,required TResult Function( int sortIndex,  int sortOrder)  sortSongs,}) {final _that = this;
 switch (_that) {
 case _AddSong():
 return addSong(_that.song);case _GetAllSongs():
 return getAllSongs();case _RemoveSong():
 return removeSong(_that.id);case _UpdateSongFavorite():
 return updateSongFavorite(_that.songId,_that.isFavorite);case _SortSongs():
-return sortSongs(_that.sortIndex);case _:
+return sortSongs(_that.sortIndex,_that.sortOrder);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -180,14 +180,14 @@ return sortSongs(_that.sortIndex);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( SongsModel song)?  addSong,TResult? Function()?  getAllSongs,TResult? Function( int id)?  removeSong,TResult? Function( int songId,  bool isFavorite)?  updateSongFavorite,TResult? Function( int sortIndex)?  sortSongs,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( SongsModel song)?  addSong,TResult? Function()?  getAllSongs,TResult? Function( int id)?  removeSong,TResult? Function( int songId,  bool isFavorite)?  updateSongFavorite,TResult? Function( int sortIndex,  int sortOrder)?  sortSongs,}) {final _that = this;
 switch (_that) {
 case _AddSong() when addSong != null:
 return addSong(_that.song);case _GetAllSongs() when getAllSongs != null:
 return getAllSongs();case _RemoveSong() when removeSong != null:
 return removeSong(_that.id);case _UpdateSongFavorite() when updateSongFavorite != null:
 return updateSongFavorite(_that.songId,_that.isFavorite);case _SortSongs() when sortSongs != null:
-return sortSongs(_that.sortIndex);case _:
+return sortSongs(_that.sortIndex,_that.sortOrder);case _:
   return null;
 
 }
@@ -431,10 +431,11 @@ as bool,
 
 
 class _SortSongs implements SongsEvent {
-  const _SortSongs(this.sortIndex);
+  const _SortSongs(this.sortIndex, [this.sortOrder = 0]);
   
 
  final  int sortIndex;
+@JsonKey() final  int sortOrder;
 
 /// Create a copy of SongsEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -446,16 +447,16 @@ _$SortSongsCopyWith<_SortSongs> get copyWith => __$SortSongsCopyWithImpl<_SortSo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SortSongs&&(identical(other.sortIndex, sortIndex) || other.sortIndex == sortIndex));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SortSongs&&(identical(other.sortIndex, sortIndex) || other.sortIndex == sortIndex)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,sortIndex);
+int get hashCode => Object.hash(runtimeType,sortIndex,sortOrder);
 
 @override
 String toString() {
-  return 'SongsEvent.sortSongs(sortIndex: $sortIndex)';
+  return 'SongsEvent.sortSongs(sortIndex: $sortIndex, sortOrder: $sortOrder)';
 }
 
 
@@ -466,7 +467,7 @@ abstract mixin class _$SortSongsCopyWith<$Res> implements $SongsEventCopyWith<$R
   factory _$SortSongsCopyWith(_SortSongs value, $Res Function(_SortSongs) _then) = __$SortSongsCopyWithImpl;
 @useResult
 $Res call({
- int sortIndex
+ int sortIndex, int sortOrder
 });
 
 
@@ -483,9 +484,10 @@ class __$SortSongsCopyWithImpl<$Res>
 
 /// Create a copy of SongsEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? sortIndex = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? sortIndex = null,Object? sortOrder = null,}) {
   return _then(_SortSongs(
 null == sortIndex ? _self.sortIndex : sortIndex // ignore: cast_nullable_to_non_nullable
+as int,null == sortOrder ? _self.sortOrder : sortOrder // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

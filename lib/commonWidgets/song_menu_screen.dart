@@ -261,7 +261,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     newSongsList,
                                     autoPlay: false,
                                   );
-                                } else {
+                                }
+                                else {
                                   final newSongsList = List<SongsModel>.from(
                                     musicService.songs,
                                   );

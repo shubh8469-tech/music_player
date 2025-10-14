@@ -90,23 +90,32 @@ class _PlayListScreenState extends State<PlayListScreen> {
             children: [
               Row(
                 children: [
-                  SvgPicture.asset(Assets.svgSongsCount),
-                  SizedBox(width: 10.w),
-                  BlocBuilder<PlaylistBloc, PlaylistState>(
-                    builder: (context, state) {
-                      int total = 0;
-                      state.maybeWhen(
-                        loaded: (playlists, systemPlaylistSongs) =>
-                            total = playlists.length,
-                        orElse: () {},
-                      );
-                      return Texts(
-                        '$total Playlists',
-                        fontSize: 14.sp,
-                        fontWeight: AppFontWeights.regular,
-                        color: AppColors.textColor,
-                      );
+                  InkWell(
+                    onTap: () {
+                      context.push('/dashboard/select-playlist');
                     },
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(Assets.svgSongsCount),
+                        SizedBox(width: 10.w),
+                        BlocBuilder<PlaylistBloc, PlaylistState>(
+                          builder: (context, state) {
+                            int total = 0;
+                            state.maybeWhen(
+                              loaded: (playlists, systemPlaylistSongs) =>
+                                  total = playlists.length,
+                              orElse: () {},
+                            );
+                            return Texts(
+                              '$total Playlists',
+                              fontSize: 14.sp,
+                              fontWeight: AppFontWeights.regular,
+                              color: AppColors.textColor,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                   Spacer(),
                   Container(
@@ -190,14 +199,19 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                 builder: (_) => SongMenuScreen(
                                   songMenuList: playlistMenuItems,
                                   isPlaying: false,
-                                  currentSong: musicService.currentIndex != -1 ? musicService.songs[musicService.currentIndex] : null,
+                                  currentSong: musicService.currentIndex != -1
+                                      ? musicService.songs[musicService
+                                            .currentIndex]
+                                      : null,
                                   songIndex: index,
                                   songsList: [],
-                                  maxHeight: musicService.currentIndex != -1 ? 0.79.sh : 0.66.sh,
+                                  maxHeight: musicService.currentIndex != -1
+                                      ? 0.79.sh
+                                      : 0.66.sh,
                                   from: 'playlist',
                                   systemKeyOrId: p.systemKey,
                                   isSystemPlaylist: true,
-                                )
+                                ),
                               );
                             },
                           );
@@ -262,26 +276,29 @@ class _PlayListScreenState extends State<PlayListScreen> {
                             },
                             onPlayTap: () {
                               showModalBottomSheet(
-                                  context: context,
-                                  backgroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(40.r),
-                                    ),
+                                context: context,
+                                backgroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(40.r),
                                   ),
-                                  isScrollControlled: true,
-                                  builder: (_) => SongMenuScreen(
-                                    songMenuList: playlistMenuItems,
-                                    isPlaying: false,
-                                    currentSong: musicService.currentIndex != -1 ? musicService.songs[musicService.currentIndex] : null,
-                                    songIndex: index,
-                                    songsList: [],
-                                    maxHeight: 0.79.sh,
-                                    from: 'playlist',
-                                    systemKeyOrId: p.id.toString(),
-                                    isSystemPlaylist: false,
-                                  )
+                                ),
+                                isScrollControlled: true,
+                                builder: (_) => SongMenuScreen(
+                                  songMenuList: playlistMenuItems,
+                                  isPlaying: false,
+                                  currentSong: musicService.currentIndex != -1
+                                      ? musicService.songs[musicService
+                                            .currentIndex]
+                                      : null,
+                                  songIndex: index,
+                                  songsList: [],
+                                  maxHeight: 0.79.sh,
+                                  from: 'playlist',
+                                  systemKeyOrId: p.id.toString(),
+                                  isSystemPlaylist: false,
+                                ),
                               );
                             },
                           );

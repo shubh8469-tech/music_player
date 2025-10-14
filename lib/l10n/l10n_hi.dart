@@ -111,6 +111,9 @@ class SHi extends S {
   String get play => 'Play';
 
   @override
+  String get deletePlaylist => 'प्लेलिस्ट हटाएं';
+
+  @override
   String get areYouSureDeleteSong =>
       'Are you sure you want to delete these 2 songs?';
 }

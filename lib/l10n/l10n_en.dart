@@ -111,6 +111,9 @@ class SEn extends S {
   String get play => 'Play';
 
   @override
+  String get deletePlaylist => 'Delete Playlist';
+
+  @override
   String get areYouSureDeleteSong =>
       'Are you sure you want to delete these 2 songs?';
 }

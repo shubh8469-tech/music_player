@@ -4,6 +4,7 @@ class Song {
   final String artist;
   final String album;
   final String genre;
+  final int? year;
   final int duration;
   final String filePath;
   final String? folder;
@@ -15,6 +16,7 @@ class Song {
     required this.artist,
     required this.album,
     required this.genre,
+    this.year,
     required this.duration,
     required this.filePath,
     this.folder,

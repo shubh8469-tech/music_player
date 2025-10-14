@@ -1,5 +1,4 @@
 import 'dart:developer' as logS;
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -151,7 +150,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   songIndex: index,
                   songsList: list,
                   maxHeight: 0.87.sh,
-                  systemKeyOrId: widget.playlist.isSystem! ? widget.playlist.systemKey : widget.playlist.id.toString(),
+                  systemKeyOrId: widget.playlist.isSystem!
+                      ? widget.playlist.systemKey
+                      : widget.playlist.id.toString(),
                   isSystemPlaylist: _isSystem,
                   from: 'playlist_in',
                 ),
@@ -212,45 +213,19 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                         onTap: () async {
                           if (_songs.isEmpty) return;
 
-                          // Get current playing song info before shuffling
-                          final currentSongId = _player.currentSongId;
-                          final wasPlaying = _player.isPlaying;
+                          await _player.setPlaylist(_songs, autoPlay: false);
+                          await _player
+                              .ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
 
-                          // Create shuffled list for UI
-                          final shuffledSongs = List<SongsModel>.from(_songs);
-                          shuffledSongs.shuffle();
-
-                          // Find the position of the currently playing song in the shuffled list
-                          int startIndex = 0;
-                          if (currentSongId != null) {
-                            final currentIndex = shuffledSongs.indexWhere(
-                              (song) => song.id == currentSongId,
-                            );
-                            if (currentIndex >= 0) {
-                              startIndex = currentIndex;
-                            } else {
-                              // If current song not found, pick a random index
-                              startIndex = Random().nextInt(
-                                shuffledSongs.length,
-                              );
-                            }
-                          } else {
-                            // If no current song, pick a random index
-                            startIndex = Random().nextInt(shuffledSongs.length);
-                          }
-
-                          // Update UI with shuffled order
-                          setState(() {
-                            _songs = shuffledSongs;
-                          });
-
-                          // Enable shuffle mode and set playlist with shuffled order
-                          await _player.ensureShuffleOnAndReshuffle();
-                          await _player.setPlaylist(
-                            shuffledSongs,
-                            startIndex: 0,
-                            autoPlay: wasPlaying,
+                          // Wait until the player has fully updated its index
+                          await _player.player.currentIndexStream.firstWhere(
+                            (idx) => idx != null && idx != 0,
                           );
+
+                          // Now play
+                          await _player.play();
+
+                          logS.log("Shuffle Play started");
                         },
                         child: Container(
                           alignment: Alignment.center,
