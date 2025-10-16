@@ -5,4 +5,5 @@ class FolderEvent with _$FolderEvent {
   const factory FolderEvent.fetchAllFolders() = _FetchAllFolders;
   const factory FolderEvent.fetchSongsForFolder(int folderId) =
       _FetchSongsForFolder;
+  const factory FolderEvent.deleteFolder(int folderId) = _DeleteFolder;
 }

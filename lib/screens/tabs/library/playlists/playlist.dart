@@ -325,7 +325,9 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                               : null,
                                       songIndex: index,
                                       songsList: [],
-                                      maxHeight: 0.79.sh,
+                                      maxHeight: musicService.currentIndex != -1
+                                          ? 0.79.sh
+                                          : 0.66.sh,
                                       from: 'playlist',
                                       systemKeyOrId: p.id.toString(),
                                       isSystemPlaylist: false,

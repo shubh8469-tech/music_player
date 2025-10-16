@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:music_app/features/songs/bloc/songs_bloc.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
+import 'package:music_app/features/playlists/bloc/playlist_bloc.dart';
 import 'package:music_app/themes/font.dart';
 
 import '../../../../commonWidgets/MusicListTile.dart';
@@ -174,7 +175,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
     }
   }
 
-  // Delete selected songs
+  // Delete selected songs from playlist
   void _deleteSelectedSongs(List<SongsModel> allSongs) {
     final selectedSongs = _getSelectedSongs(allSongs);
 
@@ -188,17 +189,35 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
       return;
     }
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
-      ),
-      isScrollControlled: true,
-      builder:
-          (_) => _buildDeleteConfirmationDialog(selectedSongs.length, allSongs),
-    );
+    // If we're in playlist context, remove from playlist instead of deleting completely
+    if (widget.playlist != null) {
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
+        ),
+        isScrollControlled: true,
+        builder: (_) => _buildRemoveFromPlaylistConfirmationDialog(
+          selectedSongs.length,
+          allSongs,
+        ),
+      );
+    } else {
+      // Original behavior for library songs (complete deletion)
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
+        ),
+        isScrollControlled: true,
+        builder: (_) =>
+            _buildDeleteConfirmationDialog(selectedSongs.length, allSongs),
+      );
+    }
   }
 
   // Add to playlist
@@ -344,12 +363,11 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
         final newSongsList = List<SongsModel>.from(musicService.songs);
 
         // Filter out songs that are already in the list to avoid duplicates
-        final songsToAdd =
-            selectedSongs.where((song) {
-              return !newSongsList.any(
-                (existingSong) => existingSong.id == song.id,
-              );
-            }).toList();
+        final songsToAdd = selectedSongs.where((song) {
+          return !newSongsList.any(
+            (existingSong) => existingSong.id == song.id,
+          );
+        }).toList();
 
         // Insert songs at the position after current playing song
         newSongsList.insertAll(insertIndex, songsToAdd);
@@ -473,6 +491,158 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
       () {},
       message: "Hide song functionality will be implemented",
       alertBannerLocation: AlertBannerLocation.bottom,
+    );
+  }
+
+  // Custom remove from playlist confirmation dialog
+  Widget _buildRemoveFromPlaylistConfirmationDialog(
+    int songCount,
+    List<SongsModel> allSongs,
+  ) {
+    return Container(
+      padding: EdgeInsets.only(
+        left: 16.w,
+        right: 16.w,
+        top: 10.h,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Top handle bar
+          Container(
+            width: 40.w,
+            height: 4.h,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2.r),
+            ),
+          ),
+          SizedBox(height: 30.h),
+
+          // Title
+          Texts(
+            'Remove from Playlist',
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w500,
+            fontFamily: AppFonts.inter,
+            color: AppColors.textColor,
+          ),
+          SizedBox(height: 30.h),
+
+          // Message
+          Texts(
+            'Are you sure you want to remove these $songCount songs from the playlist?',
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w400,
+            fontFamily: AppFonts.inter,
+            color: AppColors.textColor,
+            align: TextAlign.center,
+          ),
+          SizedBox(height: 25.h),
+
+          // Action buttons
+          Row(
+            children: [
+              // Cancel button
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    height: 48.h,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Center(
+                      child: Texts(
+                        S.of(context).cancel,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: AppFonts.inter,
+                        color: AppColors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
+
+              // Remove button
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    // Remove selected songs from playlist
+                    final selectedSongs = _getSelectedSongs(allSongs);
+                    final songIds = selectedSongs
+                        .map((song) => song.id!)
+                        .toList();
+
+                    // Get playlist ID - handle both regular and system playlists
+                    int? playlistId;
+                    if (widget.playlist != null) {
+                      if (widget.isSystemPlaylist == true) {
+                        // For system playlists, we can't remove songs using the regular method
+                        // This should not happen as system playlists are read-only
+                        Navigator.pop(context);
+                        showSnackBar(
+                          context,
+                          () {},
+                          message: "Cannot remove songs from system playlists",
+                          alertBannerLocation: AlertBannerLocation.bottom,
+                        );
+                        return;
+                      } else {
+                        playlistId = widget.playlist.id;
+                      }
+                    }
+
+                    if (playlistId != null) {
+                      context.read<PlaylistBloc>().add(
+                        PlaylistEvent.removeMultipleSongsFromPlaylist(
+                          playlistId,
+                          songIds,
+                        ),
+                      );
+                    }
+
+                    Navigator.pop(context);
+                    setState(() {
+                      selectedSongIds.clear();
+                      isSelectedAll = false;
+                    });
+
+                    showSnackBar(
+                      context,
+                      () {},
+                      message: "$songCount songs removed from playlist!",
+                      alertBannerLocation: AlertBannerLocation.bottom,
+                    );
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    height: 48.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryOrange,
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Center(
+                      child: Texts(
+                        'Remove',
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: AppFonts.inter,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+        ],
+      ),
     );
   }
 
@@ -699,57 +869,53 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
 
         // Songs list
         Expanded(
-          child:
-              filteredSongs.isEmpty
-                  ? Center(
-                    child: Texts(
-                      "No songs match your search",
-                      fontSize: 16.sp,
-                      color: AppColors.textColor,
-                    ),
-                  )
-                  : ListView.builder(
-                    itemCount: filteredSongs.length,
-                    padding: EdgeInsets.symmetric(horizontal: 15.w),
-                    itemBuilder: (context, index) {
-                      final song = filteredSongs[index];
-                      final isSelected = selectedSongIds.contains(song.id);
-
-                      final image =
-                          (index % 2 == 0)
-                              ? musicIcons[0]
-                              : (index % 3 == 0)
-                              ? musicIcons[1]
-                              : musicIcons[2];
-
-                      return MusicListTile(
-                        margin: 7.w,
-                        height: 66.h,
-                        borderRadius: 10.r,
-                        backgroundColor: AppColors.musicTileBackgroundColor,
-                        cardHeight: 50.h,
-                        cardWidth: 50.w,
-                        cardRadius: 7.r,
-                        cardIconAsset: song.artwork_path ?? image,
-                        cardIconSize: 32.r,
-                        isSvgCardIcon: image.contains('.svg'),
-                        title: song.title,
-                        subtitle: song.artist,
-                        songLength: formatDuration(song.duration),
-                        songLengthRequired: true,
-                        trailingIconAsset:
-                            isSelected
-                                ? Assets.svgIcCheck
-                                : Assets.svgIcUncheck,
-                        trailingIconHeight: 20.h,
-                        trailingIconWidth: 10.w,
-                        trailingMargin: 2.w,
-                        onTap: () => toggleSelection(song.id!, filteredSongs),
-                        onPlayTap:
-                            () => toggleSelection(song.id!, filteredSongs),
-                      );
-                    },
+          child: filteredSongs.isEmpty
+              ? Center(
+                  child: Texts(
+                    "No songs match your search",
+                    fontSize: 16.sp,
+                    color: AppColors.textColor,
                   ),
+                )
+              : ListView.builder(
+                  itemCount: filteredSongs.length,
+                  padding: EdgeInsets.symmetric(horizontal: 15.w),
+                  itemBuilder: (context, index) {
+                    final song = filteredSongs[index];
+                    final isSelected = selectedSongIds.contains(song.id);
+
+                    final image = (index % 2 == 0)
+                        ? musicIcons[0]
+                        : (index % 3 == 0)
+                        ? musicIcons[1]
+                        : musicIcons[2];
+
+                    return MusicListTile(
+                      margin: 7.w,
+                      height: 66.h,
+                      borderRadius: 10.r,
+                      backgroundColor: AppColors.musicTileBackgroundColor,
+                      cardHeight: 50.h,
+                      cardWidth: 50.w,
+                      cardRadius: 7.r,
+                      cardIconAsset: song.artwork_path ?? image,
+                      cardIconSize: 32.r,
+                      isSvgCardIcon: image.contains('.svg'),
+                      title: song.title,
+                      subtitle: song.artist,
+                      songLength: formatDuration(song.duration),
+                      songLengthRequired: true,
+                      trailingIconAsset: isSelected
+                          ? Assets.svgIcCheck
+                          : Assets.svgIcUncheck,
+                      trailingIconHeight: 20.h,
+                      trailingIconWidth: 10.w,
+                      trailingMargin: 2.w,
+                      onTap: () => toggleSelection(song.id!, filteredSongs),
+                      onPlayTap: () => toggleSelection(song.id!, filteredSongs),
+                    );
+                  },
+                ),
         ),
       ],
     );
@@ -763,119 +929,113 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
         isActionBtnDisplay: true,
         onTapAction: () => _showPopupMenu(context),
       ),
-      body:
-          widget.playlistSongs != null
-              ? _buildPlaylistSongsContent()
-              : BlocBuilder<SongsBloc, SongsState>(
-                builder: (context, state) {
-                  return state.when(
-                    initial: () => const Center(child: Text("Initializing...")),
-                    loading:
-                        () => const Center(child: CircularProgressIndicator()),
-                    error:
-                        (message) => Center(
-                          child: Text(
-                            message,
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                    loaded: (allSongs) {
-                      final filteredSongs = _filterSongs(allSongs);
+      body: widget.playlistSongs != null
+          ? _buildPlaylistSongsContent()
+          : BlocBuilder<SongsBloc, SongsState>(
+              builder: (context, state) {
+                return state.when(
+                  initial: () => const Center(child: Text("Initializing...")),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (message) => Center(
+                    child: Text(
+                      message,
+                      style: const TextStyle(color: Colors.red, fontSize: 16),
+                    ),
+                  ),
+                  loaded: (allSongs) {
+                    final filteredSongs = _filterSongs(allSongs);
 
-                      // Update select all state based on current filtered results
-                      updateSelectAllState(filteredSongs);
+                    // Update select all state based on current filtered results
+                    updateSelectAllState(filteredSongs);
 
-                      if (allSongs.isEmpty) {
-                        return const Center(
-                          child: Text(
-                            "No songs available",
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
-                          ),
-                        );
-                      }
-
-                      return _buildSongsContent(allSongs, filteredSongs);
-                    },
-                  );
-                },
-              ),
-      bottomNavigationBar:
-          widget.playlistSongs != null
-              ? _buildPlaylistBottomBar()
-              : BlocBuilder<SongsBloc, SongsState>(
-                builder: (context, state) {
-                  return state.maybeWhen(
-                    loaded: (allSongs) {
-                      return Visibility(
-                        visible: selectedCount > 0,
-                        child: SafeArea(
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 12.h),
-                            margin: EdgeInsets.symmetric(horizontal: 10.w),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                GestureDetector(
-                                  onTap: () => _playSelectedSongs(allSongs),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      SvgPicture.asset(Assets.svgIcNavPlay),
-                                      SizedBox(height: 3.h),
-                                      Texts(
-                                        S.of(context).play,
-                                        fontSize: 12.sp,
-                                        fontFamily: AppFonts.inter,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () => _addToPlaylist(allSongs),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      SvgPicture.asset(Assets.svgIcNavPlaylist),
-                                      SizedBox(height: 3.h),
-                                      Texts(
-                                        S.of(context).addToPlaylist,
-                                        fontSize: 12.sp,
-                                        fontFamily: AppFonts.inter,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () => _deleteSelectedSongs(allSongs),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      SvgPicture.asset(Assets.svgIcNavDelete),
-                                      SizedBox(height: 3.h),
-                                      Texts(
-                                        S.of(context).delete,
-                                        fontSize: 12.sp,
-                                        fontFamily: AppFonts.inter,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                    if (allSongs.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          "No songs available",
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
                         ),
                       );
-                    },
-                    orElse: () => const SizedBox.shrink(),
-                  );
-                },
-              ),
+                    }
+
+                    return _buildSongsContent(allSongs, filteredSongs);
+                  },
+                );
+              },
+            ),
+      bottomNavigationBar: widget.playlistSongs != null
+          ? _buildPlaylistBottomBar()
+          : BlocBuilder<SongsBloc, SongsState>(
+              builder: (context, state) {
+                return state.maybeWhen(
+                  loaded: (allSongs) {
+                    return Visibility(
+                      visible: selectedCount > 0,
+                      child: SafeArea(
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                          margin: EdgeInsets.symmetric(horizontal: 10.w),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              GestureDetector(
+                                onTap: () => _playSelectedSongs(allSongs),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SvgPicture.asset(Assets.svgIcNavPlay),
+                                    SizedBox(height: 3.h),
+                                    Texts(
+                                      S.of(context).play,
+                                      fontSize: 12.sp,
+                                      fontFamily: AppFonts.inter,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => _addToPlaylist(allSongs),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SvgPicture.asset(Assets.svgIcNavPlaylist),
+                                    SizedBox(height: 3.h),
+                                    Texts(
+                                      S.of(context).addToPlaylist,
+                                      fontSize: 12.sp,
+                                      fontFamily: AppFonts.inter,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => _deleteSelectedSongs(allSongs),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SvgPicture.asset(Assets.svgIcNavDelete),
+                                    SizedBox(height: 3.h),
+                                    Texts(
+                                      S.of(context).delete,
+                                      fontSize: 12.sp,
+                                      fontFamily: AppFonts.inter,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  orElse: () => const SizedBox.shrink(),
+                );
+              },
+            ),
     );
   }
 

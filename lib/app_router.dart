@@ -6,6 +6,7 @@ import 'package:music_app/screens/tabs/library/playlists/create_playlist_screen.
 import 'package:music_app/screens/tabs/library/playlists/playlist_detail_screen.dart';
 import 'package:music_app/screens/tabs/library/playlists/select_playlist_screen.dart';
 import 'package:music_app/screens/tabs/library/folders/folder_detail_screen.dart';
+import 'package:music_app/screens/tabs/library/folders/select_folder_screen.dart';
 import 'package:music_app/screens/tabs/library/artist/artist_detail_screen.dart';
 import 'package:music_app/screens/tabs/library/albums/album_detail_screen.dart';
 
@@ -33,6 +34,7 @@ enum AppRouteName {
   selectPlaylist,
   playlistDetail,
   folderDetail,
+  selectFolder,
   artistDetail,
   albumDetail,
 }
@@ -88,24 +90,23 @@ final GoRouter appRouter = GoRouter(
               reverseTransitionDuration: const Duration(milliseconds: 500),
 
               // your existing screen
-              transitionsBuilder: (
-                context,
-                animation,
-                secondaryAnimation,
-                child,
-              ) {
-                const begin = Offset(0.0, 1.0); // from bottom
-                const end = Offset.zero; // to normal position
-                const curve = Curves.easeInOut;
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(0.0, 1.0); // from bottom
+                    const end = Offset.zero; // to normal position
+                    const curve = Curves.easeInOut;
 
-                final tween = Tween(
-                  begin: begin,
-                  end: end,
-                ).chain(CurveTween(curve: curve));
-                final offsetAnimation = animation.drive(tween);
+                    final tween = Tween(
+                      begin: begin,
+                      end: end,
+                    ).chain(CurveTween(curve: curve));
+                    final offsetAnimation = animation.drive(tween);
 
-                return SlideTransition(position: offsetAnimation, child: child);
-              },
+                    return SlideTransition(
+                      position: offsetAnimation,
+                      child: child,
+                    );
+                  },
             );
           },
         ),
@@ -169,6 +170,11 @@ final GoRouter appRouter = GoRouter(
             final folder = state.extra as dynamic;
             return FolderDetailScreen(folder: folder);
           },
+        ),
+        GoRoute(
+          name: AppRouteName.selectFolder.name,
+          path: 'select-folder',
+          builder: (context, state) => const SelectFolderScreen(),
         ),
         GoRoute(
           name: AppRouteName.artistDetail.name,

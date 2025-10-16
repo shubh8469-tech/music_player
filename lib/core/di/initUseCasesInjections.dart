@@ -8,6 +8,7 @@ import '../../features/folders/domain/usecases/add_folder.dart';
 import '../../features/folders/domain/usecases/get_all_folders.dart';
 import '../../features/folders/domain/usecases/get_folder_songs.dart';
 import '../../features/folders/domain/usecases/add_song_to_folder.dart';
+import '../../features/folders/domain/usecases/delete_folder.dart';
 import '../../features/artists/domain/repositories/artist_repository.dart';
 import '../../features/artists/domain/usecases/add_artist.dart';
 import '../../features/artists/domain/usecases/get_all_artists.dart';
@@ -34,6 +35,7 @@ Future<void> initUseCaseInjections() async {
   locator.registerFactory(() => GetAllFolders(locator<FolderRepository>()));
   locator.registerFactory(() => GetFolderSongs(locator<FolderRepository>()));
   locator.registerFactory(() => AddSongToFolder(locator<FolderRepository>()));
+  locator.registerFactory(() => DeleteFolder(locator<FolderRepository>()));
 
   ///---> Artists UseCases
   locator.registerFactory(() => AddArtist(locator<ArtistRepository>()));

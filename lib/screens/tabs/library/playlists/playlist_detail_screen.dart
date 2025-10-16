@@ -13,6 +13,7 @@ import 'package:music_app/themes/font.dart';
 import '../../../../commonWidgets/gradientCard.dart';
 import '../../../../commonWidgets/song_menu_screen.dart';
 import '../../../../utills/globals.dart';
+import '../../../../utills/snack_bar.dart';
 import '../widgets/mini_player_bar.dart';
 import '../../../../commonWidgets/MusicListTile.dart';
 import '../../../../commonWidgets/textWidget.dart';
@@ -117,59 +118,183 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         return Material(
           key: ValueKey(song.id),
           color: Colors.transparent,
-          child: MusicListTile(
-            margin: 7.w,
-            height: 66.h,
-            borderRadius: 10.r,
-            backgroundColor: AppColors.musicTileBackgroundColor,
-            cardHeight: 50.h,
-            cardWidth: 50.w,
-            cardRadius: 7.r,
-            cardIconAsset: song.artwork_path!,
-            cardIconSize: 32.r,
-            isSvgCardIcon: true,
-            title: song.title,
-            subtitle: song.artist,
-            trailingIconAsset: Assets.svgMenuIcon,
-            trailingIconHeight: 22.5.h,
-            trailingIconWidth: 3.w,
-            trailingMargin: 10.w,
-            isGifLoad: isCurrent,
-            onTap: () async {
-              await _player.setPlaylist(list, startIndex: index);
-              await _player.play();
-            },
-            onPlayTap: () async {
-              showModalBottomSheet(
-                context: context,
-                backgroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(40.r),
-                  ),
-                ),
-                isScrollControlled: true,
-                builder:
-                    (_) => SongMenuScreen(
+          child: Column(
+            children: [
+              MusicListTile(
+                margin: 7.w,
+                height: 66.h,
+                borderRadius: 10.r,
+                backgroundColor: AppColors.musicTileBackgroundColor,
+                cardHeight: 50.h,
+                cardWidth: 50.w,
+                cardRadius: 7.r,
+                cardIconAsset: song.artwork_path!,
+                cardIconSize: 32.r,
+                isSvgCardIcon: true,
+                title: song.title,
+                subtitle: song.artist,
+                trailingIconAsset: Assets.svgMenuIcon,
+                trailingIconHeight: 22.5.h,
+                trailingIconWidth: 3.w,
+                trailingMargin: 10.w,
+                isGifLoad: isCurrent,
+                onTap: () async {
+                  await _player.setPlaylist(list, startIndex: index);
+                  await _player.play();
+                },
+                onPlayTap: () async {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(40.r),
+                      ),
+                    ),
+                    isScrollControlled: true,
+                    builder: (_) => SongMenuScreen(
                       songMenuList: songMenuItems,
                       isPlaying: false,
                       currentSong: song,
                       songIndex: index,
                       songsList: list,
                       maxHeight: 0.87.sh,
-                      systemKeyOrId:
-                          widget.playlist.isSystem!
-                              ? widget.playlist.systemKey
-                              : widget.playlist.id.toString(),
+                      systemKeyOrId: widget.playlist.isSystem!
+                          ? widget.playlist.systemKey
+                          : widget.playlist.id.toString(),
                       isSystemPlaylist: _isSystem,
                       from: 'playlist_in',
                     ),
-              );
-            },
+                  );
+                },
+              ),
+
+              if (index == list.length - 1) SizedBox(height: 66.h),
+            ],
           ),
         );
       },
+    );
+  }
+
+  // Custom delete playlist confirmation bottom sheet
+  Widget _buildDeletePlaylistConfirmationDialog() {
+    return Container(
+      padding: EdgeInsets.only(
+        left: 16.w,
+        right: 16.w,
+        top: 10.h,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Top handle bar
+          Container(
+            width: 40.w,
+            height: 4.h,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2.r),
+            ),
+          ),
+          SizedBox(height: 30.h),
+
+          // Title
+          Texts(
+            'Delete Playlist',
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w500,
+            fontFamily: AppFonts.inter,
+            color: AppColors.textColor,
+          ),
+          SizedBox(height: 30.h),
+
+          // Message
+          Texts(
+            'Are you sure you want to delete this playlist?',
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w400,
+            fontFamily: AppFonts.inter,
+            color: AppColors.textColor,
+            align: TextAlign.center,
+          ),
+          SizedBox(height: 25.h),
+
+          // Action buttons
+          Row(
+            children: [
+              // Cancel button
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    height: 48.h,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Center(
+                      child: Texts(
+                        'Cancel',
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: AppFonts.inter,
+                        color: AppColors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
+
+              // Delete button
+              Expanded(
+                child: GestureDetector(
+                  onTap: () async {
+                    Navigator.pop(context); // Close bottom sheet
+
+                    // Delete playlist
+                    final playlistBloc = context.read<PlaylistBloc>();
+                    playlistBloc.add(
+                      PlaylistEvent.deletePlaylist(widget.playlist.id!),
+                    );
+
+                    // Show success message
+                    showSnackBar(
+                      context,
+                      () {},
+                      message: 'Playlist deleted successfully',
+                      alertBannerLocation: AlertBannerLocation.bottom,
+                    );
+
+                    // Navigate back to previous screen
+                    context.pop();
+                  },
+                  child: Container(
+                    height: 48.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryOrange,
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Center(
+                      child: Texts(
+                        'Delete',
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: AppFonts.inter,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+        ],
+      ),
     );
   }
 
@@ -207,24 +332,38 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             color: AppColors.white,
           ),
           actions: [
-            // Show "Add Songs" button only for non-system playlists
-            if (!_isSystem)
-              GestureDetector(
-                onTap: () {
-                  context.push('/dashboard/add-songs', extra: widget.playlist);
-                },
-                child: Padding(
-                  padding: EdgeInsets.only(right: 16.w),
-                  child: Icon(Icons.add, color: AppColors.black, size: 24),
-                ),
-              ),
-            Padding(
-              padding: EdgeInsets.only(right: 12.w),
-              child: SvgPicture.asset(
-                Assets.svgIcDelete,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.white,
-                  BlendMode.srcIn,
+            GestureDetector(
+              onTap: () {
+                if (_isSystem) {
+                  showSnackBar(
+                    context,
+                    () {},
+                    message: 'System playlist cannot be deleted',
+                    alertBannerLocation: AlertBannerLocation.bottom,
+                  );
+                } else {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(40.r),
+                      ),
+                    ),
+                    isScrollControlled: true,
+                    builder: (_) => _buildDeletePlaylistConfirmationDialog(),
+                  );
+                }
+              },
+              child: Padding(
+                padding: EdgeInsets.only(right: 12.w),
+                child: SvgPicture.asset(
+                  Assets.svgIcDelete,
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.white,
+                    BlendMode.srcIn,
+                  ),
                 ),
               ),
             ),
@@ -241,7 +380,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               ),
               child: Column(
                 children: [
-                  SizedBox(height: 25.h),
+                  SizedBox(height: 15.h),
                   GradientCard(
                     height: 150.h,
                     width: 150.w,
@@ -299,7 +438,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                               SvgPicture.asset(
                                 Assets.svgShuffle,
                                 height: 16.79.h,
-                                width: 17.77,
+                                width: 17.77.w,
                               ),
                               SizedBox(width: 10.w),
                               Texts(
@@ -316,9 +455,14 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                         onTap: () async {
                           if (_baseSongs.isEmpty) return;
                           await _player.ensureShuffleOff();
-                          await _applyOrderAndKeepCurrent(
+
+                          // Start from the first song of the playlist
+                          await _player.setPlaylist(
                             List<SongsModel>.from(_baseSongs),
+                            startIndex: 0,
+                            autoPlay: true,
                           );
+                          await _player.play();
                         },
                         child: Container(
                           height: 40.h,
@@ -333,7 +477,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                               SvgPicture.asset(
                                 Assets.svgPlay,
                                 height: 16.79.h,
-                                width: 17.77,
+                                width: 17.77.w,
                               ),
                               SizedBox(width: 10.w),
                               Texts(
@@ -384,28 +528,28 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       Spacer(),
 
                       // Add songs icon (only for non-system playlists)
-                      // if (!_isSystem)
-                      GestureDetector(
-                        onTap: () {
-                          context.push(
-                            '/dashboard/add-songs',
-                            extra: widget.playlist,
-                          );
-                        },
-                        child: Container(
-                          width: 32.w,
-                          height: 32.h,
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryOrange,
-                            borderRadius: BorderRadius.circular(16.r),
-                          ),
-                          child: Icon(
-                            Icons.add,
-                            color: AppColors.white,
-                            size: 20,
+                      if (!_isSystem)
+                        GestureDetector(
+                          onTap: () {
+                            context.push(
+                              '/dashboard/add-songs',
+                              extra: widget.playlist,
+                            );
+                          },
+                          child: Container(
+                            width: 32.w,
+                            height: 32.h,
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryOrange,
+                              borderRadius: BorderRadius.circular(16.r),
+                            ),
+                            child: Icon(
+                              Icons.add,
+                              color: AppColors.white,
+                              size: 20,
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   ),
 

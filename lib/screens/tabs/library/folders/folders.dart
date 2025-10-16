@@ -40,25 +40,28 @@ class _FolderListScreenState extends State<FolderListScreen> {
             children: [
               Row(
                 children: [
-                  SvgPicture.asset(Assets.svgSongsCount),
+                  GestureDetector(
+                    onTap: () {
+                      context.push('/dashboard/select-folder');
+                    },
+                    child: SvgPicture.asset(Assets.svgSongsCount),
+                  ),
                   SizedBox(width: 10.w),
                   BlocBuilder<FolderBloc, FolderState>(
                     builder: (context, state) {
                       return state.maybeWhen(
-                        loaded:
-                            (folders, _) => Texts(
-                              '${folders.length} Folders',
-                              fontSize: 14.sp,
-                              fontWeight: AppFontWeights.regular,
-                              color: AppColors.textColor,
-                            ),
-                        orElse:
-                            () => Texts(
-                              '0 Folders',
-                              fontSize: 14.sp,
-                              fontWeight: AppFontWeights.regular,
-                              color: AppColors.textColor,
-                            ),
+                        loaded: (folders, _) => Texts(
+                          '${folders.length} Folders',
+                          fontSize: 14.sp,
+                          fontWeight: AppFontWeights.regular,
+                          color: AppColors.textColor,
+                        ),
+                        orElse: () => Texts(
+                          '0 Folders',
+                          fontSize: 14.sp,
+                          fontWeight: AppFontWeights.regular,
+                          color: AppColors.textColor,
+                        ),
                       );
                     },
                   ),
@@ -80,8 +83,8 @@ class _FolderListScreenState extends State<FolderListScreen> {
                 builder: (context, state) {
                   return state.when(
                     initial: () => const SizedBox(),
-                    loading:
-                        () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     loaded: (folders, _) {
                       if (folders.isEmpty) {
                         return Center(
@@ -96,50 +99,47 @@ class _FolderListScreenState extends State<FolderListScreen> {
                         );
                       }
                       return Column(
-                        children:
-                            folders.map((folder) {
-                              return MusicListTile(
-                                margin: 7.w,
-                                height: 66.h,
-                                borderRadius: 10.r,
-                                backgroundColor:
-                                    AppColors.musicTileBackgroundColor,
-                                cardHeight: 50.h,
-                                cardWidth: 50.w,
-                                cardRadius: 7.r,
-                                cardIconAsset: Assets.svgDirectory,
-                                cardIconSize: 32.r,
-                                isSvgColorNeeded: false,
-                                title: folder.name,
-                                subtitle: '${folder.songCount} Songs',
-                                trailingIconAsset: Assets.svgMenuIcon,
-                                trailingIconHeight: 22.5.h,
-                                trailingIconWidth: 3.w,
-                                trailingMargin: 10.w,
-                                onTap: () {
-                                  context.push(
-                                    '/dashboard/folder-detail',
-                                    extra: folder,
-                                  );
-                                },
-                                onPlayTap: () {
-                                  // Load songs and play
-                                  context.read<FolderBloc>().add(
-                                    FolderEvent.fetchSongsForFolder(folder.id!),
-                                  );
-                                },
+                        children: folders.map((folder) {
+                          return MusicListTile(
+                            margin: 7.w,
+                            height: 66.h,
+                            borderRadius: 10.r,
+                            backgroundColor: AppColors.musicTileBackgroundColor,
+                            cardHeight: 50.h,
+                            cardWidth: 50.w,
+                            cardRadius: 7.r,
+                            cardIconAsset: Assets.svgDirectory,
+                            cardIconSize: 32.r,
+                            isSvgColorNeeded: false,
+                            title: folder.name,
+                            subtitle: '${folder.songCount} Songs',
+                            trailingIconAsset: Assets.svgMenuIcon,
+                            trailingIconHeight: 22.5.h,
+                            trailingIconWidth: 3.w,
+                            trailingMargin: 10.w,
+                            onTap: () {
+                              context.push(
+                                '/dashboard/folder-detail',
+                                extra: folder,
                               );
-                            }).toList(),
+                            },
+                            onPlayTap: () {
+                              // Load songs and play
+                              context.read<FolderBloc>().add(
+                                FolderEvent.fetchSongsForFolder(folder.id!),
+                              );
+                            },
+                          );
+                        }).toList(),
                       );
                     },
-                    error:
-                        (message) => Center(
-                          child: Texts(
-                            'Error: $message',
-                            fontSize: 14.sp,
-                            color: Colors.red,
-                          ),
-                        ),
+                    error: (message) => Center(
+                      child: Texts(
+                        'Error: $message',
+                        fontSize: 14.sp,
+                        color: Colors.red,
+                      ),
+                    ),
                   );
                 },
               ),

@@ -7,6 +7,7 @@ import 'package:music_app/features/playlists/domain/repositories/playlist_reposi
 import 'package:music_app/features/folders/bloc/folder_bloc.dart';
 import 'package:music_app/features/folders/domain/usecases/get_all_folders.dart';
 import 'package:music_app/features/folders/domain/usecases/get_folder_songs.dart';
+import 'package:music_app/features/folders/domain/usecases/delete_folder.dart';
 import 'package:music_app/features/artists/bloc/artist_bloc.dart';
 import 'package:music_app/features/artists/domain/usecases/get_all_artists.dart';
 import 'package:music_app/features/artists/domain/usecases/get_artist_songs.dart';
@@ -58,45 +59,41 @@ Future<void> main() async {
           providers: [
             BlocProvider(create: (context) => LanguageBloc()),
             BlocProvider<PlaylistBloc>(
-              create:
-                  (_) =>
-                      PlaylistBloc(locator())
-                        ..add(const PlaylistEvent.fetchAllPlaylists()),
+              create: (_) =>
+                  PlaylistBloc(locator())
+                    ..add(const PlaylistEvent.fetchAllPlaylists()),
             ),
             BlocProvider<SongsBloc>(
-              create:
-                  (context) => SongsBloc(
-                    locator<SongLocalDataSource>(),
-                    locator<PlaylistRepository>(),
-                    onPlaylistRefresh: () {
-                      // Trigger playlist refresh when song is deleted
-                      context.read<PlaylistBloc>().add(
-                        const PlaylistEvent.fetchAllPlaylists(),
-                      );
-                    },
-                  )..add(const SongsEvent.getAllSongs()),
+              create: (context) => SongsBloc(
+                locator<SongLocalDataSource>(),
+                locator<PlaylistRepository>(),
+                onPlaylistRefresh: () {
+                  // Trigger playlist refresh when song is deleted
+                  context.read<PlaylistBloc>().add(
+                    const PlaylistEvent.fetchAllPlaylists(),
+                  );
+                },
+              )..add(const SongsEvent.getAllSongs()),
             ),
             BlocProvider<FolderBloc>(
-              create:
-                  (_) => FolderBloc(
-                    getAllFolders: locator<GetAllFolders>(),
-                    getFolderSongs: locator<GetFolderSongs>(),
-                  ),
+              create: (_) => FolderBloc(
+                getAllFolders: locator<GetAllFolders>(),
+                getFolderSongs: locator<GetFolderSongs>(),
+                deleteFolder: locator<DeleteFolder>(),
+              ),
             ),
             BlocProvider<ArtistBloc>(
-              create:
-                  (_) => ArtistBloc(
-                    getAllArtists: locator<GetAllArtists>(),
-                    getArtistSongs: locator<GetArtistSongs>(),
-                  ),
+              create: (_) => ArtistBloc(
+                getAllArtists: locator<GetAllArtists>(),
+                getArtistSongs: locator<GetArtistSongs>(),
+              ),
             ),
             BlocProvider<AlbumBloc>(
-              create:
-                  (_) => AlbumBloc(
-                    getAllAlbums: locator<GetAllAlbums>(),
-                    getAlbumSongs: locator<GetAlbumSongs>(),
-                    getAlbumsByArtist: locator<GetAlbumsByArtist>(),
-                  ),
+              create: (_) => AlbumBloc(
+                getAllAlbums: locator<GetAllAlbums>(),
+                getAlbumSongs: locator<GetAlbumSongs>(),
+                getAlbumsByArtist: locator<GetAlbumsByArtist>(),
+              ),
             ),
           ],
           child: ScreenUtilInit(
