@@ -21,7 +21,16 @@ import '../../../play_song/widget/playlist_bottomsheet.dart';
 import '../../music_service.dart';
 
 class SelectSongScreen extends StatefulWidget {
-  const SelectSongScreen({super.key});
+  final dynamic playlist;
+  final List<SongsModel>? playlistSongs;
+  final bool? isSystemPlaylist;
+
+  const SelectSongScreen({
+    super.key,
+    this.playlist,
+    this.playlistSongs,
+    this.isSystemPlaylist,
+  });
 
   @override
   State<SelectSongScreen> createState() => _SelectSongScreenState();
@@ -50,8 +59,14 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
       });
     });
 
-    // Load all songs
-    context.read<SongsBloc>().add(const SongsEvent.getAllSongs());
+    // Load songs based on context
+    if (widget.playlistSongs != null) {
+      // We have playlist songs, no need to load from bloc
+      // The songs will be passed directly
+    } else {
+      // Load all songs
+      context.read<SongsBloc>().add(const SongsEvent.getAllSongs());
+    }
   }
 
   @override
@@ -138,7 +153,6 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
       await musicService.setPlaylist(selectedSongs, startIndex: 0);
       await musicService.play();
 
-      // if (mounted) {
       showSnackBar(
         context,
         () {},
@@ -147,7 +161,6 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
       );
       // Navigate back or stay, depending on your preference
       context.pop();
-      // }
     } catch (e) {
       log('Error playing selected songs: $e');
       if (mounted) {
@@ -183,8 +196,8 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
       ),
       isScrollControlled: true,
-      builder: (_) =>
-          _buildDeleteConfirmationDialog(selectedSongs.length, allSongs),
+      builder:
+          (_) => _buildDeleteConfirmationDialog(selectedSongs.length, allSongs),
     );
   }
 
@@ -299,10 +312,11 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
   // Play next selected songs
   void _playNextSelectedSongs() async {
     final selectedSongs = _getSelectedSongs(
-      context.read<SongsBloc>().state.maybeWhen(
-        loaded: (songs) => songs,
-        orElse: () => <SongsModel>[],
-      ),
+      widget.playlistSongs ??
+          context.read<SongsBloc>().state.maybeWhen(
+            loaded: (songs) => songs,
+            orElse: () => <SongsModel>[],
+          ),
     );
 
     if (selectedSongs.isEmpty) {
@@ -330,11 +344,12 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
         final newSongsList = List<SongsModel>.from(musicService.songs);
 
         // Filter out songs that are already in the list to avoid duplicates
-        final songsToAdd = selectedSongs.where((song) {
-          return !newSongsList.any(
-            (existingSong) => existingSong.id == song.id,
-          );
-        }).toList();
+        final songsToAdd =
+            selectedSongs.where((song) {
+              return !newSongsList.any(
+                (existingSong) => existingSong.id == song.id,
+              );
+            }).toList();
 
         // Insert songs at the position after current playing song
         newSongsList.insertAll(insertIndex, songsToAdd);
@@ -372,10 +387,11 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
   // Add selected songs to queue
   void _addSelectedSongsToQueue() async {
     final selectedSongs = _getSelectedSongs(
-      context.read<SongsBloc>().state.maybeWhen(
-        loaded: (songs) => songs,
-        orElse: () => <SongsModel>[],
-      ),
+      widget.playlistSongs ??
+          context.read<SongsBloc>().state.maybeWhen(
+            loaded: (songs) => songs,
+            orElse: () => <SongsModel>[],
+          ),
     );
 
     log('Selected songs to add to queue: ${selectedSongs.length}');
@@ -434,10 +450,11 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
   // Hide selected songs
   void _hideSelectedSongs() {
     final selectedSongs = _getSelectedSongs(
-      context.read<SongsBloc>().state.maybeWhen(
-        loaded: (songs) => songs,
-        orElse: () => <SongsModel>[],
-      ),
+      widget.playlistSongs ??
+          context.read<SongsBloc>().state.maybeWhen(
+            loaded: (songs) => songs,
+            orElse: () => <SongsModel>[],
+          ),
     );
 
     if (selectedSongs.isEmpty) {
@@ -584,6 +601,160 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
     );
   }
 
+  // Helper method to build content for playlist songs
+  Widget _buildPlaylistSongsContent() {
+    final filteredSongs = _filterSongs(widget.playlistSongs!);
+    updateSelectAllState(filteredSongs);
+
+    if (widget.playlistSongs!.isEmpty) {
+      return const Center(
+        child: Text(
+          "No songs in this playlist",
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+        ),
+      );
+    }
+
+    return _buildSongsContent(widget.playlistSongs!, filteredSongs);
+  }
+
+  // Helper method to build the songs content
+  Widget _buildSongsContent(
+    List<SongsModel> allSongs,
+    List<SongsModel> filteredSongs,
+  ) {
+    return Column(
+      children: [
+        // Search bar
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 20.h),
+          child: Container(
+            height: 48.h,
+            width: 343.w,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20.r),
+              color: AppColors.black.withValues(alpha: .14),
+            ),
+            child: TextFormField(
+              controller: searchController,
+              focusNode: searchFocusNode,
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                prefixIcon: Padding(
+                  padding: EdgeInsets.only(left: 14.w, right: 10.w),
+                  child: SvgPicture.asset(Assets.svgIcSerach),
+                ),
+                hintText: S.of(context).searchSongs,
+                hintStyle: TextStyle(
+                  color: AppColors.textColor,
+                  fontWeight: FontWeight.w400,
+                  fontFamily: AppFonts.inter,
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 12.h,
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // Selected count and Select All
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 5.h),
+          child: Row(
+            children: [
+              Expanded(
+                child: Texts(
+                  selectedCount != 0
+                      ? "$selectedCount ${S.of(context).selected}"
+                      : "",
+                  fontSize: 14.sp,
+                  fontFamily: AppFonts.inter,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textColor,
+                ),
+              ),
+              GestureDetector(
+                onTap: () => toggleSelectAll(filteredSongs),
+                child: SvgPicture.asset(
+                  isSelectedAll
+                      ? Assets.svgIcRadioCheckl
+                      : Assets.svgIcRadioUncheck,
+                  height: 20.h,
+                  width: 20.w,
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Texts(
+                S.of(context).selectAll,
+                fontSize: 14.sp,
+                fontFamily: AppFonts.inter,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textColor,
+              ),
+            ],
+          ),
+        ),
+
+        // Songs list
+        Expanded(
+          child:
+              filteredSongs.isEmpty
+                  ? Center(
+                    child: Texts(
+                      "No songs match your search",
+                      fontSize: 16.sp,
+                      color: AppColors.textColor,
+                    ),
+                  )
+                  : ListView.builder(
+                    itemCount: filteredSongs.length,
+                    padding: EdgeInsets.symmetric(horizontal: 15.w),
+                    itemBuilder: (context, index) {
+                      final song = filteredSongs[index];
+                      final isSelected = selectedSongIds.contains(song.id);
+
+                      final image =
+                          (index % 2 == 0)
+                              ? musicIcons[0]
+                              : (index % 3 == 0)
+                              ? musicIcons[1]
+                              : musicIcons[2];
+
+                      return MusicListTile(
+                        margin: 7.w,
+                        height: 66.h,
+                        borderRadius: 10.r,
+                        backgroundColor: AppColors.musicTileBackgroundColor,
+                        cardHeight: 50.h,
+                        cardWidth: 50.w,
+                        cardRadius: 7.r,
+                        cardIconAsset: song.artwork_path ?? image,
+                        cardIconSize: 32.r,
+                        isSvgCardIcon: image.contains('.svg'),
+                        title: song.title,
+                        subtitle: song.artist,
+                        songLength: formatDuration(song.duration),
+                        songLengthRequired: true,
+                        trailingIconAsset:
+                            isSelected
+                                ? Assets.svgIcCheck
+                                : Assets.svgIcUncheck,
+                        trailingIconHeight: 20.h,
+                        trailingIconWidth: 10.w,
+                        trailingMargin: 2.w,
+                        onTap: () => toggleSelection(song.id!, filteredSongs),
+                        onPlayTap:
+                            () => toggleSelection(song.id!, filteredSongs),
+                      );
+                    },
+                  ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -592,243 +763,184 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
         isActionBtnDisplay: true,
         onTapAction: () => _showPopupMenu(context),
       ),
-      body: BlocBuilder<SongsBloc, SongsState>(
-        builder: (context, state) {
-          return state.when(
-            initial: () => const Center(child: Text("Initializing...")),
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (message) => Center(
-              child: Text(
-                message,
-                style: const TextStyle(color: Colors.red, fontSize: 16),
-              ),
-            ),
-            loaded: (allSongs) {
-              final filteredSongs = _filterSongs(allSongs);
-
-              // Update select all state based on current filtered results
-              updateSelectAllState(filteredSongs);
-
-              if (allSongs.isEmpty) {
-                return const Center(
-                  child: Text(
-                    "No songs available",
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                );
-              }
-
-              return Column(
-                children: [
-                  // Search bar
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 15.w,
-                      vertical: 20.h,
-                    ),
-                    child: Container(
-                      height: 48.h,
-                      width: 343.w,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20.r),
-                        color: AppColors.black.withValues(alpha: .14),
-                      ),
-                      child: TextFormField(
-                        controller: searchController,
-                        focusNode: searchFocusNode,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          prefixIcon: Padding(
-                            padding: EdgeInsets.only(left: 14.w, right: 10.w),
-                            child: SvgPicture.asset(Assets.svgIcSerach),
-                          ),
-                          hintText: S.of(context).searchSongs,
-                          hintStyle: TextStyle(
-                            color: AppColors.textColor,
-                            fontWeight: FontWeight.w400,
-                            fontFamily: AppFonts.inter,
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 16.w,
-                            vertical: 12.h,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Selected count and Select All
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 15.w,
-                      vertical: 5.h,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Texts(
-                            selectedCount != 0
-                                ? "$selectedCount ${S.of(context).selected}"
-                                : "",
-                            fontSize: 14.sp,
-                            fontFamily: AppFonts.inter,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.textColor,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => toggleSelectAll(filteredSongs),
-                          child: SvgPicture.asset(
-                            isSelectedAll
-                                ? Assets.svgIcRadioCheckl
-                                : Assets.svgIcRadioUncheck,
-                            height: 20.h,
-                            width: 20.w,
-                          ),
-                        ),
-                        SizedBox(width: 10.w),
-                        Texts(
-                          S.of(context).selectAll,
-                          fontSize: 14.sp,
-                          fontFamily: AppFonts.inter,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.textColor,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Songs list
-                  Expanded(
-                    child: filteredSongs.isEmpty
-                        ? Center(
-                            child: Texts(
-                              "No songs match your search",
-                              fontSize: 16.sp,
-                              color: AppColors.textColor,
+      body:
+          widget.playlistSongs != null
+              ? _buildPlaylistSongsContent()
+              : BlocBuilder<SongsBloc, SongsState>(
+                builder: (context, state) {
+                  return state.when(
+                    initial: () => const Center(child: Text("Initializing...")),
+                    loading:
+                        () => const Center(child: CircularProgressIndicator()),
+                    error:
+                        (message) => Center(
+                          child: Text(
+                            message,
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 16,
                             ),
-                          )
-                        : ListView.builder(
-                            itemCount: filteredSongs.length,
-                            padding: EdgeInsets.symmetric(horizontal: 15.w),
-                            itemBuilder: (context, index) {
-                              final song = filteredSongs[index];
-                              final isSelected = selectedSongIds.contains(
-                                song.id,
-                              );
+                          ),
+                        ),
+                    loaded: (allSongs) {
+                      final filteredSongs = _filterSongs(allSongs);
 
-                              final image = (index % 2 == 0)
-                                  ? musicIcons[0]
-                                  : (index % 3 == 0)
-                                  ? musicIcons[1]
-                                  : musicIcons[2];
+                      // Update select all state based on current filtered results
+                      updateSelectAllState(filteredSongs);
 
-                              return MusicListTile(
-                                margin: 7.w,
-                                height: 66.h,
-                                borderRadius: 10.r,
-                                backgroundColor:
-                                    AppColors.musicTileBackgroundColor,
-                                cardHeight: 50.h,
-                                cardWidth: 50.w,
-                                cardRadius: 7.r,
-                                cardIconAsset: song.artwork_path ?? image,
-                                cardIconSize: 32.r,
-                                isSvgCardIcon: image.contains('.svg'),
-                                title: song.title,
-                                subtitle: song.artist,
-                                songLength: formatDuration(song.duration),
-                                songLengthRequired: true,
-                                trailingIconAsset: isSelected
-                                    ? Assets.svgIcCheck
-                                    : Assets.svgIcUncheck,
-                                trailingIconHeight: 20.h,
-                                trailingIconWidth: 10.w,
-                                trailingMargin: 2.w,
-                                onTap: () =>
-                                    toggleSelection(song.id!, filteredSongs),
-                                onPlayTap: () =>
-                                    toggleSelection(song.id!, filteredSongs),
-                              );
-                            },
+                      if (allSongs.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            "No songs available",
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
                           ),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      ),
-      bottomNavigationBar: BlocBuilder<SongsBloc, SongsState>(
-        builder: (context, state) {
-          return state.maybeWhen(
-            loaded: (allSongs) {
-              return Visibility(
-                visible: selectedCount > 0,
-                child: SafeArea(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                    margin: EdgeInsets.symmetric(horizontal: 10.w),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        GestureDetector(
-                          onTap: () => _playSelectedSongs(allSongs),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SvgPicture.asset(Assets.svgIcNavPlay),
-                              SizedBox(height: 3.h),
-                              Texts(
-                                S.of(context).play,
-                                fontSize: 12.sp,
-                                fontFamily: AppFonts.inter,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ],
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => _addToPlaylist(allSongs),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SvgPicture.asset(Assets.svgIcNavPlaylist),
-                              SizedBox(height: 3.h),
-                              Texts(
-                                S.of(context).addToPlaylist,
-                                fontSize: 12.sp,
-                                fontFamily: AppFonts.inter,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ],
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => _deleteSelectedSongs(allSongs),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SvgPicture.asset(Assets.svgIcNavDelete),
-                              SizedBox(height: 3.h),
-                              Texts(
-                                S.of(context).delete,
-                                fontSize: 12.sp,
-                                fontFamily: AppFonts.inter,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ],
+                        );
+                      }
+
+                      return _buildSongsContent(allSongs, filteredSongs);
+                    },
+                  );
+                },
+              ),
+      bottomNavigationBar:
+          widget.playlistSongs != null
+              ? _buildPlaylistBottomBar()
+              : BlocBuilder<SongsBloc, SongsState>(
+                builder: (context, state) {
+                  return state.maybeWhen(
+                    loaded: (allSongs) {
+                      return Visibility(
+                        visible: selectedCount > 0,
+                        child: SafeArea(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: 12.h),
+                            margin: EdgeInsets.symmetric(horizontal: 10.w),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                GestureDetector(
+                                  onTap: () => _playSelectedSongs(allSongs),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SvgPicture.asset(Assets.svgIcNavPlay),
+                                      SizedBox(height: 3.h),
+                                      Texts(
+                                        S.of(context).play,
+                                        fontSize: 12.sp,
+                                        fontFamily: AppFonts.inter,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () => _addToPlaylist(allSongs),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SvgPicture.asset(Assets.svgIcNavPlaylist),
+                                      SizedBox(height: 3.h),
+                                      Texts(
+                                        S.of(context).addToPlaylist,
+                                        fontSize: 12.sp,
+                                        fontFamily: AppFonts.inter,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () => _deleteSelectedSongs(allSongs),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SvgPicture.asset(Assets.svgIcNavDelete),
+                                      SizedBox(height: 3.h),
+                                      Texts(
+                                        S.of(context).delete,
+                                        fontSize: 12.sp,
+                                        fontFamily: AppFonts.inter,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ],
+                      );
+                    },
+                    orElse: () => const SizedBox.shrink(),
+                  );
+                },
+              ),
+    );
+  }
+
+  // Build bottom bar for playlist songs
+  Widget _buildPlaylistBottomBar() {
+    return Visibility(
+      visible: selectedCount > 0,
+      child: SafeArea(
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 12.h),
+          margin: EdgeInsets.symmetric(horizontal: 10.w),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              GestureDetector(
+                onTap: () => _playSelectedSongs(widget.playlistSongs!),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SvgPicture.asset(Assets.svgIcNavPlay),
+                    SizedBox(height: 3.h),
+                    Texts(
+                      S.of(context).play,
+                      fontSize: 12.sp,
+                      fontFamily: AppFonts.inter,
+                      fontWeight: FontWeight.w400,
                     ),
-                  ),
+                  ],
                 ),
-              );
-            },
-            orElse: () => const SizedBox.shrink(),
-          );
-        },
+              ),
+              GestureDetector(
+                onTap: () => _addToPlaylist(widget.playlistSongs!),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SvgPicture.asset(Assets.svgIcNavPlaylist),
+                    SizedBox(height: 3.h),
+                    Texts(
+                      S.of(context).addToPlaylist,
+                      fontSize: 12.sp,
+                      fontFamily: AppFonts.inter,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () => _deleteSelectedSongs(widget.playlistSongs!),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SvgPicture.asset(Assets.svgIcNavDelete),
+                    SizedBox(height: 3.h),
+                    Texts(
+                      S.of(context).delete,
+                      fontSize: 12.sp,
+                      fontFamily: AppFonts.inter,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

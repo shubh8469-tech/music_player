@@ -81,23 +81,30 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: List.generate(3, (index) {
                         // Find the corresponding system playlist
                         final systemPlaylist = state.maybeWhen(
-                          loaded: (playlists, systemPlaylistSongs) =>
-                              playlists.isNotEmpty
-                              ? playlists
-                                    .where((p) => p.isSystem == true)
-                                    .firstWhere(
-                                      (p) =>
-                                          p.systemKey ==
-                                          [
-                                            'most_played',
-                                            'recently_added',
-                                            'favorites',
-                                          ][index],
-                                      orElse: () => playlists
+                          loaded:
+                              (playlists, systemPlaylistSongs) =>
+                                  playlists.isNotEmpty
+                                      ? playlists
                                           .where((p) => p.isSystem == true)
-                                          .first,
-                                    )
-                              : null,
+                                          .firstWhere(
+                                            (p) =>
+                                                p.systemKey ==
+                                                [
+                                                  'most_played',
+                                                  'recently_added',
+                                                  'favorites',
+                                                ][index],
+                                            orElse:
+                                                () =>
+                                                    playlists
+                                                        .where(
+                                                          (p) =>
+                                                              p.isSystem ==
+                                                              true,
+                                                        )
+                                                        .first,
+                                          )
+                                      : null,
                           orElse: () => null,
                         );
 
@@ -116,7 +123,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             if (systemPlaylist != null) {
                               context.push(
                                 '/dashboard/playlist-detail',
-                                extra: systemPlaylist,
+                                extra: {
+                                  'playlist': systemPlaylist,
+                                  'assetIcon': icons[index],
+                                  'colors': [
+                                    colors[index].withValues(alpha: 0.21),
+                                    colors[index],
+                                  ],
+                                },
                               );
                             }
                           },
@@ -152,7 +166,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       final recentlyPlayedSongs =
                           systemPlaylistSongs?['recently_played'] ?? [];
 
-                      log('recentlyPlayedSongs length: ${recentlyPlayedSongs.length}');
+                      log(
+                        'recentlyPlayedSongs length: ${recentlyPlayedSongs.length}',
+                      );
 
                       if (recentlyPlayedSongs.isEmpty) {
                         return Text(
@@ -161,72 +177,75 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       }
                       return Column(
-                        children: recentlyPlayedSongs.take(3).map((song) {
-                          return StreamBuilder<int?>(
-                            stream: musicService.currentSongIdStream,
-                            initialData: musicService.currentSongId,
-                            builder: (context, currentIdSnap) {
-                              return StreamBuilder<bool>(
-                                stream: musicService.isPlayingStream,
-                                initialData: musicService.isPlaying,
-                                builder: (context, playingSnap) {
-                                  final currentId = currentIdSnap.data;
-                                  final isPlaying = playingSnap.data ?? false;
-                                  final isCurrent = song.id == currentId;
-                                  final isCurrentlyPlaying =
-                                      isCurrent;// && isPlaying;
+                        children:
+                            recentlyPlayedSongs.take(3).map((song) {
+                              return StreamBuilder<int?>(
+                                stream: musicService.currentSongIdStream,
+                                initialData: musicService.currentSongId,
+                                builder: (context, currentIdSnap) {
+                                  return StreamBuilder<bool>(
+                                    stream: musicService.isPlayingStream,
+                                    initialData: musicService.isPlaying,
+                                    builder: (context, playingSnap) {
+                                      final currentId = currentIdSnap.data;
+                                      final isPlaying =
+                                          playingSnap.data ?? false;
+                                      final isCurrent = song.id == currentId;
+                                      final isCurrentlyPlaying =
+                                          isCurrent; // && isPlaying;
 
-                                  return MusicListTile(
-                                    margin: 7.w,
-                                    height: 66.h,
-                                    borderRadius: 10.r,
-                                    backgroundColor:
-                                        AppColors.musicTileBackgroundColor,
-                                    cardHeight: 50.h,
-                                    cardWidth: 50.w,
-                                    cardRadius: 7.r,
-                                    cardIconAsset:
-                                        song.artwork_path ??
-                                        Assets.svgMusicIcon,
-                                    cardIconSize: 32.r,
-                                    isSvgCardIcon: (song.artwork_path ?? '')
-                                        .contains('.svg'),
-                                    title: song.title,
-                                    subtitle: '${song.artist} - ${song.album}',
-                                    trailingIconAsset: isCurrent && isPlaying
-                                        ? Assets.svgPause
-                                        : Assets.svgPlayLogo,
-                                    trailingIconHeight: 32.r,
-                                    trailingIconWidth: 32.r,
-                                    trailingMargin: 0,
-                                    isGifLoad: isCurrentlyPlaying,
-                                    onTap: () async {
-                                      await musicService.setPlaylist(
-                                        recentlyPlayedSongs,
-                                        startIndex: recentlyPlayedSongs.indexOf(
-                                          song,
-                                        ),
+                                      return MusicListTile(
+                                        margin: 7.w,
+                                        height: 66.h,
+                                        borderRadius: 10.r,
+                                        backgroundColor:
+                                            AppColors.musicTileBackgroundColor,
+                                        cardHeight: 50.h,
+                                        cardWidth: 50.w,
+                                        cardRadius: 7.r,
+                                        cardIconAsset:
+                                            song.artwork_path ??
+                                            Assets.svgMusicIcon,
+                                        cardIconSize: 32.r,
+                                        isSvgCardIcon: (song.artwork_path ?? '')
+                                            .contains('.svg'),
+                                        title: song.title,
+                                        subtitle:
+                                            '${song.artist} - ${song.album}',
+                                        trailingIconAsset:
+                                            isCurrent && isPlaying
+                                                ? Assets.svgPause
+                                                : Assets.svgPlayLogo,
+                                        trailingIconHeight: 32.r,
+                                        trailingIconWidth: 32.r,
+                                        trailingMargin: 0,
+                                        isGifLoad: isCurrentlyPlaying,
+                                        onTap: () async {
+                                          await musicService.setPlaylist(
+                                            recentlyPlayedSongs,
+                                            startIndex: recentlyPlayedSongs
+                                                .indexOf(song),
+                                          );
+                                          await musicService.play();
+                                        },
+                                        onPlayTap: () async {
+                                          if (isCurrent && isPlaying) {
+                                            await musicService.pause();
+                                          } else {
+                                            await musicService.setPlaylist(
+                                              recentlyPlayedSongs,
+                                              startIndex: recentlyPlayedSongs
+                                                  .indexOf(song),
+                                            );
+                                            await musicService.play();
+                                          }
+                                        },
                                       );
-                                      await musicService.play();
-                                    },
-                                    onPlayTap: () async {
-                                      if (isCurrent && isPlaying) {
-                                        await musicService.pause();
-                                      } else {
-                                        await musicService.setPlaylist(
-                                          recentlyPlayedSongs,
-                                          startIndex: recentlyPlayedSongs
-                                              .indexOf(song),
-                                        );
-                                        await musicService.play();
-                                      }
                                     },
                                   );
                                 },
                               );
-                            },
-                          );
-                        }).toList(),
+                            }).toList(),
                       );
                     },
                     error: (message) => Text('Error: $message'),
@@ -255,9 +274,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     loading: () => Center(child: CircularProgressIndicator()),
                     loaded: (playlists, systemPlaylistSongs) {
                       // Get user playlists (non-system playlists)
-                      final userPlaylists = playlists
-                          .where((p) => p.isSystem == false)
-                          .toList();
+                      final userPlaylists =
+                          playlists.where((p) => p.isSystem == false).toList();
 
                       if (userPlaylists.isEmpty) {
                         return Text(
@@ -266,55 +284,72 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       }
                       return Column(
-                        children: userPlaylists.take(3).map((playlist) {
-                          return MusicListTile(
-                            margin: 7.w,
-                            height: 66.h,
-                            borderRadius: 10.r,
-                            backgroundColor: AppColors.musicTileBackgroundColor,
-                            cardHeight: 50.h,
-                            cardWidth: 50.w,
-                            cardRadius: 7.r,
-                            cardIconAsset: Assets.svgMusicIcon,
-                            cardIconSize: 32.r,
-                            title: playlist.name,
-                            subtitle: '${playlist.songCount} Songs',
-                            trailingIconAsset: Assets.svgMenuIcon,
-                            trailingIconHeight: 22.5.h,
-                            trailingIconWidth: 3.w,
-                            trailingMargin: 0,
-                            onTap: () {
-                              context.push(
-                                '/dashboard/playlist-detail',
-                                extra: playlist,
+                        children:
+                            userPlaylists.take(3).map((playlist) {
+                              return MusicListTile(
+                                margin: 7.w,
+                                height: 66.h,
+                                borderRadius: 10.r,
+                                backgroundColor:
+                                    AppColors.musicTileBackgroundColor,
+                                cardHeight: 50.h,
+                                cardWidth: 50.w,
+                                cardRadius: 7.r,
+                                cardIconAsset: Assets.svgMusicIcon,
+                                cardIconSize: 32.r,
+                                title: playlist.name,
+                                subtitle: '${playlist.songCount} Songs',
+                                trailingIconAsset: Assets.svgMenuIcon,
+                                trailingIconHeight: 22.5.h,
+                                trailingIconWidth: 3.w,
+                                trailingMargin: 0,
+                                onTap: () {
+                                  context.push(
+                                    '/dashboard/playlist-detail',
+                                    extra: {
+                                      'playlist': playlist,
+                                      'assetIcon': Assets.svgMusicIcon,
+                                      'colors': [
+                                        AppColors.mildBlue.withValues(
+                                          alpha: 0.21,
+                                        ),
+                                        AppColors.mildBlue,
+                                      ],
+                                    },
+                                  );
+                                },
+                                onPlayTap: () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    backgroundColor: Colors.white,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(40.r),
+                                      ),
+                                    ),
+                                    isScrollControlled: true,
+                                    builder:
+                                        (_) => SongMenuScreen(
+                                          songMenuList: playlistMenuItems,
+                                          isPlaying: false,
+                                          currentSong:
+                                              musicService.currentIndex != -1
+                                                  ? musicService
+                                                      .songs[musicService
+                                                      .currentIndex]
+                                                  : null,
+                                          songIndex: 0,
+                                          songsList: [],
+                                          maxHeight: 0.79.sh,
+                                          from: 'playlist',
+                                          systemKeyOrId: playlist.id.toString(),
+                                          isSystemPlaylist: false,
+                                        ),
+                                  );
+                                },
                               );
-                            },
-                            onPlayTap: () {
-                            showModalBottomSheet(
-                                context: context,
-                                backgroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(40.r),
-                                  ),
-                                ),
-                                isScrollControlled: true,
-                                builder: (_) => SongMenuScreen(
-                                  songMenuList: playlistMenuItems,
-                                  isPlaying: false,
-                                  currentSong: musicService.currentIndex != -1 ? musicService.songs[musicService.currentIndex] : null,
-                                  songIndex: 0,
-                                  songsList: [],
-                                  maxHeight: 0.79.sh,
-                                  from: 'playlist',
-                                  systemKeyOrId: playlist.id.toString(),
-                                  isSystemPlaylist: false,
-                                )
-                            );
-                          },
-                          );
-                        }).toList(),
+                            }).toList(),
                       );
                     },
                     error: (message) => Text('Error: $message'),

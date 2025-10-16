@@ -1,10 +1,13 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:music_app/screens/tabs/library/songs/select_song_screen.dart';
 import 'package:music_app/screens/tabs/library/songs/add_songs_screen.dart';
 import 'package:music_app/screens/tabs/library/playlists/create_playlist_screen.dart';
 import 'package:music_app/screens/tabs/library/playlists/playlist_detail_screen.dart';
 import 'package:music_app/screens/tabs/library/playlists/select_playlist_screen.dart';
+import 'package:music_app/screens/tabs/library/folders/folder_detail_screen.dart';
+import 'package:music_app/screens/tabs/library/artist/artist_detail_screen.dart';
+import 'package:music_app/screens/tabs/library/albums/album_detail_screen.dart';
 
 import 'screens/Splash&Setup/permission.dart';
 import 'screens/Splash&Setup/splashScreen.dart';
@@ -29,6 +32,9 @@ enum AppRouteName {
   createPlaylist,
   selectPlaylist,
   playlistDetail,
+  folderDetail,
+  artistDetail,
+  albumDetail,
 }
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
@@ -82,23 +88,24 @@ final GoRouter appRouter = GoRouter(
               reverseTransitionDuration: const Duration(milliseconds: 500),
 
               // your existing screen
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) {
-                    const begin = Offset(0.0, 1.0); // from bottom
-                    const end = Offset.zero; // to normal position
-                    const curve = Curves.easeInOut;
+              transitionsBuilder: (
+                context,
+                animation,
+                secondaryAnimation,
+                child,
+              ) {
+                const begin = Offset(0.0, 1.0); // from bottom
+                const end = Offset.zero; // to normal position
+                const curve = Curves.easeInOut;
 
-                    final tween = Tween(
-                      begin: begin,
-                      end: end,
-                    ).chain(CurveTween(curve: curve));
-                    final offsetAnimation = animation.drive(tween);
+                final tween = Tween(
+                  begin: begin,
+                  end: end,
+                ).chain(CurveTween(curve: curve));
+                final offsetAnimation = animation.drive(tween);
 
-                    return SlideTransition(
-                      position: offsetAnimation,
-                      child: child,
-                    );
-                  },
+                return SlideTransition(position: offsetAnimation, child: child);
+              },
             );
           },
         ),
@@ -110,7 +117,17 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           name: AppRouteName.selectSong.name,
           path: 'select-song',
-          builder: (context, state) => const SelectSongScreen(),
+          builder: (context, state) {
+            final args = state.extra as Map<String, dynamic>?;
+            if (args != null) {
+              return SelectSongScreen(
+                playlist: args['playlist'],
+                playlistSongs: args['songs'],
+                isSystemPlaylist: args['isSystemPlaylist'],
+              );
+            }
+            return const SelectSongScreen();
+          },
         ),
         GoRoute(
           name: AppRouteName.addSongs.name,
@@ -134,8 +151,39 @@ final GoRouter appRouter = GoRouter(
           name: AppRouteName.playlistDetail.name,
           path: 'playlist-detail',
           builder: (context, state) {
-            final playlist = state.extra as dynamic; // will be domain.Playlist
-            return PlaylistDetailScreen(playlist: playlist);
+            final args = state.extra as Map<String, dynamic>;
+            final playlist = args['playlist'] as dynamic;
+            final assetIcon = args['assetIcon'] as String;
+            final colors = args['colors'] as List<Color>;
+            return PlaylistDetailScreen(
+              playlist: playlist,
+              assetIcon: assetIcon,
+              colors: colors,
+            );
+          },
+        ),
+        GoRoute(
+          name: AppRouteName.folderDetail.name,
+          path: 'folder-detail',
+          builder: (context, state) {
+            final folder = state.extra as dynamic;
+            return FolderDetailScreen(folder: folder);
+          },
+        ),
+        GoRoute(
+          name: AppRouteName.artistDetail.name,
+          path: 'artist-detail',
+          builder: (context, state) {
+            final artist = state.extra as dynamic;
+            return ArtistDetailScreen(artist: artist);
+          },
+        ),
+        GoRoute(
+          name: AppRouteName.albumDetail.name,
+          path: 'album-detail',
+          builder: (context, state) {
+            final album = state.extra as dynamic;
+            return AlbumDetailScreen(album: album);
           },
         ),
       ],

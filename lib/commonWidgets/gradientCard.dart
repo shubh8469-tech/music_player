@@ -15,6 +15,7 @@ class GradientCard extends StatelessWidget {
   final double borderRadius;
   final String iconAsset;
   final String? title;
+  final double? titleSize;
   final double iconSize;
   final double margin;
   final bool isSvg;
@@ -36,6 +37,7 @@ class GradientCard extends StatelessWidget {
     this.iconColor,
     this.onTap,
     this.title,
+    this.titleSize,
   });
 
   @override
@@ -49,7 +51,7 @@ class GradientCard extends StatelessWidget {
             margin: EdgeInsets.only(right: margin),
             height: height,
             width: width,
-            decoration: iconAsset.isEmpty || iconAsset.contains('.svg')
+            decoration: (iconAsset.isEmpty || iconAsset.contains('.svg')) && !iconAsset.contains('directory')
                 ? BoxDecoration(
                     gradient: LinearGradient(colors: colors, begin: Alignment.bottomLeft, end: Alignment.topRight),
                     borderRadius: BorderRadius.circular(borderRadius),
@@ -69,7 +71,7 @@ class GradientCard extends StatelessWidget {
           if (title != null)
             Container(
               margin: EdgeInsets.only(right: margin, top: 5.h),
-              child: Texts(title.toString(), fontFamily: AppFonts.inter, fontWeight: AppFontWeights.medium, fontSize: 14.sp),
+              child: Texts(title.toString(), fontFamily: AppFonts.inter, fontWeight: AppFontWeights.medium, fontSize: titleSize ?? 14.sp),
             ),
         ],
       ),

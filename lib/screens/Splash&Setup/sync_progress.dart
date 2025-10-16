@@ -8,6 +8,18 @@ import '../../core/di/injection.dart';
 import '../../core/services/app_state_service.dart';
 import '../../features/songs/data/models/song_model.dart';
 import '../../features/songs/domain/usecases/add_song.dart';
+import '../../features/folders/domain/entities/folder.dart';
+import '../../features/folders/domain/usecases/add_folder.dart';
+import '../../features/folders/domain/usecases/add_song_to_folder.dart';
+import '../../features/artists/domain/entities/artist.dart';
+import '../../features/artists/domain/usecases/add_artist.dart';
+import '../../features/artists/domain/usecases/add_song_to_artist.dart';
+import '../../features/albums/domain/entities/album.dart';
+import '../../features/albums/domain/usecases/add_album.dart';
+import '../../features/albums/domain/usecases/add_song_to_album.dart';
+import '../../features/folders/domain/repositories/folder_repository.dart';
+import '../../features/artists/domain/repositories/artist_repository.dart';
+import '../../features/albums/domain/repositories/album_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -42,11 +54,30 @@ class _SyncProgressState extends State<SyncProgress>
   Future<void> scanMusicFiles() async {
     try {
       final AddSong addSongUseCase = locator();
+      final AddFolder addFolderUseCase = locator();
+      final AddSongToFolder addSongToFolderUseCase = locator();
+      final AddArtist addArtistUseCase = locator();
+      final AddSongToArtist addSongToArtistUseCase = locator();
+      final AddAlbum addAlbumUseCase = locator();
+      final AddSongToAlbum addSongToAlbumUseCase = locator();
+      final FolderRepository folderRepository = locator();
+      final ArtistRepository artistRepository = locator();
+      final AlbumRepository albumRepository = locator();
+
+      // Clear existing data before sync
+      await folderRepository.clearAllFolders();
+      await artistRepository.clearAllArtists();
+      await albumRepository.clearAllAlbums();
 
       List<SongModel> songs = await _audioQuery.querySongs();
 
       scannedFiles.clear();
       groupedByFolder.clear();
+
+      // Track unique folders, artists, and albums
+      Map<String, int> folderIds = {};
+      Map<String, int> artistIds = {};
+      Map<String, int> albumIds = {};
 
       for (final song in songs) {
         final String path = song.data;
@@ -131,9 +162,10 @@ class _SyncProgressState extends State<SyncProgress>
           if (songYear == null) {
             try {
               if (song.dateAdded != null && song.dateAdded! > 0) {
-                songYear = DateTime.fromMillisecondsSinceEpoch(
-                  song.dateAdded! * 1000,
-                ).year;
+                songYear =
+                    DateTime.fromMillisecondsSinceEpoch(
+                      song.dateAdded! * 1000,
+                    ).year;
                 log('Year from dateAdded for ${song.title}: $songYear');
               }
             } catch (e) {
@@ -174,6 +206,93 @@ class _SyncProgressState extends State<SyncProgress>
 
           await addSongUseCase(model);
 
+          // Add to Folder
+          if (folderName.isNotEmpty) {
+            int folderId;
+            if (folderIds.containsKey(folderName)) {
+              folderId = folderIds[folderName]!;
+            } else {
+              final existingFolder = await folderRepository.getFolderByName(
+                folderName,
+              );
+              if (existingFolder != null) {
+                folderId = existingFolder.id!;
+              } else {
+                final folder = Folder(
+                  id: null,
+                  name: folderName,
+                  path: folderPath,
+                  songCount: 0,
+                  artworkPath: artworkPath.isNotEmpty ? artworkPath : null,
+                  createdTime: DateTime.now(),
+                  updatedTime: DateTime.now(),
+                );
+                folderId = await addFolderUseCase(folder);
+              }
+              folderIds[folderName] = folderId;
+            }
+            await addSongToFolderUseCase(folderId, song.id);
+          }
+
+          // Add to Artist
+          final artistName = song.artist ?? 'Unknown Artist';
+          if (artistName.isNotEmpty) {
+            int artistId;
+            if (artistIds.containsKey(artistName)) {
+              artistId = artistIds[artistName]!;
+            } else {
+              final existingArtist = await artistRepository.getArtistByName(
+                artistName,
+              );
+              if (existingArtist != null) {
+                artistId = existingArtist.id!;
+              } else {
+                final artist = Artist(
+                  id: null,
+                  name: artistName,
+                  songCount: 0,
+                  albumCount: 0,
+                  artworkPath: artworkPath.isNotEmpty ? artworkPath : null,
+                  createdTime: DateTime.now(),
+                  updatedTime: DateTime.now(),
+                );
+                artistId = await addArtistUseCase(artist);
+              }
+              artistIds[artistName] = artistId;
+            }
+            await addSongToArtistUseCase(artistId, song.id);
+          }
+
+          // Add to Album
+          final albumName = song.album ?? 'Unknown Album';
+          if (albumName.isNotEmpty) {
+            final albumKey = '$albumName|${song.artist ?? ""}';
+            int albumId;
+            if (albumIds.containsKey(albumKey)) {
+              albumId = albumIds[albumKey]!;
+            } else {
+              final existingAlbum = await albumRepository
+                  .getAlbumByNameAndArtist(albumName, song.artist);
+              if (existingAlbum != null) {
+                albumId = existingAlbum.id!;
+              } else {
+                final album = Album(
+                  id: null,
+                  name: albumName,
+                  artist: song.artist,
+                  songCount: 0,
+                  year: songYear,
+                  artworkPath: artworkPath.isNotEmpty ? artworkPath : null,
+                  createdTime: DateTime.now(),
+                  updatedTime: DateTime.now(),
+                );
+                albumId = await addAlbumUseCase(album);
+              }
+              albumIds[albumKey] = albumId;
+            }
+            await addSongToAlbumUseCase(albumId, song.id);
+          }
+
           final item = {
             'title': song.title,
             'path': path,
@@ -184,6 +303,15 @@ class _SyncProgressState extends State<SyncProgress>
           scannedFiles.add(item);
           groupedByFolder.putIfAbsent(folderPath, () => []).add(item);
         }
+      }
+
+      // Update album counts for artists
+      for (final entry in artistIds.entries) {
+        final albums = await albumRepository.getAlbumsByArtist(entry.key);
+        await artistRepository.updateArtistAlbumCount(
+          entry.value,
+          albums.length,
+        );
       }
 
       // Debug output

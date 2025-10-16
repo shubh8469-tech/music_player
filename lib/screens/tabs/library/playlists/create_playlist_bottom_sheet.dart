@@ -79,13 +79,33 @@ class _CreatePlaylistBottomSheetState extends State<CreatePlaylistBottomSheet> {
     });
 
     try {
-      // Create the playlist using the bloc
-      context.read<PlaylistBloc>().add(PlaylistEvent.addPlaylist(playlistName));
+      final playlistBloc = context.read<PlaylistBloc>();
 
-      // Wait for the playlist to be created
+      // Create the playlist using the bloc
+      playlistBloc.add(PlaylistEvent.addPlaylist(playlistName));
+
+      // Wait for the state to update and get the newly created playlist
       await Future.delayed(const Duration(milliseconds: 500));
 
       if (mounted) {
+        // Get the newly created playlist from the bloc state
+        final state = playlistBloc.state;
+
+        dynamic newPlaylist;
+        state.maybeWhen(
+          loaded: (playlists, systemPlaylistSongs) {
+            // Find the playlist with the matching name (should be the most recent one)
+            newPlaylist = playlists
+                .where((p) => p.name == playlistName && p.isSystem != true)
+                .lastOrNull;
+          },
+          orElse: () {},
+        );
+
+        if (newPlaylist == null) {
+          throw Exception('Failed to get newly created playlist');
+        }
+
         // Close the bottom sheet first
         Navigator.of(context).pop();
 
@@ -96,16 +116,8 @@ class _CreatePlaylistBottomSheetState extends State<CreatePlaylistBottomSheet> {
           alertBannerLocation: AlertBannerLocation.bottom,
         );
 
-        // Navigate to AddSongsScreen with the created playlist
-        // Note: In a real implementation, you'd need to get the created playlist ID
-        // For now, we'll navigate with a placeholder
-        context.push(
-          '/dashboard/add-songs',
-          extra: {
-            'name': playlistName,
-            'id': DateTime.now().millisecondsSinceEpoch, // Temporary ID
-          },
-        );
+        // Navigate to AddSongsScreen with the actual created playlist
+        context.push('/dashboard/add-songs', extra: newPlaylist);
       }
     } catch (e) {
       log('Error creating playlist: $e');

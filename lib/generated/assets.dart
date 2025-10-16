@@ -87,6 +87,7 @@ class Assets {
   static const String svgPlayBlackBorder = 'assets/svg/play_black_border.svg';
   static const String svgPlayLogo = 'assets/svg/playLogo.svg';
   static const String svgRecentlyAdded = 'assets/svg/recentlyAdded.svg';
+  static const String svgRecentlyPlayed = 'assets/svg/recently_played.svg';
   static const String svgRepeatOff = 'assets/svg/repeat_off.svg';
   static const String svgRepeatOn = 'assets/svg/repeat_on.svg';
   static const String svgRepeatOnce = 'assets/svg/repeat_once.svg';

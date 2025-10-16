@@ -36,7 +36,7 @@ class _PlayListScreenState extends State<PlayListScreen> {
   final Map<String, String> systemIcon = {
     'most_played': Assets.svgMostPlayed,
     'recently_added': Assets.svgRecentlyAdded,
-    'recently_played': Assets.svgRecentlyAdded,
+    'recently_played': Assets.svgRecentlyPlayed,
     'favorites': Assets.svgFavorites,
   };
   final Map<String, Color> systemColor = {
@@ -105,8 +105,9 @@ class _PlayListScreenState extends State<PlayListScreen> {
                           builder: (context, state) {
                             int total = 0;
                             state.maybeWhen(
-                              loaded: (playlists, systemPlaylistSongs) =>
-                                  total = playlists.length,
+                              loaded:
+                                  (playlists, systemPlaylistSongs) =>
+                                      total = playlists.length,
                               orElse: () {},
                             );
                             return Texts(
@@ -122,8 +123,8 @@ class _PlayListScreenState extends State<PlayListScreen> {
                   ),
                   Spacer(),
                   GestureDetector(
-                    onTap: (){
-                      CreatePlaylistBottomSheet.show(context);  
+                    onTap: () {
+                      CreatePlaylistBottomSheet.show(context);
                     },
                     child: Container(
                       height: 24.h,
@@ -144,10 +145,11 @@ class _PlayListScreenState extends State<PlayListScreen> {
                 builder: (context, state) {
                   return state.maybeWhen(
                     loaded: (allPlaylists, systemPlaylistSongs) {
-                      final systemPlaylists = allPlaylists
-                          .where((p) => (p.isSystem == true))
-                          .cast<domain.Playlist>()
-                          .toList();
+                      final systemPlaylists =
+                          allPlaylists
+                              .where((p) => (p.isSystem == true))
+                              .cast<domain.Playlist>()
+                              .toList();
                       // Order
                       systemPlaylists.sort((a, b) {
                         final ai = systemOrder.indexOf(a.systemKey ?? '');
@@ -190,7 +192,14 @@ class _PlayListScreenState extends State<PlayListScreen> {
                             onTap: () {
                               context.push(
                                 '/dashboard/playlist-detail',
-                                extra: p,
+                                extra: {
+                                  'playlist': p,
+                                  'assetIcon': icon,
+                                  'colors': [
+                                    color.withValues(alpha: 0.21),
+                                    color,
+                                  ],
+                                },
                               );
                             },
                             onPlayTap: () {
@@ -204,22 +213,25 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                   ),
                                 ),
                                 isScrollControlled: true,
-                                builder: (_) => SongMenuScreen(
-                                  songMenuList: playlistMenuItems,
-                                  isPlaying: false,
-                                  currentSong: musicService.currentIndex != -1
-                                      ? musicService.songs[musicService
-                                            .currentIndex]
-                                      : null,
-                                  songIndex: index,
-                                  songsList: [],
-                                  maxHeight: musicService.currentIndex != -1
-                                      ? 0.79.sh
-                                      : 0.66.sh,
-                                  from: 'playlist',
-                                  systemKeyOrId: p.systemKey,
-                                  isSystemPlaylist: true,
-                                ),
+                                builder:
+                                    (_) => SongMenuScreen(
+                                      songMenuList: playlistMenuItems,
+                                      isPlaying: false,
+                                      currentSong:
+                                          musicService.currentIndex != -1
+                                              ? musicService.songs[musicService
+                                                  .currentIndex]
+                                              : null,
+                                      songIndex: index,
+                                      songsList: [],
+                                      maxHeight:
+                                          musicService.currentIndex != -1
+                                              ? 0.79.sh
+                                              : 0.66.sh,
+                                      from: 'playlist',
+                                      systemKeyOrId: p.systemKey,
+                                      isSystemPlaylist: true,
+                                    ),
                               );
                             },
                           );
@@ -235,9 +247,10 @@ class _PlayListScreenState extends State<PlayListScreen> {
                 builder: (context, state) {
                   int userCount = 0;
                   state.maybeWhen(
-                    loaded: (all, systemPlaylistSongs) => userCount = all
-                        .where((p) => (p.isSystem != true))
-                        .length,
+                    loaded:
+                        (all, systemPlaylistSongs) =>
+                            userCount =
+                                all.where((p) => (p.isSystem != true)).length,
                     orElse: () {},
                   );
                   return Texts(
@@ -253,10 +266,11 @@ class _PlayListScreenState extends State<PlayListScreen> {
                 builder: (context, state) {
                   return state.maybeWhen(
                     loaded: (allPlaylists, systemPlaylistSongs) {
-                      final userPlaylists = allPlaylists
-                          .where((p) => (p.isSystem != true))
-                          .cast<domain.Playlist>()
-                          .toList();
+                      final userPlaylists =
+                          allPlaylists
+                              .where((p) => (p.isSystem != true))
+                              .cast<domain.Playlist>()
+                              .toList();
                       return Column(
                         children: List.generate(userPlaylists.length, (index) {
                           final p = userPlaylists[index];
@@ -279,7 +293,14 @@ class _PlayListScreenState extends State<PlayListScreen> {
                             onTap: () {
                               context.push(
                                 '/dashboard/playlist-detail',
-                                extra: p,
+                                extra: {
+                                  'playlist': p,
+                                  'assetIcon': Assets.svgMusicIcon,
+                                  'colors': [
+                                    AppColors.mildBlue.withValues(alpha: 0.21),
+                                    AppColors.mildBlue,
+                                  ],
+                                },
                               );
                             },
                             onPlayTap: () {
@@ -293,20 +314,22 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                   ),
                                 ),
                                 isScrollControlled: true,
-                                builder: (_) => SongMenuScreen(
-                                  songMenuList: playlistMenuItems,
-                                  isPlaying: false,
-                                  currentSong: musicService.currentIndex != -1
-                                      ? musicService.songs[musicService
-                                            .currentIndex]
-                                      : null,
-                                  songIndex: index,
-                                  songsList: [],
-                                  maxHeight: 0.79.sh,
-                                  from: 'playlist',
-                                  systemKeyOrId: p.id.toString(),
-                                  isSystemPlaylist: false,
-                                ),
+                                builder:
+                                    (_) => SongMenuScreen(
+                                      songMenuList: playlistMenuItems,
+                                      isPlaying: false,
+                                      currentSong:
+                                          musicService.currentIndex != -1
+                                              ? musicService.songs[musicService
+                                                  .currentIndex]
+                                              : null,
+                                      songIndex: index,
+                                      songsList: [],
+                                      maxHeight: 0.79.sh,
+                                      from: 'playlist',
+                                      systemKeyOrId: p.id.toString(),
+                                      isSystemPlaylist: false,
+                                    ),
                               );
                             },
                           );

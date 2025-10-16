@@ -1,5 +1,4 @@
 import 'dart:developer' as logS;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,10 +10,10 @@ import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/screens/tabs/music_service.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
+import '../../../../commonWidgets/gradientCard.dart';
 import '../../../../commonWidgets/song_menu_screen.dart';
 import '../../../../utills/globals.dart';
 import '../widgets/mini_player_bar.dart';
-
 import '../../../../commonWidgets/MusicListTile.dart';
 import '../../../../commonWidgets/textWidget.dart';
 import '../../../../features/playlists/bloc/playlist_bloc.dart';
@@ -24,7 +23,14 @@ import '../../../../core/di/injection.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final domain.Playlist playlist;
-  const PlaylistDetailScreen({super.key, required this.playlist});
+  final String assetIcon;
+  final List<Color>? colors;
+  const PlaylistDetailScreen({
+    super.key,
+    required this.playlist,
+    required this.assetIcon,
+    this.colors,
+  });
 
   @override
   State<PlaylistDetailScreen> createState() => _PlaylistDetailScreenState();
@@ -144,19 +150,21 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   ),
                 ),
                 isScrollControlled: true,
-                builder: (_) => SongMenuScreen(
-                  songMenuList: songMenuItems,
-                  isPlaying: false,
-                  currentSong: song,
-                  songIndex: index,
-                  songsList: list,
-                  maxHeight: 0.87.sh,
-                  systemKeyOrId: widget.playlist.isSystem!
-                      ? widget.playlist.systemKey
-                      : widget.playlist.id.toString(),
-                  isSystemPlaylist: _isSystem,
-                  from: 'playlist_in',
-                ),
+                builder:
+                    (_) => SongMenuScreen(
+                      songMenuList: songMenuItems,
+                      isPlaying: false,
+                      currentSong: song,
+                      songIndex: index,
+                      songsList: list,
+                      maxHeight: 0.87.sh,
+                      systemKeyOrId:
+                          widget.playlist.isSystem!
+                              ? widget.playlist.systemKey
+                              : widget.playlist.id.toString(),
+                      isSystemPlaylist: _isSystem,
+                      from: 'playlist_in',
+                    ),
               );
             },
           ),
@@ -181,13 +189,22 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       child: Scaffold(
         backgroundColor: AppColors.white,
         appBar: AppBar(
-          backgroundColor: AppColors.white,
+          backgroundColor: AppColors.primaryOrange,
           elevation: 0,
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios,
+              color: AppColors.white,
+              size: 20,
+            ),
+            onPressed: () => context.pop(),
+          ),
           title: Texts(
             widget.playlist.name,
             fontSize: 18.sp,
             fontWeight: AppFontWeights.medium,
             fontFamily: AppFonts.inter,
+            color: AppColors.white,
           ),
           actions: [
             // Show "Add Songs" button only for non-system playlists
@@ -203,7 +220,13 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               ),
             Padding(
               padding: EdgeInsets.only(right: 12.w),
-              child: SvgPicture.asset(Assets.svgMenuIcon),
+              child: SvgPicture.asset(
+                Assets.svgIcDelete,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.white,
+                  BlendMode.srcIn,
+                ),
+              ),
             ),
           ],
         ),
@@ -218,6 +241,29 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               ),
               child: Column(
                 children: [
+                  SizedBox(height: 25.h),
+                  GradientCard(
+                    height: 150.h,
+                    width: 150.w,
+                    colors: [
+                      widget.colors![0].withValues(alpha: 0.21),
+                      widget.colors![1],
+                    ],
+                    borderRadius: 13.r,
+                    iconAsset: widget.assetIcon,
+                    iconSize: 60.r,
+                    margin: 10.w,
+                  ),
+                  SizedBox(height: 14.h),
+                  Texts(
+                    widget.playlist.name,
+                    fontSize: 20.sp,
+                    fontWeight: AppFontWeights.medium,
+                    fontFamily: AppFonts.inter,
+                    color: AppColors.textColor,
+                  ),
+
+                  SizedBox(height: 25.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -302,7 +348,68 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 15.h),
+                  SizedBox(height: 25.h),
+
+                  // Song count header with bullets and add icons
+                  Row(
+                    children: [
+                      // Bullets icon and song count
+                      GestureDetector(
+                        onTap: () {
+                          // Navigate to select song screen for playlist management
+                          context.push(
+                            '/dashboard/select-song',
+                            extra: {
+                              'playlist': widget.playlist,
+                              'songs': _songs,
+                              'isSystemPlaylist': _isSystem,
+                            },
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            SvgPicture.asset(Assets.svgSongsCount),
+                            SizedBox(width: 8.w),
+                            Texts(
+                              '${_songs.length} songs',
+                              fontSize: 16.sp,
+                              fontWeight: AppFontWeights.medium,
+                              fontFamily: AppFonts.inter,
+                              color: AppColors.textColor,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      Spacer(),
+
+                      // Add songs icon (only for non-system playlists)
+                      // if (!_isSystem)
+                      GestureDetector(
+                        onTap: () {
+                          context.push(
+                            '/dashboard/add-songs',
+                            extra: widget.playlist,
+                          );
+                        },
+                        child: Container(
+                          width: 32.w,
+                          height: 32.h,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryOrange,
+                            borderRadius: BorderRadius.circular(16.r),
+                          ),
+                          child: Icon(
+                            Icons.add,
+                            color: AppColors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  SizedBox(height: 37.h),
                   Expanded(
                     child: Builder(
                       builder: (context) {

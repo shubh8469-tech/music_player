@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -7,10 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:music_app/features/songs/bloc/songs_bloc.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/themes/font.dart';
-import 'package:music_app/features/playlists/bloc/playlist_bloc.dart';
 
 import '../../../../commonWidgets/MusicListTile.dart';
 import '../../../../commonWidgets/common_functions.dart';
+import '../../../../features/playlists/bloc/playlist_bloc.dart';
 import '../../../../generated/assets.dart';
 import '../../../../themes/color.dart';
 import '../../../../utills/snack_bar.dart';
@@ -138,50 +136,22 @@ class _AddSongsScreenState extends State<AddSongsScreen> {
       return;
     }
 
-    try {
-      // Get the playlist ID
-      final playlistId = widget.playlist.id;
+    final playlistBloc = context.read<PlaylistBloc>();
 
-      if (playlistId == null) {
-        showSnackBar(
-          context,
-          () {},
-          message: "Invalid playlist",
-          alertBannerLocation: AlertBannerLocation.bottom,
-        );
-        return;
-      }
+    final songIds = selectedSongs.map((song) => song.id!).toList();
+    playlistBloc.add(
+      PlaylistEvent.addMultipleSongsToPlaylist(widget.playlist.id, songIds),
+    );
 
-      // Get song IDs
-      final songIds = selectedSongs.map((s) => s.id!).toList();
+    showSnackBar(
+      context,
+      () {},
+      message: "${selectedSongs.length} songs added to playlist",
+      alertBannerLocation: AlertBannerLocation.bottom,
+    );
 
-      // Add songs to playlist using PlaylistBloc
-      context.read<PlaylistBloc>().add(
-        PlaylistEvent.addMultipleSongsToPlaylist(playlistId, songIds),
-      );
-
-      log('Adding ${selectedSongs.length} songs to playlist $playlistId');
-
-      showSnackBar(
-        context,
-        () {},
-        message: "${selectedSongs.length} songs added to playlist",
-        alertBannerLocation: AlertBannerLocation.bottom,
-      );
-
-      // Navigate back to previous screen
-      context.pop();
-    } catch (e) {
-      log('Error adding songs to playlist: $e');
-      if (mounted) {
-        showSnackBar(
-          context,
-          () {},
-          message: "Error adding songs to playlist",
-          alertBannerLocation: AlertBannerLocation.bottom,
-        );
-      }
-    }
+    // Navigate back to previous screen
+    context.pop();
   }
 
   // Cancel action
