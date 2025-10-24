@@ -55,13 +55,14 @@ extension FolderEventPatterns on FolderEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _FetchAllFolders value)?  fetchAllFolders,TResult Function( _FetchSongsForFolder value)?  fetchSongsForFolder,TResult Function( _DeleteFolder value)?  deleteFolder,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _FetchAllFolders value)?  fetchAllFolders,TResult Function( _FetchSongsForFolder value)?  fetchSongsForFolder,TResult Function( _DeleteFolder value)?  deleteFolder,TResult Function( _SortFolders value)?  sortFolders,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _FetchAllFolders() when fetchAllFolders != null:
 return fetchAllFolders(_that);case _FetchSongsForFolder() when fetchSongsForFolder != null:
 return fetchSongsForFolder(_that);case _DeleteFolder() when deleteFolder != null:
-return deleteFolder(_that);case _:
+return deleteFolder(_that);case _SortFolders() when sortFolders != null:
+return sortFolders(_that);case _:
   return orElse();
 
 }
@@ -79,13 +80,14 @@ return deleteFolder(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _FetchAllFolders value)  fetchAllFolders,required TResult Function( _FetchSongsForFolder value)  fetchSongsForFolder,required TResult Function( _DeleteFolder value)  deleteFolder,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _FetchAllFolders value)  fetchAllFolders,required TResult Function( _FetchSongsForFolder value)  fetchSongsForFolder,required TResult Function( _DeleteFolder value)  deleteFolder,required TResult Function( _SortFolders value)  sortFolders,}){
 final _that = this;
 switch (_that) {
 case _FetchAllFolders():
 return fetchAllFolders(_that);case _FetchSongsForFolder():
 return fetchSongsForFolder(_that);case _DeleteFolder():
-return deleteFolder(_that);case _:
+return deleteFolder(_that);case _SortFolders():
+return sortFolders(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -102,13 +104,14 @@ return deleteFolder(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _FetchAllFolders value)?  fetchAllFolders,TResult? Function( _FetchSongsForFolder value)?  fetchSongsForFolder,TResult? Function( _DeleteFolder value)?  deleteFolder,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _FetchAllFolders value)?  fetchAllFolders,TResult? Function( _FetchSongsForFolder value)?  fetchSongsForFolder,TResult? Function( _DeleteFolder value)?  deleteFolder,TResult? Function( _SortFolders value)?  sortFolders,}){
 final _that = this;
 switch (_that) {
 case _FetchAllFolders() when fetchAllFolders != null:
 return fetchAllFolders(_that);case _FetchSongsForFolder() when fetchSongsForFolder != null:
 return fetchSongsForFolder(_that);case _DeleteFolder() when deleteFolder != null:
-return deleteFolder(_that);case _:
+return deleteFolder(_that);case _SortFolders() when sortFolders != null:
+return sortFolders(_that);case _:
   return null;
 
 }
@@ -125,12 +128,13 @@ return deleteFolder(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  fetchAllFolders,TResult Function( int folderId)?  fetchSongsForFolder,TResult Function( int folderId)?  deleteFolder,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  fetchAllFolders,TResult Function( int folderId)?  fetchSongsForFolder,TResult Function( int folderId)?  deleteFolder,TResult Function( int sortIndex,  int orderIndex)?  sortFolders,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FetchAllFolders() when fetchAllFolders != null:
 return fetchAllFolders();case _FetchSongsForFolder() when fetchSongsForFolder != null:
 return fetchSongsForFolder(_that.folderId);case _DeleteFolder() when deleteFolder != null:
-return deleteFolder(_that.folderId);case _:
+return deleteFolder(_that.folderId);case _SortFolders() when sortFolders != null:
+return sortFolders(_that.sortIndex,_that.orderIndex);case _:
   return orElse();
 
 }
@@ -148,12 +152,13 @@ return deleteFolder(_that.folderId);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  fetchAllFolders,required TResult Function( int folderId)  fetchSongsForFolder,required TResult Function( int folderId)  deleteFolder,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  fetchAllFolders,required TResult Function( int folderId)  fetchSongsForFolder,required TResult Function( int folderId)  deleteFolder,required TResult Function( int sortIndex,  int orderIndex)  sortFolders,}) {final _that = this;
 switch (_that) {
 case _FetchAllFolders():
 return fetchAllFolders();case _FetchSongsForFolder():
 return fetchSongsForFolder(_that.folderId);case _DeleteFolder():
-return deleteFolder(_that.folderId);case _:
+return deleteFolder(_that.folderId);case _SortFolders():
+return sortFolders(_that.sortIndex,_that.orderIndex);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -170,12 +175,13 @@ return deleteFolder(_that.folderId);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  fetchAllFolders,TResult? Function( int folderId)?  fetchSongsForFolder,TResult? Function( int folderId)?  deleteFolder,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  fetchAllFolders,TResult? Function( int folderId)?  fetchSongsForFolder,TResult? Function( int folderId)?  deleteFolder,TResult? Function( int sortIndex,  int orderIndex)?  sortFolders,}) {final _that = this;
 switch (_that) {
 case _FetchAllFolders() when fetchAllFolders != null:
 return fetchAllFolders();case _FetchSongsForFolder() when fetchSongsForFolder != null:
 return fetchSongsForFolder(_that.folderId);case _DeleteFolder() when deleteFolder != null:
-return deleteFolder(_that.folderId);case _:
+return deleteFolder(_that.folderId);case _SortFolders() when sortFolders != null:
+return sortFolders(_that.sortIndex,_that.orderIndex);case _:
   return null;
 
 }
@@ -340,6 +346,74 @@ class __$DeleteFolderCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') $Res call({Object? folderId = null,}) {
   return _then(_DeleteFolder(
 null == folderId ? _self.folderId : folderId // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _SortFolders implements FolderEvent {
+  const _SortFolders(this.sortIndex, this.orderIndex);
+  
+
+ final  int sortIndex;
+ final  int orderIndex;
+
+/// Create a copy of FolderEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$SortFoldersCopyWith<_SortFolders> get copyWith => __$SortFoldersCopyWithImpl<_SortFolders>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SortFolders&&(identical(other.sortIndex, sortIndex) || other.sortIndex == sortIndex)&&(identical(other.orderIndex, orderIndex) || other.orderIndex == orderIndex));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,sortIndex,orderIndex);
+
+@override
+String toString() {
+  return 'FolderEvent.sortFolders(sortIndex: $sortIndex, orderIndex: $orderIndex)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$SortFoldersCopyWith<$Res> implements $FolderEventCopyWith<$Res> {
+  factory _$SortFoldersCopyWith(_SortFolders value, $Res Function(_SortFolders) _then) = __$SortFoldersCopyWithImpl;
+@useResult
+$Res call({
+ int sortIndex, int orderIndex
+});
+
+
+
+
+}
+/// @nodoc
+class __$SortFoldersCopyWithImpl<$Res>
+    implements _$SortFoldersCopyWith<$Res> {
+  __$SortFoldersCopyWithImpl(this._self, this._then);
+
+  final _SortFolders _self;
+  final $Res Function(_SortFolders) _then;
+
+/// Create a copy of FolderEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? sortIndex = null,Object? orderIndex = null,}) {
+  return _then(_SortFolders(
+null == sortIndex ? _self.sortIndex : sortIndex // ignore: cast_nullable_to_non_nullable
+as int,null == orderIndex ? _self.orderIndex : orderIndex // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

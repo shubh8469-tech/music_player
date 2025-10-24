@@ -19,6 +19,7 @@ import '../../../../themes/color.dart';
 import '../../../../utills/snack_bar.dart';
 import '../../music_service.dart';
 import 'package:go_router/go_router.dart';
+import '../../../play_song/widget/playlist_bottomsheet.dart';
 
 class SelectPlaylistScreen extends StatefulWidget {
   const SelectPlaylistScreen({super.key});
@@ -155,13 +156,6 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
     final deletablePlaylists = selectedPlaylists
         .where((playlist) => playlist.isSystem != true)
         .toList();
-
-    showSnackBar(
-      context,
-      () {},
-      message: "deletablePlaylists is empty ? ${deletablePlaylists.isEmpty}",
-      alertBannerLocation: AlertBannerLocation.bottom,
-    );
 
     if (deletablePlaylists.isEmpty) {
       showSnackBar(
@@ -373,7 +367,7 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
     if (selectedPlaylists.isEmpty) {
       showSnackBar(
         context,
-        () {}, 
+        () {},
         message: "No playlists selected",
         alertBannerLocation: AlertBannerLocation.bottom,
       );
@@ -532,8 +526,8 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
     }
   }
 
-  // Add songs to selected playlists (placeholder)
-  void _addSongsToSelectedPlaylists(List<domain.Playlist> allPlaylists) {
+  // Add songs to selected playlists
+  void _addSongsToSelectedPlaylists(List<domain.Playlist> allPlaylists) async {
     final selectedPlaylists = _getSelectedPlaylists(allPlaylists);
 
     if (selectedPlaylists.isEmpty) {
@@ -546,13 +540,63 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
       return;
     }
 
-    // For now, show a message - this can be implemented later
-    showSnackBar(
-      context,
-      () {},
-      message: "Add songs to playlists functionality will be implemented",
-      alertBannerLocation: AlertBannerLocation.bottom,
-    );
+    try {
+      final _repo = locator<PlaylistRepository>();
+      List<SongsModel> allSongsFromPlaylists = [];
+
+      // Fetch all songs from selected playlists
+      for (var playlist in selectedPlaylists) {
+        List<SongsModel> playlistSongs = [];
+
+        if (playlist.isSystem == true) {
+          playlistSongs = await _repo.getSongsForSystemPlaylist(
+            playlist.systemKey ?? '',
+          );
+        } else {
+          playlistSongs = await _repo.getSongsForPlaylist(playlist.id!);
+        }
+
+        // Add songs to the combined list, avoiding duplicates
+        for (var song in playlistSongs) {
+          if (!allSongsFromPlaylists.any((s) => s.id == song.id)) {
+            allSongsFromPlaylists.add(song);
+          }
+        }
+      }
+
+      if (allSongsFromPlaylists.isEmpty) {
+        showSnackBar(
+          context,
+          () {},
+          message: "Selected playlists contain no songs",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+        return;
+      }
+
+      // Show playlist bottom sheet with all songs from selected playlists
+      if (mounted) {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
+          ),
+          isScrollControlled: true,
+          builder: (_) => PlaylistBottomSheet(songsList: allSongsFromPlaylists),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        showSnackBar(
+          context,
+          () {},
+          message: "Error fetching songs from playlists: $e",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      }
+    }
   }
 
   // Build playlist section with header and items

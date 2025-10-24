@@ -20,6 +20,23 @@
  "deleteSong": "गाना हटाएं",
  "deletePlaylist": "प्लेलिस्ट हटाएं",
  "speed": "गति",
- "keepScreenOn": "स्क्रीन चालू रखें"
+ "keepScreenOn": "स्क्रीन चालू रखें",
+ "songName": "गाने का नाम",
+ "artistName": "कलाकार का नाम",
+ "albumName": "एल्बम गाना",
+ "folderName": "फ़ोल्डर का नाम",
+ "addedTime": "जोड़ा गया समय",
+ "playCount": "बजाने की संख्या",
+ "year": "वर्ष",
+ "songCount": "गानों की संख्या",
+ "modifiedDate": "संशोधित तिथि",
+ "hideFolder": "फ़ोल्डर छुपाएं",
+ "deleteFolder": "फ़ोल्डर हटाएं",
+ "selectSongs": "गाने चुनें",
+ "searchSongs": "गाने खोजें",
+ "selectAll": "सभी चुनें",
+ "selected": "चयनित",
+ "delete": "हटाएं",
+ "play": "चलाएं"
 
 }

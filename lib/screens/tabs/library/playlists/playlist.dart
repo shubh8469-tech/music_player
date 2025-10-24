@@ -297,8 +297,8 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                   'playlist': p,
                                   'assetIcon': Assets.svgMusicIcon,
                                   'colors': [
-                                    AppColors.mildBlue.withValues(alpha: 0.21),
-                                    AppColors.mildBlue,
+                                    AppColors.primaryOrange.withValues(alpha: 0.21),
+                                    AppColors.primaryOrange,
                                   ],
                                 },
                               );

@@ -6,9 +6,20 @@ import 'package:go_router/go_router.dart';
 import 'package:music_app/themes/color.dart';
 import '../../../../commonWidgets/MusicListTile.dart';
 import '../../../../commonWidgets/textWidget.dart';
+import '../../../../core/di/injection.dart';
 import '../../../../features/folders/bloc/folder_bloc.dart';
+import '../../../../features/folders/domain/entities/folder.dart' as domain;
+import '../../../../features/folders/domain/repositories/folder_repository.dart';
+import '../../../../features/playlists/bloc/playlist_bloc.dart';
+import '../../../../features/songs/data/models/song_model.dart';
 import '../../../../generated/assets.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../themes/font.dart';
+import '../../../../utills/globals.dart';
+import '../../../../utills/snack_bar.dart';
+import '../../music_service.dart';
+import '../../../play_song/widget/playlist_bottomsheet.dart';
+import 'sort_by_bottomsheet.dart';
 
 class FolderListScreen extends StatefulWidget {
   const FolderListScreen({super.key});
@@ -18,6 +29,11 @@ class FolderListScreen extends StatefulWidget {
 }
 
 class _FolderListScreenState extends State<FolderListScreen> {
+  int selectedIndex = 0; // Default to Folder Name
+  int selectedOrder = 0; // 0 = ascending, 1 = descending
+  String selectedFolderSort = folderSortByItems[0].title;
+  var musicService = MusicPlayerService();
+
   @override
   void initState() {
     super.initState();
@@ -68,14 +84,62 @@ class _FolderListScreenState extends State<FolderListScreen> {
                   Spacer(),
                   SvgPicture.asset(Assets.svgFilter),
                   SizedBox(width: 5.w),
-                  Texts(
-                    'Name',
-                    fontSize: 14.sp,
-                    fontWeight: AppFontWeights.regular,
-                    color: AppColors.textColor,
+                  GestureDetector(
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(40),
+                          ),
+                        ),
+                        isScrollControlled: true,
+                        builder: (_) => BlocProvider.value(
+                          value: context.read<FolderBloc>(),
+                          child: FolderSortByBottomSheet(
+                            selectedIndex: selectedIndex,
+                            selectedOrder: selectedOrder,
+                            onItemSelected: (index, order) {
+                              setState(() {
+                                selectedIndex = index;
+                                selectedOrder = order;
+                                selectedFolderSort =
+                                    folderSortByItems[index].title;
+                              });
+                              // Trigger Bloc sort event
+                              context.read<FolderBloc>().add(
+                                FolderEvent.sortFolders(index, order),
+                              );
+                              // Close bottom sheet safely
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (Navigator.canPop(context))
+                                  Navigator.pop(context);
+                              });
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        Texts(
+                          selectedFolderSort,
+                          fontSize: 14.sp,
+                          fontWeight: AppFontWeights.regular,
+                          color: AppColors.textColor,
+                        ),
+                        SizedBox(width: 10.w),
+                        // Icon(
+                        //   selectedOrder == 0
+                        //       ? Icons.arrow_upward
+                        //       : Icons.arrow_downward,
+                        //   size: 16.sp,
+                        // ),
+                      ],
+                    ),
                   ),
-                  SizedBox(width: 15.w),
-                  Icon(Icons.arrow_upward),
                 ],
               ),
               SizedBox(height: 25.h),
@@ -124,9 +188,18 @@ class _FolderListScreenState extends State<FolderListScreen> {
                               );
                             },
                             onPlayTap: () {
-                              // Load songs and play
-                              context.read<FolderBloc>().add(
-                                FolderEvent.fetchSongsForFolder(folder.id!),
+                              showModalBottomSheet(
+                                context: context,
+                                backgroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(40.r),
+                                  ),
+                                ),
+                                isScrollControlled: true,
+                                builder: (_) =>
+                                    _buildFolderMenu(context, folder),
                               );
                             },
                           );
@@ -146,6 +219,471 @@ class _FolderListScreenState extends State<FolderListScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFolderMenu(BuildContext context, domain.Folder folder) {
+    return Container(
+      constraints: BoxConstraints(maxHeight: 0.66.sh),
+      padding: EdgeInsets.only(
+        top: 10.h,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SvgPicture.asset(Assets.svgIcLineBottom),
+          SizedBox(height: 10.h),
+          Flexible(
+            child: Column(
+              children: [
+                // Folder info
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
+                  child: MusicListTile(
+                    margin: 7.w,
+                    height: 66.h,
+                    borderRadius: 10.r,
+                    backgroundColor: AppColors.musicTileBackgroundColor,
+                    cardHeight: 50.h,
+                    cardWidth: 50.w,
+                    cardRadius: 7.r,
+                    noLogoGradientColor: [
+                      AppColors.mildYellow.withValues(alpha: 0.21),
+                      AppColors.mildYellow,
+                    ],
+                    cardIconAsset: Assets.svgDirectory,
+                    cardIconSize: 32.r,
+                    isSvgCardIcon: true,
+                    title: folder.name,
+                    subtitle: '${folder.songCount} Songs',
+                    trailingIconAsset: Assets.svgIcShare,
+                    trailingIconHeight: 25.h,
+                    trailingIconWidth: 25.w,
+                    trailingMargin: 2.w,
+                    onTap: () {},
+                    onPlayTap: () {},
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: folderMenuItems.length,
+                    itemBuilder: (context, index) {
+                      final menuItem = folderMenuItems[index];
+                      return Column(
+                        children: [
+                          ListTile(
+                            dense: true,
+                            visualDensity: VisualDensity(
+                              horizontal: 0.w,
+                              vertical: 0.h,
+                            ),
+                            leading: SvgPicture.asset(
+                              menuItem.icon,
+                              height: 24,
+                              width: 24,
+                            ),
+                            title: Texts(
+                              menuItem.title,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w400,
+                              fontFamily: AppFonts.inter,
+                            ),
+                            onTap: () {
+                              Navigator.pop(context);
+                              _handleFolderMenuAction(menuItem.title, folder);
+                            },
+                          ),
+                          if (index == 3) ...[
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 15.w,
+                                vertical: 10.h,
+                              ),
+                              child: Divider(
+                                height: 1,
+                                thickness: 1,
+                                color: AppColors.black.withValues(alpha: .1),
+                              ),
+                            ),
+                          ],
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.black.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(80.r),
+                      border: Border.all(
+                        color: AppColors.black.withValues(alpha: 0.10),
+                        width: 1,
+                      ),
+                    ),
+                    margin: EdgeInsets.symmetric(horizontal: 15.w),
+                    height: 50.w,
+                    child: Texts(
+                      S.of(context).cancel,
+                      fontSize: 14.sp,
+                      align: TextAlign.center,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textColor,
+                      fontFamily: AppFonts.medium,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 25.h),
+        ],
+      ),
+    );
+  }
+
+  void _handleFolderMenuAction(String menuTitle, domain.Folder folder) {
+    if (menuTitle == S.of(context).play) {
+      _playFolder(folder);
+    } else if (menuTitle == S.of(context).playNext) {
+      _playNextFolder(folder);
+    } else if (menuTitle == S.of(context).addToQueue) {
+      _addFolderToQueue(folder);
+    } else if (menuTitle == S.of(context).addToPlaylist) {
+      _addFolderToPlaylist(folder);
+    } else if (menuTitle == S.of(context).hideFolder) {
+      _hideFolder(folder);
+    } else if (menuTitle == S.of(context).deleteFolder) {
+      _deleteFolder(folder);
+    }
+  }
+
+  // Play folder
+  void _playFolder(domain.Folder folder) async {
+    try {
+      final _repo = locator<FolderRepository>();
+      List<SongsModel> folderSongs = (await _repo.getSongsForFolder(
+        folder.id!,
+      )).cast<SongsModel>();
+
+      if (folderSongs.isEmpty) {
+        showSnackBar(
+          context,
+          () {},
+          message: "Folder contains no songs",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+        return;
+      }
+
+      await musicService.setPlaylist(folderSongs, startIndex: 0);
+      await musicService.play();
+
+      showSnackBar(
+        context,
+        () {},
+        message: "Playing ${folderSongs.length} songs from ${folder.name}",
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    } catch (e) {
+      showSnackBar(
+        context,
+        () {},
+        message: "Error playing folder: $e",
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    }
+  }
+
+  // Play next folder
+  void _playNextFolder(domain.Folder folder) async {
+    try {
+      final _repo = locator<FolderRepository>();
+      List<SongsModel> folderSongs = (await _repo.getSongsForFolder(
+        folder.id!,
+      )).cast<SongsModel>();
+
+      if (folderSongs.isEmpty) {
+        showSnackBar(
+          context,
+          () {},
+          message: "Folder contains no songs",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+        return;
+      }
+
+      if (musicService.songs.isEmpty) {
+        await musicService.setPlaylist(folderSongs, startIndex: 0);
+        await musicService.play();
+      } else {
+        final currentIndex = musicService.currentIndex;
+        final insertIndex = currentIndex + 1;
+        final newSongsList = List<SongsModel>.from(musicService.songs);
+
+        final songsToAdd = folderSongs.where((song) {
+          return !newSongsList.any(
+            (existingSong) => existingSong.id == song.id,
+          );
+        }).toList();
+
+        newSongsList.insertAll(insertIndex, songsToAdd);
+
+        await musicService.setPlaylist(
+          newSongsList,
+          startIndex: currentIndex >= 0 ? currentIndex : 0,
+          autoPlay: false,
+        );
+      }
+
+      showSnackBar(
+        context,
+        () {},
+        message:
+            "${folderSongs.length} songs from ${folder.name} added to play next",
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    } catch (e) {
+      showSnackBar(
+        context,
+        () {},
+        message: "Error adding folder to play next",
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    }
+  }
+
+  // Add folder to queue
+  void _addFolderToQueue(domain.Folder folder) async {
+    try {
+      final _repo = locator<FolderRepository>();
+      List<SongsModel> folderSongs = (await _repo.getSongsForFolder(
+        folder.id!,
+      )).cast<SongsModel>();
+
+      if (folderSongs.isEmpty) {
+        showSnackBar(
+          context,
+          () {},
+          message: "Folder contains no songs",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+        return;
+      }
+
+      final newSongsList = List<SongsModel>.from(musicService.songs);
+      int addedCount = 0;
+
+      for (final song in folderSongs) {
+        final existingIndex = newSongsList.indexWhere(
+          (existingSong) => existingSong.id == song.id,
+        );
+
+        if (existingIndex == -1) {
+          newSongsList.add(song);
+          addedCount++;
+        }
+      }
+
+      await musicService.setPlaylist(newSongsList);
+
+      showSnackBar(
+        context,
+        () {},
+        message: "$addedCount songs from ${folder.name} added to queue",
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    } catch (e) {
+      showSnackBar(
+        context,
+        () {},
+        message: "Error adding folder to queue",
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    }
+  }
+
+  // Add folder to playlist
+  void _addFolderToPlaylist(domain.Folder folder) async {
+    try {
+      // Capture PlaylistBloc before async operations
+      final playlistBloc = context.read<PlaylistBloc>();
+
+      final _repo = locator<FolderRepository>();
+      List<SongsModel> folderSongs = (await _repo.getSongsForFolder(
+        folder.id!,
+      )).cast<SongsModel>();
+
+      if (folderSongs.isEmpty) {
+        if (mounted) {
+          showSnackBar(
+            context,
+            () {},
+            message: "Folder contains no songs",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
+        return;
+      }
+
+      if (mounted) {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
+          ),
+          isScrollControlled: true,
+          builder: (_) => BlocProvider.value(
+            value: playlistBloc,
+            child: PlaylistBottomSheet(songsList: folderSongs),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        showSnackBar(
+          context,
+          () {},
+          message: "Error fetching songs from folder: $e",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      }
+    }
+  }
+
+  // Hide folder
+  void _hideFolder(domain.Folder folder) {
+    // TODO: Implement hide folder functionality
+    showSnackBar(
+      context,
+      () {},
+      message: "Hide folder feature coming soon",
+      alertBannerLocation: AlertBannerLocation.bottom,
+    );
+  }
+
+  // Delete folder
+  void _deleteFolder(domain.Folder folder) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
+      ),
+      isScrollControlled: true,
+      builder: (_) => _buildDeleteConfirmationDialog(folder),
+    );
+  }
+
+  Widget _buildDeleteConfirmationDialog(domain.Folder folder) {
+    return Container(
+      padding: EdgeInsets.only(
+        left: 16.w,
+        right: 16.w,
+        top: 10.h,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40.w,
+            height: 4.h,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2.r),
+            ),
+          ),
+          SizedBox(height: 30.h),
+          Texts(
+            'Delete Folder',
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w500,
+            fontFamily: AppFonts.inter,
+            color: AppColors.textColor,
+          ),
+          SizedBox(height: 30.h),
+          Texts(
+            'Are you sure you want to delete "${folder.name}"?',
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w400,
+            fontFamily: AppFonts.inter,
+            color: AppColors.textColor,
+            align: TextAlign.center,
+          ),
+          SizedBox(height: 25.h),
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    height: 48.h,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Center(
+                      child: Texts(
+                        S.of(context).cancel,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: AppFonts.inter,
+                        color: AppColors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    context.read<FolderBloc>().add(
+                      FolderEvent.deleteFolder(folder.id!),
+                    );
+                    Navigator.pop(context);
+                    showSnackBar(
+                      context,
+                      () {},
+                      message: "Folder deleted successfully!",
+                      alertBannerLocation: AlertBannerLocation.bottom,
+                    );
+                  },
+                  child: Container(
+                    height: 48.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryOrange,
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Center(
+                      child: Texts(
+                        S.of(context).delete,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: AppFonts.inter,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+        ],
       ),
     );
   }

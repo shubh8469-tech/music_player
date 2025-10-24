@@ -310,7 +310,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       _songs,
                                     );
                                   }
-                                } else {
+                                }
+                                else {
                                   _showPlaylistBottomSheet(
                                     context,
                                     widget.currentSong,

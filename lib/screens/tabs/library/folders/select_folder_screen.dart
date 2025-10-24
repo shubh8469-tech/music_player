@@ -7,7 +7,6 @@ import 'package:music_app/features/folders/bloc/folder_bloc.dart';
 import 'package:music_app/features/folders/domain/entities/folder.dart'
     as domain;
 import 'package:music_app/features/folders/domain/repositories/folder_repository.dart';
-import 'package:music_app/features/playlists/bloc/playlist_bloc.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/themes/font.dart';
 
@@ -20,6 +19,7 @@ import '../../../../themes/color.dart';
 import '../../../../utills/snack_bar.dart';
 import '../../music_service.dart';
 import 'package:go_router/go_router.dart';
+import '../../../play_song/widget/playlist_bottomsheet.dart';
 
 class SelectFolderScreen extends StatefulWidget {
   const SelectFolderScreen({super.key});
@@ -508,240 +508,25 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
         return;
       }
 
-      // Show playlist selection dialog
-      _showPlaylistSelectionDialog(allSongsFromFolders);
+      // Show playlist bottom sheet with all songs from selected folders
+      if (mounted) {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
+          ),
+          isScrollControlled: true,
+          builder: (_) => PlaylistBottomSheet(songsList: allSongsFromFolders),
+        );
+      }
     } catch (e) {
       if (mounted) {
         showSnackBar(
           context,
           () {},
           message: "Error fetching songs from folders: $e",
-          alertBannerLocation: AlertBannerLocation.bottom,
-        );
-      }
-    }
-  }
-
-  // Show playlist selection dialog
-  void _showPlaylistSelectionDialog(List<SongsModel> songsToAdd) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
-      ),
-      isScrollControlled: true,
-      builder: (_) => _buildPlaylistSelectionDialog(songsToAdd),
-    );
-  }
-
-  // Build playlist selection dialog
-  Widget _buildPlaylistSelectionDialog(List<SongsModel> songsToAdd) {
-    return Container(
-      padding: EdgeInsets.only(
-        left: 16.w,
-        right: 16.w,
-        top: 10.h,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Top handle bar
-          Container(
-            width: 40.w,
-            height: 4.h,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2.r),
-            ),
-          ),
-          SizedBox(height: 30.h),
-
-          // Title
-          Texts(
-            'Add to Playlist',
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w500,
-            fontFamily: AppFonts.inter,
-            color: AppColors.textColor,
-          ),
-          SizedBox(height: 10.h),
-
-          // Subtitle
-          Texts(
-            '${songsToAdd.length} songs from ${selectedCount} folder${selectedCount > 1 ? 's' : ''}',
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w400,
-            fontFamily: AppFonts.inter,
-            color: AppColors.textColor.withValues(alpha: 0.7),
-            align: TextAlign.center,
-          ),
-          SizedBox(height: 30.h),
-
-          // Playlist selection
-          BlocBuilder<PlaylistBloc, PlaylistState>(
-            builder: (context, state) {
-              return state.maybeWhen(
-                loaded: (allPlaylists, systemPlaylistSongs) {
-                  // Filter out system playlists as they can't be modified
-                  final userPlaylists = allPlaylists
-                      .where((playlist) => playlist.isSystem != true)
-                      .toList();
-
-                  if (userPlaylists.isEmpty) {
-                    return Column(
-                      children: [
-                        Texts(
-                          'No playlists available',
-                          fontSize: 16.sp,
-                          color: AppColors.textColor.withValues(alpha: 0.7),
-                        ),
-                        SizedBox(height: 20.h),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);
-                            context.push('/dashboard/create-playlist');
-                          },
-                          child: Container(
-                            height: 48.h,
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryOrange,
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                            child: Center(
-                              child: Texts(
-                                'Create New Playlist',
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: AppFonts.inter,
-                                color: AppColors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-
-                  return Column(
-                    children: [
-                      // Playlist list
-                      Container(
-                        constraints: BoxConstraints(maxHeight: 300.h),
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: userPlaylists.length,
-                          itemBuilder: (context, index) {
-                            final playlist = userPlaylists[index];
-                            return ListTile(
-                              leading: Container(
-                                width: 40.w,
-                                height: 40.h,
-                                decoration: BoxDecoration(
-                                  color: AppColors.mildBlue,
-                                  borderRadius: BorderRadius.circular(8.r),
-                                ),
-                                child: Center(
-                                  child: SvgPicture.asset(
-                                    Assets.svgMusicIcon,
-                                    width: 20.w,
-                                    height: 20.h,
-                                  ),
-                                ),
-                              ),
-                              title: Texts(
-                                playlist.name,
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: AppFonts.inter,
-                                color: AppColors.textColor,
-                              ),
-                              subtitle: Texts(
-                                '${playlist.songCount} songs',
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w400,
-                                fontFamily: AppFonts.inter,
-                                color: AppColors.textColor.withValues(
-                                  alpha: 0.7,
-                                ),
-                              ),
-                              onTap: () {
-                                Navigator.pop(context);
-                                _addSongsToPlaylist(playlist, songsToAdd);
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                      SizedBox(height: 20.h),
-
-                      // Create new playlist button
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pop(context);
-                          context.push('/dashboard/create-playlist');
-                        },
-                        child: Container(
-                          height: 48.h,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                          child: Center(
-                            child: Texts(
-                              'Create New Playlist',
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w500,
-                              fontFamily: AppFonts.inter,
-                              color: AppColors.textColor,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-                orElse: () => Center(child: CircularProgressIndicator()),
-              );
-            },
-          ),
-
-          SizedBox(height: 16.h),
-        ],
-      ),
-    );
-  }
-
-  // Add songs to selected playlist
-  void _addSongsToPlaylist(
-    dynamic playlist,
-    List<SongsModel> songsToAdd,
-  ) async {
-    try {
-      final playlistBloc = context.read<PlaylistBloc>();
-      final songIds = songsToAdd.map((song) => song.id!).toList();
-
-      playlistBloc.add(
-        PlaylistEvent.addMultipleSongsToPlaylist(playlist.id, songIds),
-      );
-
-      if (mounted) {
-        showSnackBar(
-          context,
-          () {},
-          message: "${songsToAdd.length} songs added to ${playlist.name}",
-          alertBannerLocation: AlertBannerLocation.bottom,
-        );
-        context.pop();
-      }
-    } catch (e) {
-      if (mounted) {
-        showSnackBar(
-          context,
-          () {},
-          message: "Error adding songs to playlist: $e",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
       }

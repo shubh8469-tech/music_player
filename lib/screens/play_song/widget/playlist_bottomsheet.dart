@@ -200,10 +200,8 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
         );
       }
 
-      // Close the bottom sheet if still mounted
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
+      // Note: BottomButtonTwo already handles popping the navigator
+      // so we don't need to pop here
     } catch (e) {
       log('Error adding songs to playlist: $e');
     } finally {

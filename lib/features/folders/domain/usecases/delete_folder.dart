@@ -9,3 +9,4 @@ class DeleteFolder {
     return await repository.removeFolder(folderId);
   }
 }
+

@@ -76,5 +76,52 @@ class FolderBloc extends Bloc<FolderEvent, FolderState> {
         emit(FolderState.error(e.toString()));
       }
     });
+
+    on<_SortFolders>((event, emit) async {
+      try {
+        final currentState = state;
+        if (currentState is _Loaded) {
+          final folders = List<Folder>.from(currentState.folders);
+
+          // Sort based on sortIndex
+
+          if(event.sortIndex == 3){
+            folders.shuffle();
+          }
+          else{
+            folders.sort((a, b) {
+              int comparison = 0;
+
+              switch (event.sortIndex) {
+                case 0: // Folder Name
+                  comparison = a.name.toLowerCase().compareTo(
+                    b.name.toLowerCase(),
+                  );
+                  break;
+                case 1: // Song Count
+                  comparison = a.songCount.compareTo(b.songCount);
+                  break;
+                case 2: // Modified Date
+                  comparison = a.updatedTime.compareTo(b.updatedTime);
+                  break;
+              }
+
+              // Apply order (ascending/descending) - except for random
+              if (event.sortIndex != 3) {
+                return event.orderIndex == 0 ? comparison : -comparison;
+              }
+              return comparison;
+            });
+          }
+
+          emit(
+            FolderState.loaded(folders, folderSongs: currentState.folderSongs),
+          );
+        }
+      } catch (e) {
+        log('Error sorting folders: $e');
+        emit(FolderState.error(e.toString()));
+      }
+    });
   }
 }
