@@ -137,3 +137,170 @@ CREATE TABLE IF NOT EXISTS queue (
 CREATE INDEX IF NOT EXISTS idx_queue_position ON queue(position);
 CREATE INDEX IF NOT EXISTS idx_queue_song_id ON queue(song_id);
 CREATE INDEX IF NOT EXISTS idx_queue_is_playing ON queue(is_playing);
+
+---------------------------------------------------------------------------
+-- Folders table
+---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS folders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    path TEXT NOT NULL,
+    song_count INTEGER NOT NULL DEFAULT 0,
+    artwork_path TEXT,
+    created_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')),
+    updated_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))
+);
+
+CREATE TRIGGER IF NOT EXISTS folders_updated_time_trigger
+AFTER UPDATE ON folders
+FOR EACH ROW
+WHEN NEW.updated_time = OLD.updated_time
+  AND (SELECT execute_updated_time_triggers FROM trigger_control) = 1
+BEGIN
+    UPDATE folders
+    SET updated_time = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')
+    WHERE id = OLD.id;
+END;
+
+---------------------------------------------------------------------------
+-- Artists table
+---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS artists (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    song_count INTEGER NOT NULL DEFAULT 0,
+    album_count INTEGER NOT NULL DEFAULT 0,
+    artwork_path TEXT,
+    created_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')),
+    updated_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))
+);
+
+CREATE TRIGGER IF NOT EXISTS artists_updated_time_trigger
+AFTER UPDATE ON artists
+FOR EACH ROW
+WHEN NEW.updated_time = OLD.updated_time
+  AND (SELECT execute_updated_time_triggers FROM trigger_control) = 1
+BEGIN
+    UPDATE artists
+    SET updated_time = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')
+    WHERE id = OLD.id;
+END;
+
+---------------------------------------------------------------------------
+-- Albums table
+---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS albums (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    artist TEXT,
+    song_count INTEGER NOT NULL DEFAULT 0,
+    year INTEGER,
+    artwork_path TEXT,
+    created_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')),
+    updated_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')),
+    UNIQUE(name, artist)
+);
+
+CREATE TRIGGER IF NOT EXISTS albums_updated_time_trigger
+AFTER UPDATE ON albums
+FOR EACH ROW
+WHEN NEW.updated_time = OLD.updated_time
+  AND (SELECT execute_updated_time_triggers FROM trigger_control) = 1
+BEGIN
+    UPDATE albums
+    SET updated_time = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')
+    WHERE id = OLD.id;
+END;
+
+---------------------------------------------------------------------------
+-- Folder_songs junction table
+---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS folder_songs (
+    folder_id INTEGER NOT NULL,
+    song_id INTEGER NOT NULL,
+    PRIMARY KEY (folder_id, song_id),
+    FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE CASCADE,
+    FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
+);
+
+CREATE TRIGGER IF NOT EXISTS folder_song_insert_trigger
+AFTER INSERT ON folder_songs
+FOR EACH ROW
+BEGIN
+    UPDATE folders
+    SET song_count = song_count + 1,
+        updated_time = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')
+    WHERE id = NEW.folder_id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS folder_song_delete_trigger
+AFTER DELETE ON folder_songs
+FOR EACH ROW
+BEGIN
+    UPDATE folders
+    SET song_count = song_count - 1,
+        updated_time = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')
+    WHERE id = OLD.folder_id;
+END;
+
+---------------------------------------------------------------------------
+-- Artist_songs junction table
+---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS artist_songs (
+    artist_id INTEGER NOT NULL,
+    song_id INTEGER NOT NULL,
+    PRIMARY KEY (artist_id, song_id),
+    FOREIGN KEY (artist_id) REFERENCES artists(id) ON DELETE CASCADE,
+    FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
+);
+
+CREATE TRIGGER IF NOT EXISTS artist_song_insert_trigger
+AFTER INSERT ON artist_songs
+FOR EACH ROW
+BEGIN
+    UPDATE artists
+    SET song_count = song_count + 1,
+        updated_time = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')
+    WHERE id = NEW.artist_id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS artist_song_delete_trigger
+AFTER DELETE ON artist_songs
+FOR EACH ROW
+BEGIN
+    UPDATE artists
+    SET song_count = song_count - 1,
+        updated_time = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')
+    WHERE id = OLD.artist_id;
+END;
+
+---------------------------------------------------------------------------
+-- Album_songs junction table
+---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS album_songs (
+    album_id INTEGER NOT NULL,
+    song_id INTEGER NOT NULL,
+    PRIMARY KEY (album_id, song_id),
+    FOREIGN KEY (album_id) REFERENCES albums(id) ON DELETE CASCADE,
+    FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
+);
+
+CREATE TRIGGER IF NOT EXISTS album_song_insert_trigger
+AFTER INSERT ON album_songs
+FOR EACH ROW
+BEGIN
+    UPDATE albums
+    SET song_count = song_count + 1,
+        updated_time = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')
+    WHERE id = NEW.album_id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS album_song_delete_trigger
+AFTER DELETE ON album_songs
+FOR EACH ROW
+BEGIN
+    UPDATE albums
+    SET song_count = song_count - 1,
+        updated_time = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')
+    WHERE id = OLD.album_id;
+END;
