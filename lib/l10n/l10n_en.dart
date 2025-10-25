@@ -93,6 +93,18 @@ class SEn extends S {
   String get year => 'Year';
 
   @override
+  String get songCount => 'Song Count';
+
+  @override
+  String get modifiedDate => 'Modified Date';
+
+  @override
+  String get hideFolder => 'Hide Folder';
+
+  @override
+  String get deleteFolder => 'Delete Folder';
+
+  @override
   String get selectSongs => 'Select Songs';
 
   @override

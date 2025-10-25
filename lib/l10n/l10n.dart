@@ -265,6 +265,30 @@ abstract class S {
   /// **'Year'**
   String get year;
 
+  /// No description provided for @songCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Song Count'**
+  String get songCount;
+
+  /// No description provided for @modifiedDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Modified Date'**
+  String get modifiedDate;
+
+  /// No description provided for @hideFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide Folder'**
+  String get hideFolder;
+
+  /// No description provided for @deleteFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Folder'**
+  String get deleteFolder;
+
   /// No description provided for @selectSongs.
   ///
   /// In en, this message translates to:

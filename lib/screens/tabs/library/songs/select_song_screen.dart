@@ -499,12 +499,19 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
     int songCount,
     List<SongsModel> allSongs,
   ) {
+    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+    final bottomPadding = viewInsets > 0
+        ? viewInsets + 16.h
+        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+
     return Container(
       padding: EdgeInsets.only(
         left: 16.w,
         right: 16.w,
         top: 10.h,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
+        bottom: bottomPadding,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -651,12 +658,19 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
     int songCount,
     List<SongsModel> allSongs,
   ) {
+    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+    final bottomPadding = viewInsets > 0
+        ? viewInsets + 16.h
+        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+
     return Container(
       padding: EdgeInsets.only(
         left: 16.w,
         right: 16.w,
         top: 10.h,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
+        bottom: bottomPadding,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -829,94 +843,100 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
           ),
         ),
 
-        // Selected count and Select All
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 5.h),
-          child: Row(
-            children: [
-              Expanded(
-                child: Texts(
-                  selectedCount != 0
-                      ? "$selectedCount ${S.of(context).selected}"
-                      : "",
+        // If searching and no results, show only the message
+        if (filteredSongs.isEmpty && searchQuery.isNotEmpty)
+          Expanded(
+            child: Center(
+              child: Texts(
+                "No songs match your search",
+                fontSize: 16.sp,
+                color: AppColors.textColor,
+              ),
+            ),
+          )
+        else ...[
+          // Selected count and Select All
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 5.h),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Texts(
+                    selectedCount != 0
+                        ? "$selectedCount ${S.of(context).selected}"
+                        : "",
+                    fontSize: 14.sp,
+                    fontFamily: AppFonts.inter,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textColor,
+                  ),
+                ),
+
+                Texts(
+                  S.of(context).selectAll,
                   fontSize: 14.sp,
                   fontFamily: AppFonts.inter,
                   fontWeight: FontWeight.w400,
                   color: AppColors.textColor,
                 ),
-              ),
-              GestureDetector(
-                onTap: () => toggleSelectAll(filteredSongs),
-                child: SvgPicture.asset(
-                  isSelectedAll
-                      ? Assets.svgIcRadioCheckl
-                      : Assets.svgIcRadioUncheck,
-                  height: 20.h,
-                  width: 20.w,
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Texts(
-                S.of(context).selectAll,
-                fontSize: 14.sp,
-                fontFamily: AppFonts.inter,
-                fontWeight: FontWeight.w400,
-                color: AppColors.textColor,
-              ),
-            ],
-          ),
-        ),
-
-        // Songs list
-        Expanded(
-          child: filteredSongs.isEmpty
-              ? Center(
-                  child: Texts(
-                    "No songs match your search",
-                    fontSize: 16.sp,
-                    color: AppColors.textColor,
+                SizedBox(width: 10.w),
+                GestureDetector(
+                  onTap: () => toggleSelectAll(filteredSongs),
+                  child: SvgPicture.asset(
+                    isSelectedAll
+                        ? Assets.svgIcRadioCheckl
+                        : Assets.svgIcRadioUncheck,
+                    height: 20.h,
+                    width: 20.w,
                   ),
-                )
-              : ListView.builder(
-                  itemCount: filteredSongs.length,
-                  padding: EdgeInsets.symmetric(horizontal: 15.w),
-                  itemBuilder: (context, index) {
-                    final song = filteredSongs[index];
-                    final isSelected = selectedSongIds.contains(song.id);
-
-                    final image = (index % 2 == 0)
-                        ? musicIcons[0]
-                        : (index % 3 == 0)
-                        ? musicIcons[1]
-                        : musicIcons[2];
-
-                    return MusicListTile(
-                      margin: 7.w,
-                      height: 66.h,
-                      borderRadius: 10.r,
-                      backgroundColor: AppColors.musicTileBackgroundColor,
-                      cardHeight: 50.h,
-                      cardWidth: 50.w,
-                      cardRadius: 7.r,
-                      cardIconAsset: song.artwork_path ?? image,
-                      cardIconSize: 32.r,
-                      isSvgCardIcon: image.contains('.svg'),
-                      title: song.title,
-                      subtitle: song.artist,
-                      songLength: formatDuration(song.duration),
-                      songLengthRequired: true,
-                      trailingIconAsset: isSelected
-                          ? Assets.svgIcCheck
-                          : Assets.svgIcUncheck,
-                      trailingIconHeight: 20.h,
-                      trailingIconWidth: 10.w,
-                      trailingMargin: 2.w,
-                      onTap: () => toggleSelection(song.id!, filteredSongs),
-                      onPlayTap: () => toggleSelection(song.id!, filteredSongs),
-                    );
-                  },
                 ),
-        ),
+              ],
+            ),
+          ),
+
+          // Songs list
+          Expanded(
+            child: ListView.builder(
+              itemCount: filteredSongs.length,
+              padding: EdgeInsets.symmetric(horizontal: 15.w),
+              itemBuilder: (context, index) {
+                final song = filteredSongs[index];
+                final isSelected = selectedSongIds.contains(song.id);
+
+                final image = (index % 2 == 0)
+                    ? musicIcons[0]
+                    : (index % 3 == 0)
+                    ? musicIcons[1]
+                    : musicIcons[2];
+
+                return MusicListTile(
+                  margin: 7.w,
+                  height: 66.h,
+                  borderRadius: 10.r,
+                  backgroundColor: AppColors.musicTileBackgroundColor,
+                  cardHeight: 50.h,
+                  cardWidth: 50.w,
+                  cardRadius: 7.r,
+                  cardIconAsset: song.artwork_path ?? image,
+                  cardIconSize: 32.r,
+                  isSvgCardIcon: image.contains('.svg'),
+                  title: song.title,
+                  subtitle: song.artist,
+                  songLength: formatDuration(song.duration),
+                  songLengthRequired: true,
+                  trailingIconAsset: isSelected
+                      ? Assets.svgIcCheck
+                      : Assets.svgIcUncheck,
+                  trailingIconHeight: 20.h,
+                  trailingIconWidth: 10.w,
+                  trailingMargin: 2.w,
+                  onTap: () => toggleSelection(song.id!, filteredSongs),
+                  onPlayTap: () => toggleSelection(song.id!, filteredSongs),
+                );
+              },
+            ),
+          ),
+        ],
       ],
     );
   }

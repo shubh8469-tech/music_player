@@ -839,17 +839,7 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
                             color: AppColors.textColor,
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () => toggleSelectAll(filteredFolders),
-                          child: SvgPicture.asset(
-                            isSelectedAll
-                                ? Assets.svgIcRadioCheckl
-                                : Assets.svgIcRadioUncheck,
-                            height: 20.h,
-                            width: 20.w,
-                          ),
-                        ),
-                        SizedBox(width: 10.w),
+
                         Texts(
                           S.of(context).selectAll,
                           fontSize: 14.sp,
@@ -857,6 +847,18 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
                           fontWeight: FontWeight.w400,
                           color: AppColors.textColor,
                         ),
+                        SizedBox(width: 10.w),
+                        GestureDetector(
+                                                  onTap: () => toggleSelectAll(filteredFolders),
+                                                  child: SvgPicture.asset(
+                                                    isSelectedAll
+                                                        ? Assets.svgIcRadioCheckl
+                                                        : Assets.svgIcRadioUncheck,
+                                                    height: 20.h,
+                                                    width: 20.w,
+                                                  ),
+                                                ),
+
                       ],
                     ),
                   ),

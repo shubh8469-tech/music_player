@@ -5,17 +5,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:music_app/themes/color.dart';
-
 import '../../../generated/assets.dart';
-
-import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:intl/intl.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:music_app/themes/color.dart';
-
-import '../../../generated/assets.dart';
 import '../../../utills/snack_bar.dart';
 import '../../tabs/music_service.dart';
 

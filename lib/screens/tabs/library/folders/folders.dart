@@ -224,12 +224,16 @@ class _FolderListScreenState extends State<FolderListScreen> {
   }
 
   Widget _buildFolderMenu(BuildContext context, domain.Folder folder) {
+    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+    final bottomPadding = viewInsets > 0
+        ? viewInsets + 16.h
+        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+
     return Container(
       constraints: BoxConstraints(maxHeight: 0.66.sh),
-      padding: EdgeInsets.only(
-        top: 10.h,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
-      ),
+      padding: EdgeInsets.only(top: 10.h, bottom: bottomPadding),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -588,12 +592,19 @@ class _FolderListScreenState extends State<FolderListScreen> {
   }
 
   Widget _buildDeleteConfirmationDialog(domain.Folder folder) {
+    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+    final bottomPadding = viewInsets > 0
+        ? viewInsets + 16.h
+        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+
     return Container(
       padding: EdgeInsets.only(
         left: 16.w,
         right: 16.w,
         top: 10.h,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
+        bottom: bottomPadding,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

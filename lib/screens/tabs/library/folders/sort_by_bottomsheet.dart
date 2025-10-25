@@ -42,10 +42,17 @@ class _FolderSortByBottomSheetState extends State<FolderSortByBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+    final bottomPadding = viewInsets > 0
+        ? viewInsets + 16.h
+        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+
     return Container(
       padding: EdgeInsets.only(
         top: 10.h,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
+        bottom: bottomPadding,
         left: 10.w,
         right: 10.w,
       ),

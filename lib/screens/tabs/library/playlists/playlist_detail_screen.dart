@@ -169,8 +169,6 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   );
                 },
               ),
-
-              if (index == list.length - 1) SizedBox(height: 66.h),
             ],
           ),
         );
@@ -180,12 +178,19 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
 
   // Custom delete playlist confirmation bottom sheet
   Widget _buildDeletePlaylistConfirmationDialog() {
+    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+    final bottomPadding = viewInsets > 0
+        ? viewInsets + 16.h
+        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+
     return Container(
       padding: EdgeInsets.only(
         left: 16.w,
         right: 16.w,
         top: 10.h,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
+        bottom: bottomPadding,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -371,238 +376,254 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         ),
         body: Stack(
           children: [
-            Padding(
-              padding: EdgeInsets.only(
-                left: 20.w,
-                right: 20.w,
-                top: 10.h,
-                bottom: _player.isPlaying ? 80.h : 10.h,
-              ),
-              child: Column(
-                children: [
-                  SizedBox(height: 15.h),
-                  GradientCard(
-                    height: 150.h,
-                    width: 150.w,
-                    colors: [
-                      widget.colors![0].withValues(alpha: 0.21),
-                      widget.colors![1],
-                    ],
-                    borderRadius: 13.r,
-                    iconAsset: widget.assetIcon,
-                    iconSize: 60.r,
-                    margin: 10.w,
-                  ),
-                  SizedBox(height: 14.h),
-                  Texts(
-                    widget.playlist.name,
-                    fontSize: 20.sp,
-                    fontWeight: AppFontWeights.medium,
-                    fontFamily: AppFonts.inter,
-                    color: AppColors.textColor,
-                  ),
+            StreamBuilder<List<SongsModel>>(
+              stream: _player.songsChanged,
+              initialData: _player.songs,
+              builder: (context, snapshot) {
+                // Always check the current state, not just the snapshot
+                final hasAny = _player.songs.isNotEmpty;
+                final showMiniPlayer = hasAny;
 
-                  SizedBox(height: 25.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                return Padding(
+                  padding: EdgeInsets.only(
+                    left: 20.w,
+                    right: 20.w,
+                    top: 10.h,
+                    bottom: showMiniPlayer
+                        ? 74.h
+                        : 10.h, // Space for MiniPlayerBar (which includes system nav bar padding)
+                  ),
+                  child: Column(
                     children: [
-                      GestureDetector(
-                        onTap: () async {
-                          if (_songs.isEmpty) return;
-
-                          await _player.setPlaylist(_songs, autoPlay: false);
-                          await _player
-                              .ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
-
-                          // Wait until the player has fully updated its index
-                          await _player.player.currentIndexStream.firstWhere(
-                            (idx) => idx != null && idx != 0,
-                          );
-
-                          // Now play
-                          await _player.play();
-
-                          logS.log("Shuffle Play started");
-                        },
-                        child: Container(
-                          alignment: Alignment.center,
-                          height: 40.h,
-                          width: 165.w,
-                          decoration: BoxDecoration(
-                            color: AppColors.shuffleBackground,
-                            borderRadius: BorderRadius.circular(100.r),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SvgPicture.asset(
-                                Assets.svgShuffle,
-                                height: 16.79.h,
-                                width: 17.77.w,
-                              ),
-                              SizedBox(width: 10.w),
-                              Texts(
-                                'Shuffle',
-                                fontWeight: AppFontWeights.medium,
-                                fontSize: 14.sp,
-                                color: AppColors.black,
-                              ),
-                            ],
-                          ),
-                        ),
+                      SizedBox(height: 15.h),
+                      GradientCard(
+                        height: 150.h,
+                        width: 150.w,
+                        colors: [
+                          widget.colors![0].withValues(alpha: 0.21),
+                          widget.colors![1],
+                        ],
+                        borderRadius: 13.r,
+                        iconAsset: widget.assetIcon,
+                        iconSize: 60.r,
+                        margin: 10.w,
                       ),
-                      GestureDetector(
-                        onTap: () async {
-                          if (_baseSongs.isEmpty) return;
-                          await _player.ensureShuffleOff();
-
-                          // Start from the first song of the playlist
-                          await _player.setPlaylist(
-                            List<SongsModel>.from(_baseSongs),
-                            startIndex: 0,
-                            autoPlay: true,
-                          );
-                          await _player.play();
-                        },
-                        child: Container(
-                          height: 40.h,
-                          width: 165.w,
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryOrange,
-                            borderRadius: BorderRadius.circular(100.r),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SvgPicture.asset(
-                                Assets.svgPlay,
-                                height: 16.79.h,
-                                width: 17.77.w,
-                              ),
-                              SizedBox(width: 10.w),
-                              Texts(
-                                'Play',
-                                fontWeight: AppFontWeights.medium,
-                                fontSize: 14.sp,
-                                color: AppColors.white,
-                              ),
-                            ],
-                          ),
-                        ),
+                      SizedBox(height: 14.h),
+                      Texts(
+                        widget.playlist.name,
+                        fontSize: 20.sp,
+                        fontWeight: AppFontWeights.medium,
+                        fontFamily: AppFonts.inter,
+                        color: AppColors.textColor,
                       ),
-                    ],
-                  ),
-                  SizedBox(height: 25.h),
 
-                  // Song count header with bullets and add icons
-                  Row(
-                    children: [
-                      // Bullets icon and song count
-                      GestureDetector(
-                        onTap: () {
-                          // Navigate to select song screen for playlist management
-                          context.push(
-                            '/dashboard/select-song',
-                            extra: {
-                              'playlist': widget.playlist,
-                              'songs': _songs,
-                              'isSystemPlaylist': _isSystem,
+                      SizedBox(height: 25.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          GestureDetector(
+                            onTap: () async {
+                              if (_songs.isEmpty) return;
+
+                              await _player.setPlaylist(
+                                _songs,
+                                autoPlay: false,
+                              );
+                              await _player
+                                  .ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
+
+                              // Wait until the player has fully updated its index
+                              await _player.player.currentIndexStream
+                                  .firstWhere((idx) => idx != null && idx != 0);
+
+                              // Now play
+                              await _player.play();
+
+                              logS.log("Shuffle Play started");
                             },
-                          );
-                        },
-                        child: Row(
-                          children: [
-                            SvgPicture.asset(Assets.svgSongsCount),
-                            SizedBox(width: 8.w),
-                            Texts(
-                              '${_songs.length} songs',
-                              fontSize: 16.sp,
-                              fontWeight: AppFontWeights.medium,
-                              fontFamily: AppFonts.inter,
-                              color: AppColors.textColor,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      Spacer(),
-
-                      // Add songs icon (only for non-system playlists)
-                      if (!_isSystem)
-                        GestureDetector(
-                          onTap: () {
-                            context.push(
-                              '/dashboard/add-songs',
-                              extra: widget.playlist,
-                            );
-                          },
-                          child: Container(
-                            width: 32.w,
-                            height: 32.h,
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryOrange,
-                              borderRadius: BorderRadius.circular(16.r),
-                            ),
-                            child: Icon(
-                              Icons.add,
-                              color: AppColors.white,
-                              size: 20,
+                            child: Container(
+                              alignment: Alignment.center,
+                              height: 40.h,
+                              width: 165.w,
+                              decoration: BoxDecoration(
+                                color: AppColors.shuffleBackground,
+                                borderRadius: BorderRadius.circular(100.r),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SvgPicture.asset(
+                                    Assets.svgShuffle,
+                                    height: 16.79.h,
+                                    width: 17.77.w,
+                                  ),
+                                  SizedBox(width: 10.w),
+                                  Texts(
+                                    'Shuffle',
+                                    fontWeight: AppFontWeights.medium,
+                                    fontSize: 14.sp,
+                                    color: AppColors.black,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                    ],
-                  ),
+                          GestureDetector(
+                            onTap: () async {
+                              if (_baseSongs.isEmpty) return;
+                              await _player.ensureShuffleOff();
 
-                  SizedBox(height: 37.h),
-                  Expanded(
-                    child: Builder(
-                      builder: (context) {
-                        if (_songs.isEmpty) {
-                          return Center(
-                            child: Texts(
-                              'No songs available',
-                              fontSize: 16,
-                              fontWeight: AppFontWeights.regular,
-                              fontFamily: AppFonts.inter,
+                              // Start from the first song of the playlist
+                              await _player.setPlaylist(
+                                List<SongsModel>.from(_baseSongs),
+                                startIndex: 0,
+                                autoPlay: true,
+                              );
+                              await _player.play();
+                            },
+                            child: Container(
+                              height: 40.h,
+                              width: 165.w,
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryOrange,
+                                borderRadius: BorderRadius.circular(100.r),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SvgPicture.asset(
+                                    Assets.svgPlay,
+                                    height: 16.79.h,
+                                    width: 17.77.w,
+                                  ),
+                                  SizedBox(width: 10.w),
+                                  Texts(
+                                    'Play',
+                                    fontWeight: AppFontWeights.medium,
+                                    fontSize: 14.sp,
+                                    color: AppColors.white,
+                                  ),
+                                ],
+                              ),
                             ),
-                          );
-                        }
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 25.h),
 
-                        if (_isSystem) {
-                          // Enable manual drag for system playlists (session-only order)
-                          return ReorderableListView.builder(
-                            itemCount: _songs.length,
-                            onReorder: _reorderSystemSong,
-                            buildDefaultDragHandles: false,
-                            itemBuilder: (context, index) {
-                              final song = _songs[index];
-                              return ReorderableDelayedDragStartListener(
-                                key: ValueKey(song.id),
-                                index: index,
-                                child: _songTile(_songs, index),
+                      // Song count header with bullets and add icons
+                      Row(
+                        children: [
+                          // Bullets icon and song count
+                          GestureDetector(
+                            onTap: () {
+                              // Navigate to select song screen for playlist management
+                              context.push(
+                                '/dashboard/select-song',
+                                extra: {
+                                  'playlist': widget.playlist,
+                                  'songs': _songs,
+                                  'isSystemPlaylist': _isSystem,
+                                },
                               );
                             },
-                          );
-                        }
+                            child: Row(
+                              children: [
+                                SvgPicture.asset(Assets.svgSongsCount),
+                                SizedBox(width: 8.w),
+                                Texts(
+                                  '${_songs.length} songs',
+                                  fontSize: 16.sp,
+                                  fontWeight: AppFontWeights.medium,
+                                  fontFamily: AppFonts.inter,
+                                  color: AppColors.textColor,
+                                ),
+                              ],
+                            ),
+                          ),
 
-                        return ReorderableListView.builder(
-                          itemCount: _songs.length,
-                          onReorder: _reorderSong,
-                          buildDefaultDragHandles: false,
-                          itemBuilder: (context, index) {
-                            final song = _songs[index];
-                            return ReorderableDelayedDragStartListener(
-                              key: ValueKey(song.id),
-                              index: index,
-                              child: _songTile(_songs, index),
+                          Spacer(),
+
+                          // Add songs icon (only for non-system playlists)
+                          if (!_isSystem)
+                            GestureDetector(
+                              onTap: () {
+                                context.push(
+                                  '/dashboard/add-songs',
+                                  extra: widget.playlist,
+                                );
+                              },
+                              child: Container(
+                                width: 32.w,
+                                height: 32.h,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryOrange,
+                                  borderRadius: BorderRadius.circular(16.r),
+                                ),
+                                child: Icon(
+                                  Icons.add,
+                                  color: AppColors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+
+                      SizedBox(height: 37.h),
+                      Expanded(
+                        child: Builder(
+                          builder: (context) {
+                            if (_songs.isEmpty) {
+                              return Center(
+                                child: Texts(
+                                  'No songs available',
+                                  fontSize: 16,
+                                  fontWeight: AppFontWeights.regular,
+                                  fontFamily: AppFonts.inter,
+                                ),
+                              );
+                            }
+
+                            if (_isSystem) {
+                              // Enable manual drag for system playlists (session-only order)
+                              return ReorderableListView.builder(
+                                padding: EdgeInsets.zero,
+                                itemCount: _songs.length,
+                                onReorder: _reorderSystemSong,
+                                buildDefaultDragHandles: false,
+                                itemBuilder: (context, index) {
+                                  final song = _songs[index];
+                                  return ReorderableDelayedDragStartListener(
+                                    key: ValueKey(song.id),
+                                    index: index,
+                                    child: _songTile(_songs, index),
+                                  );
+                                },
+                              );
+                            }
+
+                            return ReorderableListView.builder(
+                              padding: EdgeInsets.zero,
+                              itemCount: _songs.length,
+                              onReorder: _reorderSong,
+                              buildDefaultDragHandles: false,
+                              itemBuilder: (context, index) {
+                                final song = _songs[index];
+                                return ReorderableDelayedDragStartListener(
+                                  key: ValueKey(song.id),
+                                  index: index,
+                                  child: _songTile(_songs, index),
+                                );
+                              },
                             );
                           },
-                        );
-                      },
-                    ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
             Positioned(left: 0, right: 0, bottom: 0, child: MiniPlayerBar()),
           ],

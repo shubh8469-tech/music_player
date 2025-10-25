@@ -106,6 +106,17 @@ class _QueueScreenState extends State<QueueScreen> {
     musicService.setPlaylist(queueSongs);
   }
 
+  void _removeSongAtIndex(int index) {
+    if (index < 0 || index >= queueSongs.length) return;
+
+    setState(() {
+      queueSongs.removeAt(index);
+    });
+
+    // Update music service with new queue
+    musicService.setPlaylist(queueSongs);
+  }
+
   void _reorderSongs(int oldIndex, int newIndex) {
     setState(() {
       if (newIndex > oldIndex) {
@@ -204,7 +215,7 @@ class _QueueScreenState extends State<QueueScreen> {
       child: Scaffold(
         backgroundColor: AppColors.white,
         appBar: AppBar(
-          backgroundColor: AppColors.white,
+          backgroundColor: AppColors.primaryOrange,
           elevation: 0,
           title: Texts(
             "Playing Queue",
@@ -223,193 +234,216 @@ class _QueueScreenState extends State<QueueScreen> {
             ),
           ],
         ),
-        body: Column(
+        body: Stack(
           children: [
-            // Queue Controls
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-              child: Row(
-                children: [
-                  Row(
-                    children: [
-                      SvgPicture.asset(Assets.svgSongsCount),
-                      SizedBox(width: 8.w),
-                      if (queueSongs.isNotEmpty &&
-                          musicService.currentIndex >= 0) ...[
-                        Texts(
-                          "${musicService.currentIndex + 1}/${queueSongs.length}",
-                          fontSize: 14.sp,
-                          color: AppColors.textColor,
-                          fontWeight: FontWeight.w400,
-                          fontFamily: AppFonts.inter,
-                        ),
-                      ],
-                    ],
+            Column(
+              children: [
+                // Queue Controls
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
                   ),
-                  const Spacer(),
-                  Row(
+                  child: Row(
                     children: [
-                      GestureDetector(
-                        onTap: _toggleShuffle,
-                        child: Container(
-                          padding: EdgeInsets.all(8.w),
-                          decoration: BoxDecoration(
-                            color: isShuffleEnabled
-                                ? AppColors.primaryOrange
-                                : AppColors.shuffleBackground,
-                            borderRadius: BorderRadius.circular(20.r),
-                          ),
-                          child: SvgPicture.asset(
-                            Assets.svgShuffle,
-                            width: 20.w,
-                            height: 20.h,
-                            colorFilter: ColorFilter.mode(
-                              isShuffleEnabled
-                                  ? AppColors.white
-                                  : AppColors.textColor,
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
-                      GestureDetector(
-                        // onTap: _toggleRepeat,
-                        child: Container(
-                          padding: EdgeInsets.all(8.w),
-                          decoration: BoxDecoration(
-                            color: isRepeatEnabled
-                                ? AppColors.primaryOrange
-                                : AppColors.shuffleBackground,
-                            borderRadius: BorderRadius.circular(20.r),
-                          ),
-                          child: SvgPicture.asset(
-                            repeatMode == 'one'
-                                ? Assets.svgRepeatOnce
-                                : Assets.svgIcRepeat,
-                            width: 20.w,
-                            height: 20.h,
-                            colorFilter: ColorFilter.mode(
-                              isRepeatEnabled
-                                  ? AppColors.white
-                                  : AppColors.textColor,
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            // Queue Songs List
-            Expanded(
-              child: queueSongs.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      Row(
                         children: [
-                          SvgPicture.asset(
-                            Assets.svgIcQueue,
-                            width: 60.w,
-                            height: 60.h,
-                            colorFilter: const ColorFilter.mode(
-                              AppColors.mediumDarkGrey,
-                              BlendMode.srcIn,
+                          SvgPicture.asset(Assets.svgSongsCount),
+                          SizedBox(width: 8.w),
+                          if (queueSongs.isNotEmpty &&
+                              musicService.currentIndex >= 0) ...[
+                            Texts(
+                              "${musicService.currentIndex + 1}/${queueSongs.length}",
+                              fontSize: 14.sp,
+                              color: AppColors.textColor,
+                              fontWeight: FontWeight.w400,
+                              fontFamily: AppFonts.inter,
+                            ),
+                          ],
+                        ],
+                      ),
+                      const Spacer(),
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: _toggleShuffle,
+                            child: Container(
+                              padding: EdgeInsets.all(8.w),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20.r),
+                              ),
+                              child: SvgPicture.asset(
+                                Assets.svgIcSuffle,
+                                width: 20.w,
+                                height: 20.h,
+                                colorFilter: ColorFilter.mode(
+                                  !isShuffleEnabled
+                                      ? AppColors.mediumDarkGrey
+                                      : AppColors.textColor,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
                             ),
                           ),
-                          SizedBox(height: 16.h),
-                          Texts(
-                            "Queue is empty",
-                            fontSize: 16.sp,
-                            color: AppColors.mediumDarkGrey,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: AppFonts.inter,
-                          ),
-                          SizedBox(height: 8.h),
-                          Texts(
-                            "Add songs to start playing",
-                            fontSize: 14.sp,
-                            color: AppColors.mediumDarkGrey,
-                            fontWeight: FontWeight.w400,
-                            fontFamily: AppFonts.inter,
+                          SizedBox(width: 12.w),
+                          GestureDetector(
+                            // onTap: _toggleRepeat,
+                            child: Container(
+                              padding: EdgeInsets.all(8.w),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20.r),
+                              ),
+                              child: SvgPicture.asset(
+                                repeatMode == 'one'
+                                    ? Assets.svgRepeatOnce
+                                    : Assets.svgIcRepeat,
+                                width: 20.w,
+                                height: 20.h,
+                                colorFilter: ColorFilter.mode(
+                                  isRepeatEnabled
+                                      ? AppColors.white
+                                      : AppColors.textColor,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                    )
-                  : ReorderableListView.builder(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w),
-                      itemCount: queueSongs.length,
-                      onReorder: _reorderSongs,
-                      itemBuilder: (context, index) {
-                        final song = queueSongs[index];
-                        final isCurrentlyPlaying =
-                            musicService.currentIndex == index;
+                    ],
+                  ),
+                ),
 
-                        return Container(
-                          key: ValueKey(song.id),
-                          child: MusicListTile(
-                            margin: 7.w,
-                            height: 66.h,
-                            borderRadius: 10.r,
-                            backgroundColor: isCurrentlyPlaying
-                                ? AppColors.primaryOrange.withValues(alpha: 0.1)
-                                : AppColors.musicTileBackgroundColor,
-                            cardHeight: 50.h,
-                            cardWidth: 50.w,
-                            cardRadius: 7.r,
-                            cardIconAsset: song.artwork_path!,
-                            cardIconSize: 32.r,
-                            title: song.title,
-                            subtitle: song.artist,
-                            trailingIconAsset: Assets.svgMenuIcon,
-                            trailingIconHeight: 22.5.h,
-                            trailingIconWidth: 3.w,
-                            trailingMargin: 10.w,
-                            songLength: formatDuration(song.duration),
-                            songLengthRequired: true,
-                            isGifLoad: isCurrentlyPlaying,
-                            titleSize: isCurrentlyPlaying ? 16 : 14,
-                            titleWeight: isCurrentlyPlaying
-                                ? FontWeight.w600
-                                : FontWeight.w500,
-                            onTap: () async {
-                              musicService.setPlaylist(
-                                queueSongs,
-                                startIndex: index,
-                              );
-                            },
-                            onPlayTap: () {
-                              showModalBottomSheet(
-                                context: context,
-                                backgroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(40.r),
+                // Queue Songs List
+                Expanded(
+                  child: StreamBuilder<List<SongsModel>>(
+                    stream: musicService.songsChanged,
+                    initialData: musicService.songs,
+                    builder: (context, snapshot) {
+                      // Always check the current state, not just the snapshot
+                      final hasAny = musicService.songs.isNotEmpty;
+                      final showMiniPlayer = hasAny;
+
+                      return queueSongs.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SvgPicture.asset(
+                                    Assets.svgIcQueue,
+                                    width: 60.w,
+                                    height: 60.h,
+                                    colorFilter: const ColorFilter.mode(
+                                      AppColors.mediumDarkGrey,
+                                      BlendMode.srcIn,
+                                    ),
                                   ),
-                                ),
-                                isScrollControlled: true,
-                                builder: (_) => SongMenuScreen(
-                                  songMenuList: songMenuItems,
-                                  isPlaying: false,
-                                  currentSong: song,
-                                  songIndex: index,
-                                  songsList: queueSongs,
-                                  maxHeight: 0.87.sh,
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      },
-                    ),
-            ),
+                                  SizedBox(height: 16.h),
+                                  Texts(
+                                    "Queue is empty",
+                                    fontSize: 16.sp,
+                                    color: AppColors.mediumDarkGrey,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: AppFonts.inter,
+                                  ),
+                                  SizedBox(height: 8.h),
+                                  Texts(
+                                    "Add songs to start playing",
+                                    fontSize: 14.sp,
+                                    color: AppColors.mediumDarkGrey,
+                                    fontWeight: FontWeight.w400,
+                                    fontFamily: AppFonts.inter,
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ReorderableListView.builder(
+                              padding: EdgeInsets.only(
+                                left: 16.w,
+                                right: 16.w,
+                                bottom: showMiniPlayer
+                                    ? 74.h
+                                    : 10.h, // Space for MiniPlayerBar (which includes system nav bar padding)
+                              ),
+                              itemCount: queueSongs.length,
+                              onReorder: _reorderSongs,
+                              itemBuilder: (context, index) {
+                                final song = queueSongs[index];
+                                final isCurrentlyPlaying =
+                                    musicService.currentIndex == index;
 
-            // Mini Player Bar
-            MiniPlayerBar(),
+                                return Container(
+                                  key: ValueKey(song.id),
+                                  child: MusicListTile(
+                                    margin: 7.w,
+                                    height: 66.h,
+                                    borderRadius: 10.r,
+                                    backgroundColor:
+                                        AppColors.musicTileBackgroundColor,
+                                    cardHeight: 50.h,
+                                    cardWidth: 50.w,
+                                    cardRadius: 7.r,
+                                    cardIconAsset: song.artwork_path!,
+                                    cardIconSize: 32.r,
+                                    title: song.title,
+                                    subtitle: song.artist,
+                                    trailingIconAsset: Assets.svgMenuIcon,
+                                    trailingIconHeight: 22.5.h,
+                                    trailingIconWidth: 3.w,
+                                    trailingMargin: 10.w,
+                                    songLength: formatDuration(song.duration),
+                                    songLengthRequired: true,
+                                    isGifLoad: isCurrentlyPlaying,
+                                    titleSize: isCurrentlyPlaying ? 16 : 14,
+                                    titleWeight: isCurrentlyPlaying
+                                        ? FontWeight.w600
+                                        : FontWeight.w500,
+                                    // Queue-specific icons
+                                    showDraggableIcon: true,
+                                    draggableIconAsset: Assets.svgDraggable,
+                                    draggableIconSize: 20,
+                                    showCancelIcon: true,
+                                    cancelIconAsset: Assets.svgCancel,
+                                    cancelIconSize: 24,
+                                    onCancelTap: () =>
+                                        _removeSongAtIndex(index),
+                                    onTap: () async {
+                                      musicService.setPlaylist(
+                                        queueSongs,
+                                        startIndex: index,
+                                      );
+                                    },
+                                    onPlayTap: () {
+                                      showModalBottomSheet(
+                                        context: context,
+                                        backgroundColor: Colors.white,
+                                        elevation: 0,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(40.r),
+                                          ),
+                                        ),
+                                        isScrollControlled: true,
+                                        builder: (_) => SongMenuScreen(
+                                          songMenuList: songMenuItems,
+                                          isPlaying: false,
+                                          currentSong: song,
+                                          songIndex: index,
+                                          songsList: queueSongs,
+                                          maxHeight: 0.87.sh,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                            );
+                    },
+                  ),
+                ),
+              ],
+            ),
+            Positioned(left: 0, right: 0, bottom: 0, child: MiniPlayerBar()),
           ],
         ),
       ),

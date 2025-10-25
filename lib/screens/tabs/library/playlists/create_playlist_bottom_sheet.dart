@@ -109,12 +109,12 @@ class _CreatePlaylistBottomSheetState extends State<CreatePlaylistBottomSheet> {
         // Close the bottom sheet first
         Navigator.of(context).pop();
 
-        showSnackBar(
-          context,
-          () {},
-          message: "Playlist '$playlistName' created successfully!",
-          alertBannerLocation: AlertBannerLocation.bottom,
-        );
+        // showSnackBar(
+        //   context,
+        //   () {},
+        //   message: "Playlist '$playlistName' created successfully!",
+        //   alertBannerLocation: AlertBannerLocation.bottom,
+        // );
 
         // Navigate to AddSongsScreen with the actual created playlist
         context.push('/dashboard/add-songs', extra: newPlaylist);
@@ -144,12 +144,19 @@ class _CreatePlaylistBottomSheetState extends State<CreatePlaylistBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+    final bottomPadding = viewInsets > 0
+        ? viewInsets + 16.h
+        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+
     return Container(
       padding: EdgeInsets.only(
         left: 16.w,
         right: 16.w,
         top: 10.h,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
+        bottom: bottomPadding,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

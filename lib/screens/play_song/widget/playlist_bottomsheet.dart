@@ -62,7 +62,14 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
                 left: 16.w,
                 right: 16.w,
                 top: 10.h,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
+                bottom: () {
+                  // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
+                  final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+                  final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+                  return viewInsets > 0
+                      ? viewInsets + 16.h
+                      : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+                }(),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,

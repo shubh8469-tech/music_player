@@ -122,12 +122,12 @@ class _CreatePlaylistScreenState extends State<CreatePlaylistScreen> {
           throw Exception('Failed to get newly created playlist');
         }
 
-        showSnackBar(
-          context,
-          () {},
-          message: "Playlist '$playlistName' created successfully!",
-          alertBannerLocation: AlertBannerLocation.bottom,
-        );
+        // showSnackBar(
+        //   context,
+        //   () {},
+        //   message: "Playlist '$playlistName' created successfully!",
+        //   alertBannerLocation: AlertBannerLocation.bottom,
+        // );
 
         // Navigate to AddSongsScreen with the actual created playlist
         context.pushReplacement('/dashboard/add-songs', extra: newPlaylist);
@@ -159,12 +159,19 @@ class _CreatePlaylistScreenState extends State<CreatePlaylistScreen> {
   Widget build(BuildContext context) {
     // If it's a bottom sheet, return the content directly
     if (widget.isBottomSheet) {
+      // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
+      final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+      final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+      final bottomPadding = viewInsets > 0
+          ? viewInsets + 16.h
+          : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+
       return Container(
         padding: EdgeInsets.only(
           left: 16.w,
           right: 16.w,
           top: 10.h,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
+          bottom: bottomPadding,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

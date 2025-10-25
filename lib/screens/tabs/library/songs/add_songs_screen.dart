@@ -252,129 +252,133 @@ class _AddSongsScreenState extends State<AddSongsScreen> {
                     ),
                   ),
 
-                  // Selected count and Select All
-                  Container(
-                    margin: EdgeInsets.symmetric(
-                      horizontal: 15.w,
-                      vertical: 5.h,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            selectedCount != 0 ? "$selectedCount Selected" : "",
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              fontFamily: AppFonts.inter,
-                              fontWeight: FontWeight.w400,
-                              color: AppColors.textColor,
-                            ),
+                  // If searching and no results, show only the message
+                  if (filteredSongs.isEmpty && searchQuery.isNotEmpty)
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          "No songs match your search",
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            color: AppColors.textColor,
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () => toggleSelectAll(filteredSongs),
-                          child: Container(
-                            margin: EdgeInsets.only(right: 10.w),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 20.w,
-                                  height: 20.h,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: isSelectedAll
-                                          ? AppColors.primaryOrange
-                                          : Colors.grey[400]!,
-                                      width: 2,
-                                    ),
-                                    color: isSelectedAll
-                                        ? AppColors.primaryOrange
-                                        : Colors.transparent,
-                                  ),
-                                  child: isSelectedAll
-                                      ? const Icon(
-                                          Icons.check,
-                                          color: AppColors.white,
-                                          size: 12,
-                                        )
-                                      : null,
-                                ),
-                                SizedBox(width: 8.w),
-                                Text(
-                                  'Select All',
-                                  style: TextStyle(
-                                    fontSize: 14.sp,
-                                    fontFamily: AppFonts.inter,
-                                    fontWeight: FontWeight.w400,
-                                    color: AppColors.textColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Songs list
-                  Expanded(
-                    child: filteredSongs.isEmpty
-                        ? Center(
+                      ),
+                    )
+                  else ...[
+                    // Selected count and Select All
+                    Container(
+                      margin: EdgeInsets.symmetric(
+                        horizontal: 15.w,
+                        vertical: 5.h,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
                             child: Text(
-                              "No songs match your search",
+                              selectedCount != 0
+                                  ? "$selectedCount Selected"
+                                  : "",
                               style: TextStyle(
-                                fontSize: 16.sp,
+                                fontSize: 14.sp,
+                                fontFamily: AppFonts.inter,
+                                fontWeight: FontWeight.w400,
                                 color: AppColors.textColor,
                               ),
                             ),
-                          )
-                        : ListView.builder(
-                            itemCount: filteredSongs.length,
-                            padding: EdgeInsets.symmetric(horizontal: 15.w),
-                            itemBuilder: (context, index) {
-                              final song = filteredSongs[index];
-                              final isSelected = selectedSongIds.contains(
-                                song.id,
-                              );
-
-                              final image = (index % 2 == 0)
-                                  ? musicIcons[0]
-                                  : (index % 3 == 0)
-                                  ? musicIcons[1]
-                                  : musicIcons[2];
-
-                              return MusicListTile(
-                                margin: 7.w,
-                                height: 66.h,
-                                borderRadius: 10.r,
-                                backgroundColor:
-                                    AppColors.musicTileBackgroundColor,
-                                cardHeight: 50.h,
-                                cardWidth: 50.w,
-                                cardRadius: 7.r,
-                                cardIconAsset: song.artwork_path ?? image,
-                                cardIconSize: 32.r,
-                                isSvgCardIcon: image.contains('.svg'),
-                                title: song.title,
-                                subtitle: song.artist,
-                                trailingIconAsset: isSelected
-                                    ? Assets.svgIcCheck
-                                    : Assets.svgIcUncheck,
-                                trailingIconHeight: 20.h,
-                                trailingIconWidth: 20.w,
-                                trailingMargin: 10.w,
-                                songLength: formatDuration(song.duration),
-                                songLengthRequired: true,
-                                onTap: () =>
-                                    toggleSelection(song.id!, filteredSongs),
-                                onPlayTap: () =>
-                                    toggleSelection(song.id!, filteredSongs),
-                              );
-                            },
                           ),
-                  ),
+                          GestureDetector(
+                            onTap: () => toggleSelectAll(filteredSongs),
+                            child: Container(
+                              margin: EdgeInsets.only(right: 10.w),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    'Select All',
+                                    style: TextStyle(
+                                      fontSize: 14.sp,
+                                      fontFamily: AppFonts.inter,
+                                      fontWeight: FontWeight.w400,
+                                      color: AppColors.textColor,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  Container(
+                                    width: 20.w,
+                                    height: 20.h,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: isSelectedAll
+                                            ? AppColors.primaryOrange
+                                            : Colors.grey[400]!,
+                                        width: 2,
+                                      ),
+                                      color: isSelectedAll
+                                          ? AppColors.primaryOrange
+                                          : Colors.transparent,
+                                    ),
+                                    child: isSelectedAll
+                                        ? const Icon(
+                                            Icons.check,
+                                            color: AppColors.white,
+                                            size: 12,
+                                          )
+                                        : null,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Songs list
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: filteredSongs.length,
+                        padding: EdgeInsets.symmetric(horizontal: 15.w),
+                        itemBuilder: (context, index) {
+                          final song = filteredSongs[index];
+                          final isSelected = selectedSongIds.contains(song.id);
+
+                          final image = (index % 2 == 0)
+                              ? musicIcons[0]
+                              : (index % 3 == 0)
+                              ? musicIcons[1]
+                              : musicIcons[2];
+
+                          return MusicListTile(
+                            margin: 7.w,
+                            height: 66.h,
+                            borderRadius: 10.r,
+                            backgroundColor: AppColors.musicTileBackgroundColor,
+                            cardHeight: 50.h,
+                            cardWidth: 50.w,
+                            cardRadius: 7.r,
+                            cardIconAsset: song.artwork_path ?? image,
+                            cardIconSize: 32.r,
+                            isSvgCardIcon: image.contains('.svg'),
+                            title: song.title,
+                            subtitle: song.artist,
+                            trailingIconAsset: isSelected
+                                ? Assets.svgIcCheck
+                                : Assets.svgIcUncheck,
+                            trailingIconHeight: 20.h,
+                            trailingIconWidth: 20.w,
+                            trailingMargin: 10.w,
+                            songLength: formatDuration(song.duration),
+                            songLengthRequired: true,
+                            onTap: () =>
+                                toggleSelection(song.id!, filteredSongs),
+                            onPlayTap: () =>
+                                toggleSelection(song.id!, filteredSongs),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ],
               );
             },

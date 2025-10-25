@@ -1,10 +1,12 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:music_app/commonWidgets/textWidget.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/themes/font.dart';
@@ -32,6 +34,7 @@ class SongMenuScreen extends StatefulWidget {
   String? systemKeyOrId;
   String? from;
   double maxHeight;
+  VoidCallback? onSongDeleted;
 
   SongMenuScreen({
     super.key,
@@ -44,6 +47,7 @@ class SongMenuScreen extends StatefulWidget {
     this.isSystemPlaylist = true,
     this.systemKeyOrId,
     this.from,
+    this.onSongDeleted,
   });
 
   @override
@@ -55,12 +59,16 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+    final bottomPadding = viewInsets > 0
+        ? viewInsets + 16.h
+        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+
     return Container(
       constraints: BoxConstraints(maxHeight: widget.maxHeight),
-      padding: EdgeInsets.only(
-        top: 10.h,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
-      ),
+      padding: EdgeInsets.only(top: 10.h, bottom: bottomPadding),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -172,8 +180,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                 } else {
                                   context.push('/dashboard/playing');
                                 }
-                              }
-                              else if (songItem.title ==
+                              } else if (songItem.title ==
                                   S.of(context).playNext) {
                                 // Add song to play next (insert after current song)
                                 final currentIndex = musicService.currentIndex;
@@ -222,8 +229,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       : musicService.currentIndex,
                                 );
                                 Navigator.pop(context);
-                              }
-                              else if (songItem.title ==
+                              } else if (songItem.title ==
                                   S.of(context).addToQueue) {
                                 if (widget.from == 'playlist') {
                                   List<SongsModel> _songs = [];
@@ -261,8 +267,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     newSongsList,
                                     autoPlay: false,
                                   );
-                                }
-                                else {
+                                } else {
                                   final newSongsList = List<SongsModel>.from(
                                     musicService.songs,
                                   );
@@ -281,8 +286,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                 }
 
                                 Navigator.pop(context);
-                              }
-                              else if (songItem.title ==
+                              } else if (songItem.title ==
                                   S.of(context).addToPlaylist) {
                                 if (widget.from == 'playlist') {
                                   List<SongsModel> _songs = [];
@@ -310,15 +314,13 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       _songs,
                                     );
                                   }
-                                }
-                                else {
+                                } else {
                                   _showPlaylistBottomSheet(
                                     context,
                                     widget.currentSong,
                                   );
                                 }
-                              }
-                              else if (songItem.title ==
+                              } else if (songItem.title ==
                                   S.of(context).deleteSong) {
                                 if (widget.from == 'playlist_in') {
                                   // Remove song from current playlist
@@ -370,6 +372,11 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
                                     // Close the menu to refresh the view
                                     Navigator.pop(context);
+                                  }
+                                } else if (widget.from == 'folder_in') {
+                                  // Handle delete song from folder (delete file from system)
+                                  if (widget.currentSong != null) {
+                                    _showDeleteFromFolderConfirmation(context);
                                   }
                                 } else {
                                   // Handle delete song from library
@@ -441,9 +448,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     ),
                                   );
                                 }
-                              }
-                              else if (songItem.title ==
-                                  S.of(context).deletePlaylist){
+                              } else if (songItem.title ==
+                                  S.of(context).deletePlaylist) {
                                 if (!widget.isSystemPlaylist) {
                                   showDialog(
                                     context: context,
@@ -469,17 +475,20 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                                 .read<PlaylistBloc>();
                                             playlistBloc.add(
                                               PlaylistEvent.deletePlaylist(
-                                                int.parse(widget.systemKeyOrId!),
+                                                int.parse(
+                                                  widget.systemKeyOrId!,
+                                                ),
                                               ),
                                             );
 
                                             // Show success message
                                             showSnackBar(
                                               context,
-                                                  () {},
-                                              message: 'Song removed from playlist',
+                                              () {},
+                                              message:
+                                                  'Song removed from playlist',
                                               alertBannerLocation:
-                                              AlertBannerLocation.bottom,
+                                                  AlertBannerLocation.bottom,
                                             );
 
                                             Navigator.pop(
@@ -491,8 +500,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       ],
                                     ),
                                   );
-                                }
-                                else{
+                                } else {
                                   showSnackBar(
                                     context,
                                     () {},
@@ -587,5 +595,186 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
       isScrollControlled: true,
       builder: (_) => PlaylistBottomSheet(songsList: songs),
     );
+  }
+
+  void _showDeleteFromFolderConfirmation(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: AppColors.textColor.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        padding: EdgeInsets.all(20.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Title
+            Texts(
+              'Delete song?',
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              fontFamily: AppFonts.inter,
+              color: AppColors.white,
+            ),
+            SizedBox(height: 15.h),
+
+            // Message
+            Texts(
+              'Are you sure you want to delete ${widget.currentSong?.title}?',
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w400,
+              fontFamily: AppFonts.inter,
+              color: AppColors.white.withValues(alpha: 0.9),
+              align: TextAlign.center,
+            ),
+            SizedBox(height: 25.h),
+
+            // Action buttons
+            Row(
+              children: [
+                // Cancel button
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      height: 48.h,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade800,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Center(
+                        child: Texts(
+                          'CANCEL',
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: AppFonts.inter,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+
+                // Delete button
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      Navigator.pop(context); // Close bottom sheet
+                      await _deleteSongFile(context);
+                    },
+                    child: Container(
+                      height: 48.h,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primaryOrange,
+                            AppColors.mildOrange,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Center(
+                        child: Texts(
+                          'DELETE',
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: AppFonts.inter,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 10.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _deleteSongFile(BuildContext context) async {
+    if (widget.currentSong == null) return;
+
+    try {
+      // Check and request storage permission
+      bool hasPermission = await _checkAndRequestPermission();
+
+      if (!hasPermission) {
+        showSnackBar(
+          context,
+          () {},
+          message: 'Storage permission denied',
+          backgroundColor: Colors.red,
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+        return;
+      }
+
+      // Delete the file from storage
+      final file = File(widget.currentSong!.filePath);
+      if (await file.exists()) {
+        await file.delete();
+        log('File deleted: ${widget.currentSong!.filePath}');
+      }
+
+      // Remove from database
+      final songsBloc = context.read<SongsBloc>();
+      songsBloc.add(SongsEvent.removeSong(widget.currentSong!.id!));
+
+      // Show success message
+      showSnackBar(
+        context,
+        () {},
+        message: 'Song deleted successfully',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+
+      // Call the callback to refresh the folder detail screen
+      widget.onSongDeleted?.call();
+
+      // Close the menu
+      Navigator.pop(context);
+    } catch (e) {
+      log('Error deleting song: $e');
+      showSnackBar(
+        context,
+        () {},
+        message: 'Failed to delete song: $e',
+        backgroundColor: Colors.red,
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    }
+  }
+
+  Future<bool> _checkAndRequestPermission() async {
+    if (Platform.isAndroid) {
+      // Check if we have manage external storage permission (Android 11+)
+      if (await Permission.manageExternalStorage.isGranted) {
+        return true;
+      }
+
+      // Request manage external storage permission
+      PermissionStatus status = await Permission.manageExternalStorage
+          .request();
+      if (status.isGranted) {
+        return true;
+      }
+
+      // Fallback to storage permission (for older Android versions)
+      if (await Permission.storage.isGranted) {
+        return true;
+      }
+
+      status = await Permission.storage.request();
+      return status.isGranted;
+    }
+
+    // For iOS and other platforms
+    return true;
   }
 }

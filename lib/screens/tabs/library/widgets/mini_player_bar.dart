@@ -70,9 +70,11 @@ class MiniPlayerBar extends StatelessWidget {
                   },
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 15.w,
-                    vertical: 10.h,
+                  padding: EdgeInsets.only(
+                    left: 15.w,
+                    right: 15.w,
+                    top: 10.h,
+                    bottom: 10.h + MediaQuery.of(context).padding.bottom,
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -92,7 +94,7 @@ class MiniPlayerBar extends StatelessWidget {
                                   : null;
                               final hasArtwork =
                                   currentSong?.artwork_path != null &&
-                                      currentSong!.artwork_path!.isNotEmpty;
+                                  currentSong!.artwork_path!.isNotEmpty;
 
                               return Stack(
                                 children: [
@@ -103,11 +105,13 @@ class MiniPlayerBar extends StatelessWidget {
                                       width: 50.w,
                                       margin: EdgeInsets.all(10.w),
                                       decoration: BoxDecoration(
-                                        borderRadius:
-                                            BorderRadius.circular(10.r),
+                                        borderRadius: BorderRadius.circular(
+                                          10.r,
+                                        ),
                                         image: DecorationImage(
                                           image: FileImage(
-                                              File(currentSong.artwork_path!)),
+                                            File(currentSong.artwork_path!),
+                                          ),
                                           fit: BoxFit.cover,
                                         ),
                                       ),
@@ -124,8 +128,9 @@ class MiniPlayerBar extends StatelessWidget {
                                         isSvg: true,
                                         margin: 10.w,
                                         colors: [
-                                          AppColors.mildOrange
-                                              .withValues(alpha: 0.21),
+                                          AppColors.mildOrange.withValues(
+                                            alpha: 0.21,
+                                          ),
                                           AppColors.mildOrange,
                                         ],
                                       ),
@@ -133,8 +138,9 @@ class MiniPlayerBar extends StatelessWidget {
                                   // Show playing animation overlay when playing
                                   if (isPlaying)
                                     Container(
-                                      color:
-                                          AppColors.white.withValues(alpha: .4),
+                                      color: AppColors.white.withValues(
+                                        alpha: .4,
+                                      ),
                                       height: 50.h,
                                       width: 50.w,
                                       margin: EdgeInsets.all(10.w),
@@ -166,8 +172,8 @@ class MiniPlayerBar extends StatelessWidget {
                             final index = snapshot.data ?? 0;
                             final songName = musicService.songs.isNotEmpty
                                 ? musicService.songs[index].title
-                                    .split('/')
-                                    .last
+                                      .split('/')
+                                      .last
                                 : '';
                             final artistName = musicService.songs.isNotEmpty
                                 ? musicService.songs[index].artist
@@ -200,7 +206,9 @@ class MiniPlayerBar extends StatelessWidget {
                         children: [
                           GestureDetector(
                             onTap: () {
-                              QueueNavigationHelper.navigateToQueueScreen(context);
+                              QueueNavigationHelper.navigateToQueueScreen(
+                                context,
+                              );
                             },
                             child: SvgPicture.asset(
                               Assets.svgIcQueue,

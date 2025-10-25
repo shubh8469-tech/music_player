@@ -15,9 +15,12 @@ import '../../../generated/assets.dart';
 import '../../../utills/globals.dart';
 import '../../../screens/tabs/music_service.dart';
 import '../../../features/playlists/bloc/playlist_bloc.dart';
+import '../library/playlists/create_playlist_bottom_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final VoidCallback? onNavigateToLibraryPlaylists;
+
+  const HomeScreen({super.key, this.onNavigateToLibraryPlaylists});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -81,30 +84,23 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: List.generate(3, (index) {
                         // Find the corresponding system playlist
                         final systemPlaylist = state.maybeWhen(
-                          loaded:
-                              (playlists, systemPlaylistSongs) =>
-                                  playlists.isNotEmpty
-                                      ? playlists
+                          loaded: (playlists, systemPlaylistSongs) =>
+                              playlists.isNotEmpty
+                              ? playlists
+                                    .where((p) => p.isSystem == true)
+                                    .firstWhere(
+                                      (p) =>
+                                          p.systemKey ==
+                                          [
+                                            'most_played',
+                                            'recently_added',
+                                            'favorites',
+                                          ][index],
+                                      orElse: () => playlists
                                           .where((p) => p.isSystem == true)
-                                          .firstWhere(
-                                            (p) =>
-                                                p.systemKey ==
-                                                [
-                                                  'most_played',
-                                                  'recently_added',
-                                                  'favorites',
-                                                ][index],
-                                            orElse:
-                                                () =>
-                                                    playlists
-                                                        .where(
-                                                          (p) =>
-                                                              p.isSystem ==
-                                                              true,
-                                                        )
-                                                        .first,
-                                          )
-                                      : null,
+                                          .first,
+                                    )
+                              : null,
                           orElse: () => null,
                         );
 
@@ -149,11 +145,43 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontFamily: AppFonts.inter,
                       ),
                       Spacer(),
-                      Texts(
-                        'see all',
-                        fontSize: 14.sp,
-                        fontWeight: AppFontWeights.regular,
-                        fontFamily: AppFonts.inter,
+                      GestureDetector(
+                        onTap: () {
+                          // Find the recently_played system playlist
+                          state.maybeWhen(
+                            loaded: (playlists, systemPlaylistSongs) {
+                              final recentlyPlayedPlaylist = playlists
+                                  .where((p) => p.isSystem == true)
+                                  .firstWhere(
+                                    (p) => p.systemKey == 'recently_played',
+                                    orElse: () => playlists
+                                        .where((p) => p.isSystem == true)
+                                        .first,
+                                  );
+
+                              context.push(
+                                '/dashboard/playlist-detail',
+                                extra: {
+                                  'playlist': recentlyPlayedPlaylist,
+                                  'assetIcon': Assets.svgRecentlyPlayed,
+                                  'colors': [
+                                    AppColors.mildYellow.withValues(
+                                      alpha: 0.21,
+                                    ),
+                                    AppColors.mildYellow,
+                                  ],
+                                },
+                              );
+                            },
+                            orElse: () {},
+                          );
+                        },
+                        child: Texts(
+                          'See All',
+                          fontSize: 14.sp,
+                          fontWeight: AppFontWeights.regular,
+                          fontFamily: AppFonts.inter,
+                        ),
                       ),
                     ],
                   ),
@@ -177,75 +205,72 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       }
                       return Column(
-                        children:
-                            recentlyPlayedSongs.take(3).map((song) {
-                              return StreamBuilder<int?>(
-                                stream: musicService.currentSongIdStream,
-                                initialData: musicService.currentSongId,
-                                builder: (context, currentIdSnap) {
-                                  return StreamBuilder<bool>(
-                                    stream: musicService.isPlayingStream,
-                                    initialData: musicService.isPlaying,
-                                    builder: (context, playingSnap) {
-                                      final currentId = currentIdSnap.data;
-                                      final isPlaying =
-                                          playingSnap.data ?? false;
-                                      final isCurrent = song.id == currentId;
-                                      final isCurrentlyPlaying =
-                                          isCurrent; // && isPlaying;
+                        children: recentlyPlayedSongs.take(3).map((song) {
+                          return StreamBuilder<int?>(
+                            stream: musicService.currentSongIdStream,
+                            initialData: musicService.currentSongId,
+                            builder: (context, currentIdSnap) {
+                              return StreamBuilder<bool>(
+                                stream: musicService.isPlayingStream,
+                                initialData: musicService.isPlaying,
+                                builder: (context, playingSnap) {
+                                  final currentId = currentIdSnap.data;
+                                  final isPlaying = playingSnap.data ?? false;
+                                  final isCurrent = song.id == currentId;
+                                  final isCurrentlyPlaying =
+                                      isCurrent; // && isPlaying;
 
-                                      return MusicListTile(
-                                        margin: 7.w,
-                                        height: 66.h,
-                                        borderRadius: 10.r,
-                                        backgroundColor:
-                                            AppColors.musicTileBackgroundColor,
-                                        cardHeight: 50.h,
-                                        cardWidth: 50.w,
-                                        cardRadius: 7.r,
-                                        cardIconAsset:
-                                            song.artwork_path ??
-                                            Assets.svgMusicIcon,
-                                        cardIconSize: 32.r,
-                                        isSvgCardIcon: (song.artwork_path ?? '')
-                                            .contains('.svg'),
-                                        title: song.title,
-                                        subtitle:
-                                            '${song.artist} - ${song.album}',
-                                        trailingIconAsset:
-                                            isCurrent && isPlaying
-                                                ? Assets.svgPause
-                                                : Assets.svgPlayLogo,
-                                        trailingIconHeight: 32.r,
-                                        trailingIconWidth: 32.r,
-                                        trailingMargin: 0,
-                                        isGifLoad: isCurrentlyPlaying,
-                                        onTap: () async {
-                                          await musicService.setPlaylist(
-                                            recentlyPlayedSongs,
-                                            startIndex: recentlyPlayedSongs
-                                                .indexOf(song),
-                                          );
-                                          await musicService.play();
-                                        },
-                                        onPlayTap: () async {
-                                          if (isCurrent && isPlaying) {
-                                            await musicService.pause();
-                                          } else {
-                                            await musicService.setPlaylist(
-                                              recentlyPlayedSongs,
-                                              startIndex: recentlyPlayedSongs
-                                                  .indexOf(song),
-                                            );
-                                            await musicService.play();
-                                          }
-                                        },
+                                  return MusicListTile(
+                                    margin: 7.w,
+                                    height: 66.h,
+                                    borderRadius: 10.r,
+                                    backgroundColor:
+                                        AppColors.musicTileBackgroundColor,
+                                    cardHeight: 50.h,
+                                    cardWidth: 50.w,
+                                    cardRadius: 7.r,
+                                    cardIconAsset:
+                                        song.artwork_path ??
+                                        Assets.svgMusicIcon,
+                                    cardIconSize: 32.r,
+                                    isSvgCardIcon: (song.artwork_path ?? '')
+                                        .contains('.svg'),
+                                    title: song.title,
+                                    subtitle: '${song.artist} - ${song.album}',
+                                    trailingIconAsset: isCurrent && isPlaying
+                                        ? Assets.svgPause
+                                        : Assets.svgPlayLogo,
+                                    trailingIconHeight: 32.r,
+                                    trailingIconWidth: 32.r,
+                                    trailingMargin: 0,
+                                    isGifLoad: isCurrentlyPlaying,
+                                    onTap: () async {
+                                      await musicService.setPlaylist(
+                                        recentlyPlayedSongs,
+                                        startIndex: recentlyPlayedSongs.indexOf(
+                                          song,
+                                        ),
                                       );
+                                      await musicService.play();
+                                    },
+                                    onPlayTap: () async {
+                                      if (isCurrent && isPlaying) {
+                                        await musicService.pause();
+                                      } else {
+                                        await musicService.setPlaylist(
+                                          recentlyPlayedSongs,
+                                          startIndex: recentlyPlayedSongs
+                                              .indexOf(song),
+                                        );
+                                        await musicService.play();
+                                      }
                                     },
                                   );
                                 },
                               );
-                            }).toList(),
+                            },
+                          );
+                        }).toList(),
                       );
                     },
                     error: (message) => Text('Error: $message'),
@@ -260,11 +285,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontFamily: AppFonts.inter,
                       ),
                       Spacer(),
-                      Texts(
-                        'see all',
-                        fontSize: 14.sp,
-                        fontWeight: AppFontWeights.regular,
-                        fontFamily: AppFonts.inter,
+                      GestureDetector(
+                        onTap: () {
+                          // Navigate to Library tab and switch to Playlists
+                          widget.onNavigateToLibraryPlaylists?.call();
+                        },
+                        child: Texts(
+                          'See All',
+                          fontSize: 14.sp,
+                          fontWeight: AppFontWeights.regular,
+                          fontFamily: AppFonts.inter,
+                        ),
                       ),
                     ],
                   ),
@@ -274,82 +305,101 @@ class _HomeScreenState extends State<HomeScreen> {
                     loading: () => Center(child: CircularProgressIndicator()),
                     loaded: (playlists, systemPlaylistSongs) {
                       // Get user playlists (non-system playlists)
-                      final userPlaylists =
-                          playlists.where((p) => p.isSystem == false).toList();
+                      final userPlaylists = playlists
+                          .where((p) => p.isSystem == false)
+                          .toList();
 
                       if (userPlaylists.isEmpty) {
-                        return Text(
-                          'No user playlists',
-                          style: TextStyle(color: Colors.grey),
+                        return GestureDetector(
+                          onTap: () {
+                            CreatePlaylistBottomSheet.show(context);
+                          },
+                          child: Row(
+                            children: [
+                              Container(
+                                height: 66.h,
+                                width: 66.w,
+                                decoration: BoxDecoration(
+                                  color: AppColors.musicTileBackgroundColor,
+                                  borderRadius: BorderRadius.circular(10.r),
+                                ),
+                                child: Icon(
+                                  Icons.add,
+                                  size: 32.r,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              Texts(
+                                'Create new playlist',
+                                fontSize: 16.sp,
+                                fontWeight: AppFontWeights.medium,
+                                fontFamily: AppFonts.inter,
+                              ),
+                            ],
+                          ),
                         );
                       }
                       return Column(
-                        children:
-                            userPlaylists.take(3).map((playlist) {
-                              return MusicListTile(
-                                margin: 7.w,
-                                height: 66.h,
-                                borderRadius: 10.r,
-                                backgroundColor:
-                                    AppColors.musicTileBackgroundColor,
-                                cardHeight: 50.h,
-                                cardWidth: 50.w,
-                                cardRadius: 7.r,
-                                cardIconAsset: Assets.svgMusicIcon,
-                                cardIconSize: 32.r,
-                                title: playlist.name,
-                                subtitle: '${playlist.songCount} Songs',
-                                trailingIconAsset: Assets.svgMenuIcon,
-                                trailingIconHeight: 22.5.h,
-                                trailingIconWidth: 3.w,
-                                trailingMargin: 0,
-                                onTap: () {
-                                  context.push(
-                                    '/dashboard/playlist-detail',
-                                    extra: {
-                                      'playlist': playlist,
-                                      'assetIcon': Assets.svgMusicIcon,
-                                      'colors': [
-                                        AppColors.mildBlue.withValues(
-                                          alpha: 0.21,
-                                        ),
-                                        AppColors.mildBlue,
-                                      ],
-                                    },
-                                  );
-                                },
-                                onPlayTap: () {
-                                  showModalBottomSheet(
-                                    context: context,
-                                    backgroundColor: Colors.white,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(40.r),
-                                      ),
-                                    ),
-                                    isScrollControlled: true,
-                                    builder:
-                                        (_) => SongMenuScreen(
-                                          songMenuList: playlistMenuItems,
-                                          isPlaying: false,
-                                          currentSong:
-                                              musicService.currentIndex != -1
-                                                  ? musicService
-                                                      .songs[musicService
-                                                      .currentIndex]
-                                                  : null,
-                                          songIndex: 0,
-                                          songsList: [],
-                                          maxHeight: 0.79.sh,
-                                          from: 'playlist',
-                                          systemKeyOrId: playlist.id.toString(),
-                                          isSystemPlaylist: false,
-                                        ),
-                                  );
+                        children: userPlaylists.take(3).map((playlist) {
+                          return MusicListTile(
+                            margin: 7.w,
+                            height: 66.h,
+                            borderRadius: 10.r,
+                            backgroundColor: AppColors.musicTileBackgroundColor,
+                            cardHeight: 50.h,
+                            cardWidth: 50.w,
+                            cardRadius: 7.r,
+                            cardIconAsset: Assets.svgMusicIcon,
+                            cardIconSize: 32.r,
+                            title: playlist.name,
+                            subtitle: '${playlist.songCount} Songs',
+                            trailingIconAsset: Assets.svgMenuIcon,
+                            trailingIconHeight: 22.5.h,
+                            trailingIconWidth: 3.w,
+                            trailingMargin: 0,
+                            onTap: () {
+                              context.push(
+                                '/dashboard/playlist-detail',
+                                extra: {
+                                  'playlist': playlist,
+                                  'assetIcon': Assets.svgMusicIcon,
+                                  'colors': [
+                                    AppColors.mildBlue.withValues(alpha: 0.21),
+                                    AppColors.mildBlue,
+                                  ],
                                 },
                               );
-                            }).toList(),
+                            },
+                            onPlayTap: () {
+                              showModalBottomSheet(
+                                context: context,
+                                backgroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(40.r),
+                                  ),
+                                ),
+                                isScrollControlled: true,
+                                builder: (_) => SongMenuScreen(
+                                  songMenuList: playlistMenuItems,
+                                  isPlaying: false,
+                                  currentSong: musicService.currentIndex != -1
+                                      ? musicService.songs[musicService
+                                            .currentIndex]
+                                      : null,
+                                  songIndex: 0,
+                                  songsList: [],
+                                  maxHeight: 0.79.sh,
+                                  from: 'playlist',
+                                  systemKeyOrId: playlist.id.toString(),
+                                  isSystemPlaylist: false,
+                                ),
+                              );
+                            },
+                          );
+                        }).toList(),
                       );
                     },
                     error: (message) => Text('Error: $message'),

@@ -72,43 +72,55 @@ class SHi extends S {
   String get keepScreenOn => 'स्क्रीन चालू रखें';
 
   @override
-  String get songName => 'Song Name';
+  String get songName => 'गाने का नाम';
 
   @override
-  String get artistName => 'Artist Name';
+  String get artistName => 'कलाकार का नाम';
 
   @override
-  String get albumName => 'Album Song';
+  String get albumName => 'एल्बम गाना';
 
   @override
-  String get folderName => 'Folder Name';
+  String get folderName => 'फ़ोल्डर का नाम';
 
   @override
-  String get addedTime => 'Added Time';
+  String get addedTime => 'जोड़ा गया समय';
 
   @override
-  String get playCount => 'Play Count';
+  String get playCount => 'बजाने की संख्या';
 
   @override
-  String get year => 'Year';
+  String get year => 'वर्ष';
 
   @override
-  String get selectSongs => 'Select Songs';
+  String get songCount => 'गानों की संख्या';
 
   @override
-  String get searchSongs => 'Search Songs';
+  String get modifiedDate => 'संशोधित तिथि';
 
   @override
-  String get selectAll => 'Select All';
+  String get hideFolder => 'फ़ोल्डर छुपाएं';
 
   @override
-  String get selected => 'Selected';
+  String get deleteFolder => 'फ़ोल्डर हटाएं';
 
   @override
-  String get delete => 'Delete';
+  String get selectSongs => 'गाने चुनें';
 
   @override
-  String get play => 'Play';
+  String get searchSongs => 'गाने खोजें';
+
+  @override
+  String get selectAll => 'सभी चुनें';
+
+  @override
+  String get selected => 'चयनित';
+
+  @override
+  String get delete => 'हटाएं';
+
+  @override
+  String get play => 'चलाएं';
 
   @override
   String get deletePlaylist => 'प्लेलिस्ट हटाएं';

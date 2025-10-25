@@ -50,6 +50,17 @@ class MusicListTile extends StatelessWidget {
   final double leadingIconWidth;
   final double leadingMargin;
 
+  // Optional draggable icon (for queue screen)
+  final bool showDraggableIcon;
+  final String draggableIconAsset;
+  final double draggableIconSize;
+
+  // Optional cancel icon (for queue screen)
+  final bool showCancelIcon;
+  final String cancelIconAsset;
+  final double cancelIconSize;
+  final VoidCallback? onCancelTap;
+
   final VoidCallback? onTap;
   final VoidCallback? onPlayTap;
   final VoidCallback? onInfoTap;
@@ -95,6 +106,15 @@ class MusicListTile extends StatelessWidget {
     this.leadingIconWidth = 0,
     this.leadingMargin = 0,
 
+    // Optional icons
+    this.showDraggableIcon = false,
+    this.draggableIconAsset = '',
+    this.draggableIconSize = 24,
+    this.showCancelIcon = false,
+    this.cancelIconAsset = '',
+    this.cancelIconSize = 24,
+    this.onCancelTap,
+
     this.isSvg = true,
     this.isLeading = false,
     this.songLengthRequired = false,
@@ -124,6 +144,20 @@ class MusicListTile extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Optional draggable icon (for queue screen)
+              if (showDraggableIcon && draggableIconAsset.isNotEmpty) ...[
+                SvgPicture.asset(
+                  draggableIconAsset,
+                  height: draggableIconSize.h,
+                  width: draggableIconSize.w,
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.mediumDarkGrey,
+                    BlendMode.srcIn,
+                  ),
+                ),
+                SizedBox(width: 12.w),
+              ],
+
               Stack(
                 children: [
                   GradientCard(
@@ -240,6 +274,25 @@ class MusicListTile extends StatelessWidget {
                   ),
                 ),
               ),
+
+              // Optional cancel icon (for queue screen)
+              if (showCancelIcon && cancelIconAsset.isNotEmpty)
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: onCancelTap,
+                  child: Container(
+                    padding: EdgeInsets.all(8.w),
+                    child: SvgPicture.asset(
+                      cancelIconAsset,
+                      height: cancelIconSize.h,
+                      width: cancelIconSize.w,
+                      colorFilter: const ColorFilter.mode(
+                        AppColors.mediumDarkGrey,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

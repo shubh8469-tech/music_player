@@ -271,8 +271,6 @@ class _SongsListState extends State<SongsList> {
                                   ),
                                 ),
                                 Spacer(),
-                                SvgPicture.asset(Assets.svgFilter),
-                                SizedBox(width: 5.w),
                                 GestureDetector(
                                   onTap: () {
                                     showModalBottomSheet(
@@ -315,17 +313,19 @@ class _SongsListState extends State<SongsList> {
                                       ),
                                     );
                                   },
-                                  child: Row(
-                                    children: [
-                                      Texts(
-                                        selectedSongSort,
-                                        fontSize: 14.sp,
-                                        fontWeight: AppFontWeights.regular,
-                                        color: AppColors.textColor,
-                                      ),
-                                    ],
-                                  ),
+                                  child:  SvgPicture.asset(Assets.svgFilter),
+                                  // child: Row(
+                                  //   children: [
+                                  //     Texts(
+                                  //       selectedSongSort,
+                                  //       fontSize: 14.sp,
+                                  //       fontWeight: AppFontWeights.regular,
+                                  //       color: AppColors.textColor,
+                                  //     ),
+                                  //   ],
+                                  // ),
                                 ),
+                                SizedBox(width: 10.w),
                               ],
                             ),
                             SizedBox(height: 15.h),

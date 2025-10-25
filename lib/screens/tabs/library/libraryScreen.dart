@@ -9,23 +9,64 @@ import 'albums/albumList.dart';
 import 'artist/artistScreen.dart';
 import 'folders/folders.dart';
 
+// Public controller to control LibraryScreen from outside
+class LibraryScreenController {
+  _LibraryScreenState? _state;
+
+  void _attach(_LibraryScreenState state) {
+    _state = state;
+  }
+
+  void _detach() {
+    _state = null;
+  }
+
+  void switchToPlaylistsTab() {
+    _state?.switchToPlaylistsTab();
+  }
+}
+
 class LibraryScreen extends StatefulWidget {
-  const LibraryScreen({super.key});
+  final LibraryScreenController? controller;
+
+  const LibraryScreen({super.key, this.controller});
 
   @override
   State<LibraryScreen> createState() => _LibraryScreenState();
 }
 
-class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProviderStateMixin {
-
+class _LibraryScreenState extends State<LibraryScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final List<String> _tabs = ["SONGS", "PLAYLISTS", "FOLDERS", "ALBUMS", "ARTISTS"];
+  final List<String> _tabs = [
+    "SONGS",
+    "PLAYLISTS",
+    "FOLDERS",
+    "ALBUMS",
+    "ARTISTS",
+  ];
 
   @override
   void initState() {
-    _tabController = TabController(length: _tabs.length, vsync: this);
     super.initState();
+    _tabController = TabController(length: _tabs.length, vsync: this);
+    widget.controller?._attach(this);
   }
+
+  @override
+  void dispose() {
+    widget.controller?._detach();
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  // Method to switch to Playlists tab
+  void switchToPlaylistsTab() {
+    if (mounted) {
+      _tabController.animateTo(1); // PLAYLISTS is at index 1
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

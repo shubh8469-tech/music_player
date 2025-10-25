@@ -27,7 +27,9 @@ class Assets {
   static const String pngMusicDirectory = 'assets/png/musicDirectory.png';
   static const String pngSongPlaying = 'assets/png/song_playing.gif';
   static const String svgAlbum = 'assets/svg/album.svg';
+  static const String svgCancel = 'assets/svg/cancel.svg';
   static const String svgDirectory = 'assets/svg/directory.svg';
+  static const String svgDraggable = 'assets/svg/draggable.svg';
   static const String svgDrawer = 'assets/svg/drawer.svg';
   static const String svgFav = 'assets/svg/fav.svg';
   static const String svgFavOn = 'assets/svg/fav_on.svg';

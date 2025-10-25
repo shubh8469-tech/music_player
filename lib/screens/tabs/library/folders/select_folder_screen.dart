@@ -592,12 +592,19 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
     int folderCount,
     List<domain.Folder> deletableFolders,
   ) {
+    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+    final bottomPadding = viewInsets > 0
+        ? viewInsets + 16.h
+        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+
     return Container(
       padding: EdgeInsets.only(
         left: 16.w,
         right: 16.w,
         top: 10.h,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
+        bottom: bottomPadding,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -785,70 +792,75 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
                     ),
                   ),
 
-                  // Selected count and Select All
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 15.w,
-                      vertical: 5.h,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Texts(
-                            selectedCount != 0
-                                ? "$selectedCount ${S.of(context).selected}"
-                                : "",
+                  // If searching and no results, show only the message
+                  if (filteredFolders.isEmpty && searchQuery.isNotEmpty)
+                    Expanded(
+                      child: Center(
+                        child: Texts(
+                          "No folders match your search",
+                          fontSize: 16.sp,
+                          color: AppColors.textColor,
+                        ),
+                      ),
+                    )
+                  else ...[
+                    // Selected count and Select All
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 15.w,
+                        vertical: 5.h,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Texts(
+                              selectedCount != 0
+                                  ? "$selectedCount ${S.of(context).selected}"
+                                  : "",
+                              fontSize: 14.sp,
+                              fontFamily: AppFonts.inter,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.textColor,
+                            ),
+                          ),
+                          Texts(
+                            S.of(context).selectAll,
                             fontSize: 14.sp,
                             fontFamily: AppFonts.inter,
                             fontWeight: FontWeight.w400,
                             color: AppColors.textColor,
                           ),
-                        ),
-                        GestureDetector(
-                          onTap: () => toggleSelectAll(filteredFolders),
-                          child: SvgPicture.asset(
-                            isSelectedAll
-                                ? Assets.svgIcRadioCheckl
-                                : Assets.svgIcRadioUncheck,
-                            height: 20.h,
-                            width: 20.w,
+                          SizedBox(width: 10.w),
+                          GestureDetector(
+                            onTap: () => toggleSelectAll(filteredFolders),
+                            child: SvgPicture.asset(
+                              isSelectedAll
+                                  ? Assets.svgIcRadioCheckl
+                                  : Assets.svgIcRadioUncheck,
+                              height: 20.h,
+                              width: 20.w,
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 10.w),
-                        Texts(
-                          S.of(context).selectAll,
-                          fontSize: 14.sp,
-                          fontFamily: AppFonts.inter,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.textColor,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
 
-                  // Folders list
-                  Expanded(
-                    child: filteredFolders.isEmpty
-                        ? Center(
-                            child: Texts(
-                              "No folders match your search",
-                              fontSize: 16.sp,
-                              color: AppColors.textColor,
+                    // Folders list
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            // Folders Section
+                            ..._buildFolderSection(
+                              'My Folders (${filteredFolders.length})',
+                              filteredFolders,
                             ),
-                          )
-                        : SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                // Folders Section
-                                ..._buildFolderSection(
-                                  'My Folders (${filteredFolders.length})',
-                                  filteredFolders,
-                                ),
-                                SizedBox(height: 90.h),
-                              ],
-                            ),
-                          ),
-                  ),
+                            SizedBox(height: 90.h),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               );
             },
