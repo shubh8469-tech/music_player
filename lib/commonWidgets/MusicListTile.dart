@@ -151,7 +151,7 @@ class MusicListTile extends StatelessWidget {
                   height: draggableIconSize.h,
                   width: draggableIconSize.w,
                   colorFilter: const ColorFilter.mode(
-                    AppColors.mediumDarkGrey,
+                    AppColors.black,
                     BlendMode.srcIn,
                   ),
                 ),
@@ -228,14 +228,33 @@ class MusicListTile extends StatelessWidget {
               ),
 
               SizedBox(width: spacing.w),
-              Visibility(
-                visible: songLengthRequired,
-                child: Texts(
-                  songLength,
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w400,
+
+              // Show either cancel icon OR duration text (mutually exclusive)
+              if (showCancelIcon && cancelIconAsset.isNotEmpty)
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: onCancelTap,
+                  child: Container(
+                    child: SvgPicture.asset(
+                      cancelIconAsset,
+                      height: cancelIconSize.h,
+                      width: cancelIconSize.w,
+                      colorFilter: const ColorFilter.mode(
+                        AppColors.black,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                )
+              else
+                Visibility(
+                  visible: songLengthRequired,
+                  child: Texts(
+                    songLength,
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
-              ),
 
               Visibility(
                 visible: isLeading,
@@ -274,25 +293,6 @@ class MusicListTile extends StatelessWidget {
                   ),
                 ),
               ),
-
-              // Optional cancel icon (for queue screen)
-              if (showCancelIcon && cancelIconAsset.isNotEmpty)
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: onCancelTap,
-                  child: Container(
-                    padding: EdgeInsets.all(8.w),
-                    child: SvgPicture.asset(
-                      cancelIconAsset,
-                      height: cancelIconSize.h,
-                      width: cancelIconSize.w,
-                      colorFilter: const ColorFilter.mode(
-                        AppColors.mediumDarkGrey,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                  ),
-                ),
             ],
           ),
         ),

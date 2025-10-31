@@ -114,7 +114,7 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                                 subtitle:
                                     '${artist.albumCount} Album${artist.albumCount != 1 ? 's' : ''} - ${artist.songCount} Songs',
                                 trailingIconAsset: Assets.svgMenuIcon,
-                                trailingIconHeight: 22.5.h,
+                                trailingIconHeight: 19.5.h,
                                 trailingIconWidth: 3.w,
                                 trailingMargin: 10.w,
                                 onTap: () {

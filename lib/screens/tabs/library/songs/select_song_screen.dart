@@ -752,6 +752,8 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
                       isSelectedAll = false;
                     });
 
+                    Navigator.pop(context);
+
                     showSnackBar(
                       context,
                       () {},

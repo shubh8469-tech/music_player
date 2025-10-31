@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:music_app/commonWidgets/textWidget.dart';
 import 'package:music_app/features/songs/bloc/songs_bloc.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
@@ -217,17 +218,30 @@ class _QueueScreenState extends State<QueueScreen> {
         appBar: AppBar(
           backgroundColor: AppColors.primaryOrange,
           elevation: 0,
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios,
+              color: AppColors.white,
+              size: 20,
+            ),
+            onPressed: () => context.pop(),
+          ),
           title: Texts(
             "Playing Queue",
             fontSize: 18.sp,
             fontWeight: AppFontWeights.medium,
             fontFamily: AppFonts.inter,
+            color: AppColors.white,
           ),
           actions: [
             IconButton(
               onPressed: _removeSelectedSongs,
               icon: SvgPicture.asset(
                 Assets.svgIcDelete,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.white,
+                  BlendMode.srcIn,
+                ),
                 height: 26.h,
                 width: 26.w,
               ),
@@ -383,12 +397,13 @@ class _QueueScreenState extends State<QueueScreen> {
                                     cardHeight: 50.h,
                                     cardWidth: 50.w,
                                     cardRadius: 7.r,
-                                    cardIconAsset: song.artwork_path!,
+                                    cardIconAsset: song.artwork_path ?? Assets.svgMusicIcon,
+                                    isSvgCardIcon: (song.artwork_path ?? '').contains('.svg') || song.artwork_path == null,
                                     cardIconSize: 32.r,
                                     title: song.title,
                                     subtitle: song.artist,
                                     trailingIconAsset: Assets.svgMenuIcon,
-                                    trailingIconHeight: 22.5.h,
+                                    trailingIconHeight: 19.5.h,
                                     trailingIconWidth: 3.w,
                                     trailingMargin: 10.w,
                                     songLength: formatDuration(song.duration),
@@ -401,10 +416,10 @@ class _QueueScreenState extends State<QueueScreen> {
                                     // Queue-specific icons
                                     showDraggableIcon: true,
                                     draggableIconAsset: Assets.svgDraggable,
-                                    draggableIconSize: 20,
+                                    draggableIconSize: 5,
                                     showCancelIcon: true,
                                     cancelIconAsset: Assets.svgCancel,
-                                    cancelIconSize: 24,
+                                    cancelIconSize: 24.r,
                                     onCancelTap: () =>
                                         _removeSongAtIndex(index),
                                     onTap: () async {

@@ -7,4 +7,6 @@ class AlbumEvent with _$AlbumEvent {
       _FetchSongsForAlbum;
   const factory AlbumEvent.fetchAlbumsByArtist(String artistName) =
       _FetchAlbumsByArtist;
+  const factory AlbumEvent.sortAlbums(int sortIndex, int sortOrder) =
+      _SortAlbums;
 }

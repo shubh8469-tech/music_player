@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:music_app/features/folders/bloc/folder_bloc.dart';
 import 'package:music_app/features/folders/domain/entities/folder.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
+import 'package:music_app/features/songs/bloc/songs_bloc.dart';
 import 'package:music_app/screens/tabs/music_service.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
@@ -35,18 +36,36 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
 
   List<SongsModel> _songs = [];
   List<SongsModel> _baseSongs = [];
+  Folder _currentFolder = Folder(
+    id: 0,
+    name: '',
+    path: '',
+    songCount: 0,
+    createdTime: DateTime.now(),
+    updatedTime: DateTime.now(),
+  );
 
   @override
   void initState() {
     super.initState();
+    _currentFolder = widget.folder;
     _loadSongs();
   }
 
   Future<void> _loadSongs() async {
-    final songs = await _repo.getSongsForFolder(widget.folder.id!);
-    _songs = songs.cast<SongsModel>();
-    _baseSongs = List<SongsModel>.from(_songs);
-    if (mounted) setState(() {});
+    final songs = await _repo.getSongsForFolder(_currentFolder.id!);
+    if (mounted) {
+      setState(() {
+        _songs = songs.cast<SongsModel>();
+        _baseSongs = List<SongsModel>.from(_songs);
+      });
+    }
+  }
+
+  Future<void> _refreshFolderData() async {
+    // Refresh folder data to get updated song count
+    final folderBloc = context.read<FolderBloc>();
+    folderBloc.add(const FolderEvent.fetchAllFolders());
   }
 
   Widget _songTile(List<SongsModel> list, int index) {
@@ -70,13 +89,13 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                 cardHeight: 50.h,
                 cardWidth: 50.w,
                 cardRadius: 7.r,
-                cardIconAsset: song.artwork_path!,
+                cardIconAsset: song.artwork_path ?? Assets.svgMusicIcon,
                 cardIconSize: 32.r,
-                isSvgCardIcon: true,
+                isSvgCardIcon: (song.artwork_path ?? '').contains('.svg') || song.artwork_path == null,
                 title: song.title,
                 subtitle: song.artist,
                 trailingIconAsset: Assets.svgMenuIcon,
-                trailingIconHeight: 22.5.h,
+                trailingIconHeight: 19.5.h,
                 trailingIconWidth: 3.w,
                 trailingMargin: 10.w,
                 isGifLoad: isCurrent,
@@ -102,12 +121,37 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                       songIndex: index,
                       songsList: list,
                       maxHeight: 0.87.sh,
-                      systemKeyOrId: widget.folder.id.toString(),
+                      systemKeyOrId: _currentFolder.id.toString(),
                       isSystemPlaylist: false,
                       from: 'folder_in',
                       onSongDeleted: () {
-                        // Reload songs when a song is deleted
-                        _loadSongs();
+                        // Immediately remove the song from local list for instant UI update
+                        final songId = song.id;
+                        setState(() {
+                          _songs.removeWhere((s) => s.id == songId);
+                          _baseSongs.removeWhere((s) => s.id == songId);
+                          // Decrement folder count temporarily (will be synced from DB)
+                          _currentFolder = Folder(
+                            id: _currentFolder.id,
+                            name: _currentFolder.name,
+                            path: _currentFolder.path,
+                            songCount: _currentFolder.songCount - 1,
+                            artworkPath: _currentFolder.artworkPath,
+                            createdTime: _currentFolder.createdTime,
+                            updatedTime: _currentFolder.updatedTime,
+                          );
+                        });
+
+                        // Wait for database operations and triggers to complete, then sync with DB
+                        Future.delayed(
+                          const Duration(milliseconds: 800),
+                          () async {
+                            if (mounted) {
+                              await _loadSongs();
+                              _refreshFolderData();
+                            }
+                          },
+                        );
                       },
                     ),
                   );
@@ -206,7 +250,9 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
 
                     // Delete folder
                     final folderBloc = context.read<FolderBloc>();
-                    folderBloc.add(FolderEvent.deleteFolder(widget.folder.id!));
+                    folderBloc.add(
+                      FolderEvent.deleteFolder(_currentFolder.id!),
+                    );
 
                     // Show success message
                     showSnackBar(
@@ -247,17 +293,61 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<FolderBloc, FolderState>(
-      listener: (context, state) {
-        // Reload songs when folder state changes (e.g., song removed)
-        state.maybeWhen(
-          loaded: (folders, folderSongs) {
-            // Reload songs to reflect any changes
-            _loadSongs();
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<FolderBloc, FolderState>(
+          listener: (context, state) {
+            // Update current folder when folders are refreshed
+            state.maybeWhen(
+              loaded: (folders, folderSongs) {
+                // Find the updated folder with new song count
+                final updatedFolder = folders.firstWhere(
+                  (folder) => folder.id == _currentFolder.id,
+                  orElse: () => _currentFolder,
+                );
+                // Update folder if it exists and has changed
+                if (updatedFolder.id == _currentFolder.id) {
+                  final oldSongCount = _currentFolder.songCount;
+                  final newSongCount = updatedFolder.songCount;
+                  final songCountChanged = newSongCount != oldSongCount;
+                  final hasChanged =
+                      songCountChanged ||
+                      updatedFolder.name != _currentFolder.name ||
+                      updatedFolder.updatedTime != _currentFolder.updatedTime;
+
+                  if (hasChanged && mounted) {
+                    setState(() {
+                      _currentFolder = updatedFolder;
+                    });
+                    // Only reload songs if the count actually decreased (song was deleted)
+                    // This prevents unnecessary reloads when folder is just refreshed
+                    if (songCountChanged && newSongCount < oldSongCount) {
+                      _loadSongs();
+                    }
+                  }
+                }
+              },
+              orElse: () {},
+            );
           },
-          orElse: () {},
-        );
-      },
+        ),
+        BlocListener<SongsBloc, SongsState>(
+          listener: (context, state) {
+            // When a song is successfully removed, refresh folder data
+            state.maybeWhen(
+              loaded: (songs) {
+                // Wait a bit for database trigger to update folder count, then refresh
+                Future.delayed(const Duration(milliseconds: 500), () {
+                  if (mounted) {
+                    _refreshFolderData();
+                  }
+                });
+              },
+              orElse: () {},
+            );
+          },
+        ),
+      ],
       child: Scaffold(
         backgroundColor: AppColors.white,
         appBar: AppBar(
@@ -272,7 +362,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
             onPressed: () => context.pop(),
           ),
           title: Texts(
-            widget.folder.name,
+            _currentFolder.name,
             fontSize: 18.sp,
             fontWeight: AppFontWeights.medium,
             fontFamily: AppFonts.inter,
@@ -343,7 +433,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                       ),
                       SizedBox(height: 14.h),
                       Texts(
-                        widget.folder.name,
+                        _currentFolder.name,
                         fontSize: 20.sp,
                         fontWeight: AppFontWeights.medium,
                         fontFamily: AppFonts.inter,
@@ -448,18 +538,31 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                       Row(
                         children: [
                           // Bullets icon and song count
-                          Row(
-                            children: [
-                              SvgPicture.asset(Assets.svgSongsCount),
-                              SizedBox(width: 8.w),
-                              Texts(
-                                '${_songs.length} songs',
-                                fontSize: 16.sp,
-                                fontWeight: AppFontWeights.medium,
-                                fontFamily: AppFonts.inter,
-                                color: AppColors.textColor,
-                              ),
-                            ],
+                          GestureDetector(
+                            onTap: () {
+                              // Navigate to select song screen for folder management
+                              context.push(
+                                '/dashboard/select-song',
+                                extra: {
+                                  'folder': _currentFolder,
+                                  'songs': _songs,
+                                  'isSystemPlaylist': false,
+                                },
+                              );
+                            },
+                            child: Row(
+                              children: [
+                                SvgPicture.asset(Assets.svgSongsCount),
+                                SizedBox(width: 8.w),
+                                Texts(
+                                  '${_currentFolder.songCount} songs',
+                                  fontSize: 16.sp,
+                                  fontWeight: AppFontWeights.medium,
+                                  fontFamily: AppFonts.inter,
+                                  color: AppColors.textColor,
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),

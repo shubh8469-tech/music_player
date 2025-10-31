@@ -11,6 +11,7 @@ import '../../../../features/folders/bloc/folder_bloc.dart';
 import '../../../../features/folders/domain/entities/folder.dart' as domain;
 import '../../../../features/folders/domain/repositories/folder_repository.dart';
 import '../../../../features/playlists/bloc/playlist_bloc.dart';
+import '../../../../features/songs/bloc/songs_bloc.dart';
 import '../../../../features/songs/data/models/song_model.dart';
 import '../../../../generated/assets.dart';
 import '../../../../l10n/l10n.dart';
@@ -42,181 +43,215 @@ class _FolderListScreenState extends State<FolderListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      body: Padding(
-        padding: EdgeInsets.only(
-          left: 20.w,
-          right: 20.w,
-          top: 30.h,
-          bottom: 1.h,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      context.push('/dashboard/select-folder');
-                    },
-                    child: SvgPicture.asset(Assets.svgSongsCount),
-                  ),
-                  SizedBox(width: 10.w),
-                  BlocBuilder<FolderBloc, FolderState>(
-                    builder: (context, state) {
-                      return state.maybeWhen(
-                        loaded: (folders, _) => Texts(
-                          '${folders.length} Folders',
-                          fontSize: 14.sp,
-                          fontWeight: AppFontWeights.regular,
-                          color: AppColors.textColor,
-                        ),
-                        orElse: () => Texts(
-                          '0 Folders',
-                          fontSize: 14.sp,
-                          fontWeight: AppFontWeights.regular,
-                          color: AppColors.textColor,
-                        ),
-                      );
-                    },
-                  ),
-                  Spacer(),
-                  SvgPicture.asset(Assets.svgFilter),
-                  SizedBox(width: 5.w),
-                  GestureDetector(
-                    onTap: () {
-                      showModalBottomSheet(
-                        context: context,
-                        backgroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(40),
-                          ),
-                        ),
-                        isScrollControlled: true,
-                        builder: (_) => BlocProvider.value(
-                          value: context.read<FolderBloc>(),
-                          child: FolderSortByBottomSheet(
-                            selectedIndex: selectedIndex,
-                            selectedOrder: selectedOrder,
-                            onItemSelected: (index, order) {
-                              setState(() {
-                                selectedIndex = index;
-                                selectedOrder = order;
-                                selectedFolderSort =
-                                    folderSortByItems[index].title;
-                              });
-                              // Trigger Bloc sort event
-                              context.read<FolderBloc>().add(
-                                FolderEvent.sortFolders(index, order),
-                              );
-                              // Close bottom sheet safely
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (Navigator.canPop(context))
-                                  Navigator.pop(context);
-                              });
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                    child: Row(
-                      children: [
-                        Texts(
-                          selectedFolderSort,
-                          fontSize: 14.sp,
-                          fontWeight: AppFontWeights.regular,
-                          color: AppColors.textColor,
-                        ),
-                        SizedBox(width: 10.w),
-                        // Icon(
-                        //   selectedOrder == 0
-                        //       ? Icons.arrow_upward
-                        //       : Icons.arrow_downward,
-                        //   size: 16.sp,
-                        // ),
-                      ],
+    return BlocListener<SongsBloc, SongsState>(
+      listenWhen: (previous, current) {
+        // Listen to all loaded states to catch song deletions
+        // We'll check if the song count changed by comparing state
+        return current.maybeWhen(loaded: (_) => true, orElse: () => false);
+      },
+      listener: (context, state) {
+        // When a song is deleted, refresh folders to update song counts
+        state.maybeWhen(
+          loaded: (songs) async {
+            // Wait for database triggers to complete, then refresh folders
+            await Future.delayed(const Duration(milliseconds: 800));
+            if (mounted) {
+              // Force refresh folders from database
+              final folderBloc = context.read<FolderBloc>();
+              folderBloc.add(const FolderEvent.fetchAllFolders());
+            }
+          },
+          orElse: () {},
+        );
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.white,
+        body: Padding(
+          padding: EdgeInsets.only(
+            left: 20.w,
+            right: 20.w,
+            top: 30.h,
+            bottom: 1.h,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        context.push('/dashboard/select-folder');
+                      },
+                      child: SvgPicture.asset(Assets.svgSongsCount),
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 25.h),
-              BlocBuilder<FolderBloc, FolderState>(
-                builder: (context, state) {
-                  return state.when(
-                    initial: () => const SizedBox(),
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    loaded: (folders, _) {
-                      if (folders.isEmpty) {
-                        return Center(
-                          child: Padding(
-                            padding: EdgeInsets.only(top: 50.h),
-                            child: Texts(
-                              'No folders found',
-                              fontSize: 16.sp,
-                              color: AppColors.mediumDarkGrey,
+                    SizedBox(width: 10.w),
+                    BlocBuilder<FolderBloc, FolderState>(
+                      builder: (context, state) {
+                        return state.maybeWhen(
+                          loaded: (folders, _) => Texts(
+                            '${folders.length} Folders',
+                            fontSize: 14.sp,
+                            fontWeight: AppFontWeights.regular,
+                            color: AppColors.textColor,
+                          ),
+                          orElse: () => Texts(
+                            '0 Folders',
+                            fontSize: 14.sp,
+                            fontWeight: AppFontWeights.regular,
+                            color: AppColors.textColor,
+                          ),
+                        );
+                      },
+                    ),
+                    Spacer(),
+                    SvgPicture.asset(Assets.svgFilter),
+                    SizedBox(width: 5.w),
+                    GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(40),
+                            ),
+                          ),
+                          isScrollControlled: true,
+                          builder: (_) => BlocProvider.value(
+                            value: context.read<FolderBloc>(),
+                            child: FolderSortByBottomSheet(
+                              selectedIndex: selectedIndex,
+                              selectedOrder: selectedOrder,
+                              onItemSelected: (index, order) {
+                                setState(() {
+                                  selectedIndex = index;
+                                  selectedOrder = order;
+                                  selectedFolderSort =
+                                      folderSortByItems[index].title;
+                                });
+                                // Trigger Bloc sort event
+                                context.read<FolderBloc>().add(
+                                  FolderEvent.sortFolders(index, order),
+                                );
+                                // Close bottom sheet safely
+                                WidgetsBinding.instance.addPostFrameCallback((
+                                  _,
+                                ) {
+                                  if (Navigator.canPop(context))
+                                    Navigator.pop(context);
+                                });
+                              },
                             ),
                           ),
                         );
-                      }
-                      return Column(
-                        children: folders.map((folder) {
-                          return MusicListTile(
-                            margin: 7.w,
-                            height: 66.h,
-                            borderRadius: 10.r,
-                            backgroundColor: AppColors.musicTileBackgroundColor,
-                            cardHeight: 50.h,
-                            cardWidth: 50.w,
-                            cardRadius: 7.r,
-                            cardIconAsset: Assets.svgDirectory,
-                            cardIconSize: 32.r,
-                            isSvgColorNeeded: false,
-                            title: folder.name,
-                            subtitle: '${folder.songCount} Songs',
-                            trailingIconAsset: Assets.svgMenuIcon,
-                            trailingIconHeight: 22.5.h,
-                            trailingIconWidth: 3.w,
-                            trailingMargin: 10.w,
-                            onTap: () {
-                              context.push(
-                                '/dashboard/folder-detail',
-                                extra: folder,
-                              );
-                            },
-                            onPlayTap: () {
-                              showModalBottomSheet(
-                                context: context,
-                                backgroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(40.r),
-                                  ),
-                                ),
-                                isScrollControlled: true,
-                                builder: (_) =>
-                                    _buildFolderMenu(context, folder),
-                              );
-                            },
-                          );
-                        }).toList(),
-                      );
-                    },
-                    error: (message) => Center(
-                      child: Texts(
-                        'Error: $message',
-                        fontSize: 14.sp,
-                        color: Colors.red,
+                      },
+                      child: Row(
+                        children: [
+                          Texts(
+                            selectedFolderSort,
+                            fontSize: 14.sp,
+                            fontWeight: AppFontWeights.regular,
+                            color: AppColors.textColor,
+                          ),
+                          SizedBox(width: 10.w),
+                          // Icon(
+                          //   selectedOrder == 0
+                          //       ? Icons.arrow_upward
+                          //       : Icons.arrow_downward,
+                          //   size: 16.sp,
+                          // ),
+                        ],
                       ),
                     ),
-                  );
-                },
-              ),
-            ],
+                  ],
+                ),
+                SizedBox(height: 25.h),
+                BlocBuilder<FolderBloc, FolderState>(
+                  buildWhen: (previous, current) {
+                    // Always rebuild when folders are loaded to ensure counts update
+                    final isLoaded = current.maybeWhen(
+                      loaded: (_, __) => true,
+                      orElse: () => false,
+                    );
+                    // Rebuild if state is loaded (this will catch all folder updates)
+                    return isLoaded;
+                  },
+                  builder: (context, state) {
+                    return state.when(
+                      initial: () => const SizedBox(),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      loaded: (folders, _) {
+                        if (folders.isEmpty) {
+                          return Center(
+                            child: Padding(
+                              padding: EdgeInsets.only(top: 50.h),
+                              child: Texts(
+                                'No folders found',
+                                fontSize: 16.sp,
+                                color: AppColors.mediumDarkGrey,
+                              ),
+                            ),
+                          );
+                        }
+                        return Column(
+                          children: folders.map((folder) {
+                            return MusicListTile(
+                              margin: 7.w,
+                              height: 66.h,
+                              borderRadius: 10.r,
+                              backgroundColor:
+                                  AppColors.musicTileBackgroundColor,
+                              cardHeight: 50.h,
+                              cardWidth: 50.w,
+                              cardRadius: 7.r,
+                              cardIconAsset: Assets.svgDirectory,
+                              cardIconSize: 32.r,
+                              isSvgColorNeeded: false,
+                              title: folder.name,
+                              subtitle: '${folder.songCount} Songs',
+                              trailingIconAsset: Assets.svgMenuIcon,
+                              trailingIconHeight: 19.5.h,
+                              trailingIconWidth: 3.w,
+                              trailingMargin: 10.w,
+                              onTap: () {
+                                context.push(
+                                  '/dashboard/folder-detail',
+                                  extra: folder,
+                                );
+                              },
+                              onPlayTap: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  backgroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(40.r),
+                                    ),
+                                  ),
+                                  isScrollControlled: true,
+                                  builder: (_) =>
+                                      _buildFolderMenu(context, folder),
+                                );
+                              },
+                            );
+                          }).toList(),
+                        );
+                      },
+                      error: (message) => Center(
+                        child: Texts(
+                          'Error: $message',
+                          fontSize: 14.sp,
+                          color: Colors.red,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),

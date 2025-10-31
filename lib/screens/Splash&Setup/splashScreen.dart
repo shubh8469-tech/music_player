@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -76,6 +77,13 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _navigateToNextScreen() async {
     if (!mounted) return;
 
+    // For iOS devices, skip permission and sync screens and go directly to dashboard
+    if (Platform.isIOS) {
+      if (mounted) context.go('/dashboard');
+      return;
+    }
+
+    // Android-specific navigation flow
     final appStateService = locator<AppStateService>();
 
     // Check if sync has been completed

@@ -12,13 +12,24 @@ class AppDatabase {
     _db = await openDatabase(
       join(await getDatabasesPath(), 'music_app.db'),
       version: 1,
+      onOpen: (db) async {
+        // Enable foreign keys to make CASCADE deletes work
+        await db.execute('PRAGMA foreign_keys = ON');
+        log('Foreign keys enabled');
+      },
       onCreate: (db, version) async {
+        // Enable foreign keys first
+        await db.execute('PRAGMA foreign_keys = ON');
+        log('Foreign keys enabled');
+
         final schema = await rootBundle.loadString('assets/db/setup.sql');
         final statements = _splitSqlStatements(schema);
         for (var i = 0; i < statements.length; i++) {
           log('Statement #$i:\n${statements[i]}');
         }
-        log('Executing ${statements.length} --Statement $statements --Statements SQL statements for DB setup.');
+        log(
+          'Executing ${statements.length} --Statement $statements --Statements SQL statements for DB setup.',
+        );
         for (final stmt in statements) {
           if (stmt.trim().isNotEmpty) {
             await db.execute(stmt);

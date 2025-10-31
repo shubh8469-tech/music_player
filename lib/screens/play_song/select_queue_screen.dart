@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -428,7 +429,9 @@ class _SelectQueueScreenState extends State<SelectQueueScreen> {
               child: song.artwork_path != null && song.artwork_path!.isNotEmpty
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(6.r),
-                      child: Image.asset(song.artwork_path!, fit: BoxFit.cover),
+                      child: (song.artwork_path!.endsWith('.svg'))
+                          ? SvgPicture.asset(song.artwork_path!, fit: BoxFit.cover)
+                          : Image.file(File(song.artwork_path!), fit: BoxFit.cover),
                     )
                   : SvgPicture.asset(
                       Assets.svgMusicIcon,

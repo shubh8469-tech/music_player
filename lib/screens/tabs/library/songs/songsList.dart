@@ -332,12 +332,6 @@ class _SongsListState extends State<SongsList> {
 
                             Column(
                               children: List.generate(songs.length, (index) {
-                                final image = (index % 2 == 0)
-                                    ? musicIcons[0]
-                                    : (index % 3 == 0)
-                                    ? musicIcons[1]
-                                    : musicIcons[2];
-
                                 return StreamBuilder<int?>(
                                   stream: musicService.currentSongIdStream,
                                   initialData: musicService.currentSongId,
@@ -370,14 +364,14 @@ class _SongsListState extends State<SongsList> {
                                           cardWidth: 50.w,
                                           cardRadius: 7.r,
                                           cardIconAsset:
-                                              songs[index].artwork_path!,
+                                              songs[index].artwork_path ?? Assets.svgMusicIcon,
                                           cardIconSize: 32.r,
-                                          isSvgCardIcon: image.contains('.svg'),
+                                          isSvgCardIcon: (songs[index].artwork_path ?? '').contains('.svg') || songs[index].artwork_path == null,
                                           title:
-                                              "${songs[index].year} ${songs[index].title}",
+                                              songs[index].title,
                                           subtitle: songs[index].artist,
                                           trailingIconAsset: Assets.svgMenuIcon,
-                                          trailingIconHeight: 22.5.h,
+                                          trailingIconHeight: 19.5.h,
                                           trailingIconWidth: 3.w,
                                           trailingMargin: 10.w,
                                           songLength: formatDuration(

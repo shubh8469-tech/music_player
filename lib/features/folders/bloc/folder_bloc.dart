@@ -26,6 +26,10 @@ class FolderBloc extends Bloc<FolderEvent, FolderState> {
         log('Fetching all folders');
         emit(const FolderState.loading());
         final folders = await getAllFolders();
+        // Log folder counts to verify database updates
+        for (var folder in folders) {
+          log('Folder: ${folder.name}, Song Count: ${folder.songCount}');
+        }
         emit(FolderState.loaded(folders));
       } catch (e) {
         log('Error fetching folders: $e');
@@ -85,10 +89,9 @@ class FolderBloc extends Bloc<FolderEvent, FolderState> {
 
           // Sort based on sortIndex
 
-          if(event.sortIndex == 3){
+          if (event.sortIndex == 3) {
             folders.shuffle();
-          }
-          else{
+          } else {
             folders.sort((a, b) {
               int comparison = 0;
 

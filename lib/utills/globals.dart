@@ -161,6 +161,19 @@ final List<SongMenuItem> folderSortByItems = [
   SongMenuItem(icon: "", title: "Random"),
 ];
 
+final List<SongMenuItem> albumSortByItems = [
+  SongMenuItem(
+    icon: "",
+    title: S.of(rootNavigatorKey.currentContext!).albumName,
+  ),
+  SongMenuItem(
+    icon: "",
+    title: S.of(rootNavigatorKey.currentContext!).songCount,
+  ),
+  SongMenuItem(icon: "", title: S.of(rootNavigatorKey.currentContext!).year),
+  SongMenuItem(icon: "", title: "Random"),
+];
+
 final List<SongMenuItem> folderMenuItems = [
   SongMenuItem(
     icon: Assets.svgPlayBlackBorder,

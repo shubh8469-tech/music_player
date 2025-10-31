@@ -63,5 +63,54 @@ class AlbumBloc extends Bloc<AlbumEvent, AlbumState> {
         emit(AlbumState.error(e.toString()));
       }
     });
+
+    on<_SortAlbums>((event, emit) async {
+      try {
+        final currentState = state;
+        if (currentState is _Loaded) {
+          List<Album> sortedAlbums = List.from(currentState.albums);
+          final isAscending = event.sortOrder == 0;
+
+          switch (event.sortIndex) {
+            case 0: // Album Name
+              sortedAlbums.sort(
+                (a, b) => isAscending
+                    ? a.name.toLowerCase().compareTo(b.name.toLowerCase())
+                    : b.name.toLowerCase().compareTo(a.name.toLowerCase()),
+              );
+              break;
+            case 1: // Song Count
+              sortedAlbums.sort(
+                (a, b) => isAscending
+                    ? a.songCount.compareTo(b.songCount)
+                    : b.songCount.compareTo(a.songCount),
+              );
+              break;
+            case 2: // Year
+              sortedAlbums.sort((a, b) {
+                final aYear = a.year ?? 0;
+                final bYear = b.year ?? 0;
+                return isAscending
+                    ? aYear.compareTo(bYear)
+                    : bYear.compareTo(aYear);
+              });
+              break;
+            case 3: // Random
+              sortedAlbums.shuffle();
+              break;
+          }
+
+          emit(
+            AlbumState.loaded(
+              sortedAlbums,
+              albumSongs: currentState.albumSongs,
+            ),
+          );
+        }
+      } catch (e) {
+        log('Error sorting albums: $e');
+        emit(AlbumState.error(e.toString()));
+      }
+    });
   }
 }

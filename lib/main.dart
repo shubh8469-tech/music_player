@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:music_app/features/playlists/bloc/playlist_bloc.dart';
@@ -48,6 +49,11 @@ Future<void> main() async {
   await session.configure(const AudioSessionConfiguration.music());
 
   await initInjections();
+
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   runApp(
     ScreenUtilInit(

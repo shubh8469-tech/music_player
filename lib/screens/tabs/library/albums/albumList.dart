@@ -9,6 +9,8 @@ import '../../../../commonWidgets/textWidget.dart';
 import '../../../../features/albums/bloc/album_bloc.dart';
 import '../../../../generated/assets.dart';
 import '../../../../themes/font.dart';
+import '../../../../utills/globals.dart';
+import 'sort_by_bottomsheet.dart';
 
 class AlbumListScreen extends StatefulWidget {
   const AlbumListScreen({super.key});
@@ -18,6 +20,10 @@ class AlbumListScreen extends StatefulWidget {
 }
 
 class _AlbumListScreenState extends State<AlbumListScreen> {
+  int selectedIndex = 0; // Default to Album Name
+  int selectedOrder = 0; // 0 = ascending, 1 = descending
+  String selectedAlbumSort = albumSortByItems[0].title;
+
   @override
   void initState() {
     super.initState();
@@ -39,39 +45,93 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
           children: [
             Row(
               children: [
-                SvgPicture.asset(Assets.svgSongsCount),
-                SizedBox(width: 10.w),
-                BlocBuilder<AlbumBloc, AlbumState>(
-                  builder: (context, state) {
-                    return state.maybeWhen(
-                      loaded:
-                          (albums, _) => Texts(
-                            '${albums.length} Albums',
-                            fontSize: 14.sp,
-                            fontWeight: AppFontWeights.regular,
-                            color: AppColors.textColor,
-                          ),
-                      orElse:
-                          () => Texts(
-                            '0 Albums',
-                            fontSize: 14.sp,
-                            fontWeight: AppFontWeights.regular,
-                            color: AppColors.textColor,
-                          ),
-                    );
+                GestureDetector(
+                  onTap: () {
+                    context.push('/dashboard/select-albums');
                   },
+                  child: Row(
+                    children: [
+                      SvgPicture.asset(Assets.svgSongsCount),
+                      SizedBox(width: 10.w),
+                      BlocBuilder<AlbumBloc, AlbumState>(
+                        builder: (context, state) {
+                          return state.maybeWhen(
+                            loaded: (albums, _) => Texts(
+                              '${albums.length} Albums',
+                              fontSize: 14.sp,
+                              fontWeight: AppFontWeights.regular,
+                              color: AppColors.textColor,
+                            ),
+                            orElse: () => Texts(
+                              '0 Albums',
+                              fontSize: 14.sp,
+                              fontWeight: AppFontWeights.regular,
+                              color: AppColors.textColor,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
                 Spacer(),
                 SvgPicture.asset(Assets.svgFilter),
                 SizedBox(width: 5.w),
-                Texts(
-                  'Name',
-                  fontSize: 14.sp,
-                  fontWeight: AppFontWeights.regular,
-                  color: AppColors.textColor,
+                GestureDetector(
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(40),
+                        ),
+                      ),
+                      isScrollControlled: true,
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<AlbumBloc>(),
+                        child: AlbumSortByBottomSheet(
+                          selectedIndex: selectedIndex,
+                          selectedOrder: selectedOrder,
+                          onItemSelected: (index, order) {
+                            setState(() {
+                              selectedIndex = index;
+                              selectedOrder = order;
+                              selectedAlbumSort = albumSortByItems[index].title;
+                            });
+                            // Trigger Bloc sort event
+                            context.read<AlbumBloc>().add(
+                              AlbumEvent.sortAlbums(index, order),
+                            );
+                            // Close bottom sheet safely
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (Navigator.canPop(context))
+                                Navigator.pop(context);
+                            });
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      Texts(
+                        selectedAlbumSort,
+                        fontSize: 14.sp,
+                        fontWeight: AppFontWeights.regular,
+                        color: AppColors.textColor,
+                      ),
+                      SizedBox(width: 10.w),
+                      // Icon(
+                      //   selectedOrder == 0
+                      //       ? Icons.arrow_upward
+                      //       : Icons.arrow_downward,
+                      //   size: 16.sp,
+                      // ),
+                    ],
+                  ),
                 ),
-                SizedBox(width: 15.w),
-                Icon(Icons.arrow_upward),
               ],
             ),
             SizedBox(height: 25.h),
@@ -80,8 +140,8 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                 builder: (context, state) {
                   return state.when(
                     initial: () => const SizedBox(),
-                    loading:
-                        () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     loaded: (albums, _) {
                       if (albums.isEmpty) {
                         return Center(
@@ -177,14 +237,13 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                         },
                       );
                     },
-                    error:
-                        (message) => Center(
-                          child: Texts(
-                            'Error: $message',
-                            fontSize: 14.sp,
-                            color: Colors.red,
-                          ),
-                        ),
+                    error: (message) => Center(
+                      child: Texts(
+                        'Error: $message',
+                        fontSize: 14.sp,
+                        color: Colors.red,
+                      ),
+                    ),
                   );
                 },
               ),

@@ -49,5 +49,56 @@
 	<array>
 		<string>audio</string>
 	</array>
+	<key>UISupportsDocumentBrowser</key>
+	<true/>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>We need access to import your music files into the app</string>
+	<key>NSMediaLibraryUsageDescription</key>
+	<string>We need access to import your music files into the app</string>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.audio</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Audio File</string>
+			<key>UTTypeIdentifier</key>
+			<string>public.audio</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>mp3</string>
+					<string>m4a</string>
+					<string>wav</string>
+					<string>aac</string>
+					<string>flac</string>
+					<string>ogg</string>
+					<string>wma</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Audio Files</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.audio</string>
+				<string>public.mp3</string>
+				<string>public.mpeg-4-audio</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

@@ -275,7 +275,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
                 child: Column(
                   children: [
                     songTitlePlaylistWidget(currentSong),
-                    SizedBox(height: 80.h),
+                    SizedBox(height: 33.h),
                     songPropertiesWidget(),
                   ],
                 ),
@@ -290,48 +290,53 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
   }
 
   Widget songTitlePlaylistWidget(SongsModel? currentSong) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Texts(
-                currentSong?.title ?? '',
-                fontSize: 20.sp,
-                color: AppColors.black,
-                fontWeight: FontWeight.w500,
-                fontFamily: AppFonts.inter,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              SizedBox(height: 4.h),
-              Texts(
-                currentSong?.artist.isNotEmpty == true
-                    ? currentSong!.artist
-                    : 'Unknown Artist',
-                fontSize: 14.sp,
-                color: AppColors.textColor,
-                fontWeight: FontWeight.w400,
-                fontFamily: AppFonts.inter,
-              ),
-            ],
+    return SizedBox(
+      height: 111.h,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Texts(
+                  currentSong?.title ?? '',
+                  fontSize: 20.sp,
+                  color: AppColors.black,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: AppFonts.inter,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 4.h),
+                Texts(
+                  currentSong?.artist.isNotEmpty == true
+                      ? currentSong!.artist
+                      : 'Unknown Artist',
+                  fontSize: 14.sp,
+                  color: AppColors.textColor,
+                  fontWeight: FontWeight.w400,
+                  fontFamily: AppFonts.inter,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                ),
+              ],
+            ),
           ),
-        ),
-        SizedBox(width: 15.w),
-        GestureDetector(
-          onTap: () {
-            _showPlaylistBottomSheet(context, currentSong);
-          },
-          child: SvgPicture.asset(
-            Assets.svgIcPlaylist,
-            width: 32.w,
-            height: 32.h,
+          SizedBox(width: 15.w),
+          GestureDetector(
+            onTap: () {
+              _showPlaylistBottomSheet(context, currentSong);
+            },
+            child: SvgPicture.asset(
+              Assets.svgIcPlaylist,
+              width: 32.w,
+              height: 32.h,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

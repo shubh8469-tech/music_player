@@ -9,6 +9,7 @@ import 'package:music_app/screens/tabs/library/folders/folder_detail_screen.dart
 import 'package:music_app/screens/tabs/library/folders/select_folder_screen.dart';
 import 'package:music_app/screens/tabs/library/artist/artist_detail_screen.dart';
 import 'package:music_app/screens/tabs/library/albums/album_detail_screen.dart';
+import 'package:music_app/screens/tabs/library/albums/select_album_screen.dart';
 
 import 'screens/Splash&Setup/permission.dart';
 import 'screens/Splash&Setup/splashScreen.dart';
@@ -16,6 +17,7 @@ import 'screens/Splash&Setup/sync_progress.dart';
 import 'screens/dashboard/dashboardScreen.dart';
 import 'screens/play_song/playing_song_screen.dart';
 import 'screens/tabs/home/homeScreen.dart';
+import 'screens/tabs/home/import_songs_screen.dart';
 import 'screens/tabs/library/libraryScreen.dart';
 import 'screens/tabs/songs_setting/edit_song_details_screen.dart';
 
@@ -27,6 +29,7 @@ enum AppRouteName {
   playing,
   home,
   library,
+  importSongs,
   editSongDetails,
   selectSong,
   addSongs,
@@ -37,6 +40,7 @@ enum AppRouteName {
   selectFolder,
   artistDetail,
   albumDetail,
+  selectAlbum,
 }
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
@@ -76,6 +80,11 @@ final GoRouter appRouter = GoRouter(
           name: AppRouteName.library.name,
           path: 'library',
           builder: (context, state) => const LibraryScreen(),
+        ),
+        GoRoute(
+          name: AppRouteName.importSongs.name,
+          path: 'import-songs',
+          builder: (context, state) => const ImportSongsScreen(),
         ),
 
         GoRoute(
@@ -191,6 +200,11 @@ final GoRouter appRouter = GoRouter(
             final album = state.extra as dynamic;
             return AlbumDetailScreen(album: album);
           },
+        ),
+        GoRoute(
+          name: AppRouteName.selectAlbum.name,
+          path: 'select-albums',
+          builder: (context, state) => const SelectAlbumScreen(),
         ),
       ],
     ),

@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -62,6 +63,19 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
+      floatingActionButton: Platform.isIOS
+          ? FloatingActionButton(
+              onPressed: () {
+                context.push('/dashboard/import-songs');
+              },
+              backgroundColor: AppColors.primaryOrange,
+              child: Icon(
+                Icons.add,
+                color: AppColors.white,
+                size: 28.r,
+              ),
+            )
+          : null,
       body: BlocBuilder<PlaylistBloc, PlaylistState>(
         builder: (context, state) {
           return Padding(
@@ -355,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             title: playlist.name,
                             subtitle: '${playlist.songCount} Songs',
                             trailingIconAsset: Assets.svgMenuIcon,
-                            trailingIconHeight: 22.5.h,
+                            trailingIconHeight: 19.5.h,
                             trailingIconWidth: 3.w,
                             trailingMargin: 0,
                             onTap: () {

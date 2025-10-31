@@ -151,7 +151,7 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
                                 title: song.title,
                                 subtitle: song.album,
                                 trailingIconAsset: Assets.svgMenuIcon,
-                                trailingIconHeight: 22.5.h,
+                                trailingIconHeight: 19.5.h,
                                 trailingIconWidth: 3.w,
                                 trailingMargin: 10.w,
                                 onTap: () async {
