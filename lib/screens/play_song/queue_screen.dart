@@ -8,6 +8,7 @@ import 'package:music_app/commonWidgets/textWidget.dart';
 import 'package:music_app/features/songs/bloc/songs_bloc.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/generated/assets.dart';
+import 'package:music_app/screens/play_song/playing_song_screen.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
 import 'package:music_app/screens/tabs/music_service.dart';
@@ -53,15 +54,13 @@ class _QueueScreenState extends State<QueueScreen> {
     });
 
     // Listen to shuffle state changes
-    _shuffleSubscription = musicService.isPlayingStream
-        .map((_) => musicService.isShuffleEnabled)
-        .listen((shuffleEnabled) {
-          if (mounted) {
-            setState(() {
-              isShuffleEnabled = shuffleEnabled;
-            });
-          }
+    _shuffleSubscription = musicService.isPlayingStream.map((_) => musicService.isShuffleEnabled).listen((shuffleEnabled) {
+      if (mounted) {
+        setState(() {
+          isShuffleEnabled = shuffleEnabled;
         });
+      }
+    });
 
     // Listen to songs list changes
     _songsSubscription = musicService.songsChanged.listen((newSongs) {
@@ -145,20 +144,16 @@ class _QueueScreenState extends State<QueueScreen> {
       // Find the position of the currently playing song in the shuffled list
       int startIndex = 0;
       if (currentSongId != null) {
-        final currentIndex = shuffledSongs.indexWhere(
-          (song) => song.id == currentSongId,
-        );
+        final currentIndex = shuffledSongs.indexWhere((song) => song.id == currentSongId);
         if (currentIndex >= 0) {
           startIndex = currentIndex;
         } else {
           // If current song not found, pick a random index
-          startIndex =
-              (DateTime.now().millisecondsSinceEpoch % shuffledSongs.length);
+          startIndex = (DateTime.now().millisecondsSinceEpoch % shuffledSongs.length);
         }
       } else {
         // If no current song, pick a random index
-        startIndex =
-            (DateTime.now().millisecondsSinceEpoch % shuffledSongs.length);
+        startIndex = (DateTime.now().millisecondsSinceEpoch % shuffledSongs.length);
       }
 
       // Update UI with shuffled order
@@ -169,11 +164,7 @@ class _QueueScreenState extends State<QueueScreen> {
 
       // Enable shuffle mode and set playlist with shuffled order
       await musicService.ensureShuffleOnAndReshuffle();
-      await musicService.setPlaylist(
-        shuffledSongs,
-        startIndex: startIndex,
-        autoPlay: wasPlaying,
-      );
+      await musicService.setPlaylist(shuffledSongs, startIndex: startIndex, autoPlay: wasPlaying);
     } else {
       // Disable shuffle - restore original order
       setState(() {
@@ -194,9 +185,7 @@ class _QueueScreenState extends State<QueueScreen> {
           loaded: (songs) {
             // Remove any songs from queue that are no longer in the library
             final currentSongIds = songs.map((s) => s.id).toSet();
-            final filteredQueue = queueSongs
-                .where((song) => currentSongIds.contains(song.id))
-                .toList();
+            final filteredQueue = queueSongs.where((song) => currentSongIds.contains(song.id)).toList();
 
             if (filteredQueue.length != queueSongs.length) {
               setState(() {
@@ -219,32 +208,14 @@ class _QueueScreenState extends State<QueueScreen> {
           backgroundColor: AppColors.primaryOrange,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back_ios,
-              color: AppColors.white,
-              size: 20,
-            ),
+            icon: const Icon(Icons.arrow_back_ios, color: AppColors.white, size: 20),
             onPressed: () => context.pop(),
           ),
-          title: Texts(
-            "Playing Queue",
-            fontSize: 18.sp,
-            fontWeight: AppFontWeights.medium,
-            fontFamily: AppFonts.inter,
-            color: AppColors.white,
-          ),
+          title: Texts("Playing Queue", fontSize: 18.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.white),
           actions: [
             IconButton(
               onPressed: _removeSelectedSongs,
-              icon: SvgPicture.asset(
-                Assets.svgIcDelete,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.white,
-                  BlendMode.srcIn,
-                ),
-                height: 26.h,
-                width: 26.w,
-              ),
+              icon: SvgPicture.asset(Assets.svgIcDelete, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn), height: 26.h, width: 26.w),
             ),
           ],
         ),
@@ -254,18 +225,14 @@ class _QueueScreenState extends State<QueueScreen> {
               children: [
                 // Queue Controls
                 Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 12.h,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                   child: Row(
                     children: [
                       Row(
                         children: [
                           SvgPicture.asset(Assets.svgSongsCount),
                           SizedBox(width: 8.w),
-                          if (queueSongs.isNotEmpty &&
-                              musicService.currentIndex >= 0) ...[
+                          if (queueSongs.isNotEmpty && musicService.currentIndex >= 0) ...[
                             Texts(
                               "${musicService.currentIndex + 1}/${queueSongs.length}",
                               fontSize: 14.sp,
@@ -283,42 +250,35 @@ class _QueueScreenState extends State<QueueScreen> {
                             onTap: _toggleShuffle,
                             child: Container(
                               padding: EdgeInsets.all(8.w),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20.r),
-                              ),
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(20.r)),
                               child: SvgPicture.asset(
                                 Assets.svgIcSuffle,
                                 width: 20.w,
                                 height: 20.h,
-                                colorFilter: ColorFilter.mode(
-                                  !isShuffleEnabled
-                                      ? AppColors.mediumDarkGrey
-                                      : AppColors.textColor,
-                                  BlendMode.srcIn,
-                                ),
+                                colorFilter: ColorFilter.mode(!isShuffleEnabled ? AppColors.mediumDarkGrey : AppColors.textColor, BlendMode.srcIn),
                               ),
                             ),
                           ),
                           SizedBox(width: 12.w),
                           GestureDetector(
-                            // onTap: _toggleRepeat,
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Repeat mode feature coming soon'),
+                                  backgroundColor: AppColors.primaryOrange,
+                                  duration: Duration(seconds: 2),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            },
                             child: Container(
                               padding: EdgeInsets.all(8.w),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20.r),
-                              ),
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(20.r)),
                               child: SvgPicture.asset(
-                                repeatMode == 'one'
-                                    ? Assets.svgRepeatOnce
-                                    : Assets.svgIcRepeat,
+                                repeatMode == 'one' ? Assets.svgRepeatOnce : Assets.svgIcRepeat,
                                 width: 20.w,
                                 height: 20.h,
-                                colorFilter: ColorFilter.mode(
-                                  isRepeatEnabled
-                                      ? AppColors.white
-                                      : AppColors.textColor,
-                                  BlendMode.srcIn,
-                                ),
+                                colorFilter: ColorFilter.mode(isRepeatEnabled ? AppColors.white : AppColors.textColor, BlendMode.srcIn),
                               ),
                             ),
                           ),
@@ -347,19 +307,10 @@ class _QueueScreenState extends State<QueueScreen> {
                                     Assets.svgIcQueue,
                                     width: 60.w,
                                     height: 60.h,
-                                    colorFilter: const ColorFilter.mode(
-                                      AppColors.mediumDarkGrey,
-                                      BlendMode.srcIn,
-                                    ),
+                                    colorFilter: const ColorFilter.mode(AppColors.mediumDarkGrey, BlendMode.srcIn),
                                   ),
                                   SizedBox(height: 16.h),
-                                  Texts(
-                                    "Queue is empty",
-                                    fontSize: 16.sp,
-                                    color: AppColors.mediumDarkGrey,
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: AppFonts.inter,
-                                  ),
+                                  Texts("Queue is empty", fontSize: 16.sp, color: AppColors.mediumDarkGrey, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter),
                                   SizedBox(height: 8.h),
                                   Texts(
                                     "Add songs to start playing",
@@ -375,16 +326,13 @@ class _QueueScreenState extends State<QueueScreen> {
                               padding: EdgeInsets.only(
                                 left: 16.w,
                                 right: 16.w,
-                                bottom: showMiniPlayer
-                                    ? 74.h
-                                    : 10.h, // Space for MiniPlayerBar (which includes system nav bar padding)
+                                bottom: showMiniPlayer ? 74.h : 10.h, // Space for MiniPlayerBar (which includes system nav bar padding)
                               ),
                               itemCount: queueSongs.length,
                               onReorder: _reorderSongs,
                               itemBuilder: (context, index) {
                                 final song = queueSongs[index];
-                                final isCurrentlyPlaying =
-                                    musicService.currentIndex == index;
+                                final isCurrentlyPlaying = musicService.currentIndex == index;
 
                                 return Container(
                                   key: ValueKey(song.id),
@@ -392,8 +340,7 @@ class _QueueScreenState extends State<QueueScreen> {
                                     margin: 7.w,
                                     height: 66.h,
                                     borderRadius: 10.r,
-                                    backgroundColor:
-                                        AppColors.musicTileBackgroundColor,
+                                    backgroundColor: AppColors.musicTileBackgroundColor,
                                     cardHeight: 50.h,
                                     cardWidth: 50.w,
                                     cardRadius: 7.r,
@@ -410,9 +357,7 @@ class _QueueScreenState extends State<QueueScreen> {
                                     songLengthRequired: true,
                                     isGifLoad: isCurrentlyPlaying,
                                     titleSize: isCurrentlyPlaying ? 16 : 14,
-                                    titleWeight: isCurrentlyPlaying
-                                        ? FontWeight.w600
-                                        : FontWeight.w500,
+                                    titleWeight: isCurrentlyPlaying ? FontWeight.w600 : FontWeight.w500,
                                     // Queue-specific icons
                                     showDraggableIcon: true,
                                     draggableIconAsset: Assets.svgDraggable,
@@ -420,24 +365,24 @@ class _QueueScreenState extends State<QueueScreen> {
                                     showCancelIcon: true,
                                     cancelIconAsset: Assets.svgCancel,
                                     cancelIconSize: 24.r,
-                                    onCancelTap: () =>
-                                        _removeSongAtIndex(index),
+                                    onCancelTap: () => _removeSongAtIndex(index),
                                     onTap: () async {
-                                      musicService.setPlaylist(
-                                        queueSongs,
-                                        startIndex: index,
-                                      );
+                                      if(musicService.songs.isNotEmpty && musicService.songs[musicService.currentIndex].id == song.id && musicService.isPlaying){
+                                        context.push(
+                                          '/dashboard/playing',
+                                          extra: PlayingSongArgs(songs: musicService.songs),
+                                        );
+                                      }
+                                      else{
+                                        musicService.setPlaylist(queueSongs, startIndex: index);
+                                      }
                                     },
                                     onPlayTap: () {
                                       showModalBottomSheet(
                                         context: context,
                                         backgroundColor: Colors.white,
                                         elevation: 0,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(40.r),
-                                          ),
-                                        ),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
                                         isScrollControlled: true,
                                         builder: (_) => SongMenuScreen(
                                           songMenuList: songMenuItems,

@@ -5,19 +5,17 @@ import 'package:flutter_svg/svg.dart';
 import 'package:music_app/themes/color.dart';
 
 import '../../../../commonWidgets/MusicListTile.dart';
-import '../../../../commonWidgets/song_menu_screen.dart';
+import '../../../../commonWidgets/playlist_menu_screen.dart';
 import '../../../../commonWidgets/textWidget.dart';
 import '../../../../generated/assets.dart';
 import '../../../../themes/font.dart';
 import '../../../../features/playlists/bloc/playlist_bloc.dart';
 import '../../../../features/playlists/domain/entities/playlist.dart' as domain;
 import 'package:go_router/go_router.dart';
-import '../../../../utills/globals.dart';
 import '../../music_service.dart';
 import 'dart:async';
 
 import 'create_playlist_bottom_sheet.dart';
-import 'create_playlist_screen.dart';
 
 class PlayListScreen extends StatefulWidget {
   const PlayListScreen({super.key});
@@ -213,25 +211,19 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                   ),
                                 ),
                                 isScrollControlled: true,
-                                builder:
-                                    (_) => SongMenuScreen(
-                                      songMenuList: playlistMenuItems,
-                                      isPlaying: false,
-                                      currentSong:
-                                          musicService.currentIndex != -1
-                                              ? musicService.songs[musicService
-                                                  .currentIndex]
-                                              : null,
-                                      songIndex: index,
-                                      songsList: [],
-                                      maxHeight:
-                                          musicService.currentIndex != -1
-                                              ? 0.79.sh
-                                              : 0.66.sh,
-                                      from: 'playlist',
-                                      systemKeyOrId: p.systemKey,
-                                      isSystemPlaylist: true,
-                                    ),
+                                builder: (_) => BlocProvider.value(
+                                  value: context.read<PlaylistBloc>(),
+                                  child: PlaylistMenuScreen(
+                                    playlist: p,
+                                    playlistIconAsset: icon,
+                                    playlistGradientColors: [
+                                      color.withValues(alpha: 0.21),
+                                      color,
+                                    ],
+                                    isSystemPlaylist: true,
+                                    systemKeyOrId: p.systemKey!,
+                                  ),
+                                ),
                               );
                             },
                           );
@@ -305,6 +297,7 @@ class _PlayListScreenState extends State<PlayListScreen> {
                             },
                             onPlayTap: () {
                               showModalBottomSheet(
+
                                 context: context,
                                 backgroundColor: Colors.white,
                                 elevation: 0,
@@ -314,24 +307,19 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                   ),
                                 ),
                                 isScrollControlled: true,
-                                builder:
-                                    (_) => SongMenuScreen(
-                                      songMenuList: playlistMenuItems,
-                                      isPlaying: false,
-                                      currentSong:
-                                          musicService.currentIndex != -1
-                                              ? musicService.songs[musicService
-                                                  .currentIndex]
-                                              : null,
-                                      songIndex: index,
-                                      songsList: [],
-                                      maxHeight: musicService.currentIndex != -1
-                                          ? 0.79.sh
-                                          : 0.66.sh,
-                                      from: 'playlist',
-                                      systemKeyOrId: p.id.toString(),
-                                      isSystemPlaylist: false,
-                                    ),
+                                builder: (_) => BlocProvider.value(
+                                  value: context.read<PlaylistBloc>(),
+                                  child: PlaylistMenuScreen(
+                                    playlist: p,
+                                    playlistIconAsset: Assets.svgMusicIcon,
+                                    playlistGradientColors: [
+                                      AppColors.primaryOrange.withValues(alpha: 0.21),
+                                      AppColors.primaryOrange,
+                                    ],
+                                    isSystemPlaylist: false,
+                                    systemKeyOrId: p.id.toString(),
+                                  ),
+                                ),
                               );
                             },
                           );

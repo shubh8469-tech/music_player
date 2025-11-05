@@ -1,8 +1,13 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:metadata_god/metadata_god.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
+import '../../../commonWidgets/MusicListTile.dart';
 import '../../../commonWidgets/buton.dart';
 import '../../../commonWidgets/textWidget.dart';
 import '../../../core/services/import_songs_service.dart';
@@ -19,9 +24,24 @@ class ImportSongsScreen extends StatefulWidget {
   State<ImportSongsScreen> createState() => _ImportSongsScreenState();
 }
 
+// Class to hold file preview information
+class FilePreview {
+  final PlatformFile file;
+  final String title;
+  final String subtitle;
+  final String? artworkPath;
+
+  FilePreview({
+    required this.file,
+    required this.title,
+    required this.subtitle,
+    this.artworkPath,
+  });
+}
+
 class _ImportSongsScreenState extends State<ImportSongsScreen> {
   final ImportSongsService _importService = ImportSongsService();
-  
+
   bool _isImporting = false;
   bool _importComplete = false;
   int _currentProgress = 0;
@@ -32,6 +52,8 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
   List<String> _failedFiles = [];
   List<String> _skippedFiles = [];
   List<PlatformFile>? _selectedFiles;
+  List<FilePreview>? _filePreviews;
+  bool _isLoadingPreviews = false;
 
   Future<void> _pickFiles() async {
     final files = await _importService.pickAudioFiles();
@@ -39,7 +61,90 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
       setState(() {
         _selectedFiles = files;
         _importComplete = false;
+        _isLoadingPreviews = true;
       });
+
+      // Extract metadata for preview
+      await _extractFilePreviews(files);
+    }
+  }
+
+  Future<void> _extractFilePreviews(List<PlatformFile> files) async {
+    List<FilePreview> previews = [];
+    final appDocDir = await getApplicationDocumentsDirectory();
+    final tempArtworkDir = Directory(p.join(appDocDir.path, 'temp_artworks'));
+
+    // Create temp artwork directory if it doesn't exist
+    if (!await tempArtworkDir.exists()) {
+      await tempArtworkDir.create(recursive: true);
+    }
+
+    for (int i = 0; i < files.length; i++) {
+      final file = files[i];
+      String title = p.basenameWithoutExtension(file.name);
+      String subtitle = _formatBytes(file.size);
+      String? artworkPath;
+
+      try {
+        if (file.path != null) {
+          final sourceFile = File(file.path!);
+          if (await sourceFile.exists()) {
+            // Extract metadata
+            final metadata = await MetadataGod.readMetadata(file: file.path!);
+
+            // Get title and artist
+            if (metadata.title != null && metadata.title!.isNotEmpty) {
+              title = metadata.title!;
+            }
+
+            String artist = 'Unknown Artist';
+            if (metadata.artist != null && metadata.artist!.isNotEmpty) {
+              artist = metadata.artist!;
+            }
+            subtitle = artist;
+
+            // Extract artwork
+            if (metadata.picture != null && metadata.picture!.data.isNotEmpty) {
+              final timestamp = DateTime.now().millisecondsSinceEpoch;
+              final artworkFile = File(
+                p.join(tempArtworkDir.path, 'preview_${timestamp}_$i.jpg'),
+              );
+              await artworkFile.writeAsBytes(metadata.picture!.data);
+              artworkPath = artworkFile.path;
+            }
+          }
+        }
+      } catch (e) {
+        // If metadata extraction fails, use file name
+        subtitle = _formatBytes(file.size);
+      }
+
+      previews.add(
+        FilePreview(
+          file: file,
+          title: title,
+          subtitle: subtitle,
+          artworkPath: artworkPath,
+        ),
+      );
+    }
+
+    setState(() {
+      _filePreviews = previews;
+      _isLoadingPreviews = false;
+    });
+  }
+
+  Future<void> _cleanupTempArtworks() async {
+    try {
+      final appDocDir = await getApplicationDocumentsDirectory();
+      final tempArtworkDir = Directory(p.join(appDocDir.path, 'temp_artworks'));
+
+      if (await tempArtworkDir.exists()) {
+        await tempArtworkDir.delete(recursive: true);
+      }
+    } catch (e) {
+      // Silently fail - cleanup is not critical
     }
   }
 
@@ -73,11 +178,21 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
       _skippedFiles = List<String>.from(result['skippedFiles'] ?? []);
     });
 
+    // Clean up temp artwork files after import
+    await _cleanupTempArtworks();
+
     // Refresh the songs list and playlists after successful import
     if (_successCount > 0 && mounted) {
       context.read<SongsBloc>().add(const SongsEvent.getAllSongs());
       context.read<PlaylistBloc>().add(const PlaylistEvent.fetchAllPlaylists());
     }
+  }
+
+  @override
+  void dispose() {
+    // Clean up temp artworks when widget is disposed
+    _cleanupTempArtworks();
+    super.dispose();
   }
 
   @override
@@ -98,10 +213,7 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
           fontFamily: AppFonts.manrope,
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0.r),
-        child: _buildBody(),
-      ),
+      body: Padding(padding: EdgeInsets.all(16.0.r), child: _buildBody()),
     );
   }
 
@@ -151,14 +263,21 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
               decoration: BoxDecoration(
                 color: Colors.blue[50],
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: Colors.blue[200] ?? Colors.blue, width: 1),
+                border: Border.all(
+                  color: Colors.blue[200] ?? Colors.blue,
+                  width: 1,
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.info_outline, color: Colors.blue[700], size: 20.r),
+                      Icon(
+                        Icons.info_outline,
+                        color: Colors.blue[700],
+                        size: 20.r,
+                      ),
                       SizedBox(width: 8.w),
                       Texts(
                         'How to import music:',
@@ -172,11 +291,17 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
                   SizedBox(height: 12.h),
                   _buildInfoStep('1', 'Tap "Browse Files" below'),
                   SizedBox(height: 8.h),
-                  _buildInfoStep('2', 'Navigate to your music files (Downloads, iCloud Drive, etc.)'),
+                  _buildInfoStep(
+                    '2',
+                    'Navigate to your music files (Downloads, iCloud Drive, etc.)',
+                  ),
                   SizedBox(height: 8.h),
                   _buildInfoStep('3', 'Select one or multiple audio files'),
                   SizedBox(height: 8.h),
-                  _buildInfoStep('4', 'Tap "Import" to add them to your library'),
+                  _buildInfoStep(
+                    '4',
+                    'Tap "Import" to add them to your library',
+                  ),
                 ],
               ),
             ),
@@ -252,52 +377,64 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
         ),
         SizedBox(height: 16.h),
         Expanded(
-          child: ListView.builder(
-            itemCount: _selectedFiles!.length,
-            itemBuilder: (context, index) {
-              final file = _selectedFiles![index];
-              return Container(
-                margin: EdgeInsets.only(bottom: 8.h),
-                padding: EdgeInsets.all(12.r),
-                decoration: BoxDecoration(
-                  color: AppColors.musicTileBackgroundColor,
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.music_note,
-                      color: AppColors.primaryOrange,
-                      size: 24.r,
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Texts(
-                            file.name,
-                            fontFamily: AppFonts.inter,
-                            fontWeight: AppFontWeights.medium,
-                            fontSize: 14.sp,
-                            maxLines: 1,
-                          ),
-                          SizedBox(height: 4.h),
-                          Texts(
-                            _formatBytes(file.size),
-                            fontFamily: AppFonts.inter,
-                            fontWeight: AppFontWeights.regular,
-                            fontSize: 12.sp,
-                            color: Colors.grey[600] ?? Colors.grey,
-                          ),
-                        ],
+          child: _isLoadingPreviews
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: AppColors.primaryOrange),
+                      SizedBox(height: 16.h),
+                      Texts(
+                        'Loading file previews...',
+                        fontFamily: AppFonts.inter,
+                        fontSize: 14.sp,
+                        color: Colors.grey[600] ?? Colors.grey,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: _filePreviews?.length ?? _selectedFiles!.length,
+                  itemBuilder: (context, index) {
+                    final preview = _filePreviews?[index];
+                    final file = _selectedFiles![index];
+
+                    // If preview is available, use it; otherwise show basic info
+                    final title =
+                        preview?.title ?? p.basenameWithoutExtension(file.name);
+                    final subtitle =
+                        preview?.subtitle ?? _formatBytes(file.size);
+                    final artworkPath = preview?.artworkPath;
+
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: 8.h),
+                      child: MusicListTile(
+                        margin: 0,
+                        height: 70.h,
+                        borderRadius: 10.r,
+                        backgroundColor: AppColors.musicTileBackgroundColor,
+                        cardHeight: 50.h,
+                        cardWidth: 50.w,
+                        cardRadius: 7.r,
+                        cardIconAsset: artworkPath ?? Assets.svgMusicIcon,
+                        cardIconSize: artworkPath != null ? 50.r : 28.r,
+                        isSvgCardIcon: artworkPath == null,
+                        isSvgColorNeeded: artworkPath == null,
+                        title: title,
+                        titleSize: 15,
+                        subtitle: subtitle,
+                        subtitleSize: 12,
+                        trailingIconAsset: Assets.svgMusicIcon,
+                        trailingIconHeight: 24.h,
+                        trailingIconWidth: 24.w,
+                        trailingMargin: 2.w,
+                        onTap: () {
+                          // Optional: show file details
+                        },
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
         ),
         SizedBox(height: 16.h),
         Row(
@@ -305,9 +442,11 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
             Expanded(
               child: OvalButton(
                 text: "Cancel",
-                onPressed: () {
+                onPressed: () async {
+                  await _cleanupTempArtworks();
                   setState(() {
                     _selectedFiles = null;
+                    _filePreviews = null;
                   });
                 },
                 backgroundColor: Colors.grey[300]!,
@@ -336,7 +475,7 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
 
   Widget _buildImportingView() {
     final progress = _totalFiles > 0 ? _currentProgress / _totalFiles : 0.0;
-    
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -416,48 +555,50 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
                 color: Colors.blue[600] ?? Colors.blue,
               ),
             ],
-          if (_failedCount > 0) ...[
-            SizedBox(height: 8.h),
-            Texts(
-              'Failed to import $_failedCount file${_failedCount != 1 ? 's' : ''}',
-              fontFamily: AppFonts.inter,
-              fontWeight: AppFontWeights.regular,
-              fontSize: 14.sp,
-              color: Colors.red[600] ?? Colors.red,
-            ),
-            if (_failedFiles.isNotEmpty) ...[
-              SizedBox(height: 16.h),
-              Container(
-                padding: EdgeInsets.all(12.r),
-                decoration: BoxDecoration(
-                  color: Colors.red[50],
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Texts(
-                      'Failed files:',
-                      fontFamily: AppFonts.inter,
-                      fontWeight: AppFontWeights.semiBold,
-                      fontSize: 14.sp,
-                    ),
-                    SizedBox(height: 8.h),
-                    ..._failedFiles.map((file) => Padding(
-                      padding: EdgeInsets.only(bottom: 4.h),
-                      child: Texts(
-                        '• $file',
-                        fontFamily: AppFonts.inter,
-                        fontWeight: AppFontWeights.regular,
-                        fontSize: 12.sp,
-                        color: Colors.grey[700] ?? Colors.grey,
-                      ),
-                    )),
-                  ],
-                ),
+            if (_failedCount > 0) ...[
+              SizedBox(height: 8.h),
+              Texts(
+                'Failed to import $_failedCount file${_failedCount != 1 ? 's' : ''}',
+                fontFamily: AppFonts.inter,
+                fontWeight: AppFontWeights.regular,
+                fontSize: 14.sp,
+                color: Colors.red[600] ?? Colors.red,
               ),
+              if (_failedFiles.isNotEmpty) ...[
+                SizedBox(height: 16.h),
+                Container(
+                  padding: EdgeInsets.all(12.r),
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Texts(
+                        'Failed files:',
+                        fontFamily: AppFonts.inter,
+                        fontWeight: AppFontWeights.semiBold,
+                        fontSize: 14.sp,
+                      ),
+                      SizedBox(height: 8.h),
+                      ..._failedFiles.map(
+                        (file) => Padding(
+                          padding: EdgeInsets.only(bottom: 4.h),
+                          child: Texts(
+                            '• $file',
+                            fontFamily: AppFonts.inter,
+                            fontWeight: AppFontWeights.regular,
+                            fontSize: 12.sp,
+                            color: Colors.grey[700] ?? Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
-          ],
             if (_skippedFiles.isNotEmpty) ...[
               SizedBox(height: 16.h),
               Container(
@@ -471,7 +612,11 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.info_outline, color: Colors.blue[700], size: 16.r),
+                        Icon(
+                          Icons.info_outline,
+                          color: Colors.blue[700],
+                          size: 16.r,
+                        ),
                         SizedBox(width: 8.w),
                         Texts(
                           'Already imported (skipped):',
@@ -483,16 +628,20 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
                       ],
                     ),
                     SizedBox(height: 8.h),
-                    ..._skippedFiles.take(5).map((file) => Padding(
-                      padding: EdgeInsets.only(bottom: 4.h),
-                      child: Texts(
-                        '• $file',
-                        fontFamily: AppFonts.inter,
-                        fontWeight: AppFontWeights.regular,
-                        fontSize: 12.sp,
-                        color: Colors.grey[700] ?? Colors.grey,
-                      ),
-                    )),
+                    ..._skippedFiles
+                        .take(5)
+                        .map(
+                          (file) => Padding(
+                            padding: EdgeInsets.only(bottom: 4.h),
+                            child: Texts(
+                              '• $file',
+                              fontFamily: AppFonts.inter,
+                              fontWeight: AppFontWeights.regular,
+                              fontSize: 12.sp,
+                              color: Colors.grey[700] ?? Colors.grey,
+                            ),
+                          ),
+                        ),
                     if (_skippedFiles.length > 5)
                       Padding(
                         padding: EdgeInsets.only(top: 4.h),
@@ -530,4 +679,3 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 }
-

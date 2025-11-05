@@ -45,7 +45,16 @@ class _EditSongDetailsScreenState extends State<EditSongDetailsScreen> {
                 iconAsset: Assets.svgIcTunes,
                 iconSize: 80.r,
                 title: "",
-                onTap: () {},
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Change cover feature coming soon'),
+                      backgroundColor: AppColors.primaryOrange,
+                      duration: Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
                 margin: 10.w,
               ),
               SizedBox(height: 20.h),

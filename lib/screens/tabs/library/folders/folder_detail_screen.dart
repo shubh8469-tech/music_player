@@ -20,7 +20,11 @@ import '../../../../generated/assets.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../utills/globals.dart';
 import '../../../../utills/snack_bar.dart';
+import '../../../play_song/playing_song_screen.dart';
 import '../widgets/mini_player_bar.dart';
+import '../../../../model/song_menu_model.dart';
+import '../../../../commonWidgets/bottom_button_two.dart';
+import '../../../../l10n/l10n.dart';
 
 class FolderDetailScreen extends StatefulWidget {
   final Folder folder;
@@ -32,23 +36,23 @@ class FolderDetailScreen extends StatefulWidget {
 
 class _FolderDetailScreenState extends State<FolderDetailScreen> {
   final _repo = locator<FolderRepository>();
-  final _player = MusicPlayerService();
+  final musicService = MusicPlayerService();
 
   List<SongsModel> _songs = [];
   List<SongsModel> _baseSongs = [];
-  Folder _currentFolder = Folder(
-    id: 0,
-    name: '',
-    path: '',
-    songCount: 0,
-    createdTime: DateTime.now(),
-    updatedTime: DateTime.now(),
-  );
+  Folder _currentFolder = Folder(id: 0, name: '', path: '', songCount: 0, createdTime: DateTime.now(), updatedTime: DateTime.now());
+
+  // Sort options without folder option
+  late final List<SongMenuItem> _folderSongSortByItems;
+  int selectedIndex = 0;
+  int selectedOrder = 0;
 
   @override
   void initState() {
     super.initState();
     _currentFolder = widget.folder;
+    // Create sort items without folder option (index 3 in sortByItems)
+    _folderSongSortByItems = List.from(sortByItems)..removeAt(3);
     _loadSongs();
   }
 
@@ -68,11 +72,77 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
     folderBloc.add(const FolderEvent.fetchAllFolders());
   }
 
+  void _sortSongs(int sortIndex, int sortOrder) {
+    List<SongsModel> sortedSongs = List.from(_songs);
+    final isAscending = sortOrder == 0;
+
+    // Adjust sortIndex since we removed folder option (original index 3)
+    // 0: Song Name -> 0
+    // 1: Artist -> 1
+    // 2: Album -> 2
+    // 3: Added Time -> 4 (original)
+    // 4: Play Count -> 5 (original)
+    // 5: Year -> 6 (original)
+    int adjustedIndex = sortIndex;
+    if (sortIndex >= 3) {
+      adjustedIndex = sortIndex + 1; // Skip folder option
+    }
+
+    switch (adjustedIndex) {
+      case 0: // Song Name
+        sortedSongs.sort((a, b) => isAscending 
+          ? a.title.toLowerCase().compareTo(b.title.toLowerCase()) 
+          : b.title.toLowerCase().compareTo(a.title.toLowerCase()));
+        break;
+      case 1: // Artist
+        sortedSongs.sort((a, b) {
+          final aArtist = a.artist == '<unknown>' ? 'zzz' : a.artist.toLowerCase();
+          final bArtist = b.artist == '<unknown>' ? 'zzz' : b.artist.toLowerCase();
+          return isAscending 
+            ? aArtist.compareTo(bArtist) 
+            : bArtist.compareTo(aArtist);
+        });
+        break;
+      case 2: // Album
+        sortedSongs.sort((a, b) => isAscending 
+          ? a.album.toLowerCase().compareTo(b.album.toLowerCase()) 
+          : b.album.toLowerCase().compareTo(a.album.toLowerCase()));
+        break;
+      case 4: // Added Time
+        sortedSongs.sort((a, b) => isAscending 
+          ? a.createdTime.compareTo(b.createdTime) 
+          : b.createdTime.compareTo(a.createdTime));
+        break;
+      case 5: // Play Count
+        sortedSongs.sort((a, b) => isAscending 
+          ? a.playCount.compareTo(b.playCount) 
+          : b.playCount.compareTo(a.playCount));
+        break;
+      case 6: // Year
+        sortedSongs.sort((a, b) {
+          final aYear = a.year ?? 0;
+          final bYear = b.year ?? 0;
+          // Songs without year go to the end
+          if (aYear == 0 && bYear == 0) return 0;
+          if (aYear == 0) return 1;
+          if (bYear == 0) return -1;
+          return isAscending ? aYear.compareTo(bYear) : bYear.compareTo(aYear);
+        });
+        break;
+      default:
+        break;
+    }
+
+    setState(() {
+      _songs = sortedSongs;
+    });
+  }
+
   Widget _songTile(List<SongsModel> list, int index) {
     final song = list[index];
     return StreamBuilder<int?>(
-      stream: _player.currentSongIdStream,
-      initialData: _player.currentSongId,
+      stream: musicService.currentSongIdStream,
+      initialData: musicService.currentSongId,
       builder: (context, idSnap) {
         final currentId = idSnap.data;
         final isCurrent = song.id == currentId;
@@ -100,19 +170,19 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                 trailingMargin: 10.w,
                 isGifLoad: isCurrent,
                 onTap: () async {
-                  await _player.setPlaylist(list, startIndex: index);
-                  await _player.play();
+                  if (musicService.songs.isNotEmpty && musicService.songs[musicService.currentIndex].id == song.id && musicService.isPlaying) {
+                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: musicService.songs));
+                  } else {
+                    await musicService.setPlaylist(list, startIndex: index);
+                    await musicService.play();
+                  }
                 },
                 onPlayTap: () async {
                   showModalBottomSheet(
                     context: context,
                     backgroundColor: Colors.white,
                     elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(40.r),
-                      ),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
                     isScrollControlled: true,
                     builder: (_) => SongMenuScreen(
                       songMenuList: songMenuItems,
@@ -143,15 +213,12 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                         });
 
                         // Wait for database operations and triggers to complete, then sync with DB
-                        Future.delayed(
-                          const Duration(milliseconds: 800),
-                          () async {
-                            if (mounted) {
-                              await _loadSongs();
-                              _refreshFolderData();
-                            }
-                          },
-                        );
+                        Future.delayed(const Duration(milliseconds: 800), () async {
+                          if (mounted) {
+                            await _loadSongs();
+                            _refreshFolderData();
+                          }
+                        });
                       },
                     ),
                   );
@@ -164,22 +231,178 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
     );
   }
 
+  // Custom sort by bottom sheet for folder songs
+  Widget _buildSortByBottomSheet() {
+    int localSelectedIndex = selectedIndex;
+    int localSelectedOrder = selectedOrder;
+
+    return StatefulBuilder(
+      builder: (context, setModalState) {
+        // Handle keyboard visibility and safe area
+        final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+        final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+        final bottomPadding = viewInsets > 0 
+          ? viewInsets + 16.h 
+          : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+
+        return Container(
+          padding: EdgeInsets.only(
+            top: 10.h,
+            bottom: bottomPadding,
+            left: 10.w,
+            right: 10.w,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SvgPicture.asset(Assets.svgIcLineBottom),
+              SizedBox(height: 20.h),
+              Texts(
+                'Sort By',
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w500,
+                fontFamily: AppFonts.inter,
+              ),
+              SizedBox(height: 10.h),
+
+              // Sort Type Options
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ...List.generate(_folderSongSortByItems.length, (index) {
+                    var songItem = _folderSongSortByItems[index];
+                    return ListTile(
+                      dense: true,
+                      visualDensity: VisualDensity(horizontal: 0.w, vertical: -2.h),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
+                      title: Texts(
+                        songItem.title,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w400,
+                        fontFamily: AppFonts.inter,
+                        color: index == localSelectedIndex
+                            ? AppColors.primaryOrange
+                            : AppColors.textColor,
+                      ),
+                      trailing: SvgPicture.asset(
+                        index == localSelectedIndex
+                            ? Assets.svgIcRadioCheckl
+                            : Assets.svgIcRadioUncheck,
+                        height: 20.h,
+                        width: 20.w,
+                      ),
+                      onTap: () {
+                        setModalState(() {
+                          localSelectedIndex = index;
+                        });
+                      },
+                    );
+                  }),
+
+                  // Divider
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.w),
+                    child: Divider(
+                      color: AppColors.textColor.withOpacity(0.2),
+                      thickness: 1,
+                    ),
+                  ),
+
+                  // Ascending Option
+                  ListTile(
+                    dense: true,
+                    visualDensity: VisualDensity(horizontal: 0.w, vertical: -2.h),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
+                    title: Texts(
+                      'Ascending',
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w400,
+                      fontFamily: AppFonts.inter,
+                      color: localSelectedOrder == 0
+                          ? AppColors.primaryOrange
+                          : AppColors.textColor,
+                    ),
+                    trailing: SvgPicture.asset(
+                      localSelectedOrder == 0
+                          ? Assets.svgIcRadioCheckl
+                          : Assets.svgIcRadioUncheck,
+                      height: 20.h,
+                      width: 20.w,
+                    ),
+                    onTap: () {
+                      setModalState(() {
+                        localSelectedOrder = 0;
+                      });
+                    },
+                  ),
+
+                  // Descending Option
+                  ListTile(
+                    dense: true,
+                    visualDensity: VisualDensity(horizontal: 0.w, vertical: -2.h),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
+                    title: Texts(
+                      'Descending',
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w400,
+                      fontFamily: AppFonts.inter,
+                      color: localSelectedOrder == 1
+                          ? AppColors.primaryOrange
+                          : AppColors.textColor,
+                    ),
+                    trailing: SvgPicture.asset(
+                      localSelectedOrder == 1
+                          ? Assets.svgIcRadioCheckl
+                          : Assets.svgIcRadioUncheck,
+                      height: 20.h,
+                      width: 20.w,
+                    ),
+                    onTap: () {
+                      setModalState(() {
+                        localSelectedOrder = 1;
+                      });
+                    },
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 20.h),
+
+              // Buttons
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.w),
+                child: BottomButtonTwo(
+                  leftBtnTitle: S.of(context).cancel,
+                  rightBtnTitle: "Done",
+                  lefBtnTap: () {
+                    Navigator.pop(context);
+                  },
+                  rightBtnTap: () {
+                    setState(() {
+                      selectedIndex = localSelectedIndex;
+                      selectedOrder = localSelectedOrder;
+                    });
+                    _sortSongs(localSelectedIndex, localSelectedOrder);
+                  },
+                ),
+              ),
+              SizedBox(height: 25.h),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   // Custom delete folder confirmation bottom sheet
   Widget _buildDeleteFolderConfirmationDialog() {
     // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
     final viewInsets = MediaQuery.of(context).viewInsets.bottom;
     final viewPadding = MediaQuery.of(context).viewPadding.bottom;
-    final bottomPadding = viewInsets > 0
-        ? viewInsets + 16.h
-        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+    final bottomPadding = viewInsets > 0 ? viewInsets + 16.h : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
 
     return Container(
-      padding: EdgeInsets.only(
-        left: 16.w,
-        right: 16.w,
-        top: 10.h,
-        bottom: bottomPadding,
-      ),
+      padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 10.h, bottom: bottomPadding),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -187,21 +410,12 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
           Container(
             width: 40.w,
             height: 4.h,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2.r),
-            ),
+            decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2.r)),
           ),
           SizedBox(height: 30.h),
 
           // Title
-          Texts(
-            'Delete Folder',
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w500,
-            fontFamily: AppFonts.inter,
-            color: AppColors.textColor,
-          ),
+          Texts('Delete Folder', fontSize: 18.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter, color: AppColors.textColor),
           SizedBox(height: 30.h),
 
           // Message
@@ -224,18 +438,9 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                   onTap: () => Navigator.pop(context),
                   child: Container(
                     height: 48.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
+                    decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(8.r)),
                     child: Center(
-                      child: Texts(
-                        'Cancel',
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: AppFonts.inter,
-                        color: AppColors.black,
-                      ),
+                      child: Texts('Cancel', fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter, color: AppColors.black),
                     ),
                   ),
                 ),
@@ -250,35 +455,19 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
 
                     // Delete folder
                     final folderBloc = context.read<FolderBloc>();
-                    folderBloc.add(
-                      FolderEvent.deleteFolder(_currentFolder.id!),
-                    );
+                    folderBloc.add(FolderEvent.deleteFolder(_currentFolder.id!));
 
                     // Show success message
-                    showSnackBar(
-                      context,
-                      () {},
-                      message: 'Folder deleted successfully',
-                      alertBannerLocation: AlertBannerLocation.bottom,
-                    );
+                    showSnackBar(context, () {}, message: 'Folder deleted successfully', alertBannerLocation: AlertBannerLocation.bottom);
 
                     // Navigate back to previous screen
                     context.pop();
                   },
                   child: Container(
                     height: 48.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryOrange,
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
+                    decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(8.r)),
                     child: Center(
-                      child: Texts(
-                        'Delete',
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: AppFonts.inter,
-                        color: AppColors.white,
-                      ),
+                      child: Texts('Delete', fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter, color: AppColors.white),
                     ),
                   ),
                 ),
@@ -301,19 +490,13 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
             state.maybeWhen(
               loaded: (folders, folderSongs) {
                 // Find the updated folder with new song count
-                final updatedFolder = folders.firstWhere(
-                  (folder) => folder.id == _currentFolder.id,
-                  orElse: () => _currentFolder,
-                );
+                final updatedFolder = folders.firstWhere((folder) => folder.id == _currentFolder.id, orElse: () => _currentFolder);
                 // Update folder if it exists and has changed
                 if (updatedFolder.id == _currentFolder.id) {
                   final oldSongCount = _currentFolder.songCount;
                   final newSongCount = updatedFolder.songCount;
                   final songCountChanged = newSongCount != oldSongCount;
-                  final hasChanged =
-                      songCountChanged ||
-                      updatedFolder.name != _currentFolder.name ||
-                      updatedFolder.updatedTime != _currentFolder.updatedTime;
+                  final hasChanged = songCountChanged || updatedFolder.name != _currentFolder.name || updatedFolder.updatedTime != _currentFolder.updatedTime;
 
                   if (hasChanged && mounted) {
                     setState(() {
@@ -354,20 +537,10 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
           backgroundColor: AppColors.primaryOrange,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back_ios,
-              color: AppColors.white,
-              size: 20,
-            ),
+            icon: const Icon(Icons.arrow_back_ios, color: AppColors.white, size: 20),
             onPressed: () => context.pop(),
           ),
-          title: Texts(
-            _currentFolder.name,
-            fontSize: 18.sp,
-            fontWeight: AppFontWeights.medium,
-            fontFamily: AppFonts.inter,
-            color: AppColors.white,
-          ),
+          title: Texts(_currentFolder.name, fontSize: 18.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.white),
           actions: [
             GestureDetector(
               onTap: () {
@@ -375,24 +548,14 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                   context: context,
                   backgroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(40.r),
-                    ),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
                   isScrollControlled: true,
                   builder: (_) => _buildDeleteFolderConfirmationDialog(),
                 );
               },
               child: Padding(
                 padding: EdgeInsets.only(right: 12.w),
-                child: SvgPicture.asset(
-                  Assets.svgIcDelete,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.white,
-                    BlendMode.srcIn,
-                  ),
-                ),
+                child: SvgPicture.asset(Assets.svgIcDelete, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
               ),
             ),
           ],
@@ -400,199 +563,162 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
         body: Stack(
           children: [
             StreamBuilder<List<SongsModel>>(
-              stream: _player.songsChanged,
-              initialData: _player.songs,
+              stream: musicService.songsChanged,
+              initialData: musicService.songs,
               builder: (context, snapshot) {
                 // Always check the current state, not just the snapshot
-                final hasAny = _player.songs.isNotEmpty;
-                final showMiniPlayer = hasAny;
+                // final hasAny = musicService.songs.isNotEmpty;
+                // final showMiniPlayer = hasAny;
 
                 return Padding(
                   padding: EdgeInsets.only(
                     left: 20.w,
                     right: 20.w,
                     top: 10.h,
-                    bottom: showMiniPlayer
-                        ? 74.h
-                        : 10.h, // Space for MiniPlayerBar (which includes system nav bar padding)
+                    // bottom: showMiniPlayer
+                    //     ? 74.h
+                    //     : 10.h, // Space for MiniPlayerBar (which includes system nav bar padding)
                   ),
-                  child: Column(
-                    children: [
-                      SizedBox(height: 15.h),
-                      GradientCard(
-                        height: 150.h,
-                        width: 150.w,
-                        colors: [
-                          AppColors.mildOrange.withValues(alpha: 0.21),
-                          AppColors.primaryOrange,
-                        ],
-                        borderRadius: 13.r,
-                        iconAsset: Assets.svgDirectory,
-                        iconSize: 60.r,
-                        margin: 10.w,
-                      ),
-                      SizedBox(height: 14.h),
-                      Texts(
-                        _currentFolder.name,
-                        fontSize: 20.sp,
-                        fontWeight: AppFontWeights.medium,
-                        fontFamily: AppFonts.inter,
-                        color: AppColors.textColor,
-                      ),
-
-                      SizedBox(height: 25.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: SizedBox(
+                    height: double.infinity,
+                    child: SingleChildScrollView(
+                      child: Column(
                         children: [
-                          GestureDetector(
-                            onTap: () async {
-                              if (_songs.isEmpty) return;
-
-                              await _player.setPlaylist(
-                                _songs,
-                                autoPlay: false,
-                              );
-                              await _player
-                                  .ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
-
-                              // Wait until the player has fully updated its index
-                              await _player.player.currentIndexStream
-                                  .firstWhere((idx) => idx != null && idx != 0);
-
-                              // Now play
-                              await _player.play();
-
-                              logS.log("Shuffle Play started");
-                            },
-                            child: Container(
-                              alignment: Alignment.center,
-                              height: 40.h,
-                              width: 165.w,
-                              decoration: BoxDecoration(
-                                color: AppColors.shuffleBackground,
-                                borderRadius: BorderRadius.circular(100.r),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SvgPicture.asset(
-                                    Assets.svgShuffle,
-                                    height: 16.79.h,
-                                    width: 17.77.w,
-                                  ),
-                                  SizedBox(width: 10.w),
-                                  Texts(
-                                    'Shuffle',
-                                    fontWeight: AppFontWeights.medium,
-                                    fontSize: 14.sp,
-                                    color: AppColors.black,
-                                  ),
-                                ],
-                              ),
-                            ),
+                          SizedBox(height: 15.h),
+                          GradientCard(
+                            height: 150.h,
+                            width: 150.w,
+                            colors: [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.primaryOrange],
+                            borderRadius: 13.r,
+                            iconAsset: Assets.svgDirectory,
+                            iconSize: 115.r,
+                            margin: 10.w,
                           ),
-                          GestureDetector(
-                            onTap: () async {
-                              if (_baseSongs.isEmpty) return;
-                              await _player.ensureShuffleOff();
+                          SizedBox(height: 14.h),
+                          Texts(_currentFolder.name, fontSize: 20.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.textColor),
 
-                              // Start from the first song of the folder
-                              await _player.setPlaylist(
-                                List<SongsModel>.from(_baseSongs),
-                                startIndex: 0,
-                                autoPlay: true,
-                              );
-                              await _player.play();
-                            },
-                            child: Container(
-                              height: 40.h,
-                              width: 165.w,
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryOrange,
-                                borderRadius: BorderRadius.circular(100.r),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SvgPicture.asset(
-                                    Assets.svgPlay,
-                                    height: 16.79.h,
-                                    width: 17.77.w,
-                                  ),
-                                  SizedBox(width: 10.w),
-                                  Texts(
-                                    'Play',
-                                    fontWeight: AppFontWeights.medium,
-                                    fontSize: 14.sp,
-                                    color: AppColors.white,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 25.h),
+                          SizedBox(height: 25.h),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              GestureDetector(
+                                onTap: () async {
+                                  if (_songs.isEmpty) return;
 
-                      // Song count header
-                      Row(
-                        children: [
-                          // Bullets icon and song count
-                          GestureDetector(
-                            onTap: () {
-                              // Navigate to select song screen for folder management
-                              context.push(
-                                '/dashboard/select-song',
-                                extra: {
-                                  'folder': _currentFolder,
-                                  'songs': _songs,
-                                  'isSystemPlaylist': false,
+                                  if (musicService.currentIndex < 0) {
+                                    await musicService.setPlaylist(_songs, autoPlay: false, startIndex: 0);
+                                    await musicService.play();
+                                  } else {
+                                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
+                                    await musicService.setShufflePlaylist(_songs, autoPlay: false);
+                                    await musicService.ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
+                                    await musicService.player.currentIndexStream.firstWhere((idx) => idx != null && idx != 0);
+                                    await musicService.play();
+                                  }
+
+                                  logS.log("Shuffle Play started");
                                 },
-                              );
-                            },
-                            child: Row(
-                              children: [
-                                SvgPicture.asset(Assets.svgSongsCount),
-                                SizedBox(width: 8.w),
-                                Texts(
-                                  '${_currentFolder.songCount} songs',
-                                  fontSize: 16.sp,
-                                  fontWeight: AppFontWeights.medium,
-                                  fontFamily: AppFonts.inter,
-                                  color: AppColors.textColor,
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  height: 40.h,
+                                  width: 165.w,
+                                  decoration: BoxDecoration(color: AppColors.shuffleBackground, borderRadius: BorderRadius.circular(100.r)),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SvgPicture.asset(Assets.svgShuffle, height: 16.79.h, width: 17.77.w),
+                                      SizedBox(width: 10.w),
+                                      Texts('Shuffle', fontWeight: AppFontWeights.medium, fontSize: 14.sp, color: AppColors.black),
+                                    ],
+                                  ),
                                 ),
-                              ],
-                            ),
+                              ),
+                              GestureDetector(
+                                onTap: () async {
+                                  if (_baseSongs.isEmpty) return;
+                                  await musicService.ensureShuffleOff();
+
+                                  // Start from the first song of the folder
+                                  await musicService.setPlaylist(List<SongsModel>.from(_baseSongs), startIndex: 0, autoPlay: true);
+                                  await musicService.play();
+                                },
+                                child: Container(
+                                  height: 40.h,
+                                  width: 165.w,
+                                  decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(100.r)),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SvgPicture.asset(Assets.svgPlay, height: 16.79.h, width: 17.77.w),
+                                      SizedBox(width: 10.w),
+                                      Texts('Play', fontWeight: AppFontWeights.medium, fontSize: 14.sp, color: AppColors.white),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
+                          SizedBox(height: 25.h),
+
+                          // Song count header
+                          Row(
+                            children: [
+                              // Bullets icon and song count
+                              GestureDetector(
+                                onTap: () {
+                                  // Navigate to select song screen for folder management
+                                  context.push('/dashboard/select-song', extra: {'folder': _currentFolder, 'songs': _songs, 'isSystemPlaylist': false});
+                                },
+                                child: Row(
+                                  children: [
+                                    SvgPicture.asset(Assets.svgSongsCount),
+                                    SizedBox(width: 8.w),
+                                    Texts(
+                                      '${_currentFolder.songCount} songs',
+                                      fontSize: 16.sp,
+                                      fontWeight: AppFontWeights.medium,
+                                      fontFamily: AppFonts.inter,
+                                      color: AppColors.textColor,
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              Spacer(),
+
+                              GestureDetector(
+                                onTap: () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    backgroundColor: Colors.white,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
+                                    isScrollControlled: true,
+                                    builder: (_) => _buildSortByBottomSheet(),
+                                  );
+                                },
+                                child: SvgPicture.asset(Assets.svgFilter),
+                              ),
+                            ],
+                          ),
+
+                          SizedBox(height: 37.h),
+                          if (_songs.isEmpty) ...{
+                            Center(
+                              child: Texts('No songs available', fontSize: 16, fontWeight: AppFontWeights.regular, fontFamily: AppFonts.inter),
+                            ),
+                          },
+
+                          Column(
+                            children: List.generate(_songs.length, (index) {
+                              return _songTile(_songs, index);
+                            }),
+                          ),
+
+                          SizedBox(height: 200.h),
                         ],
                       ),
-
-                      SizedBox(height: 37.h),
-                      Expanded(
-                        child: Builder(
-                          builder: (context) {
-                            if (_songs.isEmpty) {
-                              return Center(
-                                child: Texts(
-                                  'No songs available',
-                                  fontSize: 16,
-                                  fontWeight: AppFontWeights.regular,
-                                  fontFamily: AppFonts.inter,
-                                ),
-                              );
-                            }
-
-                            return ListView.builder(
-                              padding: EdgeInsets.zero,
-                              itemCount: _songs.length,
-                              itemBuilder: (context, index) {
-                                return _songTile(_songs, index);
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 );
               },

@@ -336,6 +336,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Are you sure you want to delete these 2 songs?'**
   String get areYouSureDeleteSong;
+
+  /// No description provided for @rename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get rename;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

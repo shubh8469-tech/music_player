@@ -6,4 +6,6 @@ class SongsState with _$SongsState {
   const factory SongsState.loading() = _Loading;
   const factory SongsState.loaded(List<SongsModel> songs) = _Loaded;
   const factory SongsState.error(String message) = _Error;
+
+  // void maybeWhen({required Null Function(dynamic songs) loaded, required Null Function() orElse}) {}
 }

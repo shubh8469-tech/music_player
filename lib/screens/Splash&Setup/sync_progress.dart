@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-// import 'package:flutter_media_metadata/flutter_media_metadata.dart'; // Removed due to Android SDK compatibility issues
+// Note: metadata_god package available if needed for additional metadata extraction
 import '../../core/di/injection.dart';
 import '../../core/services/app_state_service.dart';
 import '../../features/songs/data/models/song_model.dart';
@@ -133,8 +133,8 @@ class _SyncProgressState extends State<SyncProgress>
           int? songYear;
 
           // FIRST PRIORITY: Try to read year from audio file metadata (ID3 tags, etc.)
-          // COMMENTED OUT: flutter_media_metadata has Android SDK compatibility issues
-          // This only works for regular file paths (not content:// URIs)
+          // COMMENTED OUT: Not needed as on_audio_query provides year data
+          // (metadata_god available if more detailed extraction needed in future)
           // if (!path.startsWith('content://')) {
           //   try {
           //     final file = File(path);

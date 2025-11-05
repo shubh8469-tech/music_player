@@ -4,8 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:music_app/features/playlists/domain/entities/playlist.dart'
-    as domain;
+import 'package:music_app/features/playlists/domain/entities/playlist.dart' as domain;
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/screens/tabs/music_service.dart';
 import 'package:music_app/themes/color.dart';
@@ -14,6 +13,7 @@ import '../../../../commonWidgets/gradientCard.dart';
 import '../../../../commonWidgets/song_menu_screen.dart';
 import '../../../../utills/globals.dart';
 import '../../../../utills/snack_bar.dart';
+import '../../../play_song/playing_song_screen.dart';
 import '../widgets/mini_player_bar.dart';
 import '../../../../commonWidgets/MusicListTile.dart';
 import '../../../../commonWidgets/textWidget.dart';
@@ -26,12 +26,7 @@ class PlaylistDetailScreen extends StatefulWidget {
   final domain.Playlist playlist;
   final String assetIcon;
   final List<Color>? colors;
-  const PlaylistDetailScreen({
-    super.key,
-    required this.playlist,
-    required this.assetIcon,
-    this.colors,
-  });
+  const PlaylistDetailScreen({super.key, required this.playlist, required this.assetIcon, this.colors});
 
   @override
   State<PlaylistDetailScreen> createState() => _PlaylistDetailScreenState();
@@ -39,7 +34,7 @@ class PlaylistDetailScreen extends StatefulWidget {
 
 class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   final _repo = locator<PlaylistRepository>();
-  final _player = MusicPlayerService();
+  final musicService = MusicPlayerService();
 
   List<SongsModel> _songs = [];
   List<SongsModel> _baseSongs = [];
@@ -54,9 +49,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
 
   Future<void> _loadSongs() async {
     if (_isSystem) {
-      _songs = await _repo.getSongsForSystemPlaylist(
-        widget.playlist.systemKey ?? '',
-      );
+      _songs = await _repo.getSongsForSystemPlaylist(widget.playlist.systemKey ?? '');
     } else {
       _songs = await _repo.getSongsForPlaylist(widget.playlist.id!);
     }
@@ -71,10 +64,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     _songs.insert(newIndex, item);
     _baseSongs = List<SongsModel>.from(_songs);
     setState(() {});
-    await locator<PlaylistRepository>().reorderPlaylistSongs(
-      widget.playlist.id!,
-      _songs.map((s) => s.id!).toList(),
-    );
+    await locator<PlaylistRepository>().reorderPlaylistSongs(widget.playlist.id!, _songs.map((s) => s.id!).toList());
     // Keep current song playing after reorder
     await _applyOrderAndKeepCurrent(_songs);
   }
@@ -89,29 +79,25 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   }
 
   Future<void> _applyOrderAndKeepCurrent(List<SongsModel> newOrder) async {
-    final currentId = _player.currentSongId;
+    final currentId = musicService.currentSongId;
     setState(() => _songs = List<SongsModel>.from(newOrder));
     int startIndex = 0;
     if (currentId != null) {
       final idx = newOrder.indexWhere((s) => s.id == currentId);
       if (idx >= 0) startIndex = idx;
     }
-    final shouldAutoplay = _player.isPlaying;
-    await _player.setPlaylist(
-      newOrder,
-      startIndex: startIndex,
-      autoPlay: shouldAutoplay,
-    );
+    final shouldAutoplay = musicService.isPlaying;
+    await musicService.setPlaylist(newOrder, startIndex: startIndex, autoPlay: shouldAutoplay);
     if (shouldAutoplay) {
-      await _player.play();
+      await musicService.play();
     }
   }
 
   Widget _songTile(List<SongsModel> list, int index) {
     final song = list[index];
     return StreamBuilder<int?>(
-      stream: _player.currentSongIdStream,
-      initialData: _player.currentSongId,
+      stream: musicService.currentSongIdStream,
+      initialData: musicService.currentSongId,
       builder: (context, idSnap) {
         final currentId = idSnap.data;
         final isCurrent = song.id == currentId;
@@ -139,19 +125,19 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 trailingMargin: 10.w,
                 isGifLoad: isCurrent,
                 onTap: () async {
-                  await _player.setPlaylist(list, startIndex: index);
-                  await _player.play();
+                  if (musicService.songs.isNotEmpty && musicService.songs[musicService.currentIndex].id == song.id && musicService.isPlaying) {
+                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: musicService.songs));
+                  } else {
+                    await musicService.setPlaylist(list, startIndex: index);
+                    await musicService.play();
+                  }
                 },
                 onPlayTap: () async {
                   showModalBottomSheet(
                     context: context,
                     backgroundColor: Colors.white,
                     elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(40.r),
-                      ),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
                     isScrollControlled: true,
                     builder: (_) => SongMenuScreen(
                       songMenuList: songMenuItems,
@@ -160,9 +146,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       songIndex: index,
                       songsList: list,
                       maxHeight: 0.87.sh,
-                      systemKeyOrId: widget.playlist.isSystem!
-                          ? widget.playlist.systemKey
-                          : widget.playlist.id.toString(),
+                      systemKeyOrId: widget.playlist.isSystem! ? widget.playlist.systemKey : widget.playlist.id.toString(),
                       isSystemPlaylist: _isSystem,
                       from: 'playlist_in',
                     ),
@@ -181,17 +165,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
     final viewInsets = MediaQuery.of(context).viewInsets.bottom;
     final viewPadding = MediaQuery.of(context).viewPadding.bottom;
-    final bottomPadding = viewInsets > 0
-        ? viewInsets + 16.h
-        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+    final bottomPadding = viewInsets > 0 ? viewInsets + 16.h : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
 
     return Container(
-      padding: EdgeInsets.only(
-        left: 16.w,
-        right: 16.w,
-        top: 10.h,
-        bottom: bottomPadding,
-      ),
+      padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 10.h, bottom: bottomPadding),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -199,21 +176,12 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
           Container(
             width: 40.w,
             height: 4.h,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2.r),
-            ),
+            decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2.r)),
           ),
           SizedBox(height: 30.h),
 
           // Title
-          Texts(
-            'Delete Playlist',
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w500,
-            fontFamily: AppFonts.inter,
-            color: AppColors.textColor,
-          ),
+          Texts('Delete Playlist', fontSize: 18.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter, color: AppColors.textColor),
           SizedBox(height: 30.h),
 
           // Message
@@ -236,18 +204,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   onTap: () => Navigator.pop(context),
                   child: Container(
                     height: 48.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
+                    decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(8.r)),
                     child: Center(
-                      child: Texts(
-                        'Cancel',
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: AppFonts.inter,
-                        color: AppColors.black,
-                      ),
+                      child: Texts('Cancel', fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter, color: AppColors.black),
                     ),
                   ),
                 ),
@@ -262,35 +221,19 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
 
                     // Delete playlist
                     final playlistBloc = context.read<PlaylistBloc>();
-                    playlistBloc.add(
-                      PlaylistEvent.deletePlaylist(widget.playlist.id!),
-                    );
+                    playlistBloc.add(PlaylistEvent.deletePlaylist(widget.playlist.id!));
 
                     // Show success message
-                    showSnackBar(
-                      context,
-                      () {},
-                      message: 'Playlist deleted successfully',
-                      alertBannerLocation: AlertBannerLocation.bottom,
-                    );
+                    showSnackBar(context, () {}, message: 'Playlist deleted successfully', alertBannerLocation: AlertBannerLocation.bottom);
 
                     // Navigate back to previous screen
                     context.pop();
                   },
                   child: Container(
                     height: 48.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryOrange,
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
+                    decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(8.r)),
                     child: Center(
-                      child: Texts(
-                        'Delete',
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: AppFonts.inter,
-                        color: AppColors.white,
-                      ),
+                      child: Texts('Delete', fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter, color: AppColors.white),
                     ),
                   ),
                 ),
@@ -322,40 +265,21 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
           backgroundColor: AppColors.primaryOrange,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back_ios,
-              color: AppColors.white,
-              size: 20,
-            ),
+            icon: const Icon(Icons.arrow_back_ios, color: AppColors.white, size: 20),
             onPressed: () => context.pop(),
           ),
-          title: Texts(
-            widget.playlist.name,
-            fontSize: 18.sp,
-            fontWeight: AppFontWeights.medium,
-            fontFamily: AppFonts.inter,
-            color: AppColors.white,
-          ),
+          title: Texts(widget.playlist.name, fontSize: 18.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.white),
           actions: [
             GestureDetector(
               onTap: () {
                 if (_isSystem) {
-                  showSnackBar(
-                    context,
-                    () {},
-                    message: 'System playlist cannot be deleted',
-                    alertBannerLocation: AlertBannerLocation.bottom,
-                  );
+                  showSnackBar(context, () {}, message: 'System playlist cannot be deleted', alertBannerLocation: AlertBannerLocation.bottom);
                 } else {
                   showModalBottomSheet(
                     context: context,
                     backgroundColor: Colors.white,
                     elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(40.r),
-                      ),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
                     isScrollControlled: true,
                     builder: (_) => _buildDeletePlaylistConfirmationDialog(),
                   );
@@ -363,13 +287,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               },
               child: Padding(
                 padding: EdgeInsets.only(right: 12.w),
-                child: SvgPicture.asset(
-                  Assets.svgIcDelete,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.white,
-                    BlendMode.srcIn,
-                  ),
-                ),
+                child: SvgPicture.asset(Assets.svgIcDelete, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
               ),
             ),
           ],
@@ -377,11 +295,11 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         body: Stack(
           children: [
             StreamBuilder<List<SongsModel>>(
-              stream: _player.songsChanged,
-              initialData: _player.songs,
+              stream: musicService.songsChanged,
+              initialData: musicService.songs,
               builder: (context, snapshot) {
                 // Always check the current state, not just the snapshot
-                final hasAny = _player.songs.isNotEmpty;
+                final hasAny = musicService.songs.isNotEmpty;
                 final showMiniPlayer = hasAny;
 
                 return Padding(
@@ -389,238 +307,173 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     left: 20.w,
                     right: 20.w,
                     top: 10.h,
-                    bottom: showMiniPlayer
-                        ? 74.h
-                        : 10.h, // Space for MiniPlayerBar (which includes system nav bar padding)
+                    // bottom: showMiniPlayer
+                    //     ? 74.h
+                    //     : 10.h, // Space for MiniPlayerBar (which includes system nav bar padding)
                   ),
-                  child: Column(
-                    children: [
-                      SizedBox(height: 15.h),
-                      GradientCard(
-                        height: 150.h,
-                        width: 150.w,
-                        colors: [
-                          widget.colors![0].withValues(alpha: 0.21),
-                          widget.colors![1],
-                        ],
-                        borderRadius: 13.r,
-                        iconAsset: widget.assetIcon,
-                        iconSize: 60.r,
-                        margin: 10.w,
-                      ),
-                      SizedBox(height: 14.h),
-                      Texts(
-                        widget.playlist.name,
-                        fontSize: 20.sp,
-                        fontWeight: AppFontWeights.medium,
-                        fontFamily: AppFonts.inter,
-                        color: AppColors.textColor,
-                      ),
-
-                      SizedBox(height: 25.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: SizedBox(
+                    height: double.infinity,
+                    child: SingleChildScrollView(
+                      child: Column(
                         children: [
-                          GestureDetector(
-                            onTap: () async {
-                              if (_songs.isEmpty) return;
-
-                              await _player.setPlaylist(
-                                _songs,
-                                autoPlay: false,
-                              );
-                              await _player
-                                  .ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
-
-                              // Wait until the player has fully updated its index
-                              await _player.player.currentIndexStream
-                                  .firstWhere((idx) => idx != null && idx != 0);
-
-                              // Now play
-                              await _player.play();
-
-                              logS.log("Shuffle Play started");
-                            },
-                            child: Container(
-                              alignment: Alignment.center,
-                              height: 40.h,
-                              width: 165.w,
-                              decoration: BoxDecoration(
-                                color: AppColors.shuffleBackground,
-                                borderRadius: BorderRadius.circular(100.r),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SvgPicture.asset(
-                                    Assets.svgShuffle,
-                                    height: 16.79.h,
-                                    width: 17.77.w,
-                                  ),
-                                  SizedBox(width: 10.w),
-                                  Texts(
-                                    'Shuffle',
-                                    fontWeight: AppFontWeights.medium,
-                                    fontSize: 14.sp,
-                                    color: AppColors.black,
-                                  ),
-                                ],
-                              ),
-                            ),
+                          SizedBox(height: 15.h),
+                          GradientCard(
+                            height: 150.h,
+                            width: 150.w,
+                            colors: [widget.colors![0].withValues(alpha: 0.21), widget.colors![1]],
+                            borderRadius: 13.r,
+                            iconAsset: widget.assetIcon,
+                            iconSize: 60.r,
+                            margin: 10.w,
                           ),
-                          GestureDetector(
-                            onTap: () async {
-                              if (_baseSongs.isEmpty) return;
-                              await _player.ensureShuffleOff();
+                          SizedBox(height: 14.h),
+                          Texts(widget.playlist.name, fontSize: 20.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.textColor),
 
-                              // Start from the first song of the playlist
-                              await _player.setPlaylist(
-                                List<SongsModel>.from(_baseSongs),
-                                startIndex: 0,
-                                autoPlay: true,
-                              );
-                              await _player.play();
-                            },
-                            child: Container(
-                              height: 40.h,
-                              width: 165.w,
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryOrange,
-                                borderRadius: BorderRadius.circular(100.r),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SvgPicture.asset(
-                                    Assets.svgPlay,
-                                    height: 16.79.h,
-                                    width: 17.77.w,
-                                  ),
-                                  SizedBox(width: 10.w),
-                                  Texts(
-                                    'Play',
-                                    fontWeight: AppFontWeights.medium,
-                                    fontSize: 14.sp,
-                                    color: AppColors.white,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 25.h),
+                          SizedBox(height: 25.h),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              GestureDetector(
+                                onTap: () async {
+                                  if (_songs.isEmpty) return;
 
-                      // Song count header with bullets and add icons
-                      Row(
-                        children: [
-                          // Bullets icon and song count
-                          GestureDetector(
-                            onTap: () {
-                              // Navigate to select song screen for playlist management
-                              context.push(
-                                '/dashboard/select-song',
-                                extra: {
-                                  'playlist': widget.playlist,
-                                  'songs': _songs,
-                                  'isSystemPlaylist': _isSystem,
+                                  if (musicService.currentIndex < 0) {
+                                    await musicService.setPlaylist(_songs, autoPlay: false, startIndex: 0);
+                                    await musicService.play();
+                                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
+                                  } else {
+                                    await musicService.setShufflePlaylist(
+                                      _songs,
+                                      autoPlay: false,
+                                    );
+                                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
+                                    await musicService.ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
+                                    await musicService.player.currentIndexStream.firstWhere((idx) => idx != null && idx != 0);
+                                    await musicService.play();
+                                  }
+
+                                  // if (_songs.isEmpty) return;
+                                  //
+                                  // await musicService.setPlaylist(
+                                  //   _songs,
+                                  //   autoPlay: false,
+                                  // );
+                                  // await musicService
+                                  //     .ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
+                                  //
+                                  // // Wait until the player has fully updated its index
+                                  // await musicService.player.currentIndexStream
+                                  //     .firstWhere((idx) => idx != null && idx != 0);
+                                  //
+                                  // // Now play
+                                  // await musicService.play();
+                                  //
+                                  // logS.log("Shuffle Play started");
                                 },
-                              );
-                            },
-                            child: Row(
-                              children: [
-                                SvgPicture.asset(Assets.svgSongsCount),
-                                SizedBox(width: 8.w),
-                                Texts(
-                                  '${_songs.length} songs',
-                                  fontSize: 16.sp,
-                                  fontWeight: AppFontWeights.medium,
-                                  fontFamily: AppFonts.inter,
-                                  color: AppColors.textColor,
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          Spacer(),
-
-                          // Add songs icon (only for non-system playlists)
-                          if (!_isSystem)
-                            GestureDetector(
-                              onTap: () {
-                                context.push(
-                                  '/dashboard/add-songs',
-                                  extra: widget.playlist,
-                                );
-                              },
-                              child: Container(
-                                width: 32.w,
-                                height: 32.h,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryOrange,
-                                  borderRadius: BorderRadius.circular(16.r),
-                                ),
-                                child: Icon(
-                                  Icons.add,
-                                  color: AppColors.white,
-                                  size: 20,
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  height: 40.h,
+                                  width: 165.w,
+                                  decoration: BoxDecoration(color: AppColors.shuffleBackground, borderRadius: BorderRadius.circular(100.r)),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SvgPicture.asset(Assets.svgShuffle, height: 16.79.h, width: 17.77.w),
+                                      SizedBox(width: 10.w),
+                                      Texts('Shuffle', fontWeight: AppFontWeights.medium, fontSize: 14.sp, color: AppColors.black),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                        ],
-                      ),
+                              GestureDetector(
+                                onTap: () async {
+                                  if (_baseSongs.isEmpty) return;
+                                  await musicService.ensureShuffleOff();
 
-                      SizedBox(height: 37.h),
-                      Expanded(
-                        child: Builder(
-                          builder: (context) {
-                            if (_songs.isEmpty) {
-                              return Center(
-                                child: Texts(
-                                  'No songs available',
-                                  fontSize: 16,
-                                  fontWeight: AppFontWeights.regular,
-                                  fontFamily: AppFonts.inter,
-                                ),
-                              );
-                            }
-
-                            if (_isSystem) {
-                              // Enable manual drag for system playlists (session-only order)
-                              return ReorderableListView.builder(
-                                padding: EdgeInsets.zero,
-                                itemCount: _songs.length,
-                                onReorder: _reorderSystemSong,
-                                buildDefaultDragHandles: false,
-                                itemBuilder: (context, index) {
-                                  final song = _songs[index];
-                                  return ReorderableDelayedDragStartListener(
-                                    key: ValueKey(song.id),
-                                    index: index,
-                                    child: _songTile(_songs, index),
-                                  );
+                                  // Start from the first song of the playlist
+                                  await musicService.setPlaylist(List<SongsModel>.from(_baseSongs), startIndex: 0, autoPlay: true);
+                                  await musicService.play();
                                 },
-                              );
-                            }
+                                child: Container(
+                                  height: 40.h,
+                                  width: 165.w,
+                                  decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(100.r)),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SvgPicture.asset(Assets.svgPlay, height: 16.79.h, width: 17.77.w),
+                                      SizedBox(width: 10.w),
+                                      Texts('Play', fontWeight: AppFontWeights.medium, fontSize: 14.sp, color: AppColors.white),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 25.h),
 
-                            return ReorderableListView.builder(
-                              padding: EdgeInsets.zero,
-                              itemCount: _songs.length,
-                              onReorder: _reorderSong,
-                              buildDefaultDragHandles: false,
-                              itemBuilder: (context, index) {
-                                final song = _songs[index];
-                                return ReorderableDelayedDragStartListener(
-                                  key: ValueKey(song.id),
-                                  index: index,
-                                  child: _songTile(_songs, index),
-                                );
-                              },
-                            );
+                          // Song count header with bullets and add icons
+                          Row(
+                            children: [
+                              // Bullets icon and song count
+                              GestureDetector(
+                                onTap: () {
+                                  // Navigate to select song screen for playlist management
+                                  context.push('/dashboard/select-song', extra: {'playlist': widget.playlist, 'songs': _songs, 'isSystemPlaylist': _isSystem});
+                                },
+                                child: Row(
+                                  children: [
+                                    SvgPicture.asset(Assets.svgSongsCount),
+                                    SizedBox(width: 8.w),
+                                    Texts(
+                                      '${_songs.length} songs',
+                                      fontSize: 16.sp,
+                                      fontWeight: AppFontWeights.medium,
+                                      fontFamily: AppFonts.inter,
+                                      color: AppColors.textColor,
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              Spacer(),
+
+                              // Add songs icon (only for non-system playlists)
+                              if (!_isSystem)
+                                GestureDetector(
+                                  onTap: () {
+                                    context.push('/dashboard/add-songs', extra: widget.playlist);
+                                  },
+                                  child: Container(
+                                    height: 32.h,
+                                    width: 32.w,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.mediumDarkGrey.withAlpha(100),
+                                      borderRadius: BorderRadius.circular(4.r),
+                                    ),
+                                    child: Icon(Icons.add),
+                                  ),
+                                ),
+                            ],
+                          ),
+
+                          SizedBox(height: 37.h),
+
+                          if (_songs.isEmpty) ...{
+                            Center(
+                              child: Texts('No songs available', fontSize: 16, fontWeight: AppFontWeights.regular, fontFamily: AppFonts.inter),
+                            ),
                           },
-                        ),
+                          Column(
+                            children: List.generate(_songs.length, (index) {
+                              return _songTile(_songs, index);
+                            }),
+                          ),
+
+                          SizedBox(height: 200.h),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 );
               },

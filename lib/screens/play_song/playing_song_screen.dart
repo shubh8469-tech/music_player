@@ -192,7 +192,15 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
             width: 40.w,
             height: 40.h,
             child: IconButton(
-              onPressed: () {},
+              onPressed: () {
+                showSnackBar(
+                  context,
+                  () {},
+                  message: 'Themes feature coming soon',
+                  backgroundColor: AppColors.primaryOrange,
+                  alertBannerLocation: AlertBannerLocation.bottom,
+                );
+              },
               icon: SvgPicture.asset(
                 Assets.svgIcShirt,
                 height: 26.h,
@@ -363,8 +371,30 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
           },
           child: SvgPicture.asset(Assets.svgIcQueue, width: 23.w, height: 23.h),
         ),
-        SvgPicture.asset(Assets.svgIcTimer, width: 23.w, height: 23.h),
-        SvgPicture.asset(Assets.svgIEquilizerc, width: 23.w, height: 23.h),
+        GestureDetector(
+          onTap: () {
+            showSnackBar(
+              context,
+              () {},
+              message: 'Sleep timer feature coming soon',
+              backgroundColor: AppColors.primaryOrange,
+              alertBannerLocation: AlertBannerLocation.bottom,
+            );
+          },
+          child: SvgPicture.asset(Assets.svgIcTimer, width: 23.w, height: 23.h),
+        ),
+        GestureDetector(
+          onTap: () {
+            showSnackBar(
+              context,
+              () {},
+              message: 'Equalizer feature coming soon',
+              backgroundColor: AppColors.primaryOrange,
+              alertBannerLocation: AlertBannerLocation.bottom,
+            );
+          },
+          child: SvgPicture.asset(Assets.svgIEquilizerc, width: 23.w, height: 23.h),
+        ),
         GestureDetector(
           onTap: _toggleFavorite,
           child: SvgPicture.asset(

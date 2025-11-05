@@ -12,6 +12,7 @@ import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/themes/font.dart';
 import '../core/di/injection.dart';
 import '../features/playlists/bloc/playlist_bloc.dart';
+import '../features/playlists/domain/entities/playlist.dart' as domain;
 import '../features/playlists/domain/repositories/playlist_repository.dart';
 import '../features/songs/bloc/songs_bloc.dart';
 import '../generated/assets.dart';
@@ -35,6 +36,9 @@ class SongMenuScreen extends StatefulWidget {
   String? from;
   double maxHeight;
   VoidCallback? onSongDeleted;
+  domain.Playlist? playlist;
+  String? playlistIconAsset;
+  List<Color>? playlistGradientColors;
 
   SongMenuScreen({
     super.key,
@@ -48,6 +52,9 @@ class SongMenuScreen extends StatefulWidget {
     this.systemKeyOrId,
     this.from,
     this.onSongDeleted,
+    this.playlist,
+    this.playlistIconAsset,
+    this.playlistGradientColors,
   });
 
   @override
@@ -77,7 +84,55 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
           Flexible(
             child: Column(
               children: [
-                if (widget.currentSong != null)
+                if (widget.from == 'playlist' && widget.playlist != null)
+                  // Display playlist information
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 12.h,
+                    ),
+                    child: MusicListTile(
+                      margin: 7.w,
+                      height: 66.h,
+                      borderRadius: 10.r,
+                      backgroundColor: AppColors.musicTileBackgroundColor,
+                      cardHeight: 50.h,
+                      cardWidth: 50.w,
+                      cardRadius: 7.r,
+                      noLogoGradientColor: widget.playlistGradientColors ??
+                          [
+                            AppColors.primaryOrange.withValues(alpha: 0.21),
+                            AppColors.primaryOrange,
+                          ],
+                      cardIconAsset: widget.playlistIconAsset ?? Assets.svgMusicIcon,
+                      cardIconSize: 32.r,
+                      isSvgCardIcon: (widget.playlistIconAsset ?? '').contains('.svg'),
+                      title: widget.playlist!.name,
+                      subtitle: '${widget.playlist!.songCount} Songs',
+                      trailingIconAsset: Assets.svgIcShare,
+                      trailingIconHeight: 25.h,
+                      trailingIconWidth: 25.w,
+                      trailingMargin: 2.w,
+                      onTap: () {
+                        showSnackBar(
+                          context,
+                          () {},
+                          message: 'Share playlist feature coming soon',
+                          alertBannerLocation: AlertBannerLocation.bottom,
+                        );
+                      },
+                      onPlayTap: () {
+                        showSnackBar(
+                          context,
+                          () {},
+                          message: 'Play playlist feature coming soon',
+                          alertBannerLocation: AlertBannerLocation.bottom,
+                        );
+                      },
+                    ),
+                  )
+                else if (widget.currentSong != null)
+                  // Display song information
                   Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: 16.w,
@@ -105,9 +160,30 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                       trailingIconHeight: 25.h,
                       trailingIconWidth: 25.w,
                       trailingMargin: 2.w,
-                      onTap: () => setState(() {}),
-                      onPlayTap: () => setState(() {}),
-                      onInfoTap: () => {},
+                      onTap: () {
+                        showSnackBar(
+                          context,
+                          () {},
+                          message: 'Share song feature coming soon',
+                          alertBannerLocation: AlertBannerLocation.bottom,
+                        );
+                      },
+                      onPlayTap: () {
+                        showSnackBar(
+                          context,
+                          () {},
+                          message: 'Play song feature coming soon',
+                          alertBannerLocation: AlertBannerLocation.bottom,
+                        );
+                      },
+                      onInfoTap: () {
+                        showSnackBar(
+                          context,
+                          () {},
+                          message: 'Song info feature coming soon',
+                          alertBannerLocation: AlertBannerLocation.bottom,
+                        );
+                      },
                       leadingIconAsset: Assets.svgIcInfo,
                       leadingIconHeight: 25.h,
                       leadingIconWidth: 25.w,
@@ -121,7 +197,13 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                       final songItem = widget.songMenuList[index];
 
                       List<String> dividerAfterTitles = [];
-                      if (widget.isPlaying) {
+                      if (widget.from == 'playlist') {
+                        // Dividers for playlist menu
+                        dividerAfterTitles = [
+                          S.of(context).addToPlaylist,
+                          S.of(context).changeCover,
+                        ];
+                      } else if (widget.isPlaying) {
                         dividerAfterTitles = [
                           S.of(context).goToArtist,
                           S.of(context).keepScreenOn,
@@ -180,55 +262,224 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                 } else {
                                   context.push('/dashboard/playing');
                                 }
+                              } else if (songItem.title == S.of(context).play) {
+                                // Handle Play for playlist
+                                if (widget.from == 'playlist') {
+                                  // Close the bottom sheet first
+                                  Navigator.pop(context);
+                                  
+                                  List<SongsModel> _songs = [];
+                                  final _repo = locator<PlaylistRepository>();
+                                  try {
+                                    if (widget.isSystemPlaylist) {
+                                      log(
+                                        'Playing songs from system playlist ${widget.systemKeyOrId}',
+                                      );
+                                      _songs = await _repo
+                                          .getSongsForSystemPlaylist(
+                                            widget.systemKeyOrId ?? '',
+                                          );
+                                    } else {
+                                      log(
+                                        'Playing songs from playlist ${widget.systemKeyOrId}',
+                                      );
+                                      _songs = await _repo.getSongsForPlaylist(
+                                        int.parse(widget.systemKeyOrId!),
+                                      );
+                                    }
+
+                                    if (_songs.isEmpty) {
+                                      if (mounted) {
+                                        showSnackBar(
+                                          context,
+                                          () {},
+                                          message: "Playlist contains no songs",
+                                          alertBannerLocation:
+                                              AlertBannerLocation.bottom,
+                                        );
+                                      }
+                                      return;
+                                    }
+
+                                    // Set playlist and play
+                                    await musicService.setPlaylist(
+                                      _songs,
+                                      startIndex: 0,
+                                    );
+                                    await musicService.play();
+
+                                    if (mounted) {
+                                      showSnackBar(
+                                        context,
+                                        () {},
+                                        message:
+                                            "Playing ${_songs.length} songs",
+                                        alertBannerLocation:
+                                            AlertBannerLocation.bottom,
+                                      );
+                                    }
+                                  } catch (e) {
+                                    if (mounted) {
+                                      showSnackBar(
+                                        context,
+                                        () {},
+                                        message: "Error playing playlist: $e",
+                                        alertBannerLocation:
+                                            AlertBannerLocation.bottom,
+                                      );
+                                    }
+                                  }
+                                }
                               } else if (songItem.title ==
                                   S.of(context).playNext) {
-                                // Add song to play next (insert after current song)
-                                final currentIndex = musicService.currentIndex;
-                                final insertIndex = currentIndex + 1;
+                                // Handle Play Next for playlist or individual song
+                                if (widget.from == 'playlist') {
+                                  // Close the bottom sheet first
+                                  Navigator.pop(context);
+                                  
+                                  List<SongsModel> _songs = [];
+                                  final _repo = locator<PlaylistRepository>();
+                                  try {
+                                    if (widget.isSystemPlaylist) {
+                                      log(
+                                        'Playing next songs from system playlist ${widget.systemKeyOrId}',
+                                      );
+                                      _songs = await _repo
+                                          .getSongsForSystemPlaylist(
+                                            widget.systemKeyOrId ?? '',
+                                          );
+                                    } else {
+                                      log(
+                                        'Playing next songs from playlist ${widget.systemKeyOrId}',
+                                      );
+                                      _songs = await _repo.getSongsForPlaylist(
+                                        int.parse(widget.systemKeyOrId!),
+                                      );
+                                    }
 
-                                // Create a new list with the song inserted at the correct position
-                                final newSongsList = List<SongsModel>.from(
-                                  musicService.songs,
-                                );
+                                    if (_songs.isEmpty) {
+                                      if (mounted) {
+                                        showSnackBar(
+                                          context,
+                                          () {},
+                                          message: "Playlist contains no songs",
+                                          alertBannerLocation:
+                                              AlertBannerLocation.bottom,
+                                        );
+                                      }
+                                      return;
+                                    }
 
-                                // Check if song is already in the queue
-                                final existingIndex = newSongsList.indexWhere(
-                                  (song) => song.id == widget.currentSong!.id,
-                                );
+                                    // Insert playlist songs after current song
+                                    if (musicService.songs.isEmpty) {
+                                      // No songs playing, start playing the playlist
+                                      await musicService.setPlaylist(
+                                        _songs,
+                                        startIndex: 0,
+                                      );
+                                      await musicService.play();
+                                    } else {
+                                      final currentIndex =
+                                          musicService.currentIndex;
+                                      final insertIndex = currentIndex + 1;
+                                      final newSongsList =
+                                          List<SongsModel>.from(
+                                        musicService.songs,
+                                      );
 
-                                if (existingIndex != -1) {
-                                  // Song already exists, move it to the correct position
-                                  final songToMove = newSongsList.removeAt(
-                                    existingIndex,
-                                  );
-                                  final adjustedInsertIndex =
-                                      existingIndex < insertIndex
-                                      ? insertIndex - 1
-                                      : insertIndex;
-                                  newSongsList.insert(
-                                    adjustedInsertIndex,
-                                    songToMove,
-                                  );
+                                      // Filter out songs that are already in the queue
+                                      final songsToAdd = _songs.where((song) {
+                                        return !newSongsList.any(
+                                          (existingSong) =>
+                                              existingSong.id == song.id,
+                                        );
+                                      }).toList();
+
+                                      // Insert the new songs after the current song
+                                      newSongsList.insertAll(
+                                        insertIndex,
+                                        songsToAdd,
+                                      );
+
+                                      await musicService.setPlaylist(
+                                        newSongsList,
+                                        startIndex: currentIndex >= 0
+                                            ? currentIndex
+                                            : 0,
+                                        autoPlay: false,
+                                      );
+                                    }
+
+                                    if (mounted) {
+                                      showSnackBar(
+                                        context,
+                                        () {},
+                                        message:
+                                            "${_songs.length} songs added to play next",
+                                        alertBannerLocation:
+                                            AlertBannerLocation.bottom,
+                                      );
+                                    }
+                                  } catch (e) {
+                                    if (mounted) {
+                                      showSnackBar(
+                                        context,
+                                        () {},
+                                        message: "Error adding to play next: $e",
+                                        alertBannerLocation:
+                                            AlertBannerLocation.bottom,
+                                      );
+                                    }
+                                  }
                                 } else {
-                                  // Song doesn't exist, insert it
-                                  newSongsList.insert(
-                                    insertIndex,
-                                    widget.currentSong!,
+                                  // Add individual song to play next (insert after current song)
+                                  final currentIndex = musicService.currentIndex;
+                                  final insertIndex = currentIndex + 1;
+
+                                  // Create a new list with the song inserted at the correct position
+                                  final newSongsList = List<SongsModel>.from(
+                                    musicService.songs,
                                   );
+
+                                  // Check if song is already in the queue
+                                  final existingIndex = newSongsList.indexWhere(
+                                    (song) => song.id == widget.currentSong!.id,
+                                  );
+
+                                  if (existingIndex != -1) {
+                                    // Song already exists, move it to the correct position
+                                    final songToMove = newSongsList.removeAt(
+                                      existingIndex,
+                                    );
+                                    final adjustedInsertIndex =
+                                        existingIndex < insertIndex
+                                        ? insertIndex - 1
+                                        : insertIndex;
+                                    newSongsList.insert(
+                                      adjustedInsertIndex,
+                                      songToMove,
+                                    );
+                                  } else {
+                                    // Song doesn't exist, insert it
+                                    newSongsList.insert(
+                                      insertIndex,
+                                      widget.currentSong!,
+                                    );
+                                  }
+
+                                  // Update the music service with the new playlist
+
+                                  musicService.setPlaylist(
+                                    newSongsList,
+                                    autoPlay: false,
+                                    startIndex:
+                                        !(existingIndex >
+                                            musicService.currentIndex)
+                                        ? musicService.currentIndex - 1
+                                        : musicService.currentIndex,
+                                  );
+                                  Navigator.pop(context);
                                 }
-
-                                // Update the music service with the new playlist
-
-                                musicService.setPlaylist(
-                                  newSongsList,
-                                  autoPlay: false,
-                                  startIndex:
-                                      !(existingIndex >
-                                          musicService.currentIndex)
-                                      ? musicService.currentIndex - 1
-                                      : musicService.currentIndex,
-                                );
-                                Navigator.pop(context);
                               } else if (songItem.title ==
                                   S.of(context).addToQueue) {
                                 if (widget.from == 'playlist') {

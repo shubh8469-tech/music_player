@@ -105,7 +105,7 @@ final List<SongMenuItem> playlistMenuItems = [
   ),
   SongMenuItem(
     icon: Assets.svgIcEdit,
-    title: S.of(rootNavigatorKey.currentContext!).editDetails,
+    title: S.of(rootNavigatorKey.currentContext!).rename,
   ),
   SongMenuItem(
     icon: Assets.svgIcCover,

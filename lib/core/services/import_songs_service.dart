@@ -1,7 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter_media_metadata/flutter_media_metadata.dart';
+import 'package:metadata_god/metadata_god.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import '../../features/songs/data/models/song_model.dart';
@@ -22,14 +22,23 @@ import '../../features/albums/domain/repositories/album_repository.dart';
 import '../di/injection.dart';
 
 class ImportSongsService {
-
   /// Pick audio files from device
   Future<List<PlatformFile>?> pickAudioFiles() async {
     try {
       // Try with audio type first
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['mp3', 'm4a', 'wav', 'aac', 'flac', 'ogg', 'wma', 'aiff', 'opus'],
+        allowedExtensions: [
+          'mp3',
+          'm4a',
+          'wav',
+          'aac',
+          'flac',
+          'ogg',
+          'wma',
+          'aiff',
+          'opus',
+        ],
         allowMultiple: true,
         allowCompression: false,
         withData: false, // Don't load data into memory
@@ -43,7 +52,7 @@ class ImportSongsService {
         }
         return result.files;
       }
-      
+
       log('No files selected');
       return null;
     } catch (e) {
@@ -55,16 +64,28 @@ class ImportSongsService {
           allowMultiple: true,
           allowCompression: false,
         );
-        
+
         if (fallbackResult != null) {
           // Filter only audio files
           final audioFiles = fallbackResult.files.where((file) {
             final extension = file.extension?.toLowerCase() ?? '';
-            return ['mp3', 'm4a', 'wav', 'aac', 'flac', 'ogg', 'wma', 'aiff', 'opus'].contains(extension);
+            return [
+              'mp3',
+              'm4a',
+              'wav',
+              'aac',
+              'flac',
+              'ogg',
+              'wma',
+              'aiff',
+              'opus',
+            ].contains(extension);
           }).toList();
-          
+
           if (audioFiles.isNotEmpty) {
-            log('Fallback: Successfully picked ${audioFiles.length} audio files');
+            log(
+              'Fallback: Successfully picked ${audioFiles.length} audio files',
+            );
             return audioFiles;
           }
         }
@@ -106,13 +127,15 @@ class ImportSongsService {
       if (!await artworkDir.exists()) {
         await artworkDir.create(recursive: true);
       }
-      
+
       // Get existing songs to check for duplicates
       final songDataSource = locator<SongLocalDataSource>();
       final existingSongs = await songDataSource.getAllSongs();
       final existingPaths = existingSongs.map((s) => s.filePath).toSet();
-      
-      log('Checking for duplicates against ${existingPaths.length} existing songs');
+
+      log(
+        'Checking for duplicates against ${existingPaths.length} existing songs',
+      );
 
       // Track unique folders, artists, and albums
       Map<String, int> folderIds = {};
@@ -159,34 +182,34 @@ class ImportSongsService {
           String artworkPath = '';
 
           try {
-            // Extract metadata using flutter_media_metadata
-            final metadata = await MetadataRetriever.fromFile(sourceFile);
-            
+            // Extract metadata using metadata_god
+            final metadata = await MetadataGod.readMetadata(
+              file: audioFilePath,
+            );
+
             // Extract text metadata
-            if (metadata.trackName != null && metadata.trackName!.isNotEmpty) {
-              title = metadata.trackName!;
+            if (metadata.title != null && metadata.title!.isNotEmpty) {
+              title = metadata.title!;
             }
-            if (metadata.trackArtistNames != null && metadata.trackArtistNames!.isNotEmpty) {
-              artist = metadata.trackArtistNames!.join(', ');
-            } else if (metadata.albumArtistName != null && metadata.albumArtistName!.isNotEmpty) {
-              artist = metadata.albumArtistName!;
+            if (metadata.artist != null && metadata.artist!.isNotEmpty) {
+              artist = metadata.artist!;
             }
-            if (metadata.albumName != null && metadata.albumName!.isNotEmpty) {
-              album = metadata.albumName!;
+            if (metadata.album != null && metadata.album!.isNotEmpty) {
+              album = metadata.album!;
             }
             if (metadata.genre != null && metadata.genre!.isNotEmpty) {
               genre = metadata.genre!;
             }
-            if (metadata.trackDuration != null) {
-              duration = metadata.trackDuration!;
+            if (metadata.durationMs != null) {
+              duration = metadata.durationMs!.toInt();
             }
-            
+
             // Try to extract year from various sources
             if (metadata.year != null && metadata.year! > 0) {
               year = metadata.year;
               log('Year from metadata.year: $year');
             }
-            
+
             // If year is still null, try to parse from file modification date as fallback
             if (year == null) {
               try {
@@ -199,10 +222,12 @@ class ImportSongsService {
             }
 
             // Extract and save album artwork
-            if (metadata.albumArt != null && metadata.albumArt!.isNotEmpty) {
+            if (metadata.picture != null && metadata.picture!.data.isNotEmpty) {
               try {
-                final artworkFile = File(p.join(artworkDir.path, '${timestamp + i}.jpg'));
-                await artworkFile.writeAsBytes(metadata.albumArt!);
+                final artworkFile = File(
+                  p.join(artworkDir.path, '${timestamp + i}.jpg'),
+                );
+                await artworkFile.writeAsBytes(metadata.picture!.data);
                 artworkPath = artworkFile.path;
                 log('✓ Extracted artwork for ${file.name}');
               } catch (artError) {
@@ -212,7 +237,9 @@ class ImportSongsService {
               log('No artwork found in ${file.name}');
             }
 
-            log('✓ Metadata extracted - Title: $title | Artist: $artist | Album: $album | Year: $year | Duration: ${duration}ms');
+            log(
+              '✓ Metadata extracted - Title: $title | Artist: $artist | Album: $album | Year: $year | Duration: ${duration}ms',
+            );
           } catch (e) {
             log('✗ Could not extract metadata from ${file.name}: $e');
             // Use file stats as fallback for year
@@ -379,4 +406,3 @@ class ImportSongsService {
     }
   }
 }
-

@@ -105,6 +105,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
               },
               child: SvgPicture.asset(_musicService.isShuffleEnabled ? Assets.svgIcSuffle : Assets.svgShuffleOff, width: 28.w, height: 28.h),
             ),
+
             GestureDetector(
               onTap: () {
                 _musicService.previous();
@@ -135,6 +136,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
               },
               child: SvgPicture.asset(Assets.svgIcNext, width: 28.w, height: 28.h),
             ),
+
             GestureDetector(
               onTap: () {
                 _musicService.toggleRepeat();

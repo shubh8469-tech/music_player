@@ -12,6 +12,7 @@ import '../../../../commonWidgets/textWidget.dart';
 import '../../../../features/artists/domain/repositories/artist_repository.dart';
 import '../../../../generated/assets.dart';
 import '../../../../core/di/injection.dart';
+import '../../../play_song/playing_song_screen.dart';
 import '../widgets/mini_player_bar.dart';
 
 class ArtistDetailScreen extends StatefulWidget {
@@ -24,7 +25,7 @@ class ArtistDetailScreen extends StatefulWidget {
 
 class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
   final _repo = locator<ArtistRepository>();
-  final _player = MusicPlayerService();
+  final musicService = MusicPlayerService();
 
   List<SongsModel> _songs = [];
 
@@ -51,18 +52,20 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
           icon: Icon(Icons.arrow_back, color: AppColors.textColor),
           onPressed: () => context.pop(),
         ),
-        title: Texts(
-          widget.artist.name,
-          fontSize: 18.sp,
-          fontWeight: AppFontWeights.semiBold,
-          color: AppColors.textColor,
-        ),
-        actions: [
-          IconButton(
-            icon: SvgPicture.asset(Assets.svgMenuIcon),
-            onPressed: () {},
-          ),
-        ],
+        title: Texts(widget.artist.name, fontSize: 18.sp, fontWeight: AppFontWeights.semiBold, color: AppColors.textColor),
+        actions: [IconButton(
+          icon: SvgPicture.asset(Assets.svgMenuIcon), 
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Artist menu coming soon'),
+                backgroundColor: AppColors.primaryOrange,
+                duration: Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        )],
       ),
       body: Stack(
         children: [
@@ -74,36 +77,21 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
                   children: [
                     SvgPicture.asset(Assets.svgSongsCount),
                     SizedBox(width: 10.w),
-                    Texts(
-                      '${_songs.length} Songs',
-                      fontSize: 14.sp,
-                      fontWeight: AppFontWeights.regular,
-                      color: AppColors.textColor,
-                    ),
+                    Texts('${_songs.length} Songs', fontSize: 14.sp, fontWeight: AppFontWeights.regular, color: AppColors.textColor),
                     Spacer(),
                     ElevatedButton.icon(
                       onPressed: () async {
                         if (_songs.isNotEmpty) {
-                          await _player.setPlaylist(
-                            _songs,
-                            startIndex: 0,
-                            autoPlay: true,
-                          );
-                          await _player.play();
+                          await musicService.setPlaylist(_songs, startIndex: 0, autoPlay: true);
+                          await musicService.play();
                         }
                       },
                       icon: Icon(Icons.play_arrow, size: 20.r),
-                      label: Texts(
-                        'Play All',
-                        fontSize: 14.sp,
-                        fontWeight: AppFontWeights.medium,
-                      ),
+                      label: Texts('Play All', fontSize: 14.sp, fontWeight: AppFontWeights.medium),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryOrange,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
                       ),
                     ),
                   ],
@@ -111,28 +99,22 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
               ),
               Expanded(
                 child: StreamBuilder<List<SongsModel>>(
-                  stream: _player.songsChanged,
-                  initialData: _player.songs,
+                  stream: musicService.songsChanged,
+                  initialData: musicService.songs,
                   builder: (context, snapshot) {
                     // Always check the current state, not just the snapshot
-                    final hasAny = _player.songs.isNotEmpty;
+                    final hasAny = musicService.songs.isNotEmpty;
                     final showMiniPlayer = hasAny;
 
                     return _songs.isEmpty
                         ? Center(
-                            child: Texts(
-                              'No songs by this artist',
-                              fontSize: 16.sp,
-                              color: AppColors.mediumDarkGrey,
-                            ),
+                            child: Texts('No songs by this artist', fontSize: 16.sp, color: AppColors.mediumDarkGrey),
                           )
                         : ListView.builder(
                             padding: EdgeInsets.only(
                               left: 20.w,
                               right: 20.w,
-                              bottom: showMiniPlayer
-                                  ? 74.h
-                                  : 10.h, // Space for MiniPlayerBar (which includes system nav bar padding)
+                              bottom: showMiniPlayer ? 74.h : 10.h, // Space for MiniPlayerBar (which includes system nav bar padding)
                             ),
                             itemCount: _songs.length,
                             itemBuilder: (context, index) {
@@ -141,8 +123,7 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
                                 margin: 7.w,
                                 height: 66.h,
                                 borderRadius: 10.r,
-                                backgroundColor:
-                                    AppColors.musicTileBackgroundColor,
+                                backgroundColor: AppColors.musicTileBackgroundColor,
                                 cardHeight: 50.h,
                                 cardWidth: 50.w,
                                 cardRadius: 7.r,
@@ -155,20 +136,28 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
                                 trailingIconWidth: 3.w,
                                 trailingMargin: 10.w,
                                 onTap: () async {
-                                  await _player.setPlaylist(
-                                    _songs,
-                                    startIndex: index,
-                                    autoPlay: true,
-                                  );
-                                  await _player.play();
+                                  if(musicService.songs.isNotEmpty && musicService.songs[musicService.currentIndex].id == song.id && musicService.isPlaying){
+                                    context.push(
+                                      '/dashboard/playing',
+                                      extra: PlayingSongArgs(songs: musicService.songs),
+                                    );
+                                  }
+                                  else{
+                                    await musicService.setPlaylist(_songs, startIndex: index, autoPlay: true);
+                                    await musicService.play();
+                                  }
                                 },
                                 onPlayTap: () async {
-                                  await _player.setPlaylist(
-                                    _songs,
-                                    startIndex: index,
-                                    autoPlay: true,
-                                  );
-                                  await _player.play();
+                                  if(musicService.songs.isNotEmpty && musicService.songs[musicService.currentIndex].id == song.id && musicService.isPlaying){
+                                    context.push(
+                                      '/dashboard/playing',
+                                      extra: PlayingSongArgs(songs: musicService.songs),
+                                    );
+                                  }
+                                  else{
+                                    await musicService.setPlaylist(_songs, startIndex: index, autoPlay: true);
+                                    await musicService.play();
+                                  }
                                 },
                               );
                             },

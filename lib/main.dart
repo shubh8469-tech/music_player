@@ -26,9 +26,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:audio_session/audio_session.dart';
+import 'package:metadata_god/metadata_god.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize MetadataGod for iOS metadata extraction
+  await MetadataGod.initialize();
 
   await JustAudioBackground.init(
     androidNotificationChannelId: 'com.example.music_app.playback',

@@ -35,8 +35,9 @@
  "selectSongs": "गाने चुनें",
  "searchSongs": "गाने खोजें",
  "selectAll": "सभी चुनें",
- "selected": "चयनित",
- "delete": "हटाएं",
- "play": "चलाएं"
+  "selected": "चयनित",
+  "delete": "हटाएं",
+  "play": "चलाएं",
+  "rename": "नाम बदलें"
 
 }

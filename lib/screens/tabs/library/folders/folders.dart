@@ -104,7 +104,6 @@ class _FolderListScreenState extends State<FolderListScreen> {
                       },
                     ),
                     Spacer(),
-                    SvgPicture.asset(Assets.svgFilter),
                     SizedBox(width: 5.w),
                     GestureDetector(
                       onTap: () {
@@ -146,24 +145,9 @@ class _FolderListScreenState extends State<FolderListScreen> {
                           ),
                         );
                       },
-                      child: Row(
-                        children: [
-                          Texts(
-                            selectedFolderSort,
-                            fontSize: 14.sp,
-                            fontWeight: AppFontWeights.regular,
-                            color: AppColors.textColor,
-                          ),
-                          SizedBox(width: 10.w),
-                          // Icon(
-                          //   selectedOrder == 0
-                          //       ? Icons.arrow_upward
-                          //       : Icons.arrow_downward,
-                          //   size: 16.sp,
-                          // ),
-                        ],
-                      ),
+                      child: SvgPicture.asset(Assets.svgFilter),
                     ),
+                    SizedBox(width: 5.w),
                   ],
                 ),
                 SizedBox(height: 25.h),
@@ -304,8 +288,22 @@ class _FolderListScreenState extends State<FolderListScreen> {
                     trailingIconHeight: 25.h,
                     trailingIconWidth: 25.w,
                     trailingMargin: 2.w,
-                    onTap: () {},
-                    onPlayTap: () {},
+                    onTap: () {
+                      showSnackBar(
+                        context,
+                        () {},
+                        message: 'Share folder feature coming soon',
+                        alertBannerLocation: AlertBannerLocation.bottom,
+                      );
+                    },
+                    onPlayTap: () {
+                      showSnackBar(
+                        context,
+                        () {},
+                        message: 'Play folder feature coming soon',
+                        alertBannerLocation: AlertBannerLocation.bottom,
+                      );
+                    },
                   ),
                 ),
                 Expanded(

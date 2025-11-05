@@ -14,12 +14,14 @@ class MusicPlayerService {
   List<SongsModel> songs = [];
 
   // Emits events when library-affecting stats change (e.g., play_count/last_played)
-  final StreamController<void> _libraryChangedController = StreamController<void>.broadcast();
+  final StreamController<void> _libraryChangedController =
+      StreamController<void>.broadcast();
 
   Stream<void> get libraryChanged => _libraryChangedController.stream;
 
   // Emits events when the songs list changes (e.g., when songs are added/removed/reordered)
-  final StreamController<List<SongsModel>> _songsChangedController = StreamController<List<SongsModel>>.broadcast();
+  final StreamController<List<SongsModel>> _songsChangedController =
+      StreamController<List<SongsModel>>.broadcast();
 
   Stream<List<SongsModel>> get songsChanged => _songsChangedController.stream;
   int? _lastUpdatedSongId;
@@ -43,12 +45,11 @@ class MusicPlayerService {
     return null;
   }
 
-  Stream<int?> get currentSongIdStream =>
-      player.currentIndexStream.map((i) {
-        final idx = i ?? -1;
-        if (idx >= 0 && idx < songs.length) return songs[idx].id;
-        return null;
-      });
+  Stream<int?> get currentSongIdStream => player.currentIndexStream.map((i) {
+    final idx = i ?? -1;
+    if (idx >= 0 && idx < songs.length) return songs[idx].id;
+    return null;
+  });
 
   // expose play state
   bool get isPlaying => player.playing;
@@ -67,9 +68,16 @@ class MusicPlayerService {
       if (state.processingState == ProcessingState.completed) {
         // If last song finishes → reset instead of full stop
         if (currentIndex >= (songs.length - 1)) {
-          await player.seek(Duration.zero);
-          await player.play();
+          if(_loopMode == LoopMode.off && currentIndex >= (songs.length - 1)){
+            player.stop();
+          }
+          else{
+            await player.seek(Duration.zero);
+            await player.play();
+          }
+          log('we are here ----- still $currentIndex ${songs.length}');
         } else {
+          log('we are here ----- $currentIndex ${songs.length}');
           await player.seekToNext();
           await player.play();
         }
@@ -85,7 +93,10 @@ class MusicPlayerService {
           if (_lastUpdatedSongId == current.id) return;
           try {
             final db = await AppDatabase.instance();
-            await db.rawUpdate("UPDATE songs SET play_count = play_count + 1, last_played = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW') WHERE id = ?", [current.id]);
+            await db.rawUpdate(
+              "UPDATE songs SET play_count = play_count + 1, last_played = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW') WHERE id = ?",
+              [current.id],
+            );
             // Notify listeners (e.g., playlist counts for system playlists)
             _libraryChangedController.add(null);
             _lastUpdatedSongId = current.id;
@@ -102,14 +113,96 @@ class MusicPlayerService {
       if (_lastUpdatedSongId == current.id) return;
       try {
         final db = await AppDatabase.instance();
-        await db.rawUpdate("UPDATE songs SET play_count = play_count + 1, last_played = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW') WHERE id = ?", [current.id]);
+        await db.rawUpdate(
+          "UPDATE songs SET play_count = play_count + 1, last_played = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW') WHERE id = ?",
+          [current.id],
+        );
         _libraryChangedController.add(null);
         _lastUpdatedSongId = current.id;
       } catch (_) {}
     });
   }
 
-  Future<void> setPlaylist(List<SongsModel> songModels, {int startIndex = 0, bool autoPlay = true}) async {
+  Future<void> setPlaylist(
+    List<SongsModel> songModels, {
+    int startIndex = 0,
+    bool autoPlay = true,
+  }) async
+  {
+    if (songModels.isEmpty) return;
+    songs = songModels;
+
+    // Notify listeners that the songs list has changed
+    _songsChangedController.add(songs);
+
+    // final playlist = ConcatenatingAudioSource(
+    //   useLazyPreparation: true,
+    //   children: songModels
+    //       .map(
+    //         (song) => AudioSource.uri(
+    //           Uri.file(song.filePath),
+    //           tag: MediaItem(
+    //             // Optional: metadata for mini player / lock screen
+    //             id: song.id?.toString() ?? '',
+    //             title: song.title,
+    //             artist: song.artist,
+    //             album: song.album,
+    //             duration: Duration(milliseconds: song.duration),
+    //             artUri: song.artwork_path != null
+    //                 ? Uri.file(song.artwork_path!)
+    //                 : null,
+    //           ),
+    //         ),
+    //       )
+    //       .toList(),
+    // );
+    final playlist = ConcatenatingAudioSource(
+      useLazyPreparation: true,
+      children: songModels.map((song) {
+        Uri? artUri;
+        try {
+          if (song.artwork_path != null && song.artwork_path!.isNotEmpty) {
+            // Prevent invalid URIs
+            artUri = Uri.file(song.artwork_path!);
+          }
+        } catch (e) {
+          log("Error loading artUri: ${e.toString()}");
+        }
+
+        return AudioSource.uri(
+          Uri.file(song.filePath),
+          tag: MediaItem(
+            id: song.id?.toString() ?? '',
+            title: song.title,
+            artist: song.artist,
+            album: song.album,
+            duration: Duration(milliseconds: song.duration),
+            artUri: artUri, // ✅ only if valid
+          ),
+        );
+      }).toList(),
+    );
+    await player.setAudioSource(playlist, initialIndex: startIndex);
+    // Ensure shuffle mode stays applied on new source
+    await player.setShuffleModeEnabled(_isShuffleEnabled);
+    if (_isShuffleEnabled) {
+      await player.shuffle();
+    }
+
+    // Wait for duration to be loaded before starting play
+    await player.durationStream.firstWhere((d) => d != null);
+
+    if (autoPlay) {
+      await player.play();
+    }
+  }
+
+  Future<void> setShufflePlaylist(
+      List<SongsModel> songModels, {
+        int startIndex = 0,
+        bool autoPlay = true,
+      }) async
+  {
     if (songModels.isEmpty) return;
     songs = songModels;
 
@@ -191,30 +284,20 @@ class MusicPlayerService {
   }
 
   Future<void> next() async {
-    if (currentIndex < songs.length - 1) {
-      await player.seekToNext();
-      await player.play();
-    } else {
-      // Loop to the first song
-      await player.seek(Duration.zero, index: 0);
-      await player.play();
-    }
+    log('checks---> $currentIndex ${songs.length}');
+    // Manually calculate next index to bypass LoopMode.one restriction
+    final nextIndex = (currentIndex + 1) % songs.length;
+    await player.seek(Duration.zero, index: nextIndex);
+    await player.play();
   }
 
   Future<void> stop() => player.stop();
 
   Future<void> previous() async {
-    if (currentIndex > 0) {
-      await player.seekToPrevious();
-      await player.play();
-    } else {
-      // restart current if already at first song
-      // await player.seek(Duration.zero);
-      // await player.play();
-      //Loop to last song instead of staying on first
-      await player.seek(Duration.zero, index: songs.length - 1);
-      await player.play();
-    }
+    // Manually calculate previous index to bypass LoopMode.one restriction
+    final prevIndex = currentIndex > 0 ? currentIndex - 1 : songs.length - 1;
+    await player.seek(Duration.zero, index: prevIndex);
+    await player.play();
   }
 
   // Toggle Shuffle mode
@@ -228,14 +311,11 @@ class MusicPlayerService {
       await player.shuffle();
       final total = songs.length;
       if (total > 0) {
-        final randomIndex = (DateTime
-            .now()
-            .millisecondsSinceEpoch % total);
+        final randomIndex = (DateTime.now().millisecondsSinceEpoch % total);
         await player.seek(Duration.zero, index: randomIndex);
       }
     }
   }
-
 
   Future<void> ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition() async {
     if (!_isShuffleEnabled) {
@@ -258,39 +338,37 @@ class MusicPlayerService {
     }
   }
 
-    Future<void> ensureShuffleOnAndReshuffle() async {
-      if (!_isShuffleEnabled) {
-        _isShuffleEnabled = true;
-        await player.setShuffleModeEnabled(true);
-        log('Shuffle mode enabled');
-      }
-
-      await player.shuffle();
-      final total = songs.length;
-      if (total > 0 && player.currentIndex == null) {
-        final randomIndex = (DateTime
-            .now()
-            .millisecondsSinceEpoch % total);
-        await player.seek(Duration.zero, index: randomIndex);
-      }
+  Future<void> ensureShuffleOnAndReshuffle() async {
+    if (!_isShuffleEnabled) {
+      _isShuffleEnabled = true;
+      await player.setShuffleModeEnabled(true);
+      log('Shuffle mode enabled');
     }
 
-    Future<void> ensureShuffleOff() async {
-      if (_isShuffleEnabled) {
-        _isShuffleEnabled = false;
-        await player.setShuffleModeEnabled(false);
-      }
-    }
-
-    // Cycle Loop mode Off → All → One → Off
-    Future<void> toggleRepeat() async {
-      if (_loopMode == LoopMode.off) {
-        _loopMode = LoopMode.one;
-      } else if (_loopMode == LoopMode.one) {
-        _loopMode = LoopMode.all;
-      } else {
-        _loopMode = LoopMode.off;
-      }
-      await player.setLoopMode(_loopMode);
+    await player.shuffle();
+    final total = songs.length;
+    if (total > 0 && player.currentIndex == null) {
+      final randomIndex = (DateTime.now().millisecondsSinceEpoch % total);
+      await player.seek(Duration.zero, index: randomIndex);
     }
   }
+
+  Future<void> ensureShuffleOff() async {
+    if (_isShuffleEnabled) {
+      _isShuffleEnabled = false;
+      await player.setShuffleModeEnabled(false);
+    }
+  }
+
+  // Cycle Loop mode Off → All → One → Off
+  Future<void> toggleRepeat() async {
+    if (_loopMode == LoopMode.off) {
+      _loopMode = LoopMode.one;
+    } else if (_loopMode == LoopMode.one) {
+      _loopMode = LoopMode.all;
+    } else {
+      _loopMode = LoopMode.off;
+    }
+    await player.setLoopMode(_loopMode);
+  }
+}

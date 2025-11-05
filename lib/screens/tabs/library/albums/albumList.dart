@@ -75,7 +75,6 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                   ),
                 ),
                 Spacer(),
-                SvgPicture.asset(Assets.svgFilter),
                 SizedBox(width: 5.w),
                 GestureDetector(
                   onTap: () {
@@ -114,24 +113,9 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                       ),
                     );
                   },
-                  child: Row(
-                    children: [
-                      Texts(
-                        selectedAlbumSort,
-                        fontSize: 14.sp,
-                        fontWeight: AppFontWeights.regular,
-                        color: AppColors.textColor,
-                      ),
-                      SizedBox(width: 10.w),
-                      // Icon(
-                      //   selectedOrder == 0
-                      //       ? Icons.arrow_upward
-                      //       : Icons.arrow_downward,
-                      //   size: 16.sp,
-                      // ),
-                    ],
-                  ),
+                  child: SvgPicture.asset(Assets.svgFilter),
                 ),
+                SizedBox(width: 10.w),
               ],
             ),
             SizedBox(height: 25.h),
@@ -223,10 +207,15 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                                         ),
                                       ),
                                       SizedBox(width: 5.w),
-                                      SvgPicture.asset(
-                                        Assets.svgMenuIcon,
-                                        height: 15.h,
-                                        width: 15.w,
+                                      InkWell(
+                                        onTap: (){
+
+                                        },
+                                        child: SvgPicture.asset(
+                                          Assets.svgMenuIcon,
+                                          height: 19.5.h,
+                                          width: 19.5.w,
+                                        ),
                                       ),
                                     ],
                                   ),

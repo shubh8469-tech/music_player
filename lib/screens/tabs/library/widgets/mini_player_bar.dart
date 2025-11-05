@@ -187,7 +187,7 @@ class MiniPlayerBar extends StatelessWidget {
                                   fontSize: 14.sp,
                                   fontWeight: FontWeight.w500,
                                   fontFamily: AppFonts.inter,
-                                  maxLines: 2,
+                                  maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 Texts(

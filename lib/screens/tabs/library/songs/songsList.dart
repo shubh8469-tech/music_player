@@ -24,9 +24,11 @@ import '../../../../commonWidgets/common_functions.dart';
 // import '../../../../commonWidgets/gradientCard.dart';
 import '../../../../commonWidgets/song_menu_screen.dart';
 import '../../../../features/songs/bloc/songs_bloc.dart';
+import '../../../../features/songs/data/models/song_model.dart';
 import '../../../../generated/assets.dart';
 import '../../../../utills/globals.dart';
 // import '../../../../l10n/l10n.dart';
+import '../../../play_song/playing_song_screen.dart';
 import '../../music_service.dart';
 
 class SongsList extends StatefulWidget {
@@ -37,23 +39,11 @@ class SongsList extends StatefulWidget {
 }
 
 class _SongsListState extends State<SongsList> {
-  List<Color> colors = [
-    AppColors.mildOrange,
-    AppColors.mildBlue,
-    AppColors.mildPink,
-  ];
+  List<Color> colors = [AppColors.mildOrange, AppColors.mildBlue, AppColors.mildPink];
 
-  List<String> musicIcons = [
-    Assets.pngBand2,
-    Assets.svgMusicIcon,
-    Assets.pngBand,
-  ];
+  List<String> musicIcons = [Assets.pngBand2, Assets.svgMusicIcon, Assets.pngBand];
 
-  List<String> songNames = [
-    "Shape of You",
-    "Blinding Lights",
-    "Rolling in the Deep",
-  ];
+  List<String> songNames = ["Shape of You", "Blinding Lights", "Rolling in the Deep"];
 
   List<String> artistNames = ["Ed Sheeran", "The Weeknd", "Adele"];
   String selectedSongSort = sortByItems[0].title;
@@ -73,7 +63,7 @@ class _SongsListState extends State<SongsList> {
   @override
   void initState() {
     super.initState();
-    context.read<SongsBloc>().add(SongsEvent.sortSongs(0, 0));
+    // context.read<SongsBloc>().add(SongsEvent.sortSongs(0, 0));
 
     // Listen duration
     musicService.player.durationStream.listen((d) {
@@ -111,30 +101,19 @@ class _SongsListState extends State<SongsList> {
             initial: () => const SizedBox.shrink(),
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (message) => Center(
-              child: Text(
-                message,
-                style: const TextStyle(color: Colors.red, fontSize: 16),
-              ),
+              child: Text(message, style: const TextStyle(color: Colors.red, fontSize: 16)),
             ),
             loaded: (songs) {
               if (songs.isEmpty) {
                 return const Center(
-                  child: Text(
-                    "No songs available",
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
+                  child: Text("No songs available", style: TextStyle(fontSize: 16, color: Colors.grey)),
                 );
               }
               return Column(
                 children: [
                   Expanded(
                     child: Padding(
-                      padding: EdgeInsets.only(
-                        left: 20.w,
-                        right: 20.w,
-                        top: 30.h,
-                        bottom: 1.h,
-                      ),
+                      padding: EdgeInsets.only(left: 20.w, right: 20.w, top: 30.h, bottom: 1.h),
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
@@ -143,56 +122,37 @@ class _SongsListState extends State<SongsList> {
                               children: [
                                 GestureDetector(
                                   onTap: () async {
-                                    await musicService.setPlaylist(
-                                      songs,
-                                      autoPlay: false,
-                                    );
-                                    await musicService
-                                        .ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
+                                    // final shuffledSongs = List<SongsModel>.from(songs);
+                                    // shuffledSongs.shuffle();
+                                    // context.read<SongsBloc>().add(SongsEvent.shuffleSongs(shuffledSongs));
 
-                                    // Wait until the player has fully updated its index
-                                    await musicService.player.currentIndexStream
-                                        .firstWhere(
-                                          (idx) => idx != null && idx != 0,
-                                        );
-
-                                    // Now play
-                                    await musicService.play();
-
-                                    if (mounted) {
-                                      setState(() {
-                                        _showMiniPlayer = true;
-                                      });
+                                    if (musicService.currentIndex < 0) {
+                                      await musicService.setPlaylist(songs, autoPlay: false, startIndex: 0);
+                                      await musicService.play();
+                                    } else {
+                                      await musicService.setShufflePlaylist(
+                                        songs,
+                                        autoPlay: false,
+                                        startIndex: musicService.currentIndex != -1 ? musicService.currentIndex : 0,
+                                      );
+                                      await musicService.ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
+                                      await musicService.player.currentIndexStream.firstWhere((idx) => idx != null && idx != 0);
+                                      await musicService.play();
                                     }
 
-                                    log("Shuffle Play started");
+                                    log("New Shuffle Play started");
                                   },
                                   child: Container(
                                     alignment: Alignment.center,
                                     height: 40.h,
                                     width: 165.w,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.shuffleBackground,
-                                      borderRadius: BorderRadius.circular(
-                                        100.r,
-                                      ),
-                                    ),
+                                    decoration: BoxDecoration(color: AppColors.shuffleBackground, borderRadius: BorderRadius.circular(100.r)),
                                     child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        SvgPicture.asset(
-                                          Assets.svgShuffle,
-                                          height: 16.79.h,
-                                          width: 17.77,
-                                        ),
+                                        SvgPicture.asset(Assets.svgShuffle, height: 16.79.h, width: 17.77),
                                         SizedBox(width: 10.w),
-                                        Texts(
-                                          'Shuffle',
-                                          fontWeight: AppFontWeights.medium,
-                                          fontSize: 14.sp,
-                                          color: AppColors.black,
-                                        ),
+                                        Texts('Shuffle', fontWeight: AppFontWeights.medium, fontSize: 14.sp, color: AppColors.black),
                                       ],
                                     ),
                                   ),
@@ -203,10 +163,7 @@ class _SongsListState extends State<SongsList> {
                                     await musicService.ensureShuffleOff();
 
                                     // Play from the first song in order
-                                    await musicService.setPlaylist(
-                                      songs,
-                                      startIndex: 0,
-                                    );
+                                    await musicService.setPlaylist(songs, startIndex: 0);
                                     await musicService.play();
 
                                     if (mounted) {
@@ -215,35 +172,18 @@ class _SongsListState extends State<SongsList> {
                                       });
                                     }
 
-                                    log(
-                                      "Playing all songs from first position",
-                                    );
+                                    log("Playing all songs from first position");
                                   },
                                   child: Container(
                                     height: 40.h,
                                     width: 165.w,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primaryOrange,
-                                      borderRadius: BorderRadius.circular(
-                                        100.r,
-                                      ),
-                                    ),
+                                    decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(100.r)),
                                     child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        SvgPicture.asset(
-                                          Assets.svgPlay,
-                                          height: 16.79.h,
-                                          width: 17.77,
-                                        ),
+                                        SvgPicture.asset(Assets.svgPlay, height: 16.79.h, width: 17.77),
                                         SizedBox(width: 10.w),
-                                        Texts(
-                                          'Play',
-                                          fontWeight: AppFontWeights.medium,
-                                          fontSize: 14.sp,
-                                          color: AppColors.white,
-                                        ),
+                                        Texts('Play', fontWeight: AppFontWeights.medium, fontSize: 14.sp, color: AppColors.white),
                                       ],
                                     ),
                                   ),
@@ -261,12 +201,7 @@ class _SongsListState extends State<SongsList> {
                                     children: [
                                       SvgPicture.asset(Assets.svgSongsCount),
                                       SizedBox(width: 10.w),
-                                      Texts(
-                                        "${songs.length} songs",
-                                        fontSize: 14.sp,
-                                        fontWeight: AppFontWeights.regular,
-                                        color: AppColors.textColor,
-                                      ),
+                                      Texts("${songs.length} songs", fontSize: 14.sp, fontWeight: AppFontWeights.regular, color: AppColors.textColor),
                                     ],
                                   ),
                                 ),
@@ -277,11 +212,7 @@ class _SongsListState extends State<SongsList> {
                                       context: context,
                                       backgroundColor: Colors.white,
                                       elevation: 0,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(40),
-                                        ),
-                                      ),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
                                       isScrollControlled: true,
                                       builder: (_) => BlocProvider.value(
                                         value: context.read<SongsBloc>(),
@@ -292,28 +223,20 @@ class _SongsListState extends State<SongsList> {
                                             setState(() {
                                               selectedIndex = index;
                                               selectedOrder = order;
-                                              selectedSongSort = sortByItems[index]
-                                                  .title; // Optional: update selected song title
+                                              selectedSongSort = sortByItems[index].title; // Optional: update selected song title
                                             });
                                             // Trigger Bloc sort event
-                                            context.read<SongsBloc>().add(
-                                              SongsEvent.sortSongs(
-                                                index,
-                                                order,
-                                              ),
-                                            );
+                                            context.read<SongsBloc>().add(SongsEvent.sortSongs(index, order));
                                             // Close bottom sheet safely
-                                            WidgetsBinding.instance
-                                                .addPostFrameCallback((_) {
-                                                  if (Navigator.canPop(context))
-                                                    Navigator.pop(context);
-                                                });
+                                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                                              if (Navigator.canPop(context)) Navigator.pop(context);
+                                            });
                                           },
                                         ),
                                       ),
                                     );
                                   },
-                                  child:  SvgPicture.asset(Assets.svgFilter),
+                                  child: SvgPicture.asset(Assets.svgFilter),
                                   // child: Row(
                                   //   children: [
                                   //     Texts(
@@ -345,65 +268,47 @@ class _SongsListState extends State<SongsList> {
                                         final player = musicService.player;
 
                                         //  Hide highlight while shuffle is loading
-                                        final hideHighlightDuringShuffle =
-                                            musicService.isShuffleEnabled &&
-                                            player.processingState ==
-                                                ProcessingState.loading;
+                                        final hideHighlightDuringShuffle = musicService.isShuffleEnabled && player.processingState == ProcessingState.loading;
 
-                                        final isCurrent =
-                                            !hideHighlightDuringShuffle &&
-                                            (songs[index].id == currentId);
+                                        final isCurrent = (songs[index].id == currentId);
 
                                         return MusicListTile(
                                           margin: 7.w,
                                           height: 66.h,
                                           borderRadius: 10.r,
-                                          backgroundColor: AppColors
-                                              .musicTileBackgroundColor,
+                                          backgroundColor: AppColors.musicTileBackgroundColor,
                                           cardHeight: 50.h,
                                           cardWidth: 50.w,
                                           cardRadius: 7.r,
-                                          cardIconAsset:
-                                              songs[index].artwork_path ?? Assets.svgMusicIcon,
+                                          cardIconAsset: songs[index].artwork_path ?? Assets.svgMusicIcon,
                                           cardIconSize: 32.r,
                                           isSvgCardIcon: (songs[index].artwork_path ?? '').contains('.svg') || songs[index].artwork_path == null,
-                                          title:
-                                              songs[index].title,
+                                          title: songs[index].title,
                                           subtitle: songs[index].artist,
                                           trailingIconAsset: Assets.svgMenuIcon,
                                           trailingIconHeight: 19.5.h,
                                           trailingIconWidth: 3.w,
                                           trailingMargin: 10.w,
-                                          songLength: formatDuration(
-                                            songs[index].duration,
-                                          ),
+                                          songLength: formatDuration(songs[index].duration),
                                           songLengthRequired: true,
                                           isGifLoad: isCurrent,
                                           onTap: () async {
-                                            if (mounted) {
-                                              setState(() {
-                                                _showMiniPlayer =
-                                                    true; // show mini player
-                                              });
+                                            if (musicService.songs.isNotEmpty &&
+                                                musicService.songs[musicService.currentIndex].id == songs[index].id &&
+                                                musicService.isPlaying) {
+                                              log('song   innnn');
+                                              context.push('/dashboard/playing', extra: PlayingSongArgs(songs: musicService.songs));
+                                            } else {
+                                              log('song   outttt');
+                                              await musicService.setPlaylist(songs, startIndex: index);
                                             }
-                                            await musicService.setPlaylist(
-                                              songs,
-                                              startIndex: index,
-                                            );
                                           },
                                           onPlayTap: () async {
                                             showModalBottomSheet(
                                               context: context,
                                               backgroundColor: Colors.white,
                                               elevation: 0,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.vertical(
-                                                      top: Radius.circular(
-                                                        40.r,
-                                                      ),
-                                                    ),
-                                              ),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
                                               isScrollControlled: true,
                                               builder: (_) => SongMenuScreen(
                                                 songMenuList: songMenuItems,
@@ -436,5 +341,30 @@ class _SongsListState extends State<SongsList> {
         },
       ),
     );
+  }
+
+  Future<void> _shuffle(List<SongsModel> songs) async {
+    if (songs.isEmpty) return;
+
+    final currentSongId = musicService.currentSongId;
+    final wasPlaying = musicService.isPlaying;
+
+    final shuffledSongs = List<SongsModel>.from(songs);
+    shuffledSongs.shuffle();
+
+    int startIndex = 0;
+
+    if (currentSongId != null) {
+      final currentIndex = shuffledSongs.indexWhere((song) => song.id == currentSongId);
+      if (currentIndex >= 0) {
+        startIndex = currentIndex;
+      } else {
+        // If current song not found, pick a random index
+        startIndex = (DateTime.now().millisecondsSinceEpoch % shuffledSongs.length);
+      }
+    } else {
+      // If no current song, pick a random index
+      startIndex = (DateTime.now().millisecondsSinceEpoch % shuffledSongs.length);
+    }
   }
 }
