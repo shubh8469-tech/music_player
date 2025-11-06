@@ -176,6 +176,7 @@ class ImportSongsService {
           String title = p.basenameWithoutExtension(file.name);
           String artist = 'Unknown Artist';
           String album = 'Unknown Album';
+          String albumArtist = ''; // For album grouping
           String genre = '';
           int duration = 0;
           int? year;
@@ -189,16 +190,21 @@ class ImportSongsService {
 
             // Extract text metadata
             if (metadata.title != null && metadata.title!.isNotEmpty) {
-              title = metadata.title!;
+              title = metadata.title!.trim();
             }
             if (metadata.artist != null && metadata.artist!.isNotEmpty) {
-              artist = metadata.artist!;
+              artist = metadata.artist!.trim();
             }
             if (metadata.album != null && metadata.album!.isNotEmpty) {
-              album = metadata.album!;
+              album = metadata.album!.trim();
+            }
+            // Extract albumArtist for proper album grouping
+            if (metadata.albumArtist != null &&
+                metadata.albumArtist!.isNotEmpty) {
+              albumArtist = metadata.albumArtist!.trim();
             }
             if (metadata.genre != null && metadata.genre!.isNotEmpty) {
-              genre = metadata.genre!;
+              genre = metadata.genre!.trim();
             }
             if (metadata.durationMs != null) {
               duration = metadata.durationMs!.toInt();
@@ -341,20 +347,28 @@ class ImportSongsService {
 
           // Add to Album
           if (album.isNotEmpty) {
-            final albumKey = '$album|$artist';
+            // Use albumArtist for grouping if available, otherwise fall back to artist
+            // This handles compilations/soundtracks with multiple artists correctly
+            String effectiveAlbumArtist = albumArtist.isNotEmpty
+                ? albumArtist
+                : artist;
+
+            // Create album key using albumArtist for better grouping
+            // (prevents creating duplicate albums for soundtracks with multiple artists)
+            final albumKey = '$album|$effectiveAlbumArtist';
             int albumId;
             if (albumIds.containsKey(albumKey)) {
               albumId = albumIds[albumKey]!;
             } else {
               final existingAlbum = await albumRepository
-                  .getAlbumByNameAndArtist(album, artist);
+                  .getAlbumByNameAndArtist(album, effectiveAlbumArtist);
               if (existingAlbum != null) {
                 albumId = existingAlbum.id!;
               } else {
                 final albumEntity = Album(
                   id: null,
                   name: album,
-                  artist: artist,
+                  artist: effectiveAlbumArtist,
                   songCount: 0,
                   year: year,
                   artworkPath: null,

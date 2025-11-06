@@ -36,7 +36,7 @@ class FolderLocalDataSourceImpl implements FolderLocalDataSource {
   Future<FolderModel?> getFolderByName(String name) async {
     final result = await db.query(
       'folders',
-      where: 'name = ?',
+      where: 'LOWER(TRIM(name)) = LOWER(TRIM(?))',
       whereArgs: [name],
       limit: 1,
     );

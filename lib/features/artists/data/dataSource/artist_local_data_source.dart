@@ -37,7 +37,7 @@ class ArtistLocalDataSourceImpl implements ArtistLocalDataSource {
   Future<ArtistModel?> getArtistByName(String name) async {
     final result = await db.query(
       'artists',
-      where: 'name = ?',
+      where: 'LOWER(TRIM(name)) = LOWER(TRIM(?))',
       whereArgs: [name],
       limit: 1,
     );

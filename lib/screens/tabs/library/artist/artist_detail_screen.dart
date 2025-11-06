@@ -1,19 +1,29 @@
+import 'dart:developer' as logS;
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:music_app/features/artists/domain/entities/artist.dart';
+import 'package:music_app/features/artists/bloc/artist_bloc.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
+import 'package:music_app/features/songs/bloc/songs_bloc.dart';
 import 'package:music_app/screens/tabs/music_service.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
 import '../../../../commonWidgets/MusicListTile.dart';
+import '../../../../commonWidgets/gradientCard.dart';
+import '../../../../commonWidgets/song_menu_screen.dart';
 import '../../../../commonWidgets/textWidget.dart';
 import '../../../../features/artists/domain/repositories/artist_repository.dart';
 import '../../../../generated/assets.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../utills/globals.dart';
 import '../../../play_song/playing_song_screen.dart';
 import '../widgets/mini_player_bar.dart';
+import '../../../../model/song_menu_model.dart';
+import '../../../../commonWidgets/bottom_button_two.dart';
+import '../../../../l10n/l10n.dart';
 
 class ArtistDetailScreen extends StatefulWidget {
   final Artist artist;
@@ -28,147 +38,598 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
   final musicService = MusicPlayerService();
 
   List<SongsModel> _songs = [];
+  List<SongsModel> _baseSongs = [];
+  late Artist _currentArtist;
+
+  // Sort options without artist option
+  late final List<SongMenuItem> _artistSongSortByItems;
+  int selectedIndex = 0;
+  int selectedOrder = 0;
 
   @override
   void initState() {
     super.initState();
+    _currentArtist = widget.artist;
+    // Create sort items without artist option (index 1 in sortByItems)
+    _artistSongSortByItems = List.from(sortByItems)..removeAt(1);
     _loadSongs();
   }
 
   Future<void> _loadSongs() async {
-    final songs = await _repo.getSongsForArtist(widget.artist.id!);
-    _songs = songs.cast<SongsModel>();
-    if (mounted) setState(() {});
+    final songs = await _repo.getSongsForArtist(_currentArtist.id!);
+    if (mounted) {
+      setState(() {
+        _songs = songs.cast<SongsModel>();
+        _baseSongs = List<SongsModel>.from(_songs);
+      });
+    }
+  }
+
+  Future<void> _refreshArtistData() async {
+    // Refresh artist data to get updated song count
+    final artistBloc = context.read<ArtistBloc>();
+    artistBloc.add(const ArtistEvent.fetchAllArtists());
+  }
+
+  void _sortSongs(int sortIndex, int sortOrder) {
+    List<SongsModel> sortedSongs = List.from(_songs);
+    final isAscending = sortOrder == 0;
+
+    // Adjust sortIndex since we removed artist option (original index 1)
+    // 0: Song Name -> 0
+    // 1: Album -> 2 (original)
+    // 2: Folder -> 3 (original)
+    // 3: Added Time -> 4 (original)
+    // 4: Play Count -> 5 (original)
+    // 5: Year -> 6 (original)
+    int adjustedIndex = sortIndex;
+    if (sortIndex >= 1) {
+      adjustedIndex = sortIndex + 1; // Skip artist option
+    }
+
+    switch (adjustedIndex) {
+      case 0: // Song Name
+        sortedSongs.sort((a, b) => isAscending 
+          ? a.title.toLowerCase().compareTo(b.title.toLowerCase()) 
+          : b.title.toLowerCase().compareTo(a.title.toLowerCase()));
+        break;
+      case 2: // Album
+        sortedSongs.sort((a, b) => isAscending 
+          ? a.album.toLowerCase().compareTo(b.album.toLowerCase()) 
+          : b.album.toLowerCase().compareTo(a.album.toLowerCase()));
+        break;
+      case 3: // Folder
+        sortedSongs.sort(
+          (a, b) => isAscending 
+            ? a.folder!.toLowerCase().compareTo(b.folder!.toLowerCase()) 
+            : b.folder!.toLowerCase().compareTo(a.folder!.toLowerCase()),
+        );
+        break;
+      case 4: // Added Time
+        sortedSongs.sort((a, b) => isAscending 
+          ? a.createdTime.compareTo(b.createdTime) 
+          : b.createdTime.compareTo(a.createdTime));
+        break;
+      case 5: // Play Count
+        sortedSongs.sort((a, b) => isAscending 
+          ? a.playCount.compareTo(b.playCount) 
+          : b.playCount.compareTo(a.playCount));
+        break;
+      case 6: // Year
+        sortedSongs.sort((a, b) {
+          final aYear = a.year ?? 0;
+          final bYear = b.year ?? 0;
+          // Songs without year go to the end
+          if (aYear == 0 && bYear == 0) return 0;
+          if (aYear == 0) return 1;
+          if (bYear == 0) return -1;
+          return isAscending ? aYear.compareTo(bYear) : bYear.compareTo(aYear);
+        });
+        break;
+      default:
+        break;
+    }
+
+    setState(() {
+      _songs = sortedSongs;
+    });
+  }
+
+  Widget _songTile(List<SongsModel> list, int index) {
+    final song = list[index];
+    return StreamBuilder<int?>(
+      stream: musicService.currentSongIdStream,
+      initialData: musicService.currentSongId,
+      builder: (context, idSnap) {
+        final currentId = idSnap.data;
+        final isCurrent = song.id == currentId;
+        final isPlaying = musicService.isPlaying;
+        return Material(
+          key: ValueKey(song.id),
+          color: Colors.transparent,
+          child: Column(
+            children: [
+              MusicListTile(
+                margin: 7.w,
+                height: 66.h,
+                borderRadius: 10.r,
+                backgroundColor: AppColors.musicTileBackgroundColor,
+                cardHeight: 50.h,
+                cardWidth: 50.w,
+                cardRadius: 7.r,
+                cardIconAsset: song.artwork_path ?? Assets.svgMusicIcon,
+                cardIconSize: 32.r,
+                isSvgCardIcon: (song.artwork_path ?? '').contains('.svg') || song.artwork_path == null,
+                title: song.title,
+                subtitle: song.album,
+                trailingIconAsset: Assets.svgMenuIcon,
+                trailingIconHeight: 19.5.h,
+                trailingIconWidth: 3.w,
+                trailingMargin: 10.w,
+                isGifLoad: isCurrent,
+                isPlaying: isPlaying,
+                onTap: () async {
+                  if (musicService.songs.isNotEmpty && musicService.songs[musicService.currentIndex].id == song.id && musicService.isPlaying) {
+                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: musicService.songs));
+                  } else {
+                    await musicService.setPlaylist(list, startIndex: index);
+                    await musicService.play();
+                  }
+                },
+                onPlayTap: () async {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
+                    isScrollControlled: true,
+                    builder: (_) => SongMenuScreen(
+                      songMenuList: songMenuItems,
+                      isPlaying: false,
+                      currentSong: song,
+                      songIndex: index,
+                      songsList: list,
+                      maxHeight: 0.87.sh,
+                      systemKeyOrId: _currentArtist.id.toString(),
+                      isSystemPlaylist: false,
+                      from: 'artist_in',
+                      onSongDeleted: () {
+                        // Immediately remove the song from local list for instant UI update
+                        final songId = song.id;
+                        setState(() {
+                          _songs.removeWhere((s) => s.id == songId);
+                          _baseSongs.removeWhere((s) => s.id == songId);
+                          // Decrement artist song count temporarily (will be synced from DB)
+                          _currentArtist = Artist(
+                            id: _currentArtist.id,
+                            name: _currentArtist.name,
+                            songCount: _currentArtist.songCount - 1,
+                            albumCount: _currentArtist.albumCount,
+                            createdTime: _currentArtist.createdTime,
+                            updatedTime: _currentArtist.updatedTime,
+                          );
+                        });
+
+                        // Wait for database operations and triggers to complete, then sync with DB
+                        Future.delayed(const Duration(milliseconds: 800), () async {
+                          if (mounted) {
+                            await _loadSongs();
+                            _refreshArtistData();
+                          }
+                        });
+                      },
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Custom sort by bottom sheet for artist songs
+  Widget _buildSortByBottomSheet() {
+    int localSelectedIndex = selectedIndex;
+    int localSelectedOrder = selectedOrder;
+
+    return StatefulBuilder(
+      builder: (context, setModalState) {
+        // Handle keyboard visibility and safe area
+        final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+        final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+        final bottomPadding = viewInsets > 0 
+          ? viewInsets + 16.h 
+          : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+
+        return Container(
+          padding: EdgeInsets.only(
+            top: 10.h,
+            bottom: bottomPadding,
+            left: 10.w,
+            right: 10.w,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SvgPicture.asset(Assets.svgIcLineBottom),
+              SizedBox(height: 20.h),
+              Texts(
+                'Sort By',
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w500,
+                fontFamily: AppFonts.inter,
+              ),
+              SizedBox(height: 10.h),
+
+              // Sort Type Options
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ...List.generate(_artistSongSortByItems.length, (index) {
+                    var songItem = _artistSongSortByItems[index];
+                    return ListTile(
+                      dense: true,
+                      visualDensity: VisualDensity(horizontal: 0.w, vertical: -2.h),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
+                      title: Texts(
+                        songItem.title,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w400,
+                        fontFamily: AppFonts.inter,
+                        color: index == localSelectedIndex
+                            ? AppColors.primaryOrange
+                            : AppColors.textColor,
+                      ),
+                      trailing: SvgPicture.asset(
+                        index == localSelectedIndex
+                            ? Assets.svgIcRadioCheckl
+                            : Assets.svgIcRadioUncheck,
+                        height: 20.h,
+                        width: 20.w,
+                      ),
+                      onTap: () {
+                        setModalState(() {
+                          localSelectedIndex = index;
+                        });
+                      },
+                    );
+                  }),
+
+                  // Divider
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.w),
+                    child: Divider(
+                      color: AppColors.textColor.withOpacity(0.2),
+                      thickness: 1,
+                    ),
+                  ),
+
+                  // Ascending Option
+                  ListTile(
+                    dense: true,
+                    visualDensity: VisualDensity(horizontal: 0.w, vertical: -2.h),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
+                    title: Texts(
+                      'Ascending',
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w400,
+                      fontFamily: AppFonts.inter,
+                      color: localSelectedOrder == 0
+                          ? AppColors.primaryOrange
+                          : AppColors.textColor,
+                    ),
+                    trailing: SvgPicture.asset(
+                      localSelectedOrder == 0
+                          ? Assets.svgIcRadioCheckl
+                          : Assets.svgIcRadioUncheck,
+                      height: 20.h,
+                      width: 20.w,
+                    ),
+                    onTap: () {
+                      setModalState(() {
+                        localSelectedOrder = 0;
+                      });
+                    },
+                  ),
+
+                  // Descending Option
+                  ListTile(
+                    dense: true,
+                    visualDensity: VisualDensity(horizontal: 0.w, vertical: -2.h),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
+                    title: Texts(
+                      'Descending',
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w400,
+                      fontFamily: AppFonts.inter,
+                      color: localSelectedOrder == 1
+                          ? AppColors.primaryOrange
+                          : AppColors.textColor,
+                    ),
+                    trailing: SvgPicture.asset(
+                      localSelectedOrder == 1
+                          ? Assets.svgIcRadioCheckl
+                          : Assets.svgIcRadioUncheck,
+                      height: 20.h,
+                      width: 20.w,
+                    ),
+                    onTap: () {
+                      setModalState(() {
+                        localSelectedOrder = 1;
+                      });
+                    },
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 20.h),
+
+              // Buttons
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.w),
+                child: BottomButtonTwo(
+                  leftBtnTitle: S.of(context).cancel,
+                  rightBtnTitle: "Done",
+                  lefBtnTap: () {
+                    Navigator.pop(context);
+                  },
+                  rightBtnTap: () {
+                    setState(() {
+                      selectedIndex = localSelectedIndex;
+                      selectedOrder = localSelectedOrder;
+                    });
+                    _sortSongs(localSelectedIndex, localSelectedOrder);
+                  },
+                ),
+              ),
+              SizedBox(height: 25.h),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: AppBar(
-        backgroundColor: AppColors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.textColor),
-          onPressed: () => context.pop(),
-        ),
-        title: Texts(widget.artist.name, fontSize: 18.sp, fontWeight: AppFontWeights.semiBold, color: AppColors.textColor),
-        actions: [IconButton(
-          icon: SvgPicture.asset(Assets.svgMenuIcon), 
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Artist menu coming soon'),
-                backgroundColor: AppColors.primaryOrange,
-                duration: Duration(seconds: 2),
-                behavior: SnackBarBehavior.floating,
-              ),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<ArtistBloc, ArtistState>(
+          listener: (context, state) {
+            // Update current artist when artists are refreshed
+            state.maybeWhen(
+              loaded: (artists, artistSongs) {
+                // Find the updated artist with new song count
+                final updatedArtist = artists.firstWhere((artist) => artist.id == _currentArtist.id, orElse: () => _currentArtist);
+                // Update artist if it exists and has changed
+                if (updatedArtist.id == _currentArtist.id) {
+                  final oldSongCount = _currentArtist.songCount;
+                  final newSongCount = updatedArtist.songCount;
+                  final songCountChanged = newSongCount != oldSongCount;
+                  final hasChanged = songCountChanged || updatedArtist.name != _currentArtist.name;
+
+                  if (hasChanged && mounted) {
+                    setState(() {
+                      _currentArtist = updatedArtist;
+                    });
+                    // Only reload songs if the count actually decreased (song was deleted)
+                    // This prevents unnecessary reloads when artist is just refreshed
+                    if (songCountChanged && newSongCount < oldSongCount) {
+                      _loadSongs();
+                    }
+                  }
+                }
+              },
+              orElse: () {},
             );
-          }
-        )],
-      ),
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-                child: Row(
-                  children: [
-                    SvgPicture.asset(Assets.svgSongsCount),
-                    SizedBox(width: 10.w),
-                    Texts('${_songs.length} Songs', fontSize: 14.sp, fontWeight: AppFontWeights.regular, color: AppColors.textColor),
-                    Spacer(),
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        if (_songs.isNotEmpty) {
-                          await musicService.setPlaylist(_songs, startIndex: 0, autoPlay: true);
-                          await musicService.play();
-                        }
-                      },
-                      icon: Icon(Icons.play_arrow, size: 20.r),
-                      label: Texts('Play All', fontSize: 14.sp, fontWeight: AppFontWeights.medium),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryOrange,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          },
+        ),
+        BlocListener<SongsBloc, SongsState>(
+          listener: (context, state) {
+            // When a song is successfully removed, refresh artist data
+            state.maybeWhen(
+              loaded: (songs) {
+                // Wait a bit for database trigger to update artist count, then refresh
+                Future.delayed(const Duration(milliseconds: 500), () {
+                  if (mounted) {
+                    _refreshArtistData();
+                  }
+                });
+              },
+              orElse: () {},
+            );
+          },
+        ),
+      ],
+      child: Scaffold(
+        backgroundColor: AppColors.white,
+        appBar: AppBar(
+          backgroundColor: AppColors.primaryOrange,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios, color: AppColors.white, size: 20),
+            onPressed: () => context.pop(),
+          ),
+          title: Texts(_currentArtist.name, fontSize: 18.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.white),
+        ),
+        body: Stack(
+          children: [
+            StreamBuilder<List<SongsModel>>(
+              stream: musicService.songsChanged,
+              initialData: musicService.songs,
+              builder: (context, snapshot) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                    left: 20.w,
+                    right: 20.w,
+                    top: 10.h,
+                  ),
+                  child: SizedBox(
+                    height: double.infinity,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          SizedBox(height: 15.h),
+                          GradientCard(
+                            height: 150.h,
+                            width: 150.w,
+                            colors: [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.primaryOrange],
+                            borderRadius: 13.r,
+                            iconAsset: Assets.svgIcArtist,
+                            iconSize: 60.r,
+                            margin: 10.w,
+                          ),
+                          SizedBox(height: 14.h),
+                          Texts(
+                            _currentArtist.name,
+                            fontSize: 20.sp,
+                            fontWeight: AppFontWeights.medium,
+                            fontFamily: AppFonts.inter,
+                            color: AppColors.textColor,
+                            align: TextAlign.center,
+                          ),
+                          SizedBox(height: 4.h),
+                          Texts(
+                            '${_currentArtist.songCount} songs • ${_currentArtist.albumCount} albums',
+                            fontSize: 14.sp,
+                            fontWeight: AppFontWeights.regular,
+                            fontFamily: AppFonts.inter,
+                            color: AppColors.mediumDarkGrey,
+                            align: TextAlign.center,
+                          ),
+                          SizedBox(height: 25.h),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              GestureDetector(
+                                onTap: () async {
+                                  if (_songs.isEmpty) return;
+
+                                  if (musicService.currentIndex < 0) {
+                                    await musicService.setPlaylist(_songs, autoPlay: false, startIndex: 0);
+                                    await musicService.play();
+                                  } else {
+                                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
+                                    await musicService.setShufflePlaylist(
+                                      _songs,
+                                      autoPlay: false,
+                                    );
+                                    await musicService.ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
+                                    await musicService.player.currentIndexStream.firstWhere((idx) => idx != null && idx != 0);
+                                    await musicService.play();
+                                  }
+
+                                  logS.log("Shuffle Play started");
+                                },
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  height: 40.h,
+                                  width: 165.w,
+                                  decoration: BoxDecoration(color: AppColors.shuffleBackground, borderRadius: BorderRadius.circular(100.r)),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SvgPicture.asset(Assets.svgShuffle, height: 16.79.h, width: 17.77.w),
+                                      SizedBox(width: 10.w),
+                                      Texts('Shuffle', fontWeight: AppFontWeights.medium, fontSize: 14.sp, color: AppColors.black),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () async {
+                                  if (_baseSongs.isEmpty) return;
+                                  await musicService.ensureShuffleOff();
+
+                                  // Start from the first song of the artist
+                                  await musicService.setPlaylist(List<SongsModel>.from(_baseSongs), startIndex: 0, autoPlay: true);
+                                  await musicService.play();
+                                },
+                                child: Container(
+                                  height: 40.h,
+                                  width: 165.w,
+                                  decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(100.r)),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SvgPicture.asset(Assets.svgPlay, height: 16.79.h, width: 17.77.w),
+                                      SizedBox(width: 10.w),
+                                      Texts('Play', fontWeight: AppFontWeights.medium, fontSize: 14.sp, color: AppColors.white),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 25.h),
+
+                          // Song count header
+                          Row(
+                            children: [
+                              // Bullets icon and song count - tappable to navigate to select songs
+                              GestureDetector(
+                                onTap: () {
+                                  // Navigate to select song screen for artist management
+                                  context.push('/dashboard/select-song', extra: {'artist': _currentArtist, 'songs': _songs, 'isSystemPlaylist': false});
+                                },
+                                child: Row(
+                                  children: [
+                                    SvgPicture.asset(Assets.svgSongsCount),
+                                    SizedBox(width: 8.w),
+                                    Texts(
+                                      '${_currentArtist.songCount} songs',
+                                      fontSize: 16.sp,
+                                      fontWeight: AppFontWeights.medium,
+                                      fontFamily: AppFonts.inter,
+                                      color: AppColors.textColor,
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              Spacer(),
+
+                              GestureDetector(
+                                onTap: () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    backgroundColor: Colors.white,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
+                                    isScrollControlled: true,
+                                    builder: (_) => _buildSortByBottomSheet(),
+                                  );
+                                },
+                                child: SvgPicture.asset(Assets.svgFilter),
+                              ),
+                            ],
+                          ),
+
+                          SizedBox(height: 37.h),
+
+                          if (_songs.isEmpty) ...{
+                            Center(
+                              child: Texts('No songs by this artist', fontSize: 16, fontWeight: AppFontWeights.regular, fontFamily: AppFonts.inter),
+                            ),
+                          },
+                          Column(
+                            children: List.generate(_songs.length, (index) {
+                              return _songTile(_songs, index);
+                            }),
+                          ),
+                          SizedBox(height: 200.h),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: StreamBuilder<List<SongsModel>>(
-                  stream: musicService.songsChanged,
-                  initialData: musicService.songs,
-                  builder: (context, snapshot) {
-                    // Always check the current state, not just the snapshot
-                    final hasAny = musicService.songs.isNotEmpty;
-                    final showMiniPlayer = hasAny;
-
-                    return _songs.isEmpty
-                        ? Center(
-                            child: Texts('No songs by this artist', fontSize: 16.sp, color: AppColors.mediumDarkGrey),
-                          )
-                        : ListView.builder(
-                            padding: EdgeInsets.only(
-                              left: 20.w,
-                              right: 20.w,
-                              bottom: showMiniPlayer ? 74.h : 10.h, // Space for MiniPlayerBar (which includes system nav bar padding)
-                            ),
-                            itemCount: _songs.length,
-                            itemBuilder: (context, index) {
-                              final song = _songs[index];
-                              return MusicListTile(
-                                margin: 7.w,
-                                height: 66.h,
-                                borderRadius: 10.r,
-                                backgroundColor: AppColors.musicTileBackgroundColor,
-                                cardHeight: 50.h,
-                                cardWidth: 50.w,
-                                cardRadius: 7.r,
-                                cardIconAsset: Assets.svgMusicIcon,
-                                cardIconSize: 32.r,
-                                title: song.title,
-                                subtitle: song.album,
-                                trailingIconAsset: Assets.svgMenuIcon,
-                                trailingIconHeight: 19.5.h,
-                                trailingIconWidth: 3.w,
-                                trailingMargin: 10.w,
-                                onTap: () async {
-                                  if(musicService.songs.isNotEmpty && musicService.songs[musicService.currentIndex].id == song.id && musicService.isPlaying){
-                                    context.push(
-                                      '/dashboard/playing',
-                                      extra: PlayingSongArgs(songs: musicService.songs),
-                                    );
-                                  }
-                                  else{
-                                    await musicService.setPlaylist(_songs, startIndex: index, autoPlay: true);
-                                    await musicService.play();
-                                  }
-                                },
-                                onPlayTap: () async {
-                                  if(musicService.songs.isNotEmpty && musicService.songs[musicService.currentIndex].id == song.id && musicService.isPlaying){
-                                    context.push(
-                                      '/dashboard/playing',
-                                      extra: PlayingSongArgs(songs: musicService.songs),
-                                    );
-                                  }
-                                  else{
-                                    await musicService.setPlaylist(_songs, startIndex: index, autoPlay: true);
-                                    await musicService.play();
-                                  }
-                                },
-                              );
-                            },
-                          );
-                  },
-                ),
-              ),
-            ],
-          ),
-          Positioned(left: 0, right: 0, bottom: 0, child: MiniPlayerBar()),
-        ],
+                  ),
+                );
+              },
+            ),
+            Positioned(left: 0, right: 0, bottom: 0, child: MiniPlayerBar()),
+          ],
+        ),
       ),
     );
   }

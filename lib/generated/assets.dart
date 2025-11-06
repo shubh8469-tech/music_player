@@ -25,6 +25,7 @@ class Assets {
   static const String pngLogo = 'assets/png/logo.png';
   static const String pngMusic = 'assets/png/music.png';
   static const String pngMusicDirectory = 'assets/png/musicDirectory.png';
+  static const String pngPausGif = 'assets/png/pausGif.png';
   static const String pngSongPlaying = 'assets/png/song_playing.gif';
   static const String svgAlbum = 'assets/svg/album.svg';
   static const String svgCancel = 'assets/svg/cancel.svg';

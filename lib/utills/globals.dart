@@ -174,6 +174,22 @@ final List<SongMenuItem> albumSortByItems = [
   SongMenuItem(icon: "", title: "Random"),
 ];
 
+final List<SongMenuItem> artistSortByItems = [
+  SongMenuItem(
+    icon: "",
+    title: S.of(rootNavigatorKey.currentContext!).artistName,
+  ),
+  SongMenuItem(
+    icon: "",
+    title: S.of(rootNavigatorKey.currentContext!).songCount,
+  ),
+  SongMenuItem(
+    icon: "",
+    title: S.of(rootNavigatorKey.currentContext!).albumName,
+  ),
+  SongMenuItem(icon: "", title: "Random"),
+];
+
 final List<SongMenuItem> folderMenuItems = [
   SongMenuItem(
     icon: Assets.svgPlayBlackBorder,
@@ -195,8 +211,54 @@ final List<SongMenuItem> folderMenuItems = [
     icon: Assets.svgIcHide,
     title: S.of(rootNavigatorKey.currentContext!).hideFolder,
   ),
+  // SongMenuItem(
+  //   icon: Assets.svgIcDelete,
+  //   title: S.of(rootNavigatorKey.currentContext!).deleteFolder,
+  // ),
+];
+
+final List<SongMenuItem> albumMenuItems = [
   SongMenuItem(
-    icon: Assets.svgIcDelete,
-    title: S.of(rootNavigatorKey.currentContext!).deleteFolder,
+    icon: Assets.svgPlayBlackBorder,
+    title: S.of(rootNavigatorKey.currentContext!).play,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcMenuPlaynext,
+    title: S.of(rootNavigatorKey.currentContext!).playNext,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcMenuQueue,
+    title: S.of(rootNavigatorKey.currentContext!).addToQueue,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcMenuPlaylist,
+    title: S.of(rootNavigatorKey.currentContext!).addToPlaylist,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcHide,
+    title: S.of(rootNavigatorKey.currentContext!).hideFolder,
+  ),
+];
+
+final List<SongMenuItem> artistMenuItems = [
+  SongMenuItem(
+    icon: Assets.svgPlayBlackBorder,
+    title: S.of(rootNavigatorKey.currentContext!).play,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcMenuPlaynext,
+    title: S.of(rootNavigatorKey.currentContext!).playNext,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcMenuQueue,
+    title: S.of(rootNavigatorKey.currentContext!).addToQueue,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcMenuPlaylist,
+    title: S.of(rootNavigatorKey.currentContext!).addToPlaylist,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcHide,
+    title: S.of(rootNavigatorKey.currentContext!).hideFolder,
   ),
 ];

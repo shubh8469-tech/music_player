@@ -193,10 +193,10 @@ class _SyncProgressState extends State<SyncProgress>
 
           final model = SongsModel(
             id: song.id,
-            title: song.title,
-            artist: song.artist ?? '',
-            album: song.album ?? '',
-            genre: song.genre ?? '',
+            title: song.title.trim(),
+            artist: (song.artist ?? '').trim(),
+            album: (song.album ?? '').trim(),
+            genre: (song.genre ?? '').trim(),
             year: songYear,
             duration: song.duration ?? 0,
             filePath: path,
@@ -235,7 +235,7 @@ class _SyncProgressState extends State<SyncProgress>
           }
 
           // Add to Artist
-          final artistName = song.artist ?? 'Unknown Artist';
+          final artistName = (song.artist ?? 'Unknown Artist').trim();
           if (artistName.isNotEmpty) {
             int artistId;
             if (artistIds.containsKey(artistName)) {
@@ -264,31 +264,36 @@ class _SyncProgressState extends State<SyncProgress>
           }
 
           // Add to Album
-          final albumName = song.album ?? 'Unknown Album';
+          final albumName = (song.album ?? 'Unknown Album').trim();
           if (albumName.isNotEmpty) {
-            final albumKey = '$albumName|${song.artist ?? ""}';
+            // Group albums by album name only (not by artist)
+            // This properly handles soundtracks/compilations with multiple artists
+            // Trade-off: "Greatest Hits" by different artists will merge (rare case)
+            final albumKey = albumName.toLowerCase().trim();
+
             int albumId;
             if (albumIds.containsKey(albumKey)) {
+              // Album already processed in this session - reuse it
               albumId = albumIds[albumKey]!;
+              log(
+                '✓ Reusing album "$albumName" for "${song.title}" by $artistName',
+              );
             } else {
-              final existingAlbum = await albumRepository
-                  .getAlbumByNameAndArtist(albumName, song.artist);
-              if (existingAlbum != null) {
-                albumId = existingAlbum.id!;
-              } else {
-                final album = Album(
-                  id: null,
-                  name: albumName,
-                  artist: song.artist,
-                  songCount: 0,
-                  year: songYear,
-                  artworkPath: artworkPath.isNotEmpty ? artworkPath : null,
-                  createdTime: DateTime.now(),
-                  updatedTime: DateTime.now(),
-                );
-                albumId = await addAlbumUseCase(album);
-              }
+              // First song from this album - create new album entry
+              // Use "Various Artists" for the artist to indicate multiple artists may be present
+              final album = Album(
+                id: null,
+                name: albumName,
+                artist: 'Various Artists',
+                songCount: 0,
+                year: songYear,
+                artworkPath: artworkPath.isNotEmpty ? artworkPath : null,
+                createdTime: DateTime.now(),
+                updatedTime: DateTime.now(),
+              );
+              albumId = await addAlbumUseCase(album);
               albumIds[albumKey] = albumId;
+              log('✓ Created new album "$albumName" (Various Artists)');
             }
             await addSongToAlbumUseCase(albumId, song.id);
           }

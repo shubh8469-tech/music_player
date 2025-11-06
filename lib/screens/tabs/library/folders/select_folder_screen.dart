@@ -722,6 +722,7 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.white,
       appBar: AppBarWithIconTitle(
         title: 'Select Folders',
         isActionBtnDisplay: true,

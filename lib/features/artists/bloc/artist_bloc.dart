@@ -49,5 +49,52 @@ class ArtistBloc extends Bloc<ArtistEvent, ArtistState> {
         emit(ArtistState.error(e.toString()));
       }
     });
+
+    on<_SortArtists>((event, emit) async {
+      try {
+        final currentState = state;
+        if (currentState is _Loaded) {
+          List<Artist> sortedArtists = List.from(currentState.artists);
+          final isAscending = event.order == 0;
+
+          switch (event.sortIndex) {
+            case 0: // Artist Name
+              sortedArtists.sort(
+                (a, b) => isAscending
+                    ? a.name.toLowerCase().compareTo(b.name.toLowerCase())
+                    : b.name.toLowerCase().compareTo(a.name.toLowerCase()),
+              );
+              break;
+            case 1: // Song Count
+              sortedArtists.sort(
+                (a, b) => isAscending
+                    ? a.songCount.compareTo(b.songCount)
+                    : b.songCount.compareTo(a.songCount),
+              );
+              break;
+            case 2: // Album Count
+              sortedArtists.sort(
+                (a, b) => isAscending
+                    ? a.albumCount.compareTo(b.albumCount)
+                    : b.albumCount.compareTo(a.albumCount),
+              );
+              break;
+            case 3: // Random
+              sortedArtists.shuffle();
+              break;
+          }
+
+          emit(
+            ArtistState.loaded(
+              sortedArtists,
+              artistSongs: currentState.artistSongs,
+            ),
+          );
+        }
+      } catch (e) {
+        log('Error sorting artists: $e');
+        emit(ArtistState.error(e.toString()));
+      }
+    });
   }
 }

@@ -251,7 +251,7 @@ class _FolderListScreenState extends State<FolderListScreen> {
         : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
 
     return Container(
-      constraints: BoxConstraints(maxHeight: 0.66.sh),
+      constraints: BoxConstraints(maxHeight: 0.63.sh),
       padding: EdgeInsets.only(top: 10.h, bottom: bottomPadding),
       child: Column(
         mainAxisSize: MainAxisSize.min,

@@ -271,6 +271,7 @@ class _SongsListState extends State<SongsList> {
                                         final hideHighlightDuringShuffle = musicService.isShuffleEnabled && player.processingState == ProcessingState.loading;
 
                                         final isCurrent = (songs[index].id == currentId);
+                                        final isPlaying = musicService.isPlaying;
 
                                         return MusicListTile(
                                           margin: 7.w,
@@ -292,6 +293,7 @@ class _SongsListState extends State<SongsList> {
                                           songLength: formatDuration(songs[index].duration),
                                           songLengthRequired: true,
                                           isGifLoad: isCurrent,
+                                          isPlaying: isPlaying,
                                           onTap: () async {
                                             if (musicService.songs.isNotEmpty &&
                                                 musicService.songs[musicService.currentIndex].id == songs[index].id &&

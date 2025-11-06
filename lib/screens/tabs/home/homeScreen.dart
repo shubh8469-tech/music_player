@@ -166,8 +166,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 initialData: musicService.isPlaying,
                                 builder: (context, playingSnap) {
                                   final currentId = currentIdSnap.data;
-                                  final isPlaying = playingSnap.data ?? false;
                                   final isCurrent = song.id == currentId;
+                                  final isPlaying = musicService.isPlaying;
                                   final isCurrentlyPlaying = isCurrent; // && isPlaying;
 
                                   return MusicListTile(
@@ -188,6 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     trailingIconWidth: 32.r,
                                     trailingMargin: 0,
                                     isGifLoad: isCurrentlyPlaying,
+                                    isPlaying: isPlaying,
                                     onTap: () async {
                                       if (musicService.songs.isNotEmpty && musicService.songs[musicService.currentIndex].id == song.id && musicService.isPlaying) {
                                         context.push('/dashboard/playing', extra: PlayingSongArgs(songs: musicService.songs));

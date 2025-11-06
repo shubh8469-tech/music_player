@@ -43,6 +43,7 @@ class MusicListTile extends StatelessWidget {
   final bool isSvg;
   final bool isLeading;
   final bool isGifLoad;
+  final bool isPlaying;
 
   // info icons for menu
   final String leadingIconAsset;
@@ -119,6 +120,7 @@ class MusicListTile extends StatelessWidget {
     this.isLeading = false,
     this.songLengthRequired = false,
     this.isGifLoad = false,
+    this.isPlaying = false,
 
     this.onTap,
     this.onPlayTap,
@@ -135,10 +137,7 @@ class MusicListTile extends StatelessWidget {
         margin: EdgeInsets.symmetric(vertical: margin!),
         width: double.infinity,
         height: height,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(borderRadius),
-          color: backgroundColor,
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(borderRadius), color: backgroundColor),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: padding.w),
           child: Row(
@@ -150,10 +149,7 @@ class MusicListTile extends StatelessWidget {
                   draggableIconAsset,
                   height: draggableIconSize.h,
                   width: draggableIconSize.w,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.black,
-                    BlendMode.srcIn,
-                  ),
+                  colorFilter: const ColorFilter.mode(AppColors.black, BlendMode.srcIn),
                 ),
                 SizedBox(width: 12.w),
               ],
@@ -163,12 +159,7 @@ class MusicListTile extends StatelessWidget {
                   GradientCard(
                     height: cardHeight,
                     width: cardWidth,
-                    colors:
-                        noLogoGradientColor ??
-                        [
-                          AppColors.mildOrange.withValues(alpha: 0.21),
-                          AppColors.mildOrange,
-                        ],
+                    colors: noLogoGradientColor ?? [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange],
                     borderRadius: cardRadius,
                     iconAsset: cardIconAsset,
                     iconSize: cardIconSize,
@@ -176,27 +167,27 @@ class MusicListTile extends StatelessWidget {
                     isSvgColorNeeded: isSvgColorNeeded,
                     margin: 0,
                   ),
-                  if (isGifLoad)
-                    Container(
-                      height: cardHeight,
-                      width: cardWidth,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.r),
-                        color: AppColors.white.withValues(alpha: .4),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8.0,
-                          vertical: 5,
-                        ),
-                        child: Image.asset(
-                          Assets.pngSongPlaying,
-                          fit: BoxFit.cover,
-                          height: 55,
-                          width: 55,
-                        ),
-                      ),
-                    ),
+                  isGifLoad
+                      ? isPlaying
+                            ? Container(
+                                height: cardHeight,
+                                width: cardWidth,
+                                decoration: BoxDecoration(borderRadius: BorderRadius.circular(8.r), color: AppColors.white.withValues(alpha: .4)),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
+                                  child: Image.asset(Assets.pngSongPlaying, fit: BoxFit.cover, height: 55, width: 55),
+                                ),
+                              )
+                            : Container(
+                                height: cardHeight,
+                                width: cardWidth,
+                                decoration: BoxDecoration(borderRadius: BorderRadius.circular(8.r), color: AppColors.white.withValues(alpha: .4)),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 13.0, vertical: 7),
+                                  child: Image.asset(Assets.pngPausGif, fit: BoxFit.contain, height: 30.h, width: 30.w),
+                                ),
+                              )
+                      : SizedBox(),
                 ],
               ),
               SizedBox(width: spacing.w),
@@ -212,17 +203,11 @@ class MusicListTile extends StatelessWidget {
                       fontSize: titleSize.sp,
                       fontWeight: titleWeight,
                       fontFamily: AppFonts.inter,
+                      color: isGifLoad ? AppColors.primaryOrange : AppColors.black,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    Texts(
-                      subtitle,
-                      fontSize: subtitleSize.sp,
-                      fontWeight: subtitleWeight,
-                      fontFamily: AppFonts.inter,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    Texts(subtitle, fontSize: subtitleSize.sp, fontWeight: subtitleWeight, fontFamily: AppFonts.inter, maxLines: 1, overflow: TextOverflow.ellipsis),
                   ],
                 ),
               ),
@@ -239,21 +224,14 @@ class MusicListTile extends StatelessWidget {
                       cancelIconAsset,
                       height: cancelIconSize.h,
                       width: cancelIconSize.w,
-                      colorFilter: const ColorFilter.mode(
-                        AppColors.black,
-                        BlendMode.srcIn,
-                      ),
+                      colorFilter: const ColorFilter.mode(AppColors.black, BlendMode.srcIn),
                     ),
                   ),
                 )
               else
                 Visibility(
                   visible: songLengthRequired,
-                  child: Texts(
-                    songLength,
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w400,
-                  ),
+                  child: Texts(songLength, fontSize: 10.sp, fontWeight: FontWeight.w400),
                 ),
 
               Visibility(
@@ -263,11 +241,7 @@ class MusicListTile extends StatelessWidget {
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: onInfoTap,
-                    child: SvgPicture.asset(
-                      leadingIconAsset,
-                      height: leadingIconHeight,
-                      width: leadingIconWidth,
-                    ),
+                    child: SvgPicture.asset(leadingIconAsset, height: leadingIconHeight, width: leadingIconWidth),
                   ),
                 ),
               ),
@@ -285,11 +259,7 @@ class MusicListTile extends StatelessWidget {
                     width: trailingIconWidth + 20, // Add extra touch area
                     height: trailingIconHeight + 20,
                     alignment: Alignment.center,
-                    child: SvgPicture.asset(
-                      trailingIconAsset,
-                      height: trailingIconHeight,
-                      width: trailingIconWidth,
-                    ),
+                    child: SvgPicture.asset(trailingIconAsset, height: trailingIconHeight, width: trailingIconWidth),
                   ),
                 ),
               ),

@@ -101,6 +101,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       builder: (context, idSnap) {
         final currentId = idSnap.data;
         final isCurrent = song.id == currentId;
+        final isPlaying = musicService.isPlaying;
         return Material(
           key: ValueKey(song.id),
           color: Colors.transparent,
@@ -124,6 +125,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 trailingIconWidth: 3.w,
                 trailingMargin: 10.w,
                 isGifLoad: isCurrent,
+                isPlaying: isPlaying,
                 onTap: () async {
                   if (musicService.songs.isNotEmpty && musicService.songs[musicService.currentIndex].id == song.id && musicService.isPlaying) {
                     context.push('/dashboard/playing', extra: PlayingSongArgs(songs: musicService.songs));
@@ -269,28 +271,28 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             onPressed: () => context.pop(),
           ),
           title: Texts(widget.playlist.name, fontSize: 18.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.white),
-          actions: [
-            GestureDetector(
-              onTap: () {
-                if (_isSystem) {
-                  showSnackBar(context, () {}, message: 'System playlist cannot be deleted', alertBannerLocation: AlertBannerLocation.bottom);
-                } else {
-                  showModalBottomSheet(
-                    context: context,
-                    backgroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
-                    isScrollControlled: true,
-                    builder: (_) => _buildDeletePlaylistConfirmationDialog(),
-                  );
-                }
-              },
-              child: Padding(
-                padding: EdgeInsets.only(right: 12.w),
-                child: SvgPicture.asset(Assets.svgIcDelete, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
-              ),
-            ),
-          ],
+          // actions: [
+          //   GestureDetector(
+          //     onTap: () {
+          //       if (_isSystem) {
+          //         showSnackBar(context, () {}, message: 'System playlist cannot be deleted', alertBannerLocation: AlertBannerLocation.bottom);
+          //       } else {
+          //         showModalBottomSheet(
+          //           context: context,
+          //           backgroundColor: Colors.white,
+          //           elevation: 0,
+          //           shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
+          //           isScrollControlled: true,
+          //           builder: (_) => _buildDeletePlaylistConfirmationDialog(),
+          //         );
+          //       }
+          //     },
+          //     child: Padding(
+          //       padding: EdgeInsets.only(right: 12.w),
+          //       child: SvgPicture.asset(Assets.svgIcDelete, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
+          //     ),
+          //   ),
+          // ],
         ),
         body: Stack(
           children: [

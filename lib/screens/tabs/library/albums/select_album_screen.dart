@@ -717,6 +717,7 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.white,
       appBar: AppBarWithIconTitle(
         title: 'Select Albums',
         isActionBtnDisplay: true,

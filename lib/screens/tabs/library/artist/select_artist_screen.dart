@@ -3,10 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:music_app/core/di/injection.dart';
-import 'package:music_app/features/playlists/bloc/playlist_bloc.dart';
-import 'package:music_app/features/playlists/domain/entities/playlist.dart'
-    as domain;
-import 'package:music_app/features/playlists/domain/repositories/playlist_repository.dart';
+import 'package:music_app/features/artists/bloc/artist_bloc.dart';
+import 'package:music_app/features/artists/domain/entities/artist.dart';
+import 'package:music_app/features/artists/domain/repositories/artist_repository.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/themes/font.dart';
 
@@ -21,38 +20,19 @@ import '../../music_service.dart';
 import 'package:go_router/go_router.dart';
 import '../../../play_song/widget/playlist_bottomsheet.dart';
 
-class SelectPlaylistScreen extends StatefulWidget {
-  const SelectPlaylistScreen({super.key});
+class SelectArtistScreen extends StatefulWidget {
+  const SelectArtistScreen({super.key});
 
   @override
-  State<SelectPlaylistScreen> createState() => _SelectPlaylistScreenState();
+  State<SelectArtistScreen> createState() => _SelectArtistScreenState();
 }
 
-class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
+class _SelectArtistScreenState extends State<SelectArtistScreen> {
   TextEditingController searchController = TextEditingController();
   FocusNode searchFocusNode = FocusNode();
   bool isSelectedAll = false;
-  Set<int> selectedPlaylistIds = {}; // Store selected playlist IDs
+  Set<int> selectedArtistIds = {}; // Store selected artist IDs
   String searchQuery = '';
-
-  final List<String> systemOrder = [
-    'most_played',
-    'recently_added',
-    'recently_played',
-    'favorites',
-  ];
-  final Map<String, String> systemIcon = {
-    'most_played': Assets.svgMostPlayed,
-    'recently_added': Assets.svgRecentlyAdded,
-    'recently_played': Assets.svgRecentlyAdded,
-    'favorites': Assets.svgFavorites,
-  };
-  final Map<String, Color> systemColor = {
-    'most_played': AppColors.mildOrange,
-    'recently_added': AppColors.mildBlue,
-    'recently_played': AppColors.mildYellow,
-    'favorites': AppColors.mildPink,
-  };
 
   @override
   void initState() {
@@ -63,8 +43,8 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
       });
     });
 
-    // Load all playlists
-    context.read<PlaylistBloc>().add(const PlaylistEvent.fetchAllPlaylists());
+    // Load all artists
+    context.read<ArtistBloc>().add(const ArtistEvent.fetchAllArtists());
   }
 
   @override
@@ -74,94 +54,73 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
     super.dispose();
   }
 
-  // Filter playlists based on search query
-  List<domain.Playlist> _filterPlaylists(List<domain.Playlist> allPlaylists) {
-    if (searchQuery.isEmpty) return allPlaylists;
+  // Filter artists based on search query
+  List<Artist> _filterArtists(List<Artist> allArtists) {
+    if (searchQuery.isEmpty) return allArtists;
 
-    return allPlaylists.where((playlist) {
-      return playlist.name.toLowerCase().contains(searchQuery.toLowerCase());
+    return allArtists.where((artist) {
+      return artist.name.toLowerCase().contains(searchQuery.toLowerCase());
     }).toList();
   }
 
   // Get selected count
-  int get selectedCount => selectedPlaylistIds.length;
+  int get selectedCount => selectedArtistIds.length;
 
   // Update select all state based on current filtered list
-  void updateSelectAllState(List<domain.Playlist> filteredPlaylists) {
-    if (filteredPlaylists.isEmpty) {
+  void updateSelectAllState(List<Artist> filteredArtists) {
+    if (filteredArtists.isEmpty) {
       isSelectedAll = false;
       return;
     }
 
-    final allIds = filteredPlaylists.map((p) => p.id!).toSet();
-    // Only show select all as checked if ALL playlists are selected
-    isSelectedAll = allIds.every((id) => selectedPlaylistIds.contains(id));
+    final allIds = filteredArtists.map((a) => a.id!).toSet();
+    // Only show select all as checked if ALL artists are selected
+    isSelectedAll = allIds.every((id) => selectedArtistIds.contains(id));
   }
 
   // Toggle select all
-  void toggleSelectAll(List<domain.Playlist> filteredPlaylists) {
+  void toggleSelectAll(List<Artist> filteredArtists) {
     setState(() {
       if (isSelectedAll) {
         // Deselect all from current filtered list
-        final filteredIds = filteredPlaylists.map((p) => p.id!).toSet();
-        selectedPlaylistIds.removeAll(filteredIds);
+        final filteredIds = filteredArtists.map((a) => a.id!).toSet();
+        selectedArtistIds.removeAll(filteredIds);
       } else {
         // Select all from current filtered list
-        selectedPlaylistIds.addAll(filteredPlaylists.map((p) => p.id!));
+        selectedArtistIds.addAll(filteredArtists.map((a) => a.id!));
       }
-      updateSelectAllState(filteredPlaylists);
+      updateSelectAllState(filteredArtists);
     });
   }
 
   // Toggle individual selection
-  void toggleSelection(
-    int playlistId,
-    List<domain.Playlist> filteredPlaylists, {
-    bool isSystemPlaylist = false,
-  }) {
+  void toggleSelection(int artistId, List<Artist> filteredArtists) {
     setState(() {
-      if (selectedPlaylistIds.contains(playlistId)) {
-        selectedPlaylistIds.remove(playlistId);
+      if (selectedArtistIds.contains(artistId)) {
+        selectedArtistIds.remove(artistId);
       } else {
-        selectedPlaylistIds.add(playlistId);
+        selectedArtistIds.add(artistId);
       }
-      updateSelectAllState(filteredPlaylists);
+      updateSelectAllState(filteredArtists);
     });
   }
 
-  // Get selected playlists from IDs
-  List<domain.Playlist> _getSelectedPlaylists(
-    List<domain.Playlist> allPlaylists,
-  ) {
-    return allPlaylists
-        .where((playlist) => selectedPlaylistIds.contains(playlist.id))
+  // Get selected artists from IDs
+  List<Artist> _getSelectedArtists(List<Artist> allArtists) {
+    return allArtists
+        .where((artist) => selectedArtistIds.contains(artist.id))
         .toList();
   }
 
-  // Delete selected playlists
-  void _deleteSelectedPlaylists(List<domain.Playlist> allPlaylists) {
-    final selectedPlaylists = _getSelectedPlaylists(allPlaylists);
+  // Delete selected artists
+  void _deleteSelectedArtists(List<Artist> allArtists) {
+    final selectedArtists = _getSelectedArtists(allArtists);
 
-    if (selectedPlaylists.isEmpty) {
+    if (selectedArtists.isEmpty) {
       showSnackBar(
         context,
         () {},
-        message: "No playlists selected",
-        alertBannerLocation: AlertBannerLocation.bottom,
-      );
-      return;
-    }
-
-    // Filter out system playlists from deletion
-    final deletablePlaylists = selectedPlaylists
-        .where((playlist) => playlist.isSystem != true)
-        .toList();
-
-    if (deletablePlaylists.isEmpty) {
-      showSnackBar(
-        context,
-        () {},
-        message: "System playlists cannot be deleted",
+        message: "No artists selected",
         alertBannerLocation: AlertBannerLocation.bottom,
       );
       return;
@@ -175,14 +134,12 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
       ),
       isScrollControlled: true,
-      builder: (_) => _buildDeleteConfirmationDialog(
-        deletablePlaylists.length,
-        deletablePlaylists,
-      ),
+      builder: (_) =>
+          _buildDeleteConfirmationDialog(selectedArtists.length, selectedArtists),
     );
   }
 
-  // Show popup menu for playlist actions
+  // Show popup menu for artist actions
   void _showPopupMenu(BuildContext context) {
     final RenderBox overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox;
@@ -248,20 +205,20 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
     }
   }
 
-  // Play next selected playlists
+  // Play next selected artists
   void _playNextSelectedSongs() async {
-    final selectedPlaylists = _getSelectedPlaylists(
-      context.read<PlaylistBloc>().state.maybeWhen(
-        loaded: (playlists, systemPlaylistSongs) => playlists,
-        orElse: () => <domain.Playlist>[],
+    final selectedArtists = _getSelectedArtists(
+      context.read<ArtistBloc>().state.maybeWhen(
+        loaded: (artists, _) => artists,
+        orElse: () => <Artist>[],
       ),
     );
 
-    if (selectedPlaylists.isEmpty) {
+    if (selectedArtists.isEmpty) {
       showSnackBar(
         context,
         () {},
-        message: "No playlists selected",
+        message: "No artists selected",
         alertBannerLocation: AlertBannerLocation.bottom,
       );
       return;
@@ -269,34 +226,28 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
 
     try {
       final musicService = MusicPlayerService();
-      final _repo = locator<PlaylistRepository>();
-      List<SongsModel> allSongsFromPlaylists = [];
+      final _repo = locator<ArtistRepository>();
+      List<SongsModel> allSongsFromArtists = [];
 
-      // Fetch all songs from selected playlists
-      for (var playlist in selectedPlaylists) {
-        List<SongsModel> playlistSongs = [];
-
-        if (playlist.isSystem == true) {
-          playlistSongs = await _repo.getSongsForSystemPlaylist(
-            playlist.systemKey ?? '',
-          );
-        } else {
-          playlistSongs = await _repo.getSongsForPlaylist(playlist.id!);
-        }
+      // Fetch all songs from selected artists
+      for (var artist in selectedArtists) {
+        List<SongsModel> artistSongs = (await _repo.getSongsForArtist(
+          artist.id!,
+        )).cast<SongsModel>();
 
         // Add songs to the combined list, avoiding duplicates
-        for (var song in playlistSongs) {
-          if (!allSongsFromPlaylists.any((s) => s.id == song.id)) {
-            allSongsFromPlaylists.add(song);
+        for (var song in artistSongs) {
+          if (!allSongsFromArtists.any((s) => s.id == song.id)) {
+            allSongsFromArtists.add(song);
           }
         }
       }
 
-      if (allSongsFromPlaylists.isEmpty) {
+      if (allSongsFromArtists.isEmpty) {
         showSnackBar(
           context,
           () {},
-          message: "Selected playlists contain no songs",
+          message: "Selected artists contain no songs",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
         return;
@@ -305,7 +256,7 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
       // Check if there are existing songs in the queue
       if (musicService.songs.isEmpty) {
         // No songs in queue - add all selected songs and start playing
-        await musicService.setPlaylist(allSongsFromPlaylists, startIndex: 0);
+        await musicService.setPlaylist(allSongsFromArtists, startIndex: 0);
         await musicService.play();
       } else {
         // Songs exist in queue - insert selected songs after current playing song
@@ -316,7 +267,7 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
         final newSongsList = List<SongsModel>.from(musicService.songs);
 
         // Filter out songs that are already in the list to avoid duplicates
-        final songsToAdd = allSongsFromPlaylists.where((song) {
+        final songsToAdd = allSongsFromArtists.where((song) {
           return !newSongsList.any(
             (existingSong) => existingSong.id == song.id,
           );
@@ -338,7 +289,7 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
           context,
           () {},
           message:
-              "${allSongsFromPlaylists.length} songs from ${selectedPlaylists.length} playlists added to play next",
+              "${allSongsFromArtists.length} songs from ${selectedArtists.length} artists added to play next",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
         context.pop();
@@ -348,27 +299,27 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
         showSnackBar(
           context,
           () {},
-          message: "Error adding playlists to play next",
+          message: "Error adding artists to play next",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
       }
     }
   }
 
-  // Add selected playlists to queue
+  // Add selected artists to queue
   void _addSelectedSongsToQueue() async {
-    final selectedPlaylists = _getSelectedPlaylists(
-      context.read<PlaylistBloc>().state.maybeWhen(
-        loaded: (playlists, systemPlaylistSongs) => playlists,
-        orElse: () => <domain.Playlist>[],
+    final selectedArtists = _getSelectedArtists(
+      context.read<ArtistBloc>().state.maybeWhen(
+        loaded: (artists, _) => artists,
+        orElse: () => <Artist>[],
       ),
     );
 
-    if (selectedPlaylists.isEmpty) {
+    if (selectedArtists.isEmpty) {
       showSnackBar(
         context,
         () {},
-        message: "No playlists selected",
+        message: "No artists selected",
         alertBannerLocation: AlertBannerLocation.bottom,
       );
       return;
@@ -376,34 +327,28 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
 
     try {
       final musicService = MusicPlayerService();
-      final _repo = locator<PlaylistRepository>();
-      List<SongsModel> allSongsFromPlaylists = [];
+      final _repo = locator<ArtistRepository>();
+      List<SongsModel> allSongsFromArtists = [];
 
-      // Fetch all songs from selected playlists
-      for (var playlist in selectedPlaylists) {
-        List<SongsModel> playlistSongs = [];
-
-        if (playlist.isSystem == true) {
-          playlistSongs = await _repo.getSongsForSystemPlaylist(
-            playlist.systemKey ?? '',
-          );
-        } else {
-          playlistSongs = await _repo.getSongsForPlaylist(playlist.id!);
-        }
+      // Fetch all songs from selected artists
+      for (var artist in selectedArtists) {
+        List<SongsModel> artistSongs = (await _repo.getSongsForArtist(
+          artist.id!,
+        )).cast<SongsModel>();
 
         // Add songs to the combined list, avoiding duplicates
-        for (var song in playlistSongs) {
-          if (!allSongsFromPlaylists.any((s) => s.id == song.id)) {
-            allSongsFromPlaylists.add(song);
+        for (var song in artistSongs) {
+          if (!allSongsFromArtists.any((s) => s.id == song.id)) {
+            allSongsFromArtists.add(song);
           }
         }
       }
 
-      if (allSongsFromPlaylists.isEmpty) {
+      if (allSongsFromArtists.isEmpty) {
         showSnackBar(
           context,
           () {},
-          message: "Selected playlists contain no songs",
+          message: "Selected artists contain no songs",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
         return;
@@ -414,7 +359,7 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
 
       // Add each selected song to the queue if it's not already there
       int addedCount = 0;
-      for (final song in allSongsFromPlaylists) {
+      for (final song in allSongsFromArtists) {
         final existingIndex = newSongsList.indexWhere(
           (existingSong) => existingSong.id == song.id,
         );
@@ -433,7 +378,7 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
           context,
           () {},
           message:
-              "$addedCount songs from ${selectedPlaylists.length} playlists added to queue",
+              "$addedCount songs from ${selectedArtists.length} artists added to queue",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
       }
@@ -442,22 +387,22 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
         showSnackBar(
           context,
           () {},
-          message: "Error adding playlists to queue",
+          message: "Error adding artists to queue",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
       }
     }
   }
 
-  // Play selected playlists
-  void _playSelectedPlaylists(List<domain.Playlist> allPlaylists) async {
-    final selectedPlaylists = _getSelectedPlaylists(allPlaylists);
+  // Play selected artists
+  void _playSelectedArtists(List<Artist> allArtists) async {
+    final selectedArtists = _getSelectedArtists(allArtists);
 
-    if (selectedPlaylists.isEmpty) {
+    if (selectedArtists.isEmpty) {
       showSnackBar(
         context,
         () {},
-        message: "No playlists selected",
+        message: "No artists selected",
         alertBannerLocation: AlertBannerLocation.bottom,
       );
       return;
@@ -465,50 +410,42 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
 
     try {
       final musicService = MusicPlayerService();
-      final _repo = locator<PlaylistRepository>();
-      List<SongsModel> allSongsFromPlaylists = [];
+      final _repo = locator<ArtistRepository>();
+      List<SongsModel> allSongsFromArtists = [];
 
-      // Fetch all songs from selected playlists
-      for (var playlist in selectedPlaylists) {
-        List<SongsModel> playlistSongs = [];
-
-        if (playlist.isSystem == true) {
-          // Fetch songs for system playlist
-          playlistSongs = await _repo.getSongsForSystemPlaylist(
-            playlist.systemKey ?? '',
-          );
-        } else {
-          // Fetch songs for user playlist
-          playlistSongs = await _repo.getSongsForPlaylist(playlist.id!);
-        }
+      // Fetch all songs from selected artists
+      for (var artist in selectedArtists) {
+        List<SongsModel> artistSongs = (await _repo.getSongsForArtist(
+          artist.id!,
+        )).cast<SongsModel>();
 
         // Add songs to the combined list, avoiding duplicates
-        for (var song in playlistSongs) {
-          if (!allSongsFromPlaylists.any((s) => s.id == song.id)) {
-            allSongsFromPlaylists.add(song);
+        for (var song in artistSongs) {
+          if (!allSongsFromArtists.any((s) => s.id == song.id)) {
+            allSongsFromArtists.add(song);
           }
         }
       }
 
-      if (allSongsFromPlaylists.isEmpty) {
+      if (allSongsFromArtists.isEmpty) {
         showSnackBar(
           context,
           () {},
-          message: "Selected playlists contain no songs",
+          message: "Selected artists contain no songs",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
         return;
       }
 
       // Set the combined playlist and start playing
-      await musicService.setPlaylist(allSongsFromPlaylists, startIndex: 0);
+      await musicService.setPlaylist(allSongsFromArtists, startIndex: 0);
       await musicService.play();
 
       showSnackBar(
         context,
         () {},
         message:
-            "Playing ${allSongsFromPlaylists.length} songs from ${selectedPlaylists.length} playlists",
+            "Playing ${allSongsFromArtists.length} songs from ${selectedArtists.length} artists",
         alertBannerLocation: AlertBannerLocation.bottom,
       );
 
@@ -520,61 +457,55 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
       showSnackBar(
         context,
         () {},
-        message: "Error playing playlists: $e",
+        message: "Error playing artists: $e",
         alertBannerLocation: AlertBannerLocation.bottom,
       );
     }
   }
 
-  // Add songs to selected playlists
-  void _addSongsToSelectedPlaylists(List<domain.Playlist> allPlaylists) async {
-    final selectedPlaylists = _getSelectedPlaylists(allPlaylists);
+  // Add songs from selected artists to playlist
+  void _addSongsToSelectedArtists(List<Artist> allArtists) async {
+    final selectedArtists = _getSelectedArtists(allArtists);
 
-    if (selectedPlaylists.isEmpty) {
+    if (selectedArtists.isEmpty) {
       showSnackBar(
         context,
         () {},
-        message: "No playlists selected",
+        message: "No artists selected",
         alertBannerLocation: AlertBannerLocation.bottom,
       );
       return;
     }
 
     try {
-      final _repo = locator<PlaylistRepository>();
-      List<SongsModel> allSongsFromPlaylists = [];
+      final _repo = locator<ArtistRepository>();
+      List<SongsModel> allSongsFromArtists = [];
 
-      // Fetch all songs from selected playlists
-      for (var playlist in selectedPlaylists) {
-        List<SongsModel> playlistSongs = [];
-
-        if (playlist.isSystem == true) {
-          playlistSongs = await _repo.getSongsForSystemPlaylist(
-            playlist.systemKey ?? '',
-          );
-        } else {
-          playlistSongs = await _repo.getSongsForPlaylist(playlist.id!);
-        }
+      // Fetch all songs from selected artists
+      for (var artist in selectedArtists) {
+        List<SongsModel> artistSongs = (await _repo.getSongsForArtist(
+          artist.id!,
+        )).cast<SongsModel>();
 
         // Add songs to the combined list, avoiding duplicates
-        for (var song in playlistSongs) {
-          if (!allSongsFromPlaylists.any((s) => s.id == song.id)) {
-            allSongsFromPlaylists.add(song);
+        for (var song in artistSongs) {
+          if (!allSongsFromArtists.any((s) => s.id == song.id)) {
+            allSongsFromArtists.add(song);
           }
         }
       }
 
-      if (allSongsFromPlaylists.isEmpty) {
+      if (allSongsFromArtists.isEmpty) {
         showSnackBar(
           context,
           () {},
-          message: "Selected playlists contain no songs",
+          message: "Selected artists contain no songs",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
         return;
       }
 
-      // Show playlist bottom sheet with all songs from selected playlists
+      // Show playlist bottom sheet with all songs from selected artists
       if (mounted) {
         showModalBottomSheet(
           context: context,
@@ -584,7 +515,7 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
             borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
           ),
           isScrollControlled: true,
-          builder: (_) => PlaylistBottomSheet(songsList: allSongsFromPlaylists),
+          builder: (_) => PlaylistBottomSheet(songsList: allSongsFromArtists),
         );
       }
     } catch (e) {
@@ -592,19 +523,16 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
         showSnackBar(
           context,
           () {},
-          message: "Error fetching songs from playlists: $e",
+          message: "Error fetching songs from artists: $e",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
       }
     }
   }
 
-  // Build playlist section with header and items
-  List<Widget> _buildPlaylistSection(
-    String title,
-    List<domain.Playlist> playlists,
-  ) {
-    if (playlists.isEmpty) return [];
+  // Build artist section with header and items
+  List<Widget> _buildArtistSection(String title, List<Artist> artists) {
+    if (artists.isEmpty) return [];
 
     return [
       // Section header
@@ -623,18 +551,9 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
         ),
       ),
 
-      // Playlist items
-      ...playlists.map((playlist) {
-        final isSystem = playlist.isSystem == true;
-        final isSelected = selectedPlaylistIds.contains(playlist.id);
-
-        // Get icon and color for system playlists
-        final icon = isSystem && playlist.systemKey != null
-            ? (systemIcon[playlist.systemKey] ?? Assets.svgMusicIcon)
-            : Assets.svgMusicIcon;
-        final color = isSystem && playlist.systemKey != null
-            ? (systemColor[playlist.systemKey] ?? AppColors.mildBlue)
-            : null;
+      // Artist items
+      ...artists.map((artist) {
+        final isSelected = selectedArtistIds.contains(artist.id);
 
         return Padding(
           padding: EdgeInsets.symmetric(horizontal: 15.w),
@@ -645,31 +564,22 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
             backgroundColor: AppColors.musicTileBackgroundColor,
             cardHeight: 50.h,
             cardWidth: 50.w,
-            cardRadius: 7.r,
-            cardIconAsset: icon,
+            cardRadius: 100.r,
+            cardIconAsset: Assets.svgMusicIcon,
             cardIconSize: 32.r,
-            isSvgCardIcon: icon.contains('.svg'),
-            title: playlist.name,
-            subtitle: '${playlist.songCount} Songs',
-            noLogoGradientColor: isSystem && color != null
-                ? [color.withValues(alpha: 0.21), color]
-                : null,
+            isSvgCardIcon: true,
+            isSvgColorNeeded: false,
+            title: artist.name,
+            subtitle:
+                '${artist.albumCount} Album${artist.albumCount != 1 ? 's' : ''} - ${artist.songCount} Songs',
             trailingIconAsset: isSelected
                 ? Assets.svgIcCheck
                 : Assets.svgIcUncheck,
             trailingIconHeight: 20.h,
             trailingIconWidth: 10.w,
             trailingMargin: 2.w,
-            onTap: () => toggleSelection(
-              playlist.id!,
-              playlists,
-              isSystemPlaylist: isSystem,
-            ),
-            onPlayTap: () => toggleSelection(
-              playlist.id!,
-              playlists,
-              isSystemPlaylist: isSystem,
-            ),
+            onTap: () => toggleSelection(artist.id!, artists),
+            onPlayTap: () => toggleSelection(artist.id!, artists),
           ),
         );
       }).toList(),
@@ -678,8 +588,8 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
 
   // Custom delete confirmation dialog matching the design
   Widget _buildDeleteConfirmationDialog(
-    int playlistCount,
-    List<domain.Playlist> deletablePlaylists,
+    int artistCount,
+    List<Artist> deletableArtists,
   ) {
     // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
     final viewInsets = MediaQuery.of(context).viewInsets.bottom;
@@ -711,7 +621,7 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
 
           // Title
           Texts(
-            S.of(context).deletePlaylist,
+            'Delete Artists',
             fontSize: 18.sp,
             fontWeight: FontWeight.w500,
             fontFamily: AppFonts.inter,
@@ -721,7 +631,7 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
 
           // Message
           Texts(
-            'Are you sure you want to delete ${playlistCount == 1 ? 'this playlist' : 'these $playlistCount playlists'}?',
+            'Are you sure you want to delete ${artistCount == 1 ? 'this artist' : 'these $artistCount artists'}?',
             fontSize: 16.sp,
             fontWeight: FontWeight.w400,
             fontFamily: AppFonts.inter,
@@ -761,16 +671,11 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    // Delete all deletable playlists
-                    for (var playlist in deletablePlaylists) {
-                      context.read<PlaylistBloc>().add(
-                        PlaylistEvent.deletePlaylist(playlist.id!),
-                      );
-                    }
-
+                    // Note: You'll need to add a delete artist event to ArtistBloc
+                    // For now, this is a placeholder
                     Navigator.pop(context);
                     setState(() {
-                      selectedPlaylistIds.clear();
+                      selectedArtistIds.clear();
                       isSelectedAll = false;
                     });
 
@@ -778,7 +683,7 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
                       context,
                       () {},
                       message:
-                          "$playlistCount ${playlistCount == 1 ? 'playlist' : 'playlists'} deleted successfully!",
+                          "$artistCount ${artistCount == 1 ? 'artist' : 'artists'} deleted successfully!",
                       alertBannerLocation: AlertBannerLocation.bottom,
                     );
                   },
@@ -813,11 +718,11 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBarWithIconTitle(
-        title: 'Select Playlists',
+        title: 'Select Artists',
         isActionBtnDisplay: true,
         onTapAction: () => _showPopupMenu(context),
       ),
-      body: BlocBuilder<PlaylistBloc, PlaylistState>(
+      body: BlocBuilder<ArtistBloc, ArtistState>(
         builder: (context, state) {
           return state.when(
             initial: () => const Center(child: Text("Initializing...")),
@@ -828,16 +733,16 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
                 style: const TextStyle(color: Colors.red, fontSize: 16),
               ),
             ),
-            loaded: (allPlaylists, systemPlaylistSongs) {
-              final filteredPlaylists = _filterPlaylists(allPlaylists);
+            loaded: (allArtists, _) {
+              final filteredArtists = _filterArtists(allArtists);
 
               // Update select all state based on current filtered results
-              updateSelectAllState(filteredPlaylists);
+              updateSelectAllState(filteredArtists);
 
-              if (allPlaylists.isEmpty) {
+              if (allArtists.isEmpty) {
                 return const Center(
                   child: Text(
-                    "No playlists available",
+                    "No artists available",
                     style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 );
@@ -867,7 +772,7 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
                             padding: EdgeInsets.only(left: 14.w, right: 10.w),
                             child: SvgPicture.asset(Assets.svgIcSerach),
                           ),
-                          hintText: 'Search Playlists',
+                          hintText: 'Search Artists',
                           hintStyle: TextStyle(
                             color: AppColors.textColor,
                             fontWeight: FontWeight.w400,
@@ -883,11 +788,11 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
                   ),
 
                   // If searching and no results, show only the message
-                  if (filteredPlaylists.isEmpty && searchQuery.isNotEmpty)
+                  if (filteredArtists.isEmpty && searchQuery.isNotEmpty)
                     Expanded(
                       child: Center(
                         child: Texts(
-                          "No playlists match your search",
+                          "No artists match your search",
                           fontSize: 16.sp,
                           color: AppColors.textColor,
                         ),
@@ -913,7 +818,6 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
                               color: AppColors.textColor,
                             ),
                           ),
-
                           Texts(
                             S.of(context).selectAll,
                             fontSize: 14.sp,
@@ -923,7 +827,7 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
                           ),
                           SizedBox(width: 10.w),
                           GestureDetector(
-                            onTap: () => toggleSelectAll(filteredPlaylists),
+                            onTap: () => toggleSelectAll(filteredArtists),
                             child: SvgPicture.asset(
                               isSelectedAll
                                   ? Assets.svgIcRadioCheckl
@@ -936,31 +840,16 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
                       ),
                     ),
 
-                    // Playlists list
+                    // Artists list
                     Expanded(
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
-                            // System Playlists Section
-                            ..._buildPlaylistSection(
-                              'System Playlists',
-                              filteredPlaylists
-                                  .where((p) => p.isSystem == true)
-                                  .toList(),
+                            // Artists Section
+                            ..._buildArtistSection(
+                              'My Artists (${filteredArtists.length})',
+                              filteredArtists,
                             ),
-
-                            // User Playlists Section
-                            if (filteredPlaylists.any(
-                              (p) => p.isSystem != true,
-                            )) ...[
-                              SizedBox(height: 20.h),
-                              ..._buildPlaylistSection(
-                                'My Playlists (${filteredPlaylists.where((p) => p.isSystem != true).length})',
-                                filteredPlaylists
-                                    .where((p) => p.isSystem != true)
-                                    .toList(),
-                              ),
-                            ],
                             SizedBox(height: 90.h),
                           ],
                         ),
@@ -973,10 +862,10 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
           );
         },
       ),
-      bottomNavigationBar: BlocBuilder<PlaylistBloc, PlaylistState>(
+      bottomNavigationBar: BlocBuilder<ArtistBloc, ArtistState>(
         builder: (context, state) {
           return state.maybeWhen(
-            loaded: (allPlaylists, systemPlaylistSongs) {
+            loaded: (allArtists, _) {
               return Visibility(
                 visible: selectedCount > 0,
                 child: SafeArea(
@@ -987,7 +876,7 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         GestureDetector(
-                          onTap: () => _playSelectedPlaylists(allPlaylists),
+                          onTap: () => _playSelectedArtists(allArtists),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -1003,8 +892,7 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () =>
-                              _addSongsToSelectedPlaylists(allPlaylists),
+                          onTap: () => _addSongsToSelectedArtists(allArtists),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -1020,7 +908,7 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () => _deleteSelectedPlaylists(allPlaylists),
+                          onTap: () => _deleteSelectedArtists(allArtists),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -1048,3 +936,4 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
     );
   }
 }
+

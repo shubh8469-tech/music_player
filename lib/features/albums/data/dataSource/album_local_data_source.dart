@@ -40,8 +40,8 @@ class AlbumLocalDataSourceImpl implements AlbumLocalDataSource {
   ) async {
     final result = await db.query(
       'albums',
-      where: 'name = ? AND artist = ?',
-      whereArgs: [name, artist],
+      where: 'LOWER(TRIM(name)) = LOWER(TRIM(?)) AND LOWER(TRIM(artist)) = LOWER(TRIM(?))',
+      whereArgs: [name, artist ?? ''],
       limit: 1,
     );
 
@@ -82,7 +82,7 @@ class AlbumLocalDataSourceImpl implements AlbumLocalDataSource {
   Future<List<AlbumModel>> getAlbumsByArtist(String artistName) async {
     final result = await db.query(
       'albums',
-      where: 'artist = ?',
+      where: 'LOWER(TRIM(artist)) = LOWER(TRIM(?))',
       whereArgs: [artistName],
       orderBy: 'year DESC, name ASC',
     );

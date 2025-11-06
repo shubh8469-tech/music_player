@@ -8,6 +8,7 @@ import 'package:music_app/screens/tabs/library/playlists/select_playlist_screen.
 import 'package:music_app/screens/tabs/library/folders/folder_detail_screen.dart';
 import 'package:music_app/screens/tabs/library/folders/select_folder_screen.dart';
 import 'package:music_app/screens/tabs/library/artist/artist_detail_screen.dart';
+import 'package:music_app/screens/tabs/library/artist/select_artist_screen.dart';
 import 'package:music_app/screens/tabs/library/albums/album_detail_screen.dart';
 import 'package:music_app/screens/tabs/library/albums/select_album_screen.dart';
 
@@ -39,6 +40,7 @@ enum AppRouteName {
   folderDetail,
   selectFolder,
   artistDetail,
+  selectArtist,
   albumDetail,
   selectAlbum,
 }
@@ -132,6 +134,9 @@ final GoRouter appRouter = GoRouter(
             if (args != null) {
               return SelectSongScreen(
                 playlist: args['playlist'],
+                album: args['album'],
+                artist: args['artist'],
+                folder: args['folder'],
                 playlistSongs: args['songs'],
                 isSystemPlaylist: args['isSystemPlaylist'],
               );
@@ -189,9 +194,14 @@ final GoRouter appRouter = GoRouter(
           name: AppRouteName.artistDetail.name,
           path: 'artist-detail',
           builder: (context, state) {
-            final artist = state.extra as dynamic;
+final artist = state.extra as dynamic;
             return ArtistDetailScreen(artist: artist);
           },
+        ),
+        GoRoute(
+          name: AppRouteName.selectArtist.name,
+          path: 'select-artist',
+          builder: (context, state) => const SelectArtistScreen(),
         ),
         GoRoute(
           name: AppRouteName.albumDetail.name,

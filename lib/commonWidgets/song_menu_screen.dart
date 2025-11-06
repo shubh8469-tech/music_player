@@ -15,6 +15,8 @@ import '../features/playlists/bloc/playlist_bloc.dart';
 import '../features/playlists/domain/entities/playlist.dart' as domain;
 import '../features/playlists/domain/repositories/playlist_repository.dart';
 import '../features/songs/bloc/songs_bloc.dart';
+import '../features/albums/domain/repositories/album_repository.dart';
+import '../features/artists/domain/repositories/artist_repository.dart';
 import '../generated/assets.dart';
 import '../l10n/l10n.dart';
 import '../model/song_menu_model.dart';
@@ -761,6 +763,14 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                         AlertBannerLocation.bottom,
                                   );
                                 }
+                              } else if (songItem.title ==
+                                  S.of(context).goToAlbum) {
+                                // Navigate to album detail screen
+                                await _navigateToAlbum(context);
+                              } else if (songItem.title ==
+                                  S.of(context).goToArtist) {
+                                // Navigate to artist detail screen
+                                await _navigateToArtist(context);
                               }
                             },
                           ),
@@ -1027,5 +1037,117 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
     // For iOS and other platforms
     return true;
+  }
+
+  Future<void> _navigateToAlbum(BuildContext context) async {
+    if (widget.currentSong == null) {
+      showSnackBar(
+        context,
+        () {},
+        message: 'No song selected',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+      return;
+    }
+
+    try {
+      final albumRepository = locator<AlbumRepository>();
+      final albumName = widget.currentSong!.album;
+      final artistName = widget.currentSong!.artist;
+
+      if (albumName.isEmpty) {
+        showSnackBar(
+          context,
+          () {},
+          message: 'Album information not available',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+        return;
+      }
+
+      // Get the album from the repository
+      final album = await albumRepository.getAlbumByNameAndArtist(
+        albumName,
+        artistName,
+      );
+
+      if (album != null) {
+        // Close the menu
+        Navigator.pop(context);
+        
+        // Navigate to album detail screen
+        context.push('/dashboard/album-detail', extra: album);
+      } else {
+        showSnackBar(
+          context,
+          () {},
+          message: 'Album not found',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      }
+    } catch (e) {
+      log('Error navigating to album: $e');
+      showSnackBar(
+        context,
+        () {},
+        message: 'Error opening album: $e',
+        backgroundColor: Colors.red,
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    }
+  }
+
+  Future<void> _navigateToArtist(BuildContext context) async {
+    if (widget.currentSong == null) {
+      showSnackBar(
+        context,
+        () {},
+        message: 'No song selected',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+      return;
+    }
+
+    try {
+      final artistRepository = locator<ArtistRepository>();
+      final artistName = widget.currentSong!.artist;
+
+      if (artistName.isEmpty) {
+        showSnackBar(
+          context,
+          () {},
+          message: 'Artist information not available',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+        return;
+      }
+
+      // Get the artist from the repository
+      final artist = await artistRepository.getArtistByName(artistName);
+
+      if (artist != null) {
+        // Close the menu
+        Navigator.pop(context);
+        
+        // Navigate to artist detail screen
+        context.push('/dashboard/artist-detail', extra: artist);
+      } else {
+        showSnackBar(
+          context,
+          () {},
+          message: 'Artist not found',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      }
+    } catch (e) {
+      log('Error navigating to artist: $e');
+      showSnackBar(
+        context,
+        () {},
+        message: 'Error opening artist: $e',
+        backgroundColor: Colors.red,
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    }
   }
 }
