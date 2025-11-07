@@ -460,6 +460,10 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
               stream: musicService.songsChanged,
               initialData: musicService.songs,
               builder: (context, snapshot) {
+                final artistArtworkPath =
+                    (_currentArtist.artworkPath?.isNotEmpty ?? false)
+                        ? _currentArtist.artworkPath!
+                        : Assets.svgIcArtist;
                 return Padding(
                   padding: EdgeInsets.only(
                     left: 20.w,
@@ -477,10 +481,11 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
                             width: 150.w,
                             colors: [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.primaryOrange],
                             borderRadius: 13.r,
-                            iconAsset: Assets.svgIcArtist,
+                            iconAsset: artistArtworkPath,
                             iconSize: 60.r,
                             margin: 10.w,
                           ),
+                         Text(_currentArtist.artworkPath ?? "nnn"),
                           SizedBox(height: 14.h),
                           Texts(
                             _currentArtist.name,

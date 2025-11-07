@@ -153,6 +153,10 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                       return Column(
                         children:
                             artists.map((artist) {
+                              final artistArtworkPath =
+                                  (artist.artworkPath?.isNotEmpty ?? false)
+                                      ? artist.artworkPath!
+                                      : Assets.svgMusicIcon;
                               return MusicListTile(
                                 margin: 7.w,
                                 height: 66.h,
@@ -162,7 +166,7 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                                 cardHeight: 50.h,
                                 cardWidth: 50.w,
                                 cardRadius: 100.r,
-                                cardIconAsset: Assets.svgMusicIcon,
+                                cardIconAsset: artistArtworkPath,
                                 isSvgColorNeeded: false,
                                 cardIconSize: 32.r,
                                 title: artist.name,
@@ -223,6 +227,10 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
         ? viewInsets + 16.h
         : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
 
+    final artistArtworkPath = (artist.artworkPath?.isNotEmpty ?? false)
+        ? artist.artworkPath!
+        : Assets.svgMusicIcon;
+
     return Container(
       constraints: BoxConstraints(maxHeight: 0.63.sh),
       padding: EdgeInsets.only(top: 10.h, bottom: bottomPadding),
@@ -248,7 +256,7 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                     cardHeight: 50.h,
                     cardWidth: 50.w,
                     cardRadius: 100.r,
-                    cardIconAsset: Assets.svgMusicIcon,
+                    cardIconAsset: artistArtworkPath,
                     cardIconSize: 32.r,
                     isSvgColorNeeded: false,
                     title: artist.name,

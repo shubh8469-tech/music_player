@@ -157,6 +157,10 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                         itemCount: albums.length,
                         itemBuilder: (context, index) {
                           final album = albums[index];
+                          final albumArtworkPath =
+                              (album.artworkPath?.isNotEmpty ?? false)
+                                  ? album.artworkPath!
+                                  : Assets.svgAlbum;
                           return GestureDetector(
                             onTap: () {
                               context.push(
@@ -177,7 +181,7 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                                     AppColors.mildOrange,
                                   ],
                                   borderRadius: 13.r,
-                                  iconAsset: Assets.svgAlbum,
+                                  iconAsset: albumArtworkPath,
                                   iconSize: 66.51.r,
                                   onTap: () {
                                     context.push(
@@ -274,6 +278,10 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
         ? viewInsets + 16.h
         : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
 
+    final albumArtworkPath = (album.artworkPath?.isNotEmpty ?? false)
+        ? album.artworkPath!
+        : Assets.svgAlbum;
+
     return Container(
       constraints: BoxConstraints(maxHeight: 0.63.sh),
       padding: EdgeInsets.only(top: 10.h, bottom: bottomPadding),
@@ -303,7 +311,7 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                       AppColors.mildOrange.withValues(alpha: 0.21),
                       AppColors.mildOrange,
                     ],
-                    cardIconAsset: Assets.svgAlbum,
+                    cardIconAsset: albumArtworkPath,
                     cardIconSize: 32.r,
                     isSvgCardIcon: true,
                     title: album.name,

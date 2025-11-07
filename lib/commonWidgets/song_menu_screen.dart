@@ -1053,7 +1053,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
     try {
       final albumRepository = locator<AlbumRepository>();
       final albumName = widget.currentSong!.album;
-      final artistName = widget.currentSong!.artist;
+      final artistName = 'Various Artists';//widget.currentSong!.artist;
 
       if (albumName.isEmpty) {
         showSnackBar(
@@ -1081,7 +1081,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
         showSnackBar(
           context,
           () {},
-          message: 'Album not found',
+          message: 'Album not found $albumName $artistName',
           alertBannerLocation: AlertBannerLocation.bottom,
         );
       }

@@ -51,7 +51,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
   void initState() {
     super.initState();
     _currentAlbum = widget.album;
-    // Create sort items without album option (index 2 in sortByItems)
+    // Create sort items without album option (index 2 in sortBFrom what we pull via MetadataGod, the audio tags only give us text fields (artist, album, albumArtist, etc.)—no stable artist IDs. Common tag standards (ID3, Vorbis Comments, MP4) don’t include a universal identifier unless someone manually embeds extras like MusicBrainz IDs, and our importer doesn’t read those. So the only consistent value we can rely on right now is the album-artist string. If we need something stronger, we’d have to add optional support for IDs from third-party tag fields (e.g., MusicBrainz TXXX frames) and fall back to the text metadata when they’re absent.yItems)
     _albumSongSortByItems = List.from(sortByItems)..removeAt(2);
     _loadSongs();
   }
@@ -661,6 +661,10 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
               stream: musicService.songsChanged,
               initialData: musicService.songs,
               builder: (context, snapshot) {
+                final albumArtworkPath =
+                    (_currentAlbum.artworkPath?.isNotEmpty ?? false)
+                    ? _currentAlbum.artworkPath!
+                    : Assets.svgAlbum;
                 // Always check the current state, not just the snapshot
                 // final hasAny = musicService.songs.isNotEmpty;
                 // final showMiniPlayer = hasAny;
@@ -688,7 +692,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                               AppColors.primaryOrange,
                             ],
                             borderRadius: 13.r,
-                            iconAsset: Assets.svgAlbum,
+                            iconAsset: albumArtworkPath,
                             iconSize: 60.r,
                             margin: 10.w,
                           ),

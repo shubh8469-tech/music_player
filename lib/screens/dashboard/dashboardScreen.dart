@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:music_app/screens/tabs/home/homeScreen.dart';
 import 'package:music_app/screens/tabs/library/libraryScreen.dart';
+import 'package:music_app/screens/tabs/search/search_screen.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/screens/tabs/library/widgets/mini_player_bar.dart';
 
@@ -48,7 +51,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           });
         },
       ),
-      Center(child: Text('Search Screen')),
+      const SearchScreen(),
       LibraryScreen(controller: _libraryController),
     ];
 
@@ -56,9 +59,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (!mounted) return;
       // context.read<PlaylistBloc>().add(const PlaylistEvent.fetchAllPlaylists());
       final now = DateTime.now();
-      if (_lastRefreshTime == null || now.difference(_lastRefreshTime!).inSeconds > 1) {
+      if (_lastRefreshTime == null ||
+          now.difference(_lastRefreshTime!).inSeconds > 1) {
         _lastRefreshTime = now;
-        context.read<PlaylistBloc>().add(const PlaylistEvent.refreshPlaylists());
+        context.read<PlaylistBloc>().add(
+          const PlaylistEvent.refreshPlaylists(),
+        );
       }
     });
   }
@@ -72,57 +78,78 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryOrange,
-        leadingWidth: 45.w,
-        toolbarHeight: 58.h,
-        leading: Padding(
-          padding: EdgeInsets.only(left: 22.w),
-          child: SizedBox(
-            width: 26.w,
-            height: 26.h,
-            child: SvgPicture.asset(Assets.svgDrawer, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
-          ),
-        ),
-        actions: [
-          SizedBox(
-            width: 40.w,
-            height: 40.h,
-            child: IconButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Themes feature coming soon'),
-                    backgroundColor: AppColors.primaryOrange,
-                    duration: Duration(seconds: 2),
-                    behavior: SnackBarBehavior.floating,
+      appBar: currentIndex != 1
+          ? AppBar(
+              backgroundColor: AppColors.primaryOrange,
+              leadingWidth: 45.w,
+              toolbarHeight: 58.h,
+              leading: Padding(
+                padding: EdgeInsets.only(left: 22.w),
+                child: SizedBox(
+                  width: 26.w,
+                  height: 26.h,
+                  child: SvgPicture.asset(
+                    Assets.svgDrawer,
+                    colorFilter: const ColorFilter.mode(
+                      AppColors.white,
+                      BlendMode.srcIn,
+                    ),
                   ),
-                );
-              },
-              icon: SvgPicture.asset(Assets.svgThemeBrush, height: 26.h, width: 26.w),
-            ),
-          ),
-          IconButton(
-            onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Settings feature coming soon'),
-                    backgroundColor: AppColors.primaryOrange,
-                    duration: Duration(seconds: 2),
-                    behavior: SnackBarBehavior.floating,
+                ),
+              ),
+              actions: [
+                SizedBox(
+                  width: 40.w,
+                  height: 40.h,
+                  child: IconButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Themes feature coming soon'),
+                          backgroundColor: AppColors.primaryOrange,
+                          duration: Duration(seconds: 2),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                    icon: SvgPicture.asset(
+                      Assets.svgThemeBrush,
+                      height: 26.h,
+                      width: 26.w,
+                    ),
                   ),
-                );
-              },
-            icon: SvgPicture.asset(Assets.svgSetting, height: 26.h, width: 26.w, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
-          ),
-          IconButton(
-            onPressed: () {
-              context.push('/dashboard/import-songs');
-            },
-            icon: Icon(Icons.add, color: AppColors.white, size: 28.r),
-          ),
-        ],
-      ),
+                ),
+                IconButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Settings feature coming soon'),
+                        backgroundColor: AppColors.primaryOrange,
+                        duration: Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                  icon: SvgPicture.asset(
+                    Assets.svgSetting,
+                    height: 26.h,
+                    width: 26.w,
+                    colorFilter: const ColorFilter.mode(
+                      AppColors.white,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                ),
+                if (Platform.isIOS)
+                  IconButton(
+                    onPressed: () {
+                      context.push('/dashboard/import-songs');
+                    },
+                    icon: Icon(Icons.add, color: AppColors.white, size: 28.r),
+                  ),
+              ],
+            )
+          : null,
       body: StreamBuilder<List<SongsModel>>(
         stream: _musicService.songsChanged,
         initialData: _musicService.songs,
@@ -135,7 +162,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Positioned.fill(
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: showMiniPlayer ? 74.h : 0), // Space for MiniPlayerBar (which includes system nav bar padding)
+                  padding: EdgeInsets.only(
+                    bottom: showMiniPlayer ? 74.h : 0,
+                  ), // Space for MiniPlayerBar (which includes system nav bar padding)
                   child: screens[currentIndex],
                 ),
               ),
@@ -149,8 +178,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: BottomNavigationBar(
           selectedItemColor: AppColors.primaryOrange,
           unselectedItemColor: AppColors.black,
-          selectedLabelStyle: TextStyle(fontSize: 12.sp, fontFamily: AppFonts.inter, fontWeight: AppFontWeights.regular),
-          unselectedLabelStyle: TextStyle(fontSize: 12.sp, fontFamily: AppFonts.inter, fontWeight: AppFontWeights.regular),
+          selectedLabelStyle: TextStyle(
+            fontSize: 12.sp,
+            fontFamily: AppFonts.inter,
+            fontWeight: AppFontWeights.regular,
+          ),
+          unselectedLabelStyle: TextStyle(
+            fontSize: 12.sp,
+            fontFamily: AppFonts.inter,
+            fontWeight: AppFontWeights.regular,
+          ),
           backgroundColor: AppColors.white,
           currentIndex: currentIndex,
           onTap: (index) {
@@ -160,19 +197,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
           },
           items: [
             BottomNavigationBarItem(
-              icon: SvgPicture.asset(Assets.svgHome, colorFilter: const ColorFilter.mode(AppColors.black, BlendMode.srcIn)),
+              icon: SvgPicture.asset(
+                Assets.svgHome,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.black,
+                  BlendMode.srcIn,
+                ),
+              ),
               label: 'Home',
               activeIcon: SvgPicture.asset(Assets.svgHome),
             ),
             BottomNavigationBarItem(
               icon: SvgPicture.asset(Assets.svgSearch),
               label: 'Search',
-              activeIcon: SvgPicture.asset(Assets.svgSearch, colorFilter: const ColorFilter.mode(AppColors.primaryOrange, BlendMode.srcIn)),
+              activeIcon: SvgPicture.asset(
+                Assets.svgSearch,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.primaryOrange,
+                  BlendMode.srcIn,
+                ),
+              ),
             ),
             BottomNavigationBarItem(
               icon: SvgPicture.asset(Assets.svgMusicLibrary),
               label: 'Library',
-              activeIcon: SvgPicture.asset(Assets.svgMusicLibrary, colorFilter: const ColorFilter.mode(AppColors.primaryOrange, BlendMode.srcIn)),
+              activeIcon: SvgPicture.asset(
+                Assets.svgMusicLibrary,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.primaryOrange,
+                  BlendMode.srcIn,
+                ),
+              ),
             ),
           ],
         ),

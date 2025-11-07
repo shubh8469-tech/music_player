@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -51,6 +52,33 @@ class _SyncProgressState extends State<SyncProgress>
   // Track if sync was successful
   bool _syncSuccessful = false;
 
+  Future<Uint8List?> _fetchBestArtwork(SongModel song) async {
+    Future<Uint8List?> tryFetch(int? id, ArtworkType type) async {
+      if (id == null) return null;
+      try {
+        final result = await _audioQuery.queryArtwork(id, type);
+        if (result != null && result.isNotEmpty) {
+          return result;
+        }
+      } catch (e) {
+        log('Failed to fetch $type artwork for ${song.title}: $e');
+      }
+      return null;
+    }
+
+    Uint8List? bytes = await tryFetch(song.id, ArtworkType.AUDIO);
+
+    if (bytes == null || bytes.isEmpty) {
+      bytes = await tryFetch(song.albumId, ArtworkType.ALBUM);
+    }
+
+    if (bytes == null || bytes.isEmpty) {
+      bytes = await tryFetch(song.artistId, ArtworkType.ARTIST);
+    }
+
+    return bytes;
+  }
+
   Future<void> scanMusicFiles() async {
     try {
       final AddSong addSongUseCase = locator();
@@ -82,10 +110,7 @@ class _SyncProgressState extends State<SyncProgress>
       for (final song in songs) {
         final String path = song.data;
 
-        final artworkBytes = await _audioQuery.queryArtwork(
-          song.id,
-          ArtworkType.AUDIO, // or ArtworkType.ALBUM
-        );
+        final artworkBytes = await _fetchBestArtwork(song);
 
         final appDocDir = await getApplicationDocumentsDirectory();
         final artworkDir = Directory(p.join(appDocDir.path, 'artworks'));
@@ -160,29 +185,32 @@ class _SyncProgressState extends State<SyncProgress>
           // }
 
           // FIRST PRIORITY (ACTIVE): Check dateAdded from media store
-          if (songYear == null) {
-            try {
-              if (song.dateAdded != null && song.dateAdded! > 0) {
-                songYear = DateTime.fromMillisecondsSinceEpoch(
-                  song.dateAdded! * 1000,
-                ).year;
-                log('Year from dateAdded for ${song.title}: $songYear');
-              }
-            } catch (e) {
-              log(
-                'Failed to extract year from dateAdded for ${song.title}: $e',
-              );
+          try {
+            final dateAdded = song.dateAdded ?? 0;
+            if (dateAdded > 0) {
+              final derivedYear = DateTime.fromMillisecondsSinceEpoch(
+                dateAdded * 1000,
+              ).year;
+              songYear ??= derivedYear;
+              log('Year from dateAdded for ${song.title}: $songYear');
             }
+          } catch (e) {
+            log('Failed to extract year from dateAdded for ${song.title}: $e');
           }
 
           // LAST RESORT: Use file's last modified date
-          if (songYear == null && !path.startsWith('content://')) {
+          if (!path.startsWith('content://')) {
             try {
               final file = File(path);
               if (await file.exists()) {
+                final hadYear = songYear != null;
                 final lastModified = await file.lastModified();
-                songYear = lastModified.year;
-                log('Year from file modification for ${song.title}: $songYear');
+                songYear ??= lastModified.year;
+                if (!hadYear) {
+                  log(
+                    'Year from file modification for ${song.title}: $songYear',
+                  );
+                }
               }
             } catch (e) {
               log(

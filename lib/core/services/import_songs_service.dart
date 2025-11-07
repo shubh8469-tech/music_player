@@ -176,7 +176,6 @@ class ImportSongsService {
           String title = p.basenameWithoutExtension(file.name);
           String artist = 'Unknown Artist';
           String album = 'Unknown Album';
-          String albumArtist = ''; // For album grouping
           String genre = '';
           int duration = 0;
           int? year;
@@ -197,11 +196,6 @@ class ImportSongsService {
             }
             if (metadata.album != null && metadata.album!.isNotEmpty) {
               album = metadata.album!.trim();
-            }
-            // Extract albumArtist for proper album grouping
-            if (metadata.albumArtist != null &&
-                metadata.albumArtist!.isNotEmpty) {
-              albumArtist = metadata.albumArtist!.trim();
             }
             if (metadata.genre != null && metadata.genre!.isNotEmpty) {
               genre = metadata.genre!.trim();
@@ -347,31 +341,27 @@ class ImportSongsService {
 
           // Add to Album
           if (album.isNotEmpty) {
-            // Use albumArtist for grouping if available, otherwise fall back to artist
-            // This handles compilations/soundtracks with multiple artists correctly
-            String effectiveAlbumArtist = albumArtist.isNotEmpty
-                ? albumArtist
-                : artist;
-
-            // Create album key using albumArtist for better grouping
-            // (prevents creating duplicate albums for soundtracks with multiple artists)
-            final albumKey = '$album|$effectiveAlbumArtist';
+            final normalizedAlbumName = album.trim();
+            final albumKey = normalizedAlbumName.toLowerCase();
+            const compilationArtist = 'Various Artists';
             int albumId;
             if (albumIds.containsKey(albumKey)) {
               albumId = albumIds[albumKey]!;
             } else {
-              final existingAlbum = await albumRepository
-                  .getAlbumByNameAndArtist(album, effectiveAlbumArtist);
+              final existingAlbum = await albumRepository.getAlbumByNameAndArtist(
+                normalizedAlbumName,
+                compilationArtist,
+              );
               if (existingAlbum != null) {
                 albumId = existingAlbum.id!;
               } else {
                 final albumEntity = Album(
                   id: null,
-                  name: album,
-                  artist: effectiveAlbumArtist,
+                  name: normalizedAlbumName,
+                  artist: compilationArtist,
                   songCount: 0,
                   year: year,
-                  artworkPath: null,
+                  artworkPath: artworkPath.isNotEmpty ? artworkPath : null,
                   createdTime: DateTime.now(),
                   updatedTime: DateTime.now(),
                 );
