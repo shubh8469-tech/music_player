@@ -4,6 +4,7 @@ class Folder {
   final String path;
   final int songCount;
   final String? artworkPath;
+  final bool isHidden;
   final DateTime createdTime;
   final DateTime updatedTime;
 
@@ -13,6 +14,7 @@ class Folder {
     required this.path,
     required this.songCount,
     this.artworkPath,
+    this.isHidden = false,
     required this.createdTime,
     required this.updatedTime,
   });

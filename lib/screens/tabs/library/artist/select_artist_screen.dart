@@ -907,22 +907,22 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
                             ],
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () => _deleteSelectedArtists(allArtists),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SvgPicture.asset(Assets.svgIcNavDelete),
-                              SizedBox(height: 3.h),
-                              Texts(
-                                S.of(context).delete,
-                                fontSize: 12.sp,
-                                fontFamily: AppFonts.inter,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ],
-                          ),
-                        ),
+                        // GestureDetector(
+                        //   onTap: () => _deleteSelectedArtists(allArtists),
+                        //   child: Column(
+                        //     mainAxisSize: MainAxisSize.min,
+                        //     children: [
+                        //       SvgPicture.asset(Assets.svgIcNavDelete),
+                        //       SizedBox(height: 3.h),
+                        //       Texts(
+                        //         S.of(context).delete,
+                        //         fontSize: 12.sp,
+                        //         fontFamily: AppFonts.inter,
+                        //         fontWeight: FontWeight.w400,
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),

@@ -31,6 +31,7 @@
  "songCount": "गानों की संख्या",
  "modifiedDate": "संशोधित तिथि",
  "hideFolder": "फ़ोल्डर छुपाएं",
+ "unhideFolder": "फ़ोल्डर दिखाएं",
  "deleteFolder": "फ़ोल्डर हटाएं",
  "selectSongs": "गाने चुनें",
  "searchSongs": "गाने खोजें",

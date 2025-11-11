@@ -7,6 +7,7 @@ class FolderModel extends Folder {
     required super.path,
     required super.songCount,
     super.artworkPath,
+    super.isHidden = false,
     required super.createdTime,
     required super.updatedTime,
   });
@@ -18,6 +19,7 @@ class FolderModel extends Folder {
       path: map['path'] as String,
       songCount: map['song_count'] as int,
       artworkPath: map['artwork_path'] as String?,
+      isHidden: (map['is_hidden'] ?? 0) == 1,
       createdTime: DateTime.parse(map['created_time']),
       updatedTime: DateTime.parse(map['updated_time']),
     );
@@ -30,6 +32,7 @@ class FolderModel extends Folder {
       'path': path,
       'song_count': songCount,
       'artwork_path': artworkPath,
+      'is_hidden': isHidden ? 1 : 0,
       'created_time': createdTime.toIso8601String(),
       'updated_time': updatedTime.toIso8601String(),
     };

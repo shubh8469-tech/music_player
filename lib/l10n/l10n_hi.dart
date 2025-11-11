@@ -102,6 +102,9 @@ class SHi extends S {
   String get hideFolder => 'फ़ोल्डर छुपाएं';
 
   @override
+  String get unhideFolder => 'फ़ोल्डर दिखाएं';
+
+  @override
   String get deleteFolder => 'फ़ोल्डर हटाएं';
 
   @override

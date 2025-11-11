@@ -6,8 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:just_audio/just_audio.dart';
-
 // import 'package:just_audio/just_audio.dart';
 // import 'package:music_app/app_router.dart';
 import 'package:music_app/commonWidgets/textWidget.dart';
@@ -24,7 +22,6 @@ import '../../../../commonWidgets/common_functions.dart';
 // import '../../../../commonWidgets/gradientCard.dart';
 import '../../../../commonWidgets/song_menu_screen.dart';
 import '../../../../features/songs/bloc/songs_bloc.dart';
-import '../../../../features/songs/data/models/song_model.dart';
 import '../../../../generated/assets.dart';
 import '../../../../utills/globals.dart';
 // import '../../../../l10n/l10n.dart';
@@ -105,8 +102,77 @@ class _SongsListState extends State<SongsList> {
             ),
             loaded: (songs) {
               if (songs.isEmpty) {
-                return const Center(
-                  child: Text("No songs available", style: TextStyle(fontSize: 16, color: Colors.grey)),
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 32.w),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SvgPicture.asset(
+                          Assets.svgMusicLibrary,
+                          height: 64.h,
+                          width: 64.w,
+                          colorFilter: const ColorFilter.mode(
+                            AppColors.textColor,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                        SizedBox(height: 20.h),
+                        Texts(
+                          "No songs available",
+                          fontSize: 18.sp,
+                          fontWeight: AppFontWeights.semiBold,
+                          color: AppColors.textColor,
+                          align: TextAlign.center,
+                        ),
+                        SizedBox(height: 12.h),
+                        Texts(
+                          "If you have hidden songs, you can manage them from the Hidden Music screen.",
+                          fontSize: 14.sp,
+                          fontWeight: AppFontWeights.regular,
+                          color: AppColors.textColor.withValues(alpha: 0.7),
+                          align: TextAlign.center,
+                        ),
+                        SizedBox(height: 24.h),
+                        GestureDetector(
+                          onTap: () {
+                            context.push('/dashboard/hidden-music');
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 24.w,
+                              vertical: 12.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryOrange,
+                              borderRadius: BorderRadius.circular(24.r),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SvgPicture.asset(
+                                  Assets.svgIcHide,
+                                  height: 18.h,
+                                  width: 18.w,
+                                  colorFilter: const ColorFilter.mode(
+                                    AppColors.white,
+                                    BlendMode.srcIn,
+                                  ),
+                                ),
+                                SizedBox(width: 8.w),
+                                Texts(
+                                  "Go to Hidden Music",
+                                  fontSize: 14.sp,
+                                  fontWeight: AppFontWeights.medium,
+                                  color: AppColors.white,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 );
               }
               return Column(
@@ -208,6 +274,21 @@ class _SongsListState extends State<SongsList> {
                                 Spacer(),
                                 GestureDetector(
                                   onTap: () {
+                                    context.push('/dashboard/hidden-music');
+                                  },
+                                  child: SvgPicture.asset(
+                                    Assets.svgIcHide,
+                                    height: 20.h,
+                                    width: 20.w,
+                                    colorFilter: const ColorFilter.mode(
+                                      AppColors.textColor,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 18.w),
+                                GestureDetector(
+                                  onTap: () {
                                     showModalBottomSheet(
                                       context: context,
                                       backgroundColor: Colors.white,
@@ -265,11 +346,6 @@ class _SongsListState extends State<SongsList> {
                                       stream: musicService.isPlayingStream,
                                       initialData: musicService.isPlaying,
                                       builder: (context, playingSnap) {
-                                        final player = musicService.player;
-
-                                        //  Hide highlight while shuffle is loading
-                                        final hideHighlightDuringShuffle = musicService.isShuffleEnabled && player.processingState == ProcessingState.loading;
-
                                         final isCurrent = (songs[index].id == currentId);
                                         final isPlaying = musicService.isPlaying;
 
@@ -343,30 +419,5 @@ class _SongsListState extends State<SongsList> {
         },
       ),
     );
-  }
-
-  Future<void> _shuffle(List<SongsModel> songs) async {
-    if (songs.isEmpty) return;
-
-    final currentSongId = musicService.currentSongId;
-    final wasPlaying = musicService.isPlaying;
-
-    final shuffledSongs = List<SongsModel>.from(songs);
-    shuffledSongs.shuffle();
-
-    int startIndex = 0;
-
-    if (currentSongId != null) {
-      final currentIndex = shuffledSongs.indexWhere((song) => song.id == currentSongId);
-      if (currentIndex >= 0) {
-        startIndex = currentIndex;
-      } else {
-        // If current song not found, pick a random index
-        startIndex = (DateTime.now().millisecondsSinceEpoch % shuffledSongs.length);
-      }
-    } else {
-      // If no current song, pick a random index
-      startIndex = (DateTime.now().millisecondsSinceEpoch % shuffledSongs.length);
-    }
   }
 }

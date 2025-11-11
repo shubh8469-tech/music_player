@@ -190,33 +190,6 @@ final List<SongMenuItem> artistSortByItems = [
   SongMenuItem(icon: "", title: "Random"),
 ];
 
-final List<SongMenuItem> folderMenuItems = [
-  SongMenuItem(
-    icon: Assets.svgPlayBlackBorder,
-    title: S.of(rootNavigatorKey.currentContext!).play,
-  ),
-  SongMenuItem(
-    icon: Assets.svgIcMenuPlaynext,
-    title: S.of(rootNavigatorKey.currentContext!).playNext,
-  ),
-  SongMenuItem(
-    icon: Assets.svgIcMenuQueue,
-    title: S.of(rootNavigatorKey.currentContext!).addToQueue,
-  ),
-  SongMenuItem(
-    icon: Assets.svgIcMenuPlaylist,
-    title: S.of(rootNavigatorKey.currentContext!).addToPlaylist,
-  ),
-  SongMenuItem(
-    icon: Assets.svgIcHide,
-    title: S.of(rootNavigatorKey.currentContext!).hideFolder,
-  ),
-  // SongMenuItem(
-  //   icon: Assets.svgIcDelete,
-  //   title: S.of(rootNavigatorKey.currentContext!).deleteFolder,
-  // ),
-];
-
 final List<SongMenuItem> albumMenuItems = [
   SongMenuItem(
     icon: Assets.svgPlayBlackBorder,

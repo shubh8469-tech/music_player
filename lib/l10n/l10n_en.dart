@@ -102,6 +102,9 @@ class SEn extends S {
   String get hideFolder => 'Hide Folder';
 
   @override
+  String get unhideFolder => 'Unhide Folder';
+
+  @override
   String get deleteFolder => 'Delete Folder';
 
   @override

@@ -66,7 +66,7 @@ class ArtistLocalDataSourceImpl implements ArtistLocalDataSource {
       '''
       SELECT s.* FROM songs s
       INNER JOIN artist_songs ars ON s.id = ars.song_id
-      WHERE ars.artist_id = ?
+      WHERE ars.artist_id = ? AND s.is_hidden = 0
       ORDER BY s.title ASC
     ''',
       [artistId],

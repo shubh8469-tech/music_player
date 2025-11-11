@@ -283,6 +283,12 @@ abstract class S {
   /// **'Hide Folder'**
   String get hideFolder;
 
+  /// No description provided for @unhideFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Unhide Folder'**
+  String get unhideFolder;
+
   /// No description provided for @deleteFolder.
   ///
   /// In en, this message translates to:

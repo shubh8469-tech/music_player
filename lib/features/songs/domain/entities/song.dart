@@ -9,6 +9,7 @@ class Song {
   final String filePath;
   final String? folder;
   final String? artwork_path;
+  final bool isHidden;
 
   Song({
     this.id,
@@ -21,5 +22,6 @@ class Song {
     required this.filePath,
     this.folder,
     this.artwork_path,
+    this.isHidden = false,
   });
 }

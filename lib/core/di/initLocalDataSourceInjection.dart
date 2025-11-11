@@ -24,7 +24,10 @@ Future<void> initLocalDataSourceInjections() async {
 
   ///---> Folder DataSource
   locator.registerLazySingleton<FolderLocalDataSource>(
-    () => FolderLocalDataSourceImpl(locator<Database>()),
+    () => FolderLocalDataSourceImpl(
+      locator<Database>(),
+      locator<SongLocalDataSource>(),
+    ),
   );
 
   ///---> Artist DataSource

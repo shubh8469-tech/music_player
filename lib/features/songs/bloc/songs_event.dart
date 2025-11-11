@@ -8,6 +8,8 @@ class SongsEvent with _$SongsEvent {
   const factory SongsEvent.shuffleSongs(List<SongsModel> songs) = _ShuffleSongs;
   const factory SongsEvent.updateSongFavorite(int songId, bool isFavorite) =
       _UpdateSongFavorite;
+  const factory SongsEvent.hideSong(int songId) = _HideSong;
+  const factory SongsEvent.unhideSong(int songId) = _UnhideSong;
   const factory SongsEvent.sortSongs(
     int sortIndex, [
     @Default(0) int sortOrder,

@@ -32,6 +32,7 @@
   "songCount":"Song Count",
   "modifiedDate":"Modified Date",
   "hideFolder":"Hide Folder",
+  "unhideFolder":"Unhide Folder",
   "deleteFolder":"Delete Folder",
   "selectSongs":"Select Songs",
   "searchSongs":"Search Songs",

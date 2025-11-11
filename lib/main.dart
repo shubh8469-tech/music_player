@@ -73,18 +73,6 @@ Future<void> main() async {
                   PlaylistBloc(locator())
                     ..add(const PlaylistEvent.fetchAllPlaylists()),
             ),
-            BlocProvider<SongsBloc>(
-              create: (context) => SongsBloc(
-                locator<SongLocalDataSource>(),
-                locator<PlaylistRepository>(),
-                onPlaylistRefresh: () {
-                  // Trigger playlist refresh when song is deleted
-                  context.read<PlaylistBloc>().add(
-                    const PlaylistEvent.fetchAllPlaylists(),
-                  );
-                },
-              )..add(const SongsEvent.getAllSongs()),
-            ),
             BlocProvider<FolderBloc>(
               create: (_) => FolderBloc(
                 getAllFolders: locator<GetAllFolders>(),
@@ -104,6 +92,26 @@ Future<void> main() async {
                 getAlbumSongs: locator<GetAlbumSongs>(),
                 getAlbumsByArtist: locator<GetAlbumsByArtist>(),
               ),
+            ),
+            BlocProvider<SongsBloc>(
+              create: (context) => SongsBloc(
+                locator<SongLocalDataSource>(),
+                locator<PlaylistRepository>(),
+                onLibraryRefresh: () {
+                  context.read<PlaylistBloc>().add(
+                        const PlaylistEvent.fetchAllPlaylists(),
+                      );
+                  context.read<FolderBloc>().add(
+                        const FolderEvent.fetchAllFolders(),
+                      );
+                  context.read<ArtistBloc>().add(
+                        const ArtistEvent.fetchAllArtists(),
+                      );
+                  context.read<AlbumBloc>().add(
+                        const AlbumEvent.fetchAllAlbums(),
+                      );
+                },
+              )..add(const SongsEvent.getAllSongs()),
             ),
           ],
           child: ScreenUtilInit(

@@ -10,11 +10,13 @@ import '../../../../core/di/injection.dart';
 import '../../../../features/folders/bloc/folder_bloc.dart';
 import '../../../../features/folders/domain/entities/folder.dart' as domain;
 import '../../../../features/folders/domain/repositories/folder_repository.dart';
+import '../../../../features/folders/domain/usecases/update_folder_hidden_status.dart';
 import '../../../../features/playlists/bloc/playlist_bloc.dart';
 import '../../../../features/songs/bloc/songs_bloc.dart';
 import '../../../../features/songs/data/models/song_model.dart';
 import '../../../../generated/assets.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../model/song_menu_model.dart';
 import '../../../../themes/font.dart';
 import '../../../../utills/globals.dart';
 import '../../../../utills/snack_bar.dart';
@@ -249,6 +251,7 @@ class _FolderListScreenState extends State<FolderListScreen> {
     final bottomPadding = viewInsets > 0
         ? viewInsets + 16.h
         : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+    final menuItems = _buildFolderMenuItems(folder);
 
     return Container(
       constraints: BoxConstraints(maxHeight: 0.63.sh),
@@ -308,9 +311,9 @@ class _FolderListScreenState extends State<FolderListScreen> {
                 ),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: folderMenuItems.length,
+                    itemCount: menuItems.length,
                     itemBuilder: (context, index) {
-                      final menuItem = folderMenuItems[index];
+                      final menuItem = menuItems[index];
                       return Column(
                         children: [
                           ListTile(
@@ -388,6 +391,35 @@ class _FolderListScreenState extends State<FolderListScreen> {
     );
   }
 
+  List<SongMenuItem> _buildFolderMenuItems(domain.Folder folder) {
+    final localization = S.of(context);
+    final hideTitle =
+        folder.isHidden ? localization.unhideFolder : localization.hideFolder;
+
+    return [
+      SongMenuItem(
+        icon: Assets.svgPlayBlackBorder,
+        title: localization.play,
+      ),
+      SongMenuItem(
+        icon: Assets.svgIcMenuPlaynext,
+        title: localization.playNext,
+      ),
+      SongMenuItem(
+        icon: Assets.svgIcMenuQueue,
+        title: localization.addToQueue,
+      ),
+      SongMenuItem(
+        icon: Assets.svgIcMenuPlaylist,
+        title: localization.addToPlaylist,
+      ),
+      SongMenuItem(
+        icon: Assets.svgIcHide,
+        title: hideTitle,
+      ),
+    ];
+  }
+
   void _handleFolderMenuAction(String menuTitle, domain.Folder folder) {
     if (menuTitle == S.of(context).play) {
       _playFolder(folder);
@@ -397,8 +429,10 @@ class _FolderListScreenState extends State<FolderListScreen> {
       _addFolderToQueue(folder);
     } else if (menuTitle == S.of(context).addToPlaylist) {
       _addFolderToPlaylist(folder);
-    } else if (menuTitle == S.of(context).hideFolder) {
-      _hideFolder(folder);
+    } else if (menuTitle == S.of(context).hideFolder ||
+        menuTitle == S.of(context).unhideFolder) {
+      final hide = menuTitle == S.of(context).hideFolder;
+      _updateFolderHiddenStatus(folder, hide);
     } else if (menuTitle == S.of(context).deleteFolder) {
       _deleteFolder(folder);
     }
@@ -599,15 +633,37 @@ class _FolderListScreenState extends State<FolderListScreen> {
     }
   }
 
-  // Hide folder
-  void _hideFolder(domain.Folder folder) {
-    // TODO: Implement hide folder functionality
-    showSnackBar(
-      context,
-      () {},
-      message: "Hide folder feature coming soon",
-      alertBannerLocation: AlertBannerLocation.bottom,
-    );
+  // Hide/Unhide folder
+  Future<void> _updateFolderHiddenStatus(
+    domain.Folder folder,
+    bool hide,
+  ) async {
+    if (folder.id == null) return;
+
+    try {
+      final updateHiddenStatus = locator<UpdateFolderHiddenStatus>();
+      await updateHiddenStatus(folder.id!, hide);
+      if (!mounted) return;
+      context.read<FolderBloc>().add(const FolderEvent.fetchAllFolders());
+      context.read<SongsBloc>().add(const SongsEvent.getAllSongs());
+      showSnackBar(
+        context,
+        () {},
+        message: hide
+            ? '"${folder.name}" hidden successfully'
+            : '"${folder.name}" is visible again',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      showSnackBar(
+        context,
+        () {},
+        message: 'Failed to update folder: $e',
+        backgroundColor: Colors.red,
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    }
   }
 
   // Delete folder

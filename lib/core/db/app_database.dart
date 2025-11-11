@@ -11,7 +11,7 @@ class AppDatabase {
     if (_db != null) return _db!;
     _db = await openDatabase(
       join(await getDatabasesPath(), 'music_app.db'),
-      version: 1,
+      version: 3,
       onOpen: (db) async {
         // Enable foreign keys to make CASCADE deletes work
         await db.execute('PRAGMA foreign_keys = ON');
@@ -34,6 +34,19 @@ class AppDatabase {
           if (stmt.trim().isNotEmpty) {
             await db.execute(stmt);
           }
+        }
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+        if (oldVersion < 2) {
+          await db.execute(
+            'ALTER TABLE songs ADD COLUMN is_hidden INTEGER NOT NULL DEFAULT 0;',
+          );
+        }
+        if (oldVersion < 3) {
+          await db.execute(
+            'ALTER TABLE folders ADD COLUMN is_hidden INTEGER NOT NULL DEFAULT 0;',
+          );
         }
       },
     );

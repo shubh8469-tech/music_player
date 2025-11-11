@@ -23,6 +23,7 @@ class SongRepositoryImpl implements SongRepository {
       artwork_path: song.artwork_path,
       createdTime: DateTime.now().toIso8601String(),
       updatedTime: DateTime.now().toIso8601String(),
+      isHidden: song.isHidden,
     );
 
     await localDataSource.insertSong(songModel);
@@ -53,6 +54,7 @@ class SongRepositoryImpl implements SongRepository {
       artwork_path: song.artwork_path,
       createdTime: DateTime.now().toIso8601String(),
       updatedTime: DateTime.now().toIso8601String(),
+      isHidden: song.isHidden,
     );
 
     await localDataSource.updateSong(songModel);

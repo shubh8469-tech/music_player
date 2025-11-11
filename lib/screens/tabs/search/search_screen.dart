@@ -19,6 +19,7 @@ import 'package:music_app/features/artists/domain/repositories/artist_repository
 import 'package:music_app/features/folders/bloc/folder_bloc.dart';
 import 'package:music_app/features/folders/domain/entities/folder.dart';
 import 'package:music_app/features/folders/domain/repositories/folder_repository.dart';
+import 'package:music_app/features/folders/domain/usecases/update_folder_hidden_status.dart';
 import 'package:music_app/features/playlists/bloc/playlist_bloc.dart';
 import 'package:music_app/features/playlists/domain/entities/playlist.dart'
     as domain;
@@ -33,6 +34,7 @@ import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
 import 'package:music_app/utills/globals.dart';
 import 'package:music_app/utills/snack_bar.dart';
+import 'package:music_app/model/song_menu_model.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -1060,6 +1062,8 @@ class _FolderActionSheet extends StatelessWidget {
   final Folder folder;
   final MusicPlayerService musicService = MusicPlayerService();
   final FolderRepository _repo = locator<FolderRepository>();
+  final UpdateFolderHiddenStatus _updateFolderHiddenStatus =
+      locator<UpdateFolderHiddenStatus>();
 
   @override
   Widget build(BuildContext context) {
@@ -1068,6 +1072,7 @@ class _FolderActionSheet extends StatelessWidget {
     final bottomPadding = viewInsets > 0
         ? viewInsets + 16.h
         : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+    final menuItems = _buildFolderMenuItems(context);
 
     return Container(
       constraints: BoxConstraints(maxHeight: 0.63.sh),
@@ -1126,9 +1131,9 @@ class _FolderActionSheet extends StatelessWidget {
                 ),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: folderMenuItems.length,
+                    itemCount: menuItems.length,
                     itemBuilder: (context, index) {
-                      final menuItem = folderMenuItems[index];
+                      final menuItem = menuItems[index];
                       return Column(
                         children: [
                           ListTile(
@@ -1153,7 +1158,7 @@ class _FolderActionSheet extends StatelessWidget {
                               _handleFolderMenuAction(context, menuItem.title);
                             },
                           ),
-                          if (index == 3)
+                          if (index == menuItems.length - 2)
                             Padding(
                               padding: EdgeInsets.symmetric(
                                 horizontal: 15.w,
@@ -1214,9 +1219,28 @@ class _FolderActionSheet extends StatelessWidget {
       _addFolderToQueue(context);
     } else if (menuTitle == S.of(context).addToPlaylist) {
       _addFolderToPlaylist(context);
-    } else if (menuTitle == S.of(context).hideFolder) {
-      _hideFolder(context);
+    } else if (menuTitle == S.of(context).hideFolder ||
+        menuTitle == S.of(context).unhideFolder) {
+      final hide = menuTitle == S.of(context).hideFolder;
+      _toggleFolderHidden(context, hide);
     }
+  }
+
+  List<SongMenuItem> _buildFolderMenuItems(BuildContext context) {
+    final localization = S.of(context);
+    final hideTitle =
+        folder.isHidden ? localization.unhideFolder : localization.hideFolder;
+
+    return [
+      SongMenuItem(icon: Assets.svgPlayBlackBorder, title: localization.play),
+      SongMenuItem(icon: Assets.svgIcMenuPlaynext, title: localization.playNext),
+      SongMenuItem(icon: Assets.svgIcMenuQueue, title: localization.addToQueue),
+      SongMenuItem(
+        icon: Assets.svgIcMenuPlaylist,
+        title: localization.addToPlaylist,
+      ),
+      SongMenuItem(icon: Assets.svgIcHide, title: hideTitle),
+    ];
   }
 
   Future<void> _playFolder(BuildContext context) async {
@@ -1430,13 +1454,33 @@ class _FolderActionSheet extends StatelessWidget {
     }
   }
 
-  void _hideFolder(BuildContext context) {
-    showSnackBar(
-      context,
-      () {},
-      message: 'Hide folder feature coming soon',
-      alertBannerLocation: AlertBannerLocation.bottom,
-    );
+  Future<void> _toggleFolderHidden(
+    BuildContext context,
+    bool hide,
+  ) async {
+    if (folder.id == null) return;
+
+    try {
+      await _updateFolderHiddenStatus(folder.id!, hide);
+      context.read<FolderBloc>().add(const FolderEvent.fetchAllFolders());
+      context.read<SongsBloc>().add(const SongsEvent.getAllSongs());
+      showSnackBar(
+        context,
+        () {},
+        message: hide
+            ? '"${folder.name}" hidden successfully'
+            : '"${folder.name}" is visible again',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    } catch (e) {
+      showSnackBar(
+        context,
+        () {},
+        message: 'Failed to update folder: $e',
+        backgroundColor: Colors.red,
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    }
   }
 }
 

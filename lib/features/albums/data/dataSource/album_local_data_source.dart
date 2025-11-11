@@ -69,7 +69,7 @@ class AlbumLocalDataSourceImpl implements AlbumLocalDataSource {
       '''
       SELECT s.* FROM songs s
       INNER JOIN album_songs als ON s.id = als.song_id
-      WHERE als.album_id = ?
+      WHERE als.album_id = ? AND s.is_hidden = 0
       ORDER BY s.title ASC
     ''',
       [albumId],

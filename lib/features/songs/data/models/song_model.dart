@@ -6,6 +6,7 @@ class SongsModel extends Song {
   final int playCount;
   final String? lastPlayed;
   bool isFavorite;
+  bool isHidden;
 
   SongsModel({
     int? id,
@@ -23,11 +24,13 @@ class SongsModel extends Song {
     int? playCount,
     String? lastPlayed,
     bool? isFavorite,
-  }) : createdTime = createdTime ?? DateTime.now().toIso8601String(),
+    bool? isHidden,
+  })  : createdTime = createdTime ?? DateTime.now().toIso8601String(),
        updatedTime = updatedTime ?? DateTime.now().toIso8601String(),
        playCount = playCount ?? 0,
        lastPlayed = lastPlayed,
        isFavorite = isFavorite ?? false,
+        isHidden = isHidden ?? false,
        super(
          id: id,
          title: title,
@@ -39,6 +42,7 @@ class SongsModel extends Song {
          filePath: filePath,
          folder: folder,
          artwork_path: artwork_path,
+          isHidden: isHidden ?? false,
        );
 
   factory SongsModel.fromMap(Map<String, dynamic> map) {
@@ -58,6 +62,7 @@ class SongsModel extends Song {
       playCount: map['play_count'] ?? 0,
       lastPlayed: map['last_played'],
       isFavorite: (map['is_favorite'] ?? 0) == 1,
+      isHidden: (map['is_hidden'] ?? 0) == 1,
     );
   }
 
@@ -78,6 +83,7 @@ class SongsModel extends Song {
       'play_count': playCount,
       'last_played': lastPlayed,
       'is_favorite': isFavorite ? 1 : 0,
+      'is_hidden': isHidden ? 1 : 0,
     };
   }
 }

@@ -30,17 +30,17 @@ import 'common_functions.dart';
 class SongMenuScreen extends StatefulWidget {
   final List<SongMenuItem> songMenuList;
   final bool isPlaying;
-  List<SongsModel>? songsList;
-  SongsModel? currentSong;
-  int? songIndex;
-  bool isSystemPlaylist;
-  String? systemKeyOrId;
-  String? from;
-  double maxHeight;
-  VoidCallback? onSongDeleted;
-  domain.Playlist? playlist;
-  String? playlistIconAsset;
-  List<Color>? playlistGradientColors;
+  final List<SongsModel>? songsList;
+  final SongsModel? currentSong;
+  final int? songIndex;
+  final bool isSystemPlaylist;
+  final String? systemKeyOrId;
+  final String? from;
+  final double maxHeight;
+  final VoidCallback? onSongDeleted;
+  final domain.Playlist? playlist;
+  final String? playlistIconAsset;
+  final List<Color>? playlistGradientColors;
 
   SongMenuScreen({
     super.key,
@@ -632,127 +632,12 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     _showDeleteFromFolderConfirmation(context);
                                   }
                                 } else {
-                                  // Handle delete song from library
-                                  // Show confirmation dialog and delete song file
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: Text('Delete Song'),
-                                      content: Text(
-                                        'Are you sure you want to delete "${widget.currentSong?.title}"?',
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context),
-                                          child: Text('Cancel'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () async {
-                                            Navigator.pop(
-                                              context,
-                                            ); // Close dialog
-
-                                            // Remove song from app database only
-                                            if (widget.currentSong != null) {
-                                              try {
-                                                final songsBloc = context
-                                                    .read<SongsBloc>();
-
-                                                // Remove from database only (not from device storage)
-                                                songsBloc.add(
-                                                  SongsEvent.removeSong(
-                                                    widget.currentSong!.id!,
-                                                  ),
-                                                );
-
-                                                // Show success message
-                                                showSnackBar(
-                                                  context,
-                                                  () {},
-                                                  message:
-                                                      'Song removed from library',
-                                                  alertBannerLocation:
-                                                      AlertBannerLocation
-                                                          .bottom,
-                                                );
-                                              } catch (e) {
-                                                // Show error message
-                                                showSnackBar(
-                                                  context,
-                                                  () {},
-                                                  message:
-                                                      'Failed to remove song: $e',
-                                                  backgroundColor: Colors.red,
-                                                  alertBannerLocation:
-                                                      AlertBannerLocation
-                                                          .bottom,
-                                                );
-                                              }
-                                            }
-
-                                            Navigator.pop(
-                                              context,
-                                            ); // Close menu
-                                          },
-                                          child: Text('Delete'),
-                                        ),
-                                      ],
-                                    ),
-                                  );
+                                  _showDeleteFromLibraryBottomSheet(context);
                                 }
                               } else if (songItem.title ==
                                   S.of(context).deletePlaylist) {
                                 if (!widget.isSystemPlaylist) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: Text('Delete Song'),
-                                      content: Text(
-                                        'Are you sure you want to delete the playlist?',
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context),
-                                          child: Text('Cancel'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () async {
-                                            Navigator.pop(
-                                              context,
-                                            ); // Close dialog
-
-                                            // Remove song from app database only
-                                            final playlistBloc = context
-                                                .read<PlaylistBloc>();
-                                            playlistBloc.add(
-                                              PlaylistEvent.deletePlaylist(
-                                                int.parse(
-                                                  widget.systemKeyOrId!,
-                                                ),
-                                              ),
-                                            );
-
-                                            // Show success message
-                                            showSnackBar(
-                                              context,
-                                              () {},
-                                              message:
-                                                  'Song removed from playlist',
-                                              alertBannerLocation:
-                                                  AlertBannerLocation.bottom,
-                                            );
-
-                                            Navigator.pop(
-                                              context,
-                                            ); // Close menu
-                                          },
-                                          child: Text('Delete'),
-                                        ),
-                                      ],
-                                    ),
-                                  );
+                                  _showDeletePlaylistBottomSheet(context);
                                 } else {
                                   showSnackBar(
                                     context,
@@ -771,6 +656,52 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                   S.of(context).goToArtist) {
                                 // Navigate to artist detail screen
                                 await _navigateToArtist(context);
+                              }
+                              else if (songItem.title ==
+                                  S.of(context).hideSong) {
+                                if (widget.currentSong?.id == null) {
+                                  showSnackBar(
+                                    context,
+                                    () {},
+                                    message: 'Unable to hide this song',
+                                    backgroundColor: Colors.red,
+                                    alertBannerLocation:
+                                        AlertBannerLocation.bottom,
+                                  );
+                                  return;
+                                }
+
+                                try {
+                                  context.read<SongsBloc>().add(
+                                        SongsEvent.hideSong(
+                                          widget.currentSong!.id!,
+                                        ),
+                                      );
+
+                                  if (mounted) {
+                                    showSnackBar(
+                                      context,
+                                      () {},
+                                      message:
+                                          '"${widget.currentSong!.title}" hidden',
+                                      alertBannerLocation:
+                                          AlertBannerLocation.bottom,
+                                    );
+                                  }
+                                } catch (e) {
+                                  showSnackBar(
+                                    context,
+                                    () {},
+                                    message: 'Failed to hide song: $e',
+                                    backgroundColor: Colors.red,
+                                    alertBannerLocation:
+                                        AlertBannerLocation.bottom,
+                                  );
+                                } finally {
+                                  if (Navigator.canPop(context)) {
+                                    Navigator.pop(context);
+                                  }
+                                }
                               }
                             },
                           ),
@@ -825,6 +756,260 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
           ),
           SizedBox(height: 25.h),
         ],
+      ),
+    );
+  }
+
+  void _showDeleteFromLibraryBottomSheet(BuildContext context) {
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+    final bottomPadding = viewInsets > 0
+        ? viewInsets + 16.h
+        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
+      ),
+      isScrollControlled: true,
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.only(
+          left: 16.w,
+          right: 16.w,
+          top: 10.h,
+          bottom: bottomPadding,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 30.h),
+            Texts(
+              S.of(context).deleteSong,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w500,
+              fontFamily: AppFonts.inter,
+              color: AppColors.textColor,
+            ),
+            SizedBox(height: 30.h),
+            Texts(
+              'Are you sure you want to delete "${widget.currentSong?.title}"?',
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w400,
+              fontFamily: AppFonts.inter,
+              color: AppColors.textColor,
+              align: TextAlign.center,
+            ),
+            SizedBox(height: 25.h),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(sheetContext),
+                    child: Container(
+                      height: 48.h,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Center(
+                        child: Texts(
+                          S.of(context).cancel,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: AppFonts.inter,
+                          color: AppColors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      Navigator.pop(sheetContext);
+                      if (widget.currentSong != null) {
+                        try {
+                          final songsBloc = context.read<SongsBloc>();
+                          songsBloc.add(
+                            SongsEvent.removeSong(
+                              widget.currentSong!.id!,
+                            ),
+                          );
+                          showSnackBar(
+                            context,
+                            () {},
+                            message: 'Song removed from library',
+                            alertBannerLocation: AlertBannerLocation.bottom,
+                          );
+                        } catch (e) {
+                          showSnackBar(
+                            context,
+                            () {},
+                            message: 'Failed to remove song: $e',
+                            backgroundColor: Colors.red,
+                            alertBannerLocation: AlertBannerLocation.bottom,
+                          );
+                        }
+                      }
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      height: 48.h,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryOrange,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Center(
+                        child: Texts(
+                          S.of(context).delete,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: AppFonts.inter,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showDeletePlaylistBottomSheet(BuildContext context) {
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+    final bottomPadding = viewInsets > 0
+        ? viewInsets + 16.h
+        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
+      ),
+      isScrollControlled: true,
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.only(
+          left: 16.w,
+          right: 16.w,
+          top: 10.h,
+          bottom: bottomPadding,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 30.h),
+            Texts(
+              S.of(context).deletePlaylist,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w500,
+              fontFamily: AppFonts.inter,
+              color: AppColors.textColor,
+            ),
+            SizedBox(height: 30.h),
+            Texts(
+              'Are you sure you want to delete the playlist?',
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w400,
+              fontFamily: AppFonts.inter,
+              color: AppColors.textColor,
+              align: TextAlign.center,
+            ),
+            SizedBox(height: 25.h),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(sheetContext),
+                    child: Container(
+                      height: 48.h,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Center(
+                        child: Texts(
+                          S.of(context).cancel,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: AppFonts.inter,
+                          color: AppColors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      final playlistBloc = context.read<PlaylistBloc>();
+                      playlistBloc.add(
+                        PlaylistEvent.deletePlaylist(
+                          int.parse(
+                            widget.systemKeyOrId!,
+                          ),
+                        ),
+                      );
+                      showSnackBar(
+                        context,
+                        () {},
+                        message: 'Playlist deleted successfully',
+                        alertBannerLocation: AlertBannerLocation.bottom,
+                      );
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      height: 48.h,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryOrange,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Center(
+                        child: Texts(
+                          S.of(context).delete,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: AppFonts.inter,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+          ],
+        ),
       ),
     );
   }

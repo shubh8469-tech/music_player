@@ -140,7 +140,7 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
       '''
       SELECT s.* FROM songs s
       INNER JOIN playlist_songs ps ON s.id = ps.song_id
-      WHERE ps.playlist_id = ?
+      WHERE ps.playlist_id = ? AND s.is_hidden = 0
       ORDER BY ps.position ASC
     ''',
       [playlistId],
@@ -163,22 +163,22 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
 
       if (key == 'most_played') {
         final res = await db.rawQuery(
-          "SELECT COUNT(*) as c FROM songs WHERE play_count > 0",
+          "SELECT COUNT(*) as c FROM songs WHERE play_count > 0 AND is_hidden = 0",
         );
         count = Sqflite.firstIntValue(res) ?? 0;
       } else if (key == 'recently_added') {
         final res = await db.rawQuery(
-          "SELECT COUNT(*) as c FROM songs WHERE datetime(created_time) >= datetime('now','-3 days')",
+          "SELECT COUNT(*) as c FROM songs WHERE datetime(created_time) >= datetime('now','-3 days') AND is_hidden = 0",
         );
         count = Sqflite.firstIntValue(res) ?? 0;
       } else if (key == 'recently_played') {
         final res = await db.rawQuery(
-          "SELECT COUNT(*) as c FROM songs WHERE last_played IS NOT NULL",
+          "SELECT COUNT(*) as c FROM songs WHERE last_played IS NOT NULL AND is_hidden = 0",
         );
         count = Sqflite.firstIntValue(res) ?? 0;
       } else if (key == 'favorites') {
         final res = await db.rawQuery(
-          "SELECT COUNT(*) as c FROM songs WHERE is_favorite = 1",
+          "SELECT COUNT(*) as c FROM songs WHERE is_favorite = 1 AND is_hidden = 0",
         );
         count = Sqflite.firstIntValue(res) ?? 0;
       }
@@ -203,7 +203,7 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
     if (systemKey == 'most_played') {
       final res = await db.rawQuery('''
         SELECT * FROM songs
-        WHERE play_count > 0
+        WHERE play_count > 0 AND is_hidden = 0
         ORDER BY play_count DESC, last_played IS NULL, last_played DESC
         ''');
       return res.map((row) => SongsModel.fromMap(row)).toList();
@@ -212,7 +212,7 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
     if (systemKey == 'recently_added') {
       final res = await db.rawQuery('''
         SELECT * FROM songs
-        WHERE datetime(created_time) >= datetime('now','-3 days')
+        WHERE datetime(created_time) >= datetime('now','-3 days') AND is_hidden = 0
         ORDER BY datetime(created_time) DESC
         ''');
       return res.map((row) => SongsModel.fromMap(row)).toList();
@@ -221,7 +221,7 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
     if (systemKey == 'recently_played') {
       final res = await db.rawQuery('''
         SELECT * FROM songs
-        WHERE last_played IS NOT NULL
+        WHERE last_played IS NOT NULL AND is_hidden = 0
         ORDER BY datetime(last_played) DESC
         ''');
       return res.map((row) => SongsModel.fromMap(row)).toList();
@@ -230,7 +230,7 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
     if (systemKey == 'favorites') {
       final res = await db.rawQuery('''
         SELECT * FROM songs
-        WHERE is_favorite = 1
+        WHERE is_favorite = 1 AND is_hidden = 0
         ORDER BY datetime(updated_time) DESC
         ''');
       return res.map((row) => SongsModel.fromMap(row)).toList();

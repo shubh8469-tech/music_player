@@ -17,6 +17,7 @@ class FolderRepositoryImpl implements FolderRepository {
       path: folder.path,
       songCount: folder.songCount,
       artworkPath: folder.artworkPath,
+      isHidden: folder.isHidden,
       createdTime: folder.createdTime,
       updatedTime: folder.updatedTime,
     );
@@ -24,13 +25,23 @@ class FolderRepositoryImpl implements FolderRepository {
   }
 
   @override
-  Future<List<Folder>> getAllFolders() async {
-    return await localDataSource.getAllFolders();
+  Future<List<Folder>> getAllFolders({bool includeHidden = false}) async {
+    return await localDataSource.getAllFolders(includeHidden: includeHidden);
+  }
+
+  @override
+  Future<List<Folder>> getHiddenFolders() async {
+    return await localDataSource.getHiddenFolders();
   }
 
   @override
   Future<Folder?> getFolderByName(String name) async {
     return await localDataSource.getFolderByName(name);
+  }
+
+  @override
+  Future<int> updateFolderHiddenStatus(int id, bool isHidden) async {
+    return await localDataSource.updateFolderHiddenStatus(id, isHidden);
   }
 
   @override

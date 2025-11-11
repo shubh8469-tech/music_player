@@ -5,6 +5,7 @@ import 'package:music_app/screens/tabs/library/songs/add_songs_screen.dart';
 import 'package:music_app/screens/tabs/library/playlists/create_playlist_screen.dart';
 import 'package:music_app/screens/tabs/library/playlists/playlist_detail_screen.dart';
 import 'package:music_app/screens/tabs/library/playlists/select_playlist_screen.dart';
+import 'package:music_app/screens/tabs/library/hidden_music/hidden_music_screen.dart';
 import 'package:music_app/screens/tabs/library/folders/folder_detail_screen.dart';
 import 'package:music_app/screens/tabs/library/folders/select_folder_screen.dart';
 import 'package:music_app/screens/tabs/library/artist/artist_detail_screen.dart';
@@ -39,6 +40,7 @@ enum AppRouteName {
   playlistDetail,
   folderDetail,
   selectFolder,
+  hiddenMusic,
   artistDetail,
   selectArtist,
   albumDetail,
@@ -82,6 +84,11 @@ final GoRouter appRouter = GoRouter(
           name: AppRouteName.library.name,
           path: 'library',
           builder: (context, state) => const LibraryScreen(),
+        ),
+        GoRoute(
+          name: AppRouteName.hiddenMusic.name,
+          path: 'hidden-music',
+          builder: (context, state) => const HiddenMusicScreen(),
         ),
         GoRoute(
           name: AppRouteName.importSongs.name,
