@@ -80,10 +80,10 @@ class SongsBloc extends Bloc<SongsEvent, SongsState> {
     on<_UpdateSongFavorite>((event, emit) async {
       try {
         // Get current songs
-        final allSongs =
-            await localDataSource.getAllSongs(includeHidden: true);
-        final songIndex =
-            allSongs.indexWhere((song) => song.id == event.songId);
+        final allSongs = await localDataSource.getAllSongs(includeHidden: true);
+        final songIndex = allSongs.indexWhere(
+          (song) => song.id == event.songId,
+        );
 
         if (songIndex != -1) {
           // Create updated song with new favorite status
@@ -117,6 +117,60 @@ class SongsBloc extends Bloc<SongsEvent, SongsState> {
       }
     });
 
+    on<_UpdateSongArtwork>((event, emit) async {
+      try {
+        final allSongs = await localDataSource.getAllSongs(includeHidden: true);
+        final songIndex = allSongs.indexWhere(
+          (song) => song.id == event.songId,
+        );
+
+        if (songIndex == -1) {
+          return;
+        }
+
+        final existingSong = allSongs[songIndex];
+        final updatedSong = SongsModel(
+          id: existingSong.id,
+          title: existingSong.title,
+          artist: existingSong.artist,
+          album: existingSong.album,
+          genre: existingSong.genre,
+          year: existingSong.year,
+          duration: existingSong.duration,
+          filePath: existingSong.filePath,
+          folder: existingSong.folder,
+          artwork_path: event.artworkPath,
+          createdTime: existingSong.createdTime,
+          updatedTime: DateTime.now().toIso8601String(),
+          playCount: existingSong.playCount,
+          lastPlayed: existingSong.lastPlayed,
+          isFavorite: existingSong.isFavorite,
+          isHidden: existingSong.isHidden,
+        );
+
+        await localDataSource.updateSong(updatedSong);
+        onLibraryRefresh?.call();
+        final visibleSongs = await localDataSource.getAllSongs();
+        emit(SongsState.loaded(visibleSongs));
+      } catch (e) {
+        emit(SongsState.error(e.toString()));
+      }
+    });
+
+    on<_UpdateSongDetails>((event, emit) async {
+      try {
+        emit(const SongsState.loading());
+
+        await localDataSource.updateSongWithRelations(event.song);
+        onLibraryRefresh?.call();
+
+        final songs = await localDataSource.getAllSongs();
+        emit(SongsState.loaded(songs));
+      } catch (e) {
+        emit(SongsState.error(e.toString()));
+      }
+    });
+
     on<_SortSongs>((event, emit) async {
       try {
         emit(const SongsState.loading());
@@ -127,29 +181,53 @@ class SongsBloc extends Bloc<SongsEvent, SongsState> {
 
         switch (event.sortIndex) {
           case 0: // Song Name
-            sortedSongs.sort((a, b) => isAscending ? a.title.toLowerCase().compareTo(b.title.toLowerCase()) : b.title.toLowerCase().compareTo(a.title.toLowerCase()));
+            sortedSongs.sort(
+              (a, b) => isAscending
+                  ? a.title.toLowerCase().compareTo(b.title.toLowerCase())
+                  : b.title.toLowerCase().compareTo(a.title.toLowerCase()),
+            );
             break;
           case 1: // Artist
             sortedSongs = List.from(songs)
               ..sort((a, b) {
-                final aArtist = a.artist == '<unknown>' ? 'zzz' : a.artist.toLowerCase();
-                final bArtist = b.artist == '<unknown>' ? 'zzz' : b.artist.toLowerCase();
-                return isAscending ? aArtist.toLowerCase().compareTo(bArtist.toLowerCase()) : bArtist.toLowerCase().compareTo(aArtist.toLowerCase());
+                final aArtist = a.artist == '<unknown>'
+                    ? 'zzz'
+                    : a.artist.toLowerCase();
+                final bArtist = b.artist == '<unknown>'
+                    ? 'zzz'
+                    : b.artist.toLowerCase();
+                return isAscending
+                    ? aArtist.toLowerCase().compareTo(bArtist.toLowerCase())
+                    : bArtist.toLowerCase().compareTo(aArtist.toLowerCase());
               });
             break;
           case 2: // Album
-            sortedSongs.sort((a, b) => isAscending ? a.album.toLowerCase().compareTo(b.album.toLowerCase()) : b.album.toLowerCase().compareTo(a.album.toLowerCase()));
+            sortedSongs.sort(
+              (a, b) => isAscending
+                  ? a.album.toLowerCase().compareTo(b.album.toLowerCase())
+                  : b.album.toLowerCase().compareTo(a.album.toLowerCase()),
+            );
             break;
           case 3: // Folder
             sortedSongs.sort(
-              (a, b) => isAscending ? a.folder!.toLowerCase().compareTo(b.folder!.toLowerCase()) : b.folder!.toLowerCase().compareTo(a.folder!.toLowerCase()),
+              (a, b) => isAscending
+                  ? a.folder!.toLowerCase().compareTo(b.folder!.toLowerCase())
+                  : b.folder!.toLowerCase().compareTo(a.folder!.toLowerCase()),
             );
             break;
           case 4: // Added Time
-            sortedSongs.sort((a, b) => isAscending ? a.createdTime.compareTo(b.createdTime) : b.createdTime.compareTo(a.createdTime));
+            sortedSongs.sort(
+              (a, b) => isAscending
+                  ? a.createdTime.compareTo(b.createdTime)
+                  : b.createdTime.compareTo(a.createdTime),
+            );
             break;
           case 5: // Play Count
-            sortedSongs.sort((a, b) => isAscending ? a.playCount.compareTo(b.playCount) : b.playCount.compareTo(a.playCount));
+            sortedSongs.sort(
+              (a, b) => isAscending
+                  ? a.playCount.compareTo(b.playCount)
+                  : b.playCount.compareTo(a.playCount),
+            );
             break;
           case 6: // Year
             sortedSongs.sort((a, b) {
@@ -159,7 +237,9 @@ class SongsBloc extends Bloc<SongsEvent, SongsState> {
               if (aYear == 0 && bYear == 0) return 0;
               if (aYear == 0) return 1;
               if (bYear == 0) return -1;
-              return isAscending ? aYear.compareTo(bYear) : bYear.compareTo(aYear);
+              return isAscending
+                  ? aYear.compareTo(bYear)
+                  : bYear.compareTo(aYear);
             });
             break;
           default:
@@ -169,7 +249,9 @@ class SongsBloc extends Bloc<SongsEvent, SongsState> {
         emit(SongsState.loaded(sortedSongs));
 
         // Optional: log to verify
-        log("Songs sorted by ${event.sortIndex} (${isAscending ? 'Ascending' : 'Descending'}):");
+        log(
+          "Songs sorted by ${event.sortIndex} (${isAscending ? 'Ascending' : 'Descending'}):",
+        );
         for (var s in sortedSongs) {
           log("----------------------------------");
           log("${s.title} - ${s.artist} - ${s.album}");

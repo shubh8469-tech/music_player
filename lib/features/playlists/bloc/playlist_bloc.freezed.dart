@@ -55,7 +55,7 @@ extension PlaylistEventPatterns on PlaylistEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _AddPlaylist value)?  addPlaylist,TResult Function( _AddSongToPlaylist value)?  addSongToPlaylist,TResult Function( _AddMultipleSongsToPlaylist value)?  addMultipleSongsToPlaylist,TResult Function( _RemoveSongFromPlaylist value)?  removeSongFromPlaylist,TResult Function( _RemoveMultipleSongsFromPlaylist value)?  removeMultipleSongsFromPlaylist,TResult Function( _FetchAllPlaylists value)?  fetchAllPlaylists,TResult Function( _RefreshPlaylists value)?  refreshPlaylists,TResult Function( _DeletePlaylist value)?  deletePlaylist,TResult Function( _FetchSongsForSystemPlaylist value)?  fetchSongsForSystemPlaylist,TResult Function( _GetFavoritesPlaylistId value)?  getFavoritesPlaylistId,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _AddPlaylist value)?  addPlaylist,TResult Function( _AddSongToPlaylist value)?  addSongToPlaylist,TResult Function( _AddMultipleSongsToPlaylist value)?  addMultipleSongsToPlaylist,TResult Function( _RemoveSongFromPlaylist value)?  removeSongFromPlaylist,TResult Function( _RemoveMultipleSongsFromPlaylist value)?  removeMultipleSongsFromPlaylist,TResult Function( _FetchAllPlaylists value)?  fetchAllPlaylists,TResult Function( _RefreshPlaylists value)?  refreshPlaylists,TResult Function( _DeletePlaylist value)?  deletePlaylist,TResult Function( _RenamePlaylist value)?  renamePlaylist,TResult Function( _FetchSongsForSystemPlaylist value)?  fetchSongsForSystemPlaylist,TResult Function( _GetFavoritesPlaylistId value)?  getFavoritesPlaylistId,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _AddPlaylist() when addPlaylist != null:
@@ -66,7 +66,8 @@ return removeSongFromPlaylist(_that);case _RemoveMultipleSongsFromPlaylist() whe
 return removeMultipleSongsFromPlaylist(_that);case _FetchAllPlaylists() when fetchAllPlaylists != null:
 return fetchAllPlaylists(_that);case _RefreshPlaylists() when refreshPlaylists != null:
 return refreshPlaylists(_that);case _DeletePlaylist() when deletePlaylist != null:
-return deletePlaylist(_that);case _FetchSongsForSystemPlaylist() when fetchSongsForSystemPlaylist != null:
+return deletePlaylist(_that);case _RenamePlaylist() when renamePlaylist != null:
+return renamePlaylist(_that);case _FetchSongsForSystemPlaylist() when fetchSongsForSystemPlaylist != null:
 return fetchSongsForSystemPlaylist(_that);case _GetFavoritesPlaylistId() when getFavoritesPlaylistId != null:
 return getFavoritesPlaylistId(_that);case _:
   return orElse();
@@ -86,7 +87,7 @@ return getFavoritesPlaylistId(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _AddPlaylist value)  addPlaylist,required TResult Function( _AddSongToPlaylist value)  addSongToPlaylist,required TResult Function( _AddMultipleSongsToPlaylist value)  addMultipleSongsToPlaylist,required TResult Function( _RemoveSongFromPlaylist value)  removeSongFromPlaylist,required TResult Function( _RemoveMultipleSongsFromPlaylist value)  removeMultipleSongsFromPlaylist,required TResult Function( _FetchAllPlaylists value)  fetchAllPlaylists,required TResult Function( _RefreshPlaylists value)  refreshPlaylists,required TResult Function( _DeletePlaylist value)  deletePlaylist,required TResult Function( _FetchSongsForSystemPlaylist value)  fetchSongsForSystemPlaylist,required TResult Function( _GetFavoritesPlaylistId value)  getFavoritesPlaylistId,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _AddPlaylist value)  addPlaylist,required TResult Function( _AddSongToPlaylist value)  addSongToPlaylist,required TResult Function( _AddMultipleSongsToPlaylist value)  addMultipleSongsToPlaylist,required TResult Function( _RemoveSongFromPlaylist value)  removeSongFromPlaylist,required TResult Function( _RemoveMultipleSongsFromPlaylist value)  removeMultipleSongsFromPlaylist,required TResult Function( _FetchAllPlaylists value)  fetchAllPlaylists,required TResult Function( _RefreshPlaylists value)  refreshPlaylists,required TResult Function( _DeletePlaylist value)  deletePlaylist,required TResult Function( _RenamePlaylist value)  renamePlaylist,required TResult Function( _FetchSongsForSystemPlaylist value)  fetchSongsForSystemPlaylist,required TResult Function( _GetFavoritesPlaylistId value)  getFavoritesPlaylistId,}){
 final _that = this;
 switch (_that) {
 case _AddPlaylist():
@@ -97,7 +98,8 @@ return removeSongFromPlaylist(_that);case _RemoveMultipleSongsFromPlaylist():
 return removeMultipleSongsFromPlaylist(_that);case _FetchAllPlaylists():
 return fetchAllPlaylists(_that);case _RefreshPlaylists():
 return refreshPlaylists(_that);case _DeletePlaylist():
-return deletePlaylist(_that);case _FetchSongsForSystemPlaylist():
+return deletePlaylist(_that);case _RenamePlaylist():
+return renamePlaylist(_that);case _FetchSongsForSystemPlaylist():
 return fetchSongsForSystemPlaylist(_that);case _GetFavoritesPlaylistId():
 return getFavoritesPlaylistId(_that);case _:
   throw StateError('Unexpected subclass');
@@ -116,7 +118,7 @@ return getFavoritesPlaylistId(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _AddPlaylist value)?  addPlaylist,TResult? Function( _AddSongToPlaylist value)?  addSongToPlaylist,TResult? Function( _AddMultipleSongsToPlaylist value)?  addMultipleSongsToPlaylist,TResult? Function( _RemoveSongFromPlaylist value)?  removeSongFromPlaylist,TResult? Function( _RemoveMultipleSongsFromPlaylist value)?  removeMultipleSongsFromPlaylist,TResult? Function( _FetchAllPlaylists value)?  fetchAllPlaylists,TResult? Function( _RefreshPlaylists value)?  refreshPlaylists,TResult? Function( _DeletePlaylist value)?  deletePlaylist,TResult? Function( _FetchSongsForSystemPlaylist value)?  fetchSongsForSystemPlaylist,TResult? Function( _GetFavoritesPlaylistId value)?  getFavoritesPlaylistId,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _AddPlaylist value)?  addPlaylist,TResult? Function( _AddSongToPlaylist value)?  addSongToPlaylist,TResult? Function( _AddMultipleSongsToPlaylist value)?  addMultipleSongsToPlaylist,TResult? Function( _RemoveSongFromPlaylist value)?  removeSongFromPlaylist,TResult? Function( _RemoveMultipleSongsFromPlaylist value)?  removeMultipleSongsFromPlaylist,TResult? Function( _FetchAllPlaylists value)?  fetchAllPlaylists,TResult? Function( _RefreshPlaylists value)?  refreshPlaylists,TResult? Function( _DeletePlaylist value)?  deletePlaylist,TResult? Function( _RenamePlaylist value)?  renamePlaylist,TResult? Function( _FetchSongsForSystemPlaylist value)?  fetchSongsForSystemPlaylist,TResult? Function( _GetFavoritesPlaylistId value)?  getFavoritesPlaylistId,}){
 final _that = this;
 switch (_that) {
 case _AddPlaylist() when addPlaylist != null:
@@ -127,7 +129,8 @@ return removeSongFromPlaylist(_that);case _RemoveMultipleSongsFromPlaylist() whe
 return removeMultipleSongsFromPlaylist(_that);case _FetchAllPlaylists() when fetchAllPlaylists != null:
 return fetchAllPlaylists(_that);case _RefreshPlaylists() when refreshPlaylists != null:
 return refreshPlaylists(_that);case _DeletePlaylist() when deletePlaylist != null:
-return deletePlaylist(_that);case _FetchSongsForSystemPlaylist() when fetchSongsForSystemPlaylist != null:
+return deletePlaylist(_that);case _RenamePlaylist() when renamePlaylist != null:
+return renamePlaylist(_that);case _FetchSongsForSystemPlaylist() when fetchSongsForSystemPlaylist != null:
 return fetchSongsForSystemPlaylist(_that);case _GetFavoritesPlaylistId() when getFavoritesPlaylistId != null:
 return getFavoritesPlaylistId(_that);case _:
   return null;
@@ -146,7 +149,7 @@ return getFavoritesPlaylistId(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String name)?  addPlaylist,TResult Function( int playlistId,  int songId,  int position)?  addSongToPlaylist,TResult Function( int playlistId,  List<int> songIds)?  addMultipleSongsToPlaylist,TResult Function( int playlistId,  int songId)?  removeSongFromPlaylist,TResult Function( int playlistId,  List<int> songIds)?  removeMultipleSongsFromPlaylist,TResult Function()?  fetchAllPlaylists,TResult Function()?  refreshPlaylists,TResult Function( int id)?  deletePlaylist,TResult Function( String systemKey)?  fetchSongsForSystemPlaylist,TResult Function()?  getFavoritesPlaylistId,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String name)?  addPlaylist,TResult Function( int playlistId,  int songId,  int position)?  addSongToPlaylist,TResult Function( int playlistId,  List<int> songIds)?  addMultipleSongsToPlaylist,TResult Function( int playlistId,  int songId)?  removeSongFromPlaylist,TResult Function( int playlistId,  List<int> songIds)?  removeMultipleSongsFromPlaylist,TResult Function()?  fetchAllPlaylists,TResult Function()?  refreshPlaylists,TResult Function( int id)?  deletePlaylist,TResult Function( int id,  String newName)?  renamePlaylist,TResult Function( String systemKey)?  fetchSongsForSystemPlaylist,TResult Function()?  getFavoritesPlaylistId,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AddPlaylist() when addPlaylist != null:
 return addPlaylist(_that.name);case _AddSongToPlaylist() when addSongToPlaylist != null:
@@ -156,7 +159,8 @@ return removeSongFromPlaylist(_that.playlistId,_that.songId);case _RemoveMultipl
 return removeMultipleSongsFromPlaylist(_that.playlistId,_that.songIds);case _FetchAllPlaylists() when fetchAllPlaylists != null:
 return fetchAllPlaylists();case _RefreshPlaylists() when refreshPlaylists != null:
 return refreshPlaylists();case _DeletePlaylist() when deletePlaylist != null:
-return deletePlaylist(_that.id);case _FetchSongsForSystemPlaylist() when fetchSongsForSystemPlaylist != null:
+return deletePlaylist(_that.id);case _RenamePlaylist() when renamePlaylist != null:
+return renamePlaylist(_that.id,_that.newName);case _FetchSongsForSystemPlaylist() when fetchSongsForSystemPlaylist != null:
 return fetchSongsForSystemPlaylist(_that.systemKey);case _GetFavoritesPlaylistId() when getFavoritesPlaylistId != null:
 return getFavoritesPlaylistId();case _:
   return orElse();
@@ -176,7 +180,7 @@ return getFavoritesPlaylistId();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String name)  addPlaylist,required TResult Function( int playlistId,  int songId,  int position)  addSongToPlaylist,required TResult Function( int playlistId,  List<int> songIds)  addMultipleSongsToPlaylist,required TResult Function( int playlistId,  int songId)  removeSongFromPlaylist,required TResult Function( int playlistId,  List<int> songIds)  removeMultipleSongsFromPlaylist,required TResult Function()  fetchAllPlaylists,required TResult Function()  refreshPlaylists,required TResult Function( int id)  deletePlaylist,required TResult Function( String systemKey)  fetchSongsForSystemPlaylist,required TResult Function()  getFavoritesPlaylistId,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String name)  addPlaylist,required TResult Function( int playlistId,  int songId,  int position)  addSongToPlaylist,required TResult Function( int playlistId,  List<int> songIds)  addMultipleSongsToPlaylist,required TResult Function( int playlistId,  int songId)  removeSongFromPlaylist,required TResult Function( int playlistId,  List<int> songIds)  removeMultipleSongsFromPlaylist,required TResult Function()  fetchAllPlaylists,required TResult Function()  refreshPlaylists,required TResult Function( int id)  deletePlaylist,required TResult Function( int id,  String newName)  renamePlaylist,required TResult Function( String systemKey)  fetchSongsForSystemPlaylist,required TResult Function()  getFavoritesPlaylistId,}) {final _that = this;
 switch (_that) {
 case _AddPlaylist():
 return addPlaylist(_that.name);case _AddSongToPlaylist():
@@ -186,7 +190,8 @@ return removeSongFromPlaylist(_that.playlistId,_that.songId);case _RemoveMultipl
 return removeMultipleSongsFromPlaylist(_that.playlistId,_that.songIds);case _FetchAllPlaylists():
 return fetchAllPlaylists();case _RefreshPlaylists():
 return refreshPlaylists();case _DeletePlaylist():
-return deletePlaylist(_that.id);case _FetchSongsForSystemPlaylist():
+return deletePlaylist(_that.id);case _RenamePlaylist():
+return renamePlaylist(_that.id,_that.newName);case _FetchSongsForSystemPlaylist():
 return fetchSongsForSystemPlaylist(_that.systemKey);case _GetFavoritesPlaylistId():
 return getFavoritesPlaylistId();case _:
   throw StateError('Unexpected subclass');
@@ -205,7 +210,7 @@ return getFavoritesPlaylistId();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String name)?  addPlaylist,TResult? Function( int playlistId,  int songId,  int position)?  addSongToPlaylist,TResult? Function( int playlistId,  List<int> songIds)?  addMultipleSongsToPlaylist,TResult? Function( int playlistId,  int songId)?  removeSongFromPlaylist,TResult? Function( int playlistId,  List<int> songIds)?  removeMultipleSongsFromPlaylist,TResult? Function()?  fetchAllPlaylists,TResult? Function()?  refreshPlaylists,TResult? Function( int id)?  deletePlaylist,TResult? Function( String systemKey)?  fetchSongsForSystemPlaylist,TResult? Function()?  getFavoritesPlaylistId,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String name)?  addPlaylist,TResult? Function( int playlistId,  int songId,  int position)?  addSongToPlaylist,TResult? Function( int playlistId,  List<int> songIds)?  addMultipleSongsToPlaylist,TResult? Function( int playlistId,  int songId)?  removeSongFromPlaylist,TResult? Function( int playlistId,  List<int> songIds)?  removeMultipleSongsFromPlaylist,TResult? Function()?  fetchAllPlaylists,TResult? Function()?  refreshPlaylists,TResult? Function( int id)?  deletePlaylist,TResult? Function( int id,  String newName)?  renamePlaylist,TResult? Function( String systemKey)?  fetchSongsForSystemPlaylist,TResult? Function()?  getFavoritesPlaylistId,}) {final _that = this;
 switch (_that) {
 case _AddPlaylist() when addPlaylist != null:
 return addPlaylist(_that.name);case _AddSongToPlaylist() when addSongToPlaylist != null:
@@ -215,7 +220,8 @@ return removeSongFromPlaylist(_that.playlistId,_that.songId);case _RemoveMultipl
 return removeMultipleSongsFromPlaylist(_that.playlistId,_that.songIds);case _FetchAllPlaylists() when fetchAllPlaylists != null:
 return fetchAllPlaylists();case _RefreshPlaylists() when refreshPlaylists != null:
 return refreshPlaylists();case _DeletePlaylist() when deletePlaylist != null:
-return deletePlaylist(_that.id);case _FetchSongsForSystemPlaylist() when fetchSongsForSystemPlaylist != null:
+return deletePlaylist(_that.id);case _RenamePlaylist() when renamePlaylist != null:
+return renamePlaylist(_that.id,_that.newName);case _FetchSongsForSystemPlaylist() when fetchSongsForSystemPlaylist != null:
 return fetchSongsForSystemPlaylist(_that.systemKey);case _GetFavoritesPlaylistId() when getFavoritesPlaylistId != null:
 return getFavoritesPlaylistId();case _:
   return null;
@@ -701,6 +707,74 @@ class __$DeletePlaylistCopyWithImpl<$Res>
   return _then(_DeletePlaylist(
 null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _RenamePlaylist implements PlaylistEvent {
+  const _RenamePlaylist(this.id, this.newName);
+  
+
+ final  int id;
+ final  String newName;
+
+/// Create a copy of PlaylistEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RenamePlaylistCopyWith<_RenamePlaylist> get copyWith => __$RenamePlaylistCopyWithImpl<_RenamePlaylist>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RenamePlaylist&&(identical(other.id, id) || other.id == id)&&(identical(other.newName, newName) || other.newName == newName));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,newName);
+
+@override
+String toString() {
+  return 'PlaylistEvent.renamePlaylist(id: $id, newName: $newName)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$RenamePlaylistCopyWith<$Res> implements $PlaylistEventCopyWith<$Res> {
+  factory _$RenamePlaylistCopyWith(_RenamePlaylist value, $Res Function(_RenamePlaylist) _then) = __$RenamePlaylistCopyWithImpl;
+@useResult
+$Res call({
+ int id, String newName
+});
+
+
+
+
+}
+/// @nodoc
+class __$RenamePlaylistCopyWithImpl<$Res>
+    implements _$RenamePlaylistCopyWith<$Res> {
+  __$RenamePlaylistCopyWithImpl(this._self, this._then);
+
+  final _RenamePlaylist _self;
+  final $Res Function(_RenamePlaylist) _then;
+
+/// Create a copy of PlaylistEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? id = null,Object? newName = null,}) {
+  return _then(_RenamePlaylist(
+null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,null == newName ? _self.newName : newName // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 

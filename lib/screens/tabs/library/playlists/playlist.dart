@@ -16,6 +16,8 @@ import '../../music_service.dart';
 import 'dart:async';
 
 import 'create_playlist_bottom_sheet.dart';
+import 'rename_playlist_bottom_sheet.dart';
+import '../../../../utills/snack_bar.dart';
 
 class PlayListScreen extends StatefulWidget {
   const PlayListScreen({super.key});
@@ -103,9 +105,8 @@ class _PlayListScreenState extends State<PlayListScreen> {
                           builder: (context, state) {
                             int total = 0;
                             state.maybeWhen(
-                              loaded:
-                                  (playlists, systemPlaylistSongs) =>
-                                      total = playlists.length,
+                              loaded: (playlists, systemPlaylistSongs) =>
+                                  total = playlists.length,
                               orElse: () {},
                             );
                             return Texts(
@@ -143,11 +144,10 @@ class _PlayListScreenState extends State<PlayListScreen> {
                 builder: (context, state) {
                   return state.maybeWhen(
                     loaded: (allPlaylists, systemPlaylistSongs) {
-                      final systemPlaylists =
-                          allPlaylists
-                              .where((p) => (p.isSystem == true))
-                              .cast<domain.Playlist>()
-                              .toList();
+                      final systemPlaylists = allPlaylists
+                          .where((p) => (p.isSystem == true))
+                          .cast<domain.Playlist>()
+                          .toList();
                       // Order
                       systemPlaylists.sort((a, b) {
                         final ai = systemOrder.indexOf(a.systemKey ?? '');
@@ -239,10 +239,9 @@ class _PlayListScreenState extends State<PlayListScreen> {
                 builder: (context, state) {
                   int userCount = 0;
                   state.maybeWhen(
-                    loaded:
-                        (all, systemPlaylistSongs) =>
-                            userCount =
-                                all.where((p) => (p.isSystem != true)).length,
+                    loaded: (all, systemPlaylistSongs) => userCount = all
+                        .where((p) => (p.isSystem != true))
+                        .length,
                     orElse: () {},
                   );
                   return Texts(
@@ -258,11 +257,10 @@ class _PlayListScreenState extends State<PlayListScreen> {
                 builder: (context, state) {
                   return state.maybeWhen(
                     loaded: (allPlaylists, systemPlaylistSongs) {
-                      final userPlaylists =
-                          allPlaylists
-                              .where((p) => (p.isSystem != true))
-                              .cast<domain.Playlist>()
-                              .toList();
+                      final userPlaylists = allPlaylists
+                          .where((p) => (p.isSystem != true))
+                          .cast<domain.Playlist>()
+                          .toList();
                       return Column(
                         children: List.generate(userPlaylists.length, (index) {
                           final p = userPlaylists[index];
@@ -289,7 +287,9 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                   'playlist': p,
                                   'assetIcon': Assets.svgMusicIcon,
                                   'colors': [
-                                    AppColors.primaryOrange.withValues(alpha: 0.21),
+                                    AppColors.primaryOrange.withValues(
+                                      alpha: 0.21,
+                                    ),
                                     AppColors.primaryOrange,
                                   ],
                                 },
@@ -297,7 +297,6 @@ class _PlayListScreenState extends State<PlayListScreen> {
                             },
                             onPlayTap: () {
                               showModalBottomSheet(
-
                                 context: context,
                                 backgroundColor: Colors.white,
                                 elevation: 0,
@@ -313,11 +312,46 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                     playlist: p,
                                     playlistIconAsset: Assets.svgMusicIcon,
                                     playlistGradientColors: [
-                                      AppColors.primaryOrange.withValues(alpha: 0.21),
+                                      AppColors.primaryOrange.withValues(
+                                        alpha: 0.21,
+                                      ),
                                       AppColors.primaryOrange,
                                     ],
                                     isSystemPlaylist: false,
                                     systemKeyOrId: p.id.toString(),
+                                    onRename: () async {
+                                      final result =
+                                          await showModalBottomSheet<String>(
+                                            context: context,
+                                            backgroundColor: Colors.white,
+                                            elevation: 0,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.vertical(
+                                                    top: Radius.circular(40.r),
+                                                  ),
+                                            ),
+                                            isScrollControlled: true,
+                                            builder: (_) => BlocProvider.value(
+                                              value: context
+                                                  .read<PlaylistBloc>(),
+                                              child: RenamePlaylistBottomSheet(
+                                                playlist: p,
+                                              ),
+                                            ),
+                                          );
+                                      if (!mounted) return;
+                                      if (result != null && result.isNotEmpty) {
+                                        showSnackBar(
+                                          context,
+                                          () {},
+                                          message:
+                                              'Playlist renamed successfully',
+                                          alertBannerLocation:
+                                              AlertBannerLocation.bottom,
+                                        );
+                                      }
+                                    },
                                   ),
                                 ),
                               );

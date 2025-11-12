@@ -7,6 +7,7 @@ abstract class PlaylistLocalDataSource {
   Future<int> insertPlaylist(PlaylistModel playlist);
   Future<List<PlaylistModel>> getAllPlaylists();
   Future<int> deletePlaylist(int id);
+  Future<void> renamePlaylist(int id, String newName);
   Future<void> addSongToPlaylist(int playlistId, int songId, int position);
   Future<void> addMultipleSongsToPlaylist(int playlistId, List<int> songIds);
   Future<void> removeSongFromPlaylist(int playlistId, int songId);
@@ -47,11 +48,23 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
 
   @override
   Future<int> deletePlaylist(int id) async {
-
-    await db.delete('playlist_songs', where: 'playlist_id = ?', whereArgs: [id]);
+    await db.delete(
+      'playlist_songs',
+      where: 'playlist_id = ?',
+      whereArgs: [id],
+    );
 
     return await db.delete('playlists', where: 'id = ?', whereArgs: [id]);
+  }
 
+  @override
+  Future<void> renamePlaylist(int id, String newName) async {
+    await db.update(
+      'playlists',
+      {'name': newName, 'updated_time': DateTime.now().toIso8601String()},
+      where: 'id = ? AND is_system = 0',
+      whereArgs: [id],
+    );
   }
 
   /// --------------------------

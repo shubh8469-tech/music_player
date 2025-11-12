@@ -6,6 +6,7 @@ abstract class PlaylistRepository {
   Future<void> addPlaylist(String name);
   Future<List<Playlist>> fetchAllPlaylists();
   Future<void> deletePlaylist(int id);
+  Future<void> renamePlaylist(int id, String newName);
 
   /// 🎵 Playlist songs
   Future<void> addSongToPlaylist(int playlistId, int songId, int position);

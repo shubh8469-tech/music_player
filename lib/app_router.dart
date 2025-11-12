@@ -13,6 +13,7 @@ import 'package:music_app/screens/tabs/library/artist/select_artist_screen.dart'
 import 'package:music_app/screens/tabs/library/albums/album_detail_screen.dart';
 import 'package:music_app/screens/tabs/library/albums/select_album_screen.dart';
 
+import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'screens/Splash&Setup/permission.dart';
 import 'screens/Splash&Setup/splashScreen.dart';
 import 'screens/Splash&Setup/sync_progress.dart';
@@ -131,7 +132,17 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           name: AppRouteName.editSongDetails.name,
           path: 'edit-song',
-          builder: (context, state) => const EditSongDetailsScreen(),
+          builder: (context, state) {
+            final song = state.extra as SongsModel?;
+            if (song == null) {
+              return const Scaffold(
+                body: Center(
+                  child: Text('No song selected for editing'),
+                ),
+              );
+            }
+            return EditSongDetailsScreen(song: song);
+          },
         ),
         GoRoute(
           name: AppRouteName.selectSong.name,

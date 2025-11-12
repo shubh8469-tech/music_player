@@ -30,6 +30,7 @@ import 'package:music_app/l10n/l10n.dart';
 import 'package:music_app/screens/play_song/playing_song_screen.dart';
 import 'package:music_app/screens/tabs/music_service.dart';
 import 'package:music_app/screens/play_song/widget/playlist_bottomsheet.dart';
+import 'package:music_app/screens/tabs/library/playlists/rename_playlist_bottom_sheet.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
 import 'package:music_app/utills/globals.dart';
@@ -170,7 +171,7 @@ class _SearchScreenState extends State<SearchScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 12.h,),
+            SizedBox(height: 12.h),
             Container(
               color: Colors.white,
               padding: EdgeInsets.symmetric(horizontal: 0.w),
@@ -257,20 +258,20 @@ class _SearchHeader extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(13.w, 20.h, 20.w, 20.h),
           child: Row(
             children: [
-              SizedBox(
-                height: 40.r,
-                width: 40.r,
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: onBackTap,
-                  icon: Icon(
-                    Icons.arrow_back_ios_new,
-                    color: Colors.white,
-                    size: 20.r,
-                  ),
-                ),
-              ),
-              SizedBox(width: 6.w),
+              // SizedBox(
+              //   height: 40.r,
+              //   width: 40.r,
+              //   child: IconButton(
+              //     padding: EdgeInsets.zero,
+              //     onPressed: onBackTap,
+              //     icon: Icon(
+              //       Icons.arrow_back_ios_new,
+              //       color: Colors.white,
+              //       size: 20.r,
+              //     ),
+              //   ),
+              // ),
+              // SizedBox(width: 6.w),
               Expanded(
                 child: Container(
                   height: 55.h,
@@ -281,7 +282,7 @@ class _SearchHeader extends StatelessWidget {
                   child: Row(
                     children: [
                       SizedBox(width: 16.w),
-                      Icon(Icons.search, color: Colors.white, size: 30.r,  ),
+                      Icon(Icons.search, color: Colors.white, size: 30.r),
                       SizedBox(width: 12.w),
                       Expanded(
                         child: TextField(
@@ -545,7 +546,10 @@ class _PlaylistsSection extends StatelessWidget {
           loaded: (playlists, __) {
             final filtered = _filterPlaylists(playlists, query);
             final visible = limit != null
-                ? filtered.where((element) => element.systemKey == null,).take(limit!).toList()
+                ? filtered
+                      .where((element) => element.systemKey == null)
+                      .take(limit!)
+                      .toList()
                 : filtered;
 
             if (visible.isEmpty) {
@@ -620,8 +624,41 @@ class _PlaylistsSection extends StatelessWidget {
                           playlistIconAsset: iconAsset,
                           playlistGradientColors: gradientColors,
                           isSystemPlaylist: isSystem,
-                          systemKeyOrId:
-                              isSystem ? systemKey : playlist.id?.toString() ?? '',
+                          systemKeyOrId: isSystem
+                              ? systemKey
+                              : playlist.id?.toString() ?? '',
+                          onRename: isSystem
+                              ? null
+                              : () async {
+                                  final result =
+                                      await showModalBottomSheet<String>(
+                                        context: context,
+                                        backgroundColor: Colors.white,
+                                        elevation: 0,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(40.r),
+                                          ),
+                                        ),
+                                        isScrollControlled: true,
+                                        builder: (_) => BlocProvider.value(
+                                          value: context.read<PlaylistBloc>(),
+                                          child: RenamePlaylistBottomSheet(
+                                            playlist: playlist,
+                                          ),
+                                        ),
+                                      );
+                                  if (!context.mounted) return;
+                                  if (result != null && result.isNotEmpty) {
+                                    showSnackBar(
+                                      context,
+                                      () {},
+                                      message: 'Playlist renamed successfully',
+                                      alertBannerLocation:
+                                          AlertBannerLocation.bottom,
+                                    );
+                                  }
+                                },
                         ),
                       ),
                     );
@@ -1228,12 +1265,16 @@ class _FolderActionSheet extends StatelessWidget {
 
   List<SongMenuItem> _buildFolderMenuItems(BuildContext context) {
     final localization = S.of(context);
-    final hideTitle =
-        folder.isHidden ? localization.unhideFolder : localization.hideFolder;
+    final hideTitle = folder.isHidden
+        ? localization.unhideFolder
+        : localization.hideFolder;
 
     return [
       SongMenuItem(icon: Assets.svgPlayBlackBorder, title: localization.play),
-      SongMenuItem(icon: Assets.svgIcMenuPlaynext, title: localization.playNext),
+      SongMenuItem(
+        icon: Assets.svgIcMenuPlaynext,
+        title: localization.playNext,
+      ),
       SongMenuItem(icon: Assets.svgIcMenuQueue, title: localization.addToQueue),
       SongMenuItem(
         icon: Assets.svgIcMenuPlaylist,
@@ -1254,8 +1295,9 @@ class _FolderActionSheet extends StatelessWidget {
       return;
     }
     try {
-      final folderSongs =
-          (await _repo.getSongsForFolder(folder.id!)).cast<SongsModel>();
+      final folderSongs = (await _repo.getSongsForFolder(
+        folder.id!,
+      )).cast<SongsModel>();
 
       if (folderSongs.isEmpty) {
         showSnackBar(
@@ -1297,8 +1339,9 @@ class _FolderActionSheet extends StatelessWidget {
       return;
     }
     try {
-      final folderSongs =
-          (await _repo.getSongsForFolder(folder.id!)).cast<SongsModel>();
+      final folderSongs = (await _repo.getSongsForFolder(
+        folder.id!,
+      )).cast<SongsModel>();
 
       if (folderSongs.isEmpty) {
         showSnackBar(
@@ -1361,8 +1404,9 @@ class _FolderActionSheet extends StatelessWidget {
       return;
     }
     try {
-      final folderSongs =
-          (await _repo.getSongsForFolder(folder.id!)).cast<SongsModel>();
+      final folderSongs = (await _repo.getSongsForFolder(
+        folder.id!,
+      )).cast<SongsModel>();
 
       if (folderSongs.isEmpty) {
         showSnackBar(
@@ -1418,8 +1462,9 @@ class _FolderActionSheet extends StatelessWidget {
     }
     try {
       final playlistBloc = context.read<PlaylistBloc>();
-      final folderSongs =
-          (await _repo.getSongsForFolder(folder.id!)).cast<SongsModel>();
+      final folderSongs = (await _repo.getSongsForFolder(
+        folder.id!,
+      )).cast<SongsModel>();
 
       if (folderSongs.isEmpty) {
         showSnackBar(
@@ -1454,10 +1499,7 @@ class _FolderActionSheet extends StatelessWidget {
     }
   }
 
-  Future<void> _toggleFolderHidden(
-    BuildContext context,
-    bool hide,
-  ) async {
+  Future<void> _toggleFolderHidden(BuildContext context, bool hide) async {
     if (folder.id == null) return;
 
     try {
@@ -1675,8 +1717,9 @@ class _AlbumActionSheet extends StatelessWidget {
       return;
     }
     try {
-      final albumSongs =
-          (await _repo.getSongsForAlbum(album.id!)).cast<SongsModel>();
+      final albumSongs = (await _repo.getSongsForAlbum(
+        album.id!,
+      )).cast<SongsModel>();
 
       if (albumSongs.isEmpty) {
         showSnackBar(
@@ -1718,8 +1761,9 @@ class _AlbumActionSheet extends StatelessWidget {
       return;
     }
     try {
-      final albumSongs =
-          (await _repo.getSongsForAlbum(album.id!)).cast<SongsModel>();
+      final albumSongs = (await _repo.getSongsForAlbum(
+        album.id!,
+      )).cast<SongsModel>();
 
       if (albumSongs.isEmpty) {
         showSnackBar(
@@ -1782,8 +1826,9 @@ class _AlbumActionSheet extends StatelessWidget {
       return;
     }
     try {
-      final albumSongs =
-          (await _repo.getSongsForAlbum(album.id!)).cast<SongsModel>();
+      final albumSongs = (await _repo.getSongsForAlbum(
+        album.id!,
+      )).cast<SongsModel>();
 
       if (albumSongs.isEmpty) {
         showSnackBar(
@@ -1839,8 +1884,9 @@ class _AlbumActionSheet extends StatelessWidget {
     }
     try {
       final playlistBloc = context.read<PlaylistBloc>();
-      final albumSongs =
-          (await _repo.getSongsForAlbum(album.id!)).cast<SongsModel>();
+      final albumSongs = (await _repo.getSongsForAlbum(
+        album.id!,
+      )).cast<SongsModel>();
 
       if (albumSongs.isEmpty) {
         showSnackBar(
@@ -2065,8 +2111,9 @@ class _ArtistActionSheet extends StatelessWidget {
       return;
     }
     try {
-      final artistSongs =
-          (await _repo.getSongsForArtist(artist.id!)).cast<SongsModel>();
+      final artistSongs = (await _repo.getSongsForArtist(
+        artist.id!,
+      )).cast<SongsModel>();
 
       if (artistSongs.isEmpty) {
         showSnackBar(
@@ -2108,8 +2155,9 @@ class _ArtistActionSheet extends StatelessWidget {
       return;
     }
     try {
-      final artistSongs =
-          (await _repo.getSongsForArtist(artist.id!)).cast<SongsModel>();
+      final artistSongs = (await _repo.getSongsForArtist(
+        artist.id!,
+      )).cast<SongsModel>();
 
       if (artistSongs.isEmpty) {
         showSnackBar(
@@ -2172,8 +2220,9 @@ class _ArtistActionSheet extends StatelessWidget {
       return;
     }
     try {
-      final artistSongs =
-          (await _repo.getSongsForArtist(artist.id!)).cast<SongsModel>();
+      final artistSongs = (await _repo.getSongsForArtist(
+        artist.id!,
+      )).cast<SongsModel>();
 
       if (artistSongs.isEmpty) {
         showSnackBar(
@@ -2229,8 +2278,9 @@ class _ArtistActionSheet extends StatelessWidget {
     }
     try {
       final playlistBloc = context.read<PlaylistBloc>();
-      final artistSongs =
-          (await _repo.getSongsForArtist(artist.id!)).cast<SongsModel>();
+      final artistSongs = (await _repo.getSongsForArtist(
+        artist.id!,
+      )).cast<SongsModel>();
 
       if (artistSongs.isEmpty) {
         showSnackBar(

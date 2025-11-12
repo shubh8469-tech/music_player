@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS songs (
     play_count INTEGER NOT NULL DEFAULT 0,
     last_played DATETIME,
     is_favorite INTEGER NOT NULL DEFAULT 0,
+    is_hidden INTEGER NOT NULL DEFAULT 0,
     created_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')),
     updated_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))
 );
@@ -146,6 +147,7 @@ CREATE TABLE IF NOT EXISTS folders (
     name TEXT NOT NULL UNIQUE,
     path TEXT NOT NULL,
     song_count INTEGER NOT NULL DEFAULT 0,
+    is_hidden INTEGER NOT NULL DEFAULT 0,
     artwork_path TEXT,
     created_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')),
     updated_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))

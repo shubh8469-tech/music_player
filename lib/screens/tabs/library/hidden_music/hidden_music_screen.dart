@@ -177,13 +177,23 @@ class _HiddenMusicScreenState extends State<HiddenMusicScreen>
       body: Column(
         children: [
           Container(
-            color: AppColors.primaryOrange,
+            color: AppColors.white,
             child: TabBar(
               controller: _tabController,
-              indicatorColor: AppColors.white,
-              labelColor: AppColors.white,
-              unselectedLabelColor: AppColors.white.withValues(alpha: 0.7),
+              indicatorColor: AppColors.primaryOrange,
+              labelColor: AppColors.textColor,
+              unselectedLabelColor: AppColors.textColor,
               indicatorWeight: 3,
+              indicatorPadding: EdgeInsets.zero,
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicator: UnderlineTabIndicator(
+                borderSide: BorderSide(
+                  width: 3.0.w,
+                  color: AppColors.primaryOrange,
+                ),
+                // insets: EdgeInsets.symmetric(horizontal: -65.w),
+              ),
+              dividerColor: Colors.transparent,
               tabs: const [
                 Tab(text: 'SONGS'),
                 Tab(text: 'FOLDERS'),

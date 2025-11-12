@@ -36,6 +36,11 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
     await localDataSource.deletePlaylist(id);
   }
 
+  @override
+  Future<void> renamePlaylist(int id, String newName) async {
+    await localDataSource.renamePlaylist(id, newName);
+  }
+
   /// 🎵 Playlist songs handling
   @override
   Future<void> addSongToPlaylist(int playlistId, int songId, int position) {

@@ -55,6 +55,7 @@ dependencies:
   shared_preferences: ^2.3.5
   file_picker: ^8.1.4
   metadata_god: ^1.1.0
+  crop_your_image: ^1.0.6
 
 
 dev_dependencies:

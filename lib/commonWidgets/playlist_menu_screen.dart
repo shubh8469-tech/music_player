@@ -7,6 +7,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:music_app/commonWidgets/textWidget.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/themes/font.dart';
+import '../app_router.dart';
 import '../core/di/injection.dart';
 import '../features/playlists/bloc/playlist_bloc.dart';
 import '../features/playlists/domain/entities/playlist.dart' as domain;
@@ -25,6 +26,7 @@ class PlaylistMenuScreen extends StatefulWidget {
   final List<Color> playlistGradientColors;
   final bool isSystemPlaylist;
   final String systemKeyOrId;
+  final Future<void> Function()? onRename;
 
   const PlaylistMenuScreen({
     super.key,
@@ -33,6 +35,7 @@ class PlaylistMenuScreen extends StatefulWidget {
     required this.playlistGradientColors,
     required this.isSystemPlaylist,
     required this.systemKeyOrId,
+    this.onRename,
   });
 
   @override
@@ -57,10 +60,7 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
             children: [
               // Playlist Header
               Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 16.w,
-                  vertical: 12.h,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 child: MusicListTile(
                   margin: 7.w,
                   height: 66.h,
@@ -152,10 +152,7 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
                       width: 1,
                     ),
                   ),
-                  margin: EdgeInsets.symmetric(
-                    horizontal: 15.w,
-                    vertical: 8.h,
-                  ),
+                  margin: EdgeInsets.symmetric(horizontal: 15.w, vertical: 8.h),
                   height: 50.w,
                   child: Texts(
                     S.of(context).cancel,
@@ -168,10 +165,9 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
                 ),
               ),
 
-              SizedBox(height: 25.h,)
+              SizedBox(height: 25.h),
             ],
           ),
-
         ],
       ),
     );
@@ -184,15 +180,8 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
   }) {
     return ListTile(
       dense: true,
-      visualDensity: VisualDensity(
-        horizontal: 0.w,
-        vertical: 0.h,
-      ),
-      leading: SvgPicture.asset(
-        icon,
-        height: 24,
-        width: 24,
-      ),
+      visualDensity: VisualDensity(horizontal: 0.w, vertical: 0.h),
+      leading: SvgPicture.asset(icon, height: 24, width: 24),
       title: Texts(
         title,
         fontSize: 16.sp,
@@ -205,10 +194,7 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
 
   Widget _buildDivider() {
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: 15.w,
-        vertical: 10.h,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
       child: Divider(
         height: 1,
         thickness: 1,
@@ -230,7 +216,9 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
         _songs = await _repo.getSongsForSystemPlaylist(widget.systemKeyOrId);
       } else {
         log('Playing songs from playlist ${widget.systemKeyOrId}');
-        _songs = await _repo.getSongsForPlaylist(int.parse(widget.systemKeyOrId));
+        _songs = await _repo.getSongsForPlaylist(
+          int.parse(widget.systemKeyOrId),
+        );
       }
 
       if (_songs.isEmpty) {
@@ -282,7 +270,9 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
         _songs = await _repo.getSongsForSystemPlaylist(widget.systemKeyOrId);
       } else {
         log('Playing next songs from playlist ${widget.systemKeyOrId}');
-        _songs = await _repo.getSongsForPlaylist(int.parse(widget.systemKeyOrId));
+        _songs = await _repo.getSongsForPlaylist(
+          int.parse(widget.systemKeyOrId),
+        );
       }
 
       if (_songs.isEmpty) {
@@ -354,7 +344,9 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
         _songs = await _repo.getSongsForSystemPlaylist(widget.systemKeyOrId);
       } else {
         log('Fetching songs for playlist ${widget.systemKeyOrId}');
-        _songs = await _repo.getSongsForPlaylist(int.parse(widget.systemKeyOrId));
+        _songs = await _repo.getSongsForPlaylist(
+          int.parse(widget.systemKeyOrId),
+        );
       }
 
       if (_songs.isEmpty) {
@@ -410,7 +402,9 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
         _songs = await _repo.getSongsForSystemPlaylist(widget.systemKeyOrId);
       } else {
         log('Fetching songs for playlist ${widget.systemKeyOrId}');
-        _songs = await _repo.getSongsForPlaylist(int.parse(widget.systemKeyOrId));
+        _songs = await _repo.getSongsForPlaylist(
+          int.parse(widget.systemKeyOrId),
+        );
       }
 
       if (_songs.isEmpty) {
@@ -451,14 +445,24 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
 
   // Handle Rename
   void _handleRename() {
+    final renameCallback = widget.onRename;
+    final isSystemPlaylist = widget.isSystemPlaylist;
     Navigator.pop(context);
-    // TODO: Implement rename functionality
-    showSnackBar(
-      context,
-      () {},
-      message: "Rename feature coming soon",
-      alertBannerLocation: AlertBannerLocation.bottom,
-    );
+    Future.microtask(() {
+      if (isSystemPlaylist) {
+        final rootContext = rootNavigatorKey.currentContext;
+        if (rootContext != null) {
+          showSnackBar(
+            rootContext,
+            () {},
+            message: "System playlist cannot be renamed",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
+        return;
+      }
+      renameCallback?.call();
+    });
   }
 
   // Handle Change Cover

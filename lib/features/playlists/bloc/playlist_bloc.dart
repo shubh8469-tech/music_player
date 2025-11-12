@@ -53,7 +53,31 @@ class PlaylistBloc extends Bloc<PlaylistEvent, PlaylistState> {
         final systemPlaylistSongs = <String, List<SongsModel>>{
           'recently_played': songs,
         };
-        emit(PlaylistState.loaded(playlist, systemPlaylistSongs: systemPlaylistSongs));
+        emit(
+          PlaylistState.loaded(
+            playlist,
+            systemPlaylistSongs: systemPlaylistSongs,
+          ),
+        );
+      } catch (e) {
+        emit(PlaylistState.error(e.toString()));
+      }
+    });
+
+    on<_RenamePlaylist>((event, emit) async {
+      try {
+        final previousSystemSongs = state.maybeWhen(
+          loaded: (_, systemPlaylistSongs) => systemPlaylistSongs,
+          orElse: () => null,
+        );
+        await repository.renamePlaylist(event.id, event.newName);
+        final playlists = await repository.fetchAllPlaylists();
+        emit(
+          PlaylistState.loaded(
+            playlists,
+            systemPlaylistSongs: previousSystemSongs,
+          ),
+        );
       } catch (e) {
         emit(PlaylistState.error(e.toString()));
       }

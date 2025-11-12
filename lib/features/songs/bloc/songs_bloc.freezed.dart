@@ -55,7 +55,7 @@ extension SongsEventPatterns on SongsEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _AddSong value)?  addSong,TResult Function( _GetAllSongs value)?  getAllSongs,TResult Function( _RemoveSong value)?  removeSong,TResult Function( _ShuffleSongs value)?  shuffleSongs,TResult Function( _UpdateSongFavorite value)?  updateSongFavorite,TResult Function( _HideSong value)?  hideSong,TResult Function( _UnhideSong value)?  unhideSong,TResult Function( _SortSongs value)?  sortSongs,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _AddSong value)?  addSong,TResult Function( _GetAllSongs value)?  getAllSongs,TResult Function( _RemoveSong value)?  removeSong,TResult Function( _ShuffleSongs value)?  shuffleSongs,TResult Function( _UpdateSongFavorite value)?  updateSongFavorite,TResult Function( _HideSong value)?  hideSong,TResult Function( _UnhideSong value)?  unhideSong,TResult Function( _UpdateSongDetails value)?  updateSongDetails,TResult Function( _SortSongs value)?  sortSongs,TResult Function( _UpdateSongArtwork value)?  updateSongArtwork,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _AddSong() when addSong != null:
@@ -65,8 +65,10 @@ return removeSong(_that);case _ShuffleSongs() when shuffleSongs != null:
 return shuffleSongs(_that);case _UpdateSongFavorite() when updateSongFavorite != null:
 return updateSongFavorite(_that);case _HideSong() when hideSong != null:
 return hideSong(_that);case _UnhideSong() when unhideSong != null:
-return unhideSong(_that);case _SortSongs() when sortSongs != null:
-return sortSongs(_that);case _:
+return unhideSong(_that);case _UpdateSongDetails() when updateSongDetails != null:
+return updateSongDetails(_that);case _SortSongs() when sortSongs != null:
+return sortSongs(_that);case _UpdateSongArtwork() when updateSongArtwork != null:
+return updateSongArtwork(_that);case _:
   return orElse();
 
 }
@@ -84,7 +86,7 @@ return sortSongs(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _AddSong value)  addSong,required TResult Function( _GetAllSongs value)  getAllSongs,required TResult Function( _RemoveSong value)  removeSong,required TResult Function( _ShuffleSongs value)  shuffleSongs,required TResult Function( _UpdateSongFavorite value)  updateSongFavorite,required TResult Function( _HideSong value)  hideSong,required TResult Function( _UnhideSong value)  unhideSong,required TResult Function( _SortSongs value)  sortSongs,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _AddSong value)  addSong,required TResult Function( _GetAllSongs value)  getAllSongs,required TResult Function( _RemoveSong value)  removeSong,required TResult Function( _ShuffleSongs value)  shuffleSongs,required TResult Function( _UpdateSongFavorite value)  updateSongFavorite,required TResult Function( _HideSong value)  hideSong,required TResult Function( _UnhideSong value)  unhideSong,required TResult Function( _UpdateSongDetails value)  updateSongDetails,required TResult Function( _SortSongs value)  sortSongs,required TResult Function( _UpdateSongArtwork value)  updateSongArtwork,}){
 final _that = this;
 switch (_that) {
 case _AddSong():
@@ -94,8 +96,10 @@ return removeSong(_that);case _ShuffleSongs():
 return shuffleSongs(_that);case _UpdateSongFavorite():
 return updateSongFavorite(_that);case _HideSong():
 return hideSong(_that);case _UnhideSong():
-return unhideSong(_that);case _SortSongs():
-return sortSongs(_that);case _:
+return unhideSong(_that);case _UpdateSongDetails():
+return updateSongDetails(_that);case _SortSongs():
+return sortSongs(_that);case _UpdateSongArtwork():
+return updateSongArtwork(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -112,7 +116,7 @@ return sortSongs(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _AddSong value)?  addSong,TResult? Function( _GetAllSongs value)?  getAllSongs,TResult? Function( _RemoveSong value)?  removeSong,TResult? Function( _ShuffleSongs value)?  shuffleSongs,TResult? Function( _UpdateSongFavorite value)?  updateSongFavorite,TResult? Function( _HideSong value)?  hideSong,TResult? Function( _UnhideSong value)?  unhideSong,TResult? Function( _SortSongs value)?  sortSongs,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _AddSong value)?  addSong,TResult? Function( _GetAllSongs value)?  getAllSongs,TResult? Function( _RemoveSong value)?  removeSong,TResult? Function( _ShuffleSongs value)?  shuffleSongs,TResult? Function( _UpdateSongFavorite value)?  updateSongFavorite,TResult? Function( _HideSong value)?  hideSong,TResult? Function( _UnhideSong value)?  unhideSong,TResult? Function( _UpdateSongDetails value)?  updateSongDetails,TResult? Function( _SortSongs value)?  sortSongs,TResult? Function( _UpdateSongArtwork value)?  updateSongArtwork,}){
 final _that = this;
 switch (_that) {
 case _AddSong() when addSong != null:
@@ -122,8 +126,10 @@ return removeSong(_that);case _ShuffleSongs() when shuffleSongs != null:
 return shuffleSongs(_that);case _UpdateSongFavorite() when updateSongFavorite != null:
 return updateSongFavorite(_that);case _HideSong() when hideSong != null:
 return hideSong(_that);case _UnhideSong() when unhideSong != null:
-return unhideSong(_that);case _SortSongs() when sortSongs != null:
-return sortSongs(_that);case _:
+return unhideSong(_that);case _UpdateSongDetails() when updateSongDetails != null:
+return updateSongDetails(_that);case _SortSongs() when sortSongs != null:
+return sortSongs(_that);case _UpdateSongArtwork() when updateSongArtwork != null:
+return updateSongArtwork(_that);case _:
   return null;
 
 }
@@ -140,7 +146,7 @@ return sortSongs(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( SongsModel song)?  addSong,TResult Function()?  getAllSongs,TResult Function( int id)?  removeSong,TResult Function( List<SongsModel> songs)?  shuffleSongs,TResult Function( int songId,  bool isFavorite)?  updateSongFavorite,TResult Function( int songId)?  hideSong,TResult Function( int songId)?  unhideSong,TResult Function( int sortIndex,  int sortOrder)?  sortSongs,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( SongsModel song)?  addSong,TResult Function()?  getAllSongs,TResult Function( int id)?  removeSong,TResult Function( List<SongsModel> songs)?  shuffleSongs,TResult Function( int songId,  bool isFavorite)?  updateSongFavorite,TResult Function( int songId)?  hideSong,TResult Function( int songId)?  unhideSong,TResult Function( SongsModel song)?  updateSongDetails,TResult Function( int sortIndex,  int sortOrder)?  sortSongs,TResult Function( int songId,  String artworkPath)?  updateSongArtwork,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AddSong() when addSong != null:
 return addSong(_that.song);case _GetAllSongs() when getAllSongs != null:
@@ -149,8 +155,10 @@ return removeSong(_that.id);case _ShuffleSongs() when shuffleSongs != null:
 return shuffleSongs(_that.songs);case _UpdateSongFavorite() when updateSongFavorite != null:
 return updateSongFavorite(_that.songId,_that.isFavorite);case _HideSong() when hideSong != null:
 return hideSong(_that.songId);case _UnhideSong() when unhideSong != null:
-return unhideSong(_that.songId);case _SortSongs() when sortSongs != null:
-return sortSongs(_that.sortIndex,_that.sortOrder);case _:
+return unhideSong(_that.songId);case _UpdateSongDetails() when updateSongDetails != null:
+return updateSongDetails(_that.song);case _SortSongs() when sortSongs != null:
+return sortSongs(_that.sortIndex,_that.sortOrder);case _UpdateSongArtwork() when updateSongArtwork != null:
+return updateSongArtwork(_that.songId,_that.artworkPath);case _:
   return orElse();
 
 }
@@ -168,7 +176,7 @@ return sortSongs(_that.sortIndex,_that.sortOrder);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( SongsModel song)  addSong,required TResult Function()  getAllSongs,required TResult Function( int id)  removeSong,required TResult Function( List<SongsModel> songs)  shuffleSongs,required TResult Function( int songId,  bool isFavorite)  updateSongFavorite,required TResult Function( int songId)  hideSong,required TResult Function( int songId)  unhideSong,required TResult Function( int sortIndex,  int sortOrder)  sortSongs,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( SongsModel song)  addSong,required TResult Function()  getAllSongs,required TResult Function( int id)  removeSong,required TResult Function( List<SongsModel> songs)  shuffleSongs,required TResult Function( int songId,  bool isFavorite)  updateSongFavorite,required TResult Function( int songId)  hideSong,required TResult Function( int songId)  unhideSong,required TResult Function( SongsModel song)  updateSongDetails,required TResult Function( int sortIndex,  int sortOrder)  sortSongs,required TResult Function( int songId,  String artworkPath)  updateSongArtwork,}) {final _that = this;
 switch (_that) {
 case _AddSong():
 return addSong(_that.song);case _GetAllSongs():
@@ -177,8 +185,10 @@ return removeSong(_that.id);case _ShuffleSongs():
 return shuffleSongs(_that.songs);case _UpdateSongFavorite():
 return updateSongFavorite(_that.songId,_that.isFavorite);case _HideSong():
 return hideSong(_that.songId);case _UnhideSong():
-return unhideSong(_that.songId);case _SortSongs():
-return sortSongs(_that.sortIndex,_that.sortOrder);case _:
+return unhideSong(_that.songId);case _UpdateSongDetails():
+return updateSongDetails(_that.song);case _SortSongs():
+return sortSongs(_that.sortIndex,_that.sortOrder);case _UpdateSongArtwork():
+return updateSongArtwork(_that.songId,_that.artworkPath);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,7 +205,7 @@ return sortSongs(_that.sortIndex,_that.sortOrder);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( SongsModel song)?  addSong,TResult? Function()?  getAllSongs,TResult? Function( int id)?  removeSong,TResult? Function( List<SongsModel> songs)?  shuffleSongs,TResult? Function( int songId,  bool isFavorite)?  updateSongFavorite,TResult? Function( int songId)?  hideSong,TResult? Function( int songId)?  unhideSong,TResult? Function( int sortIndex,  int sortOrder)?  sortSongs,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( SongsModel song)?  addSong,TResult? Function()?  getAllSongs,TResult? Function( int id)?  removeSong,TResult? Function( List<SongsModel> songs)?  shuffleSongs,TResult? Function( int songId,  bool isFavorite)?  updateSongFavorite,TResult? Function( int songId)?  hideSong,TResult? Function( int songId)?  unhideSong,TResult? Function( SongsModel song)?  updateSongDetails,TResult? Function( int sortIndex,  int sortOrder)?  sortSongs,TResult? Function( int songId,  String artworkPath)?  updateSongArtwork,}) {final _that = this;
 switch (_that) {
 case _AddSong() when addSong != null:
 return addSong(_that.song);case _GetAllSongs() when getAllSongs != null:
@@ -204,8 +214,10 @@ return removeSong(_that.id);case _ShuffleSongs() when shuffleSongs != null:
 return shuffleSongs(_that.songs);case _UpdateSongFavorite() when updateSongFavorite != null:
 return updateSongFavorite(_that.songId,_that.isFavorite);case _HideSong() when hideSong != null:
 return hideSong(_that.songId);case _UnhideSong() when unhideSong != null:
-return unhideSong(_that.songId);case _SortSongs() when sortSongs != null:
-return sortSongs(_that.sortIndex,_that.sortOrder);case _:
+return unhideSong(_that.songId);case _UpdateSongDetails() when updateSongDetails != null:
+return updateSongDetails(_that.song);case _SortSongs() when sortSongs != null:
+return sortSongs(_that.sortIndex,_that.sortOrder);case _UpdateSongArtwork() when updateSongArtwork != null:
+return updateSongArtwork(_that.songId,_that.artworkPath);case _:
   return null;
 
 }
@@ -652,6 +664,72 @@ as int,
 /// @nodoc
 
 
+class _UpdateSongDetails implements SongsEvent {
+  const _UpdateSongDetails(this.song);
+  
+
+ final  SongsModel song;
+
+/// Create a copy of SongsEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$UpdateSongDetailsCopyWith<_UpdateSongDetails> get copyWith => __$UpdateSongDetailsCopyWithImpl<_UpdateSongDetails>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UpdateSongDetails&&(identical(other.song, song) || other.song == song));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,song);
+
+@override
+String toString() {
+  return 'SongsEvent.updateSongDetails(song: $song)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$UpdateSongDetailsCopyWith<$Res> implements $SongsEventCopyWith<$Res> {
+  factory _$UpdateSongDetailsCopyWith(_UpdateSongDetails value, $Res Function(_UpdateSongDetails) _then) = __$UpdateSongDetailsCopyWithImpl;
+@useResult
+$Res call({
+ SongsModel song
+});
+
+
+
+
+}
+/// @nodoc
+class __$UpdateSongDetailsCopyWithImpl<$Res>
+    implements _$UpdateSongDetailsCopyWith<$Res> {
+  __$UpdateSongDetailsCopyWithImpl(this._self, this._then);
+
+  final _UpdateSongDetails _self;
+  final $Res Function(_UpdateSongDetails) _then;
+
+/// Create a copy of SongsEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? song = null,}) {
+  return _then(_UpdateSongDetails(
+null == song ? _self.song : song // ignore: cast_nullable_to_non_nullable
+as SongsModel,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
 class _SortSongs implements SongsEvent {
   const _SortSongs(this.sortIndex, [this.sortOrder = 0]);
   
@@ -711,6 +789,74 @@ class __$SortSongsCopyWithImpl<$Res>
 null == sortIndex ? _self.sortIndex : sortIndex // ignore: cast_nullable_to_non_nullable
 as int,null == sortOrder ? _self.sortOrder : sortOrder // ignore: cast_nullable_to_non_nullable
 as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _UpdateSongArtwork implements SongsEvent {
+  const _UpdateSongArtwork({required this.songId, required this.artworkPath});
+  
+
+ final  int songId;
+ final  String artworkPath;
+
+/// Create a copy of SongsEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$UpdateSongArtworkCopyWith<_UpdateSongArtwork> get copyWith => __$UpdateSongArtworkCopyWithImpl<_UpdateSongArtwork>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UpdateSongArtwork&&(identical(other.songId, songId) || other.songId == songId)&&(identical(other.artworkPath, artworkPath) || other.artworkPath == artworkPath));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,songId,artworkPath);
+
+@override
+String toString() {
+  return 'SongsEvent.updateSongArtwork(songId: $songId, artworkPath: $artworkPath)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$UpdateSongArtworkCopyWith<$Res> implements $SongsEventCopyWith<$Res> {
+  factory _$UpdateSongArtworkCopyWith(_UpdateSongArtwork value, $Res Function(_UpdateSongArtwork) _then) = __$UpdateSongArtworkCopyWithImpl;
+@useResult
+$Res call({
+ int songId, String artworkPath
+});
+
+
+
+
+}
+/// @nodoc
+class __$UpdateSongArtworkCopyWithImpl<$Res>
+    implements _$UpdateSongArtworkCopyWith<$Res> {
+  __$UpdateSongArtworkCopyWithImpl(this._self, this._then);
+
+  final _UpdateSongArtwork _self;
+  final $Res Function(_UpdateSongArtwork) _then;
+
+/// Create a copy of SongsEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? songId = null,Object? artworkPath = null,}) {
+  return _then(_UpdateSongArtwork(
+songId: null == songId ? _self.songId : songId // ignore: cast_nullable_to_non_nullable
+as int,artworkPath: null == artworkPath ? _self.artworkPath : artworkPath // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 
