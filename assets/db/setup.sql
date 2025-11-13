@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS playlists (
     song_count INTEGER NOT NULL DEFAULT 0,
     is_system INTEGER NOT NULL DEFAULT 0,
     system_key TEXT UNIQUE,
+    cover_path TEXT,
     created_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')),
     updated_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))
 );

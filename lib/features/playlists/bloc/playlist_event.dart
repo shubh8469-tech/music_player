@@ -25,6 +25,10 @@ class PlaylistEvent with _$PlaylistEvent {
   const factory PlaylistEvent.deletePlaylist(int id) = _DeletePlaylist;
   const factory PlaylistEvent.renamePlaylist(int id, String newName) =
       _RenamePlaylist;
+  const factory PlaylistEvent.updatePlaylistCover(
+    int id,
+    String? coverPath,
+  ) = _UpdatePlaylistCover;
   const factory PlaylistEvent.fetchSongsForSystemPlaylist(String systemKey) =
       _FetchSongsForSystemPlaylist;
   const factory PlaylistEvent.getFavoritesPlaylistId() =

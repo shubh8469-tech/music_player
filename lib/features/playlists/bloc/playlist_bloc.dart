@@ -83,6 +83,25 @@ class PlaylistBloc extends Bloc<PlaylistEvent, PlaylistState> {
       }
     });
 
+    on<_UpdatePlaylistCover>((event, emit) async {
+      try {
+        final previousSystemSongs = state.maybeWhen(
+          loaded: (_, systemPlaylistSongs) => systemPlaylistSongs,
+          orElse: () => null,
+        );
+        await repository.updatePlaylistCover(event.id, event.coverPath);
+        final playlists = await repository.fetchAllPlaylists();
+        emit(
+          PlaylistState.loaded(
+            playlists,
+            systemPlaylistSongs: previousSystemSongs,
+          ),
+        );
+      } catch (e) {
+        emit(PlaylistState.error(e.toString()));
+      }
+    });
+
     on<_AddSongToPlaylist>((event, emit) async {
       try {
         await repository.addSongToPlaylist(

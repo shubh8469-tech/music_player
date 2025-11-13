@@ -80,6 +80,7 @@ class Assets {
   static const String svgIcTimer = 'assets/svg/ic_timer.svg';
   static const String svgIcTunes = 'assets/svg/ic_tunes.svg';
   static const String svgIcUncheck = 'assets/svg/ic_uncheck.svg';
+  static const String svgLocalGallery = 'assets/svg/localGallery.svg';
   static const String svgMenuIcon = 'assets/svg/menuIcon.svg';
   static const String svgMostPlayed = 'assets/svg/mostPlayed.svg';
   static const String svgMusicIcon = 'assets/svg/musicIcon.svg';

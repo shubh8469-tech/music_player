@@ -108,14 +108,18 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                       cardHeight: 50.h,
                       cardWidth: 50.w,
                       cardRadius: 7.r,
-                      noLogoGradientColor: widget.playlistGradientColors ??
+                      noLogoGradientColor:
+                          widget.playlistGradientColors ??
                           [
                             AppColors.primaryOrange.withValues(alpha: 0.21),
                             AppColors.primaryOrange,
                           ],
-                      cardIconAsset: widget.playlistIconAsset ?? Assets.svgMusicIcon,
+                      cardIconAsset:
+                          widget.playlistIconAsset ?? Assets.svgMusicIcon,
                       cardIconSize: 32.r,
-                      isSvgCardIcon: (widget.playlistIconAsset ?? '').contains('.svg'),
+                      isSvgCardIcon: (widget.playlistIconAsset ?? '').contains(
+                        '.svg',
+                      ),
                       title: widget.playlist!.name,
                       subtitle: '${widget.playlist!.songCount} Songs',
                       trailingIconAsset: Assets.svgIcShare,
@@ -265,8 +269,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                             onTap: () async {
                               final localization = S.of(context);
                               var musicService = MusicPlayerService();
-                              if (songItem.title ==
-                                  localization.keepScreenOn) {
+                              if (songItem.title == localization.keepScreenOn) {
                                 setState(() {
                                   keepScreenOn = !keepScreenOn;
                                 });
@@ -274,7 +277,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                               } else if (songItem.title ==
                                   localization.editDetails) {
                                 Navigator.pop(context);
-                                final selectedSong = widget.currentSong ??
+                                final selectedSong =
+                                    widget.currentSong ??
                                     ((widget.songsList != null &&
                                             widget.songIndex != null &&
                                             widget.songIndex! >= 0 &&
@@ -304,7 +308,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                 if (widget.from == 'playlist') {
                                   // Close the bottom sheet first
                                   Navigator.pop(context);
-                                  
+
                                   List<SongsModel> _songs = [];
                                   final _repo = locator<PlaylistRepository>();
                                   try {
@@ -373,7 +377,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                 if (widget.from == 'playlist') {
                                   // Close the bottom sheet first
                                   Navigator.pop(context);
-                                  
+
                                   List<SongsModel> _songs = [];
                                   final _repo = locator<PlaylistRepository>();
                                   try {
@@ -421,8 +425,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       final insertIndex = currentIndex + 1;
                                       final newSongsList =
                                           List<SongsModel>.from(
-                                        musicService.songs,
-                                      );
+                                            musicService.songs,
+                                          );
 
                                       // Filter out songs that are already in the queue
                                       final songsToAdd = _songs.where((song) {
@@ -462,7 +466,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       showSnackBar(
                                         context,
                                         () {},
-                                        message: "Error adding to play next: $e",
+                                        message:
+                                            "Error adding to play next: $e",
                                         alertBannerLocation:
                                             AlertBannerLocation.bottom,
                                       );
@@ -470,7 +475,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                   }
                                 } else {
                                   // Add individual song to play next (insert after current song)
-                                  final currentIndex = musicService.currentIndex;
+                                  final currentIndex =
+                                      musicService.currentIndex;
                                   final insertIndex = currentIndex + 1;
 
                                   // Create a new list with the song inserted at the correct position
@@ -694,8 +700,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                   S.of(context).goToArtist) {
                                 // Navigate to artist detail screen
                                 await _navigateToArtist(context);
-                              }
-                              else if (songItem.title ==
+                              } else if (songItem.title ==
                                   S.of(context).hideSong) {
                                 if (widget.currentSong?.id == null) {
                                   showSnackBar(
@@ -711,10 +716,10 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
                                 try {
                                   context.read<SongsBloc>().add(
-                                        SongsEvent.hideSong(
-                                          widget.currentSong!.id!,
-                                        ),
-                                      );
+                                    SongsEvent.hideSong(
+                                      widget.currentSong!.id!,
+                                    ),
+                                  );
 
                                   if (mounted) {
                                     showSnackBar(
@@ -837,7 +842,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
     return showModalBottomSheet<_ChangeCoverAction>(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.white,
       isScrollControlled: true,
       builder: (sheetContext) {
         return Padding(
@@ -851,10 +856,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(32.r),
             ),
-            padding: EdgeInsets.symmetric(
-              horizontal: 20.w,
-              vertical: 24.h,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -883,16 +885,20 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Container(
-                    width: 36.w,
-                    height: 36.w,
+                    width: 21.w,
+                    height: 21.w,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryOrange.withValues(alpha: 0.12),
+                      color: AppColors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
-                    child: Icon(
-                      Icons.photo_outlined,
-                      color: AppColors.primaryOrange,
-                      size: 20.r,
+                    child: SvgPicture.asset(
+                      Assets.svgLocalGallery,
+                      colorFilter: const ColorFilter.mode(
+                        AppColors.black,
+                        BlendMode.srcIn,
+                      ),
+                      height: 16.h,
+                      width: 16.h,
                     ),
                   ),
                   title: Texts(
@@ -903,7 +909,10 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                     color: AppColors.textColor,
                   ),
                   onTap: () {
-                    Navigator.pop(sheetContext, _ChangeCoverAction.localGallery);
+                    Navigator.pop(
+                      sheetContext,
+                      _ChangeCoverAction.localGallery,
+                    );
                   },
                 ),
                 Divider(
@@ -914,16 +923,20 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Container(
-                    width: 36.w,
-                    height: 36.w,
+                    width: 23.w,
+                    height: 23.w,
                     decoration: BoxDecoration(
-                      color: AppColors.textColor.withValues(alpha: 0.1),
+                      color: AppColors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
-                    child: Icon(
-                      Icons.search,
-                      color: AppColors.textColor,
-                      size: 20.r,
+                    child: SvgPicture.asset(
+                      Assets.svgSearch,
+                      colorFilter: const ColorFilter.mode(
+                        AppColors.black,
+                        BlendMode.srcIn,
+                      ),
+                      height: 16.h,
+                      width: 16.h,
                     ),
                   ),
                   title: Texts(
@@ -934,7 +947,10 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                     color: AppColors.textColor,
                   ),
                   onTap: () {
-                    Navigator.pop(sheetContext, _ChangeCoverAction.searchOnline);
+                    Navigator.pop(
+                      sheetContext,
+                      _ChangeCoverAction.searchOnline,
+                    );
                   },
                 ),
                 SizedBox(height: 24.h),
@@ -1065,10 +1081,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
       }
     }
 
-    final optimizedBytes = img.encodeJpg(
-      processed,
-      quality: 85,
-    );
+    final optimizedBytes = img.encodeJpg(processed, quality: 85);
 
     return Uint8List.fromList(optimizedBytes);
   }
@@ -1115,11 +1128,11 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
     }
 
     context.read<SongsBloc>().add(
-          SongsEvent.updateSongArtwork(
-            songId: widget.currentSong!.id!,
-            artworkPath: newPath,
-          ),
-        );
+      SongsEvent.updateSongArtwork(
+        songId: widget.currentSong!.id!,
+        artworkPath: newPath,
+      ),
+    );
   }
 
   void _showDeleteFromLibraryBottomSheet(BuildContext context) {
@@ -1205,9 +1218,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                         try {
                           final songsBloc = context.read<SongsBloc>();
                           songsBloc.add(
-                            SongsEvent.removeSong(
-                              widget.currentSong!.id!,
-                            ),
+                            SongsEvent.removeSong(widget.currentSong!.id!),
                           );
                           showSnackBar(
                             context,
@@ -1336,9 +1347,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                       final playlistBloc = context.read<PlaylistBloc>();
                       playlistBloc.add(
                         PlaylistEvent.deletePlaylist(
-                          int.parse(
-                            widget.systemKeyOrId!,
-                          ),
+                          int.parse(widget.systemKeyOrId!),
                         ),
                       );
                       showSnackBar(
@@ -1600,7 +1609,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
     try {
       final albumRepository = locator<AlbumRepository>();
       final albumName = widget.currentSong!.album;
-      final artistName = 'Various Artists';//widget.currentSong!.artist;
+      final artistName = 'Various Artists'; //widget.currentSong!.artist;
 
       if (albumName.isEmpty) {
         showSnackBar(
@@ -1621,7 +1630,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
       if (album != null) {
         // Close the menu
         Navigator.pop(context);
-        
+
         // Navigate to album detail screen
         context.push('/dashboard/album-detail', extra: album);
       } else {
@@ -1675,7 +1684,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
       if (artist != null) {
         // Close the menu
         Navigator.pop(context);
-        
+
         // Navigate to artist detail screen
         context.push('/dashboard/artist-detail', extra: artist);
       } else {
@@ -1699,7 +1708,4 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
   }
 }
 
-enum _ChangeCoverAction {
-  localGallery,
-  searchOnline,
-}
+enum _ChangeCoverAction { localGallery, searchOnline }

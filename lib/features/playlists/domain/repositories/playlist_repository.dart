@@ -20,4 +20,5 @@ abstract class PlaylistRepository {
   Future<List<SongsModel>> getSongsForPlaylist(int playlistId);
   Future<List<SongsModel>> getSongsForSystemPlaylist(String systemKey);
   Future<void> reorderPlaylistSongs(int playlistId, List<int> songIdsInOrder);
+  Future<void> updatePlaylistCover(int playlistId, String? coverPath);
 }

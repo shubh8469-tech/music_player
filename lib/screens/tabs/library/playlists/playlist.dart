@@ -47,8 +47,6 @@ class _PlayListScreenState extends State<PlayListScreen> {
   };
 
   StreamSubscription<void>? _libChangedSub;
-  DateTime? _lastRefreshTime;
-
   var musicService = MusicPlayerService();
 
   @override
@@ -264,6 +262,10 @@ class _PlayListScreenState extends State<PlayListScreen> {
                       return Column(
                         children: List.generate(userPlaylists.length, (index) {
                           final p = userPlaylists[index];
+                          final hasCover = (p.coverPath?.isNotEmpty ?? false);
+                          final coverAsset =
+                              hasCover ? p.coverPath! : Assets.svgMusicIcon;
+                          final coverIsSvg = coverAsset.contains('.svg');
                           return MusicListTile(
                             margin: 7.w,
                             height: 66.h,
@@ -272,8 +274,10 @@ class _PlayListScreenState extends State<PlayListScreen> {
                             cardHeight: 50.h,
                             cardWidth: 50.w,
                             cardRadius: 7.r,
-                            cardIconAsset: Assets.svgMusicIcon,
+                            cardIconAsset: coverAsset,
                             cardIconSize: 32.r,
+                            isSvgCardIcon: coverIsSvg,
+                            isSvgColorNeeded: coverIsSvg,
                             title: p.name,
                             subtitle: '${p.songCount} Songs',
                             trailingIconAsset: Assets.svgMenuIcon,
@@ -285,7 +289,7 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                 '/dashboard/playlist-detail',
                                 extra: {
                                   'playlist': p,
-                                  'assetIcon': Assets.svgMusicIcon,
+                                  'assetIcon': coverAsset,
                                   'colors': [
                                     AppColors.primaryOrange.withValues(
                                       alpha: 0.21,
@@ -310,7 +314,7 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                   value: context.read<PlaylistBloc>(),
                                   child: PlaylistMenuScreen(
                                     playlist: p,
-                                    playlistIconAsset: Assets.svgMusicIcon,
+                                    playlistIconAsset: coverAsset,
                                     playlistGradientColors: [
                                       AppColors.primaryOrange.withValues(
                                         alpha: 0.21,

@@ -564,9 +564,13 @@ class _PlaylistsSection extends StatelessWidget {
               children: visible.map((playlist) {
                 final isSystem = playlist.isSystem == true;
                 final systemKey = playlist.systemKey ?? '';
+                final hasCover = (playlist.coverPath?.isNotEmpty ?? false);
+                final userCoverAsset = hasCover
+                    ? playlist.coverPath!
+                    : Assets.svgMusicIcon;
                 final iconAsset = isSystem
                     ? _systemPlaylistIcons[systemKey] ?? Assets.svgMusicIcon
-                    : Assets.svgMusicIcon;
+                    : userCoverAsset;
                 final baseColor = isSystem
                     ? _systemPlaylistColors[systemKey] ?? AppColors.mildBlue
                     : AppColors.primaryOrange;
@@ -574,6 +578,7 @@ class _PlaylistsSection extends StatelessWidget {
                   baseColor.withValues(alpha: 0.21),
                   baseColor,
                 ];
+                final iconIsSvg = iconAsset.contains('.svg');
                 return MusicListTile(
                   margin: 7.w,
                   height: 66.h,
@@ -582,11 +587,12 @@ class _PlaylistsSection extends StatelessWidget {
                   cardHeight: 50.h,
                   cardWidth: 50.w,
                   cardRadius: 7.r,
-                  noLogoGradientColor: gradientColors,
+                  noLogoGradientColor:
+                      iconIsSvg ? gradientColors : null,
                   cardIconAsset: iconAsset,
                   cardIconSize: 32.r,
-                  isSvgCardIcon: iconAsset.contains('.svg'),
-                  isSvgColorNeeded: true,
+                  isSvgCardIcon: iconIsSvg,
+                  isSvgColorNeeded: iconIsSvg,
                   title: playlist.name,
                   subtitle: '${playlist.songCount} songs',
                   trailingIconAsset: Assets.svgMenuIcon,
@@ -598,11 +604,8 @@ class _PlaylistsSection extends StatelessWidget {
                       '/dashboard/playlist-detail',
                       extra: {
                         'playlist': playlist,
-                        'assetIcon': Assets.svgMusicIcon,
-                        'colors': [
-                          AppColors.mildBlue.withValues(alpha: 0.21),
-                          AppColors.mildBlue,
-                        ],
+                        'assetIcon': iconAsset,
+                        'colors': gradientColors,
                       },
                     );
                   },

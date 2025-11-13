@@ -88,4 +88,9 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
   Future<void> reorderPlaylistSongs(int playlistId, List<int> songIdsInOrder) {
     return localDataSource.reorderPlaylistSongs(playlistId, songIdsInOrder);
   }
+
+  @override
+  Future<void> updatePlaylistCover(int playlistId, String? coverPath) {
+    return localDataSource.updatePlaylistCover(playlistId, coverPath);
+  }
 }

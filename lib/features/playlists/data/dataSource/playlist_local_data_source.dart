@@ -20,6 +20,7 @@ abstract class PlaylistLocalDataSource {
   Future<List<PlaylistModel>> getSystemPlaylistsWithCounts();
   Future<List<SongsModel>> getSongsForSystemPlaylist(String systemKey);
   Future<void> reorderPlaylistSongs(int playlistId, List<int> songIdsInOrder);
+  Future<void> updatePlaylistCover(int playlistId, String? coverPath);
 }
 
 class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
@@ -204,6 +205,7 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
         updatedTime: DateTime.parse(row['updated_time'] as String),
         isSystem: (row['is_system'] as int? ?? 0) == 1,
         systemKey: row['system_key'] as String?,
+        coverPath: row['cover_path'] as String?,
       );
       systemPlaylists.add(playlist);
     }
@@ -269,5 +271,18 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
       }
       await batch.commit(noResult: true);
     });
+  }
+
+  @override
+  Future<void> updatePlaylistCover(int playlistId, String? coverPath) async {
+    await db.update(
+      'playlists',
+      {
+        'cover_path': coverPath,
+        'updated_time': DateTime.now().toIso8601String(),
+      },
+      where: 'id = ? AND is_system = 0',
+      whereArgs: [playlistId],
+    );
   }
 }

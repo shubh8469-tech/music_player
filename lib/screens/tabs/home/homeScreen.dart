@@ -1,6 +1,4 @@
 import 'dart:developer';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -13,7 +11,6 @@ import '../../../commonWidgets/playlist_menu_screen.dart';
 import '../../../commonWidgets/gradientCard.dart';
 import '../../../commonWidgets/textWidget.dart';
 import '../../../generated/assets.dart';
-import '../../../utills/globals.dart';
 import '../../../utills/snack_bar.dart';
 import '../../../screens/tabs/music_service.dart';
 import '../../../features/playlists/bloc/playlist_bloc.dart';
@@ -370,6 +367,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       }
                       return Column(
                         children: userPlaylists.take(3).map((playlist) {
+                          final hasCover =
+                              (playlist.coverPath?.isNotEmpty ?? false);
+                          final coverAsset = hasCover
+                              ? playlist.coverPath!
+                              : Assets.svgMusicIcon;
+                          final coverIsSvg = coverAsset.contains('.svg');
+                          final playlistGradientColors = [
+                            AppColors.mildBlue.withValues(alpha: 0.21),
+                            AppColors.mildBlue,
+                          ];
                           return MusicListTile(
                             margin: 7.w,
                             height: 66.h,
@@ -378,8 +385,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             cardHeight: 50.h,
                             cardWidth: 50.w,
                             cardRadius: 7.r,
-                            cardIconAsset: Assets.svgMusicIcon,
+                            cardIconAsset: coverAsset,
                             cardIconSize: 32.r,
+                            isSvgCardIcon: coverIsSvg,
+                            isSvgColorNeeded: coverIsSvg,
                             title: playlist.name,
                             subtitle: '${playlist.songCount} Songs',
                             trailingIconAsset: Assets.svgMenuIcon,
@@ -391,11 +400,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 '/dashboard/playlist-detail',
                                 extra: {
                                   'playlist': playlist,
-                                  'assetIcon': Assets.svgMusicIcon,
-                                  'colors': [
-                                    AppColors.mildBlue.withValues(alpha: 0.21),
-                                    AppColors.mildBlue,
-                                  ],
+                                  'assetIcon': coverAsset,
+                                  'colors': playlistGradientColors,
                                 },
                               );
                             },
@@ -414,13 +420,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   value: context.read<PlaylistBloc>(),
                                   child: PlaylistMenuScreen(
                                     playlist: playlist,
-                                    playlistIconAsset: Assets.svgMusicIcon,
-                                    playlistGradientColors: [
-                                      AppColors.mildBlue.withValues(
-                                        alpha: 0.21,
-                                      ),
-                                      AppColors.mildBlue,
-                                    ],
+                                    playlistIconAsset: coverAsset,
+                                    playlistGradientColors:
+                                        playlistGradientColors,
                                     isSystemPlaylist: false,
                                     systemKeyOrId: playlist.id.toString(),
                                     onRename: () async {

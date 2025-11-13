@@ -6,6 +6,7 @@ class Playlist {
   final DateTime updatedTime;
   final bool? isSystem;
   final String? systemKey;
+  final String? coverPath;
 
   Playlist({
     required this.id,
@@ -15,5 +16,6 @@ class Playlist {
     required this.updatedTime,
     this.isSystem,
     this.systemKey,
+    this.coverPath,
   });
 }
