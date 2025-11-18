@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:music_app/screens/settings/settings.dart';
 import 'package:music_app/screens/tabs/library/songs/select_song_screen.dart';
 import 'package:music_app/screens/tabs/library/songs/add_songs_screen.dart';
 import 'package:music_app/screens/tabs/library/playlists/create_playlist_screen.dart';
@@ -46,6 +47,7 @@ enum AppRouteName {
   selectArtist,
   albumDetail,
   selectAlbum,
+  settings,
 }
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
@@ -80,6 +82,11 @@ final GoRouter appRouter = GoRouter(
           name: AppRouteName.home.name,
           path: 'home',
           builder: (context, state) => const HomeScreen(),
+        ),
+        GoRoute(
+          name: AppRouteName.settings.name,
+          path: 'settings',
+          builder: (context, state) => const SettingsPage(),
         ),
         GoRoute(
           name: AppRouteName.library.name,

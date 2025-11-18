@@ -1435,14 +1435,25 @@ class _FolderActionSheet extends StatelessWidget {
         }
       }
 
-      await musicService.setPlaylist(newSongsList);
+      await musicService.setPlaylist(newSongsList, autoPlay: false);
 
-      showSnackBar(
-        context,
-        () {},
-        message: '$addedCount songs from ${folder.name} added to queue',
-        alertBannerLocation: AlertBannerLocation.bottom,
-      );
+      if(addedCount < 1){
+        showSnackBar(
+          context,
+              () {},
+          message: "Songs already added to queue",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      }
+      else{
+        showSnackBar(
+          context,
+              () {},
+          message: '$addedCount songs from ${folder.name} added to queue',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      }
+
     } catch (e) {
       showSnackBar(
         context,
@@ -1857,14 +1868,25 @@ class _AlbumActionSheet extends StatelessWidget {
         }
       }
 
-      await musicService.setPlaylist(newSongsList);
+      await musicService.setPlaylist(newSongsList, autoPlay: false);
 
-      showSnackBar(
-        context,
-        () {},
-        message: '$addedCount songs from ${album.name} added to queue',
-        alertBannerLocation: AlertBannerLocation.bottom,
-      );
+      if(addedCount < 1){
+        showSnackBar(
+          context,
+              () {},
+          message: "Songs already added to queue",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      }
+      else{
+        showSnackBar(
+          context,
+              () {},
+          message: '$addedCount songs from ${album.name} added to queue',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      }
+
     } catch (e) {
       showSnackBar(
         context,
@@ -2251,14 +2273,25 @@ class _ArtistActionSheet extends StatelessWidget {
         }
       }
 
-      await musicService.setPlaylist(newSongsList);
+      await musicService.setPlaylist(newSongsList, autoPlay: false);
 
-      showSnackBar(
-        context,
-        () {},
-        message: '$addedCount songs from ${artist.name} added to queue',
-        alertBannerLocation: AlertBannerLocation.bottom,
-      );
+      if(addedCount < 1){
+        showSnackBar(
+          context,
+              () {},
+          message: "Songs already added to queue",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      }
+      else{
+        showSnackBar(
+          context,
+              () {},
+          message: '$addedCount songs from ${artist.name} added to queue',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      }
+
     } catch (e) {
       showSnackBar(
         context,

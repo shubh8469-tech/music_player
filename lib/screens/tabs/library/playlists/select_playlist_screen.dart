@@ -429,13 +429,24 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
       await musicService.setPlaylist(newSongsList);
 
       if (mounted) {
-        showSnackBar(
-          context,
-          () {},
-          message:
-              "$addedCount songs from ${selectedPlaylists.length} playlists added to queue",
-          alertBannerLocation: AlertBannerLocation.bottom,
-        );
+
+        if(addedCount < 1){
+          showSnackBar(
+            context,
+                () {},
+            message: "Songs already added to queue",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
+        else{
+          showSnackBar(
+            context,
+                () {},
+            message:
+            "$addedCount songs from ${selectedPlaylists.length} playlists added to queue",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
       }
     } catch (e) {
       if (mounted) {

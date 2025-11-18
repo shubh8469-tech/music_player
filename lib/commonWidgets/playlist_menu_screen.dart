@@ -394,12 +394,22 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
 
       await musicService.setPlaylist(newSongsList, autoPlay: false);
 
-      showSnackBar(
-        context,
-        () {},
-        message: "$addedCount songs added to queue",
-        alertBannerLocation: AlertBannerLocation.bottom,
-      );
+        if(addedCount < 1){
+          showSnackBar(
+            context,
+                () {},
+            message: "Songs already added to queue",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
+        else{
+          showSnackBar(
+            context,
+                () {},
+            message: "$addedCount songs added to queue",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
     } catch (e) {
       showSnackBar(
         context,

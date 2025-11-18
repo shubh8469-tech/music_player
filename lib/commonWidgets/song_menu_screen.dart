@@ -561,6 +561,13 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     newSongsList,
                                     autoPlay: false,
                                   );
+
+                                  showSnackBar(
+                                    context,
+                                        () {},
+                                    message: "${newSongsList.length} songs added to queue",
+                                    alertBannerLocation: AlertBannerLocation.bottom,
+                                  );
                                 } else {
                                   final newSongsList = List<SongsModel>.from(
                                     musicService.songs,
@@ -577,6 +584,13 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       autoPlay: false,
                                     );
                                   }
+
+                                  showSnackBar(
+                                    context,
+                                        () {},
+                                    message: "1 songs added to queue",
+                                    alertBannerLocation: AlertBannerLocation.bottom,
+                                  );
                                 }
 
                                 Navigator.pop(context);

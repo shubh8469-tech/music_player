@@ -14,6 +14,7 @@ import '../../../features/songs/data/models/song_model.dart';
 import '../../../generated/assets.dart';
 import '../../../l10n/l10n.dart';
 import '../../../themes/color.dart';
+import '../../../utills/snack_bar.dart';
 import 'create_new_playlist_bottomsheet.dart';
 
 class PlaylistBottomSheet extends StatefulWidget {
@@ -195,6 +196,12 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
         playlistBloc.add(
           PlaylistEvent.addMultipleSongsToPlaylist(playlistId, songIds),
         );
+        showSnackBar(
+          context,
+              () {},
+          message: "${songIds.length} songs added to playlist",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
       } else if (widget.songId != null) {
         // Add single song
         if (!mounted) return;
@@ -204,6 +211,12 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
         );
         playlistBloc.add(
           PlaylistEvent.addSongToPlaylist(playlistId, widget.songId!, position),
+        );
+        showSnackBar(
+          context,
+              () {},
+          message: "1 songs added to playlist",
+          alertBannerLocation: AlertBannerLocation.bottom,
         );
       }
 

@@ -7,6 +7,7 @@ import 'package:path/path.dart' as p;
 // Note: metadata_god package available if needed for additional metadata extraction
 import '../../core/di/injection.dart';
 import '../../core/services/app_state_service.dart';
+import '../../features/songs/data/dataSource/song_local_data_source.dart';
 import '../../features/songs/data/models/song_model.dart';
 import '../../features/songs/domain/usecases/add_song.dart';
 import '../../features/folders/domain/entities/folder.dart';
@@ -81,6 +82,9 @@ class _SyncProgressState extends State<SyncProgress>
 
   Future<void> scanMusicFiles() async {
     try {
+
+      final SongLocalDataSource localDataSource = locator();
+
       final AddSong addSongUseCase = locator();
       final AddFolder addFolderUseCase = locator();
       final AddSongToFolder addSongToFolderUseCase = locator();
@@ -134,7 +138,8 @@ class _SyncProgressState extends State<SyncProgress>
               folderName = idx >= 0 ? path.substring(idx + 1) : path;
               folderPath = path;
             }
-          } else {
+          }
+          else {
             folderPath = p.dirname(path);
             folderName = p.basename(folderPath);
           }
@@ -336,6 +341,7 @@ class _SyncProgressState extends State<SyncProgress>
           scannedFiles.add(item);
           groupedByFolder.putIfAbsent(folderPath, () => []).add(item);
         }
+
       }
 
       // Update album counts for artists
@@ -346,6 +352,12 @@ class _SyncProgressState extends State<SyncProgress>
           albums.length,
         );
       }
+
+      final allSongs = await localDataSource.getAllSongs(includeHidden: true);
+
+      allSongs.forEach((song) {
+        localDataSource.updateSongWithRelations(song);
+      },);
 
       // Debug output
       debugPrint("Found $scannedFiles");

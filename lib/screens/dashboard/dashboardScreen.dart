@@ -121,14 +121,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 IconButton(
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Settings feature coming soon'),
-                        backgroundColor: AppColors.primaryOrange,
-                        duration: Duration(seconds: 2),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
+                    context.push('/dashboard/settings');
                   },
                   icon: SvgPicture.asset(
                     Assets.svgSetting,
