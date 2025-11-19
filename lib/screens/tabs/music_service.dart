@@ -14,14 +14,12 @@ class MusicPlayerService {
   List<SongsModel> songs = [];
 
   // Emits events when library-affecting stats change (e.g., play_count/last_played)
-  final StreamController<void> _libraryChangedController =
-      StreamController<void>.broadcast();
+  final StreamController<void> _libraryChangedController = StreamController<void>.broadcast();
 
   Stream<void> get libraryChanged => _libraryChangedController.stream;
 
   // Emits events when the songs list changes (e.g., when songs are added/removed/reordered)
-  final StreamController<List<SongsModel>> _songsChangedController =
-      StreamController<List<SongsModel>>.broadcast();
+  final StreamController<List<SongsModel>> _songsChangedController = StreamController<List<SongsModel>>.broadcast();
 
   Stream<List<SongsModel>> get songsChanged => _songsChangedController.stream;
   int? _lastUpdatedSongId;
@@ -68,10 +66,9 @@ class MusicPlayerService {
       if (state.processingState == ProcessingState.completed) {
         // If last song finishes → reset instead of full stop
         if (currentIndex >= (songs.length - 1)) {
-          if(_loopMode == LoopMode.off && currentIndex >= (songs.length - 1)){
+          if (_loopMode == LoopMode.off && currentIndex >= (songs.length - 1)) {
             player.stop();
-          }
-          else{
+          } else {
             await player.seek(Duration.zero);
             await player.play();
           }
@@ -93,10 +90,7 @@ class MusicPlayerService {
           if (_lastUpdatedSongId == current.id) return;
           try {
             final db = await AppDatabase.instance();
-            await db.rawUpdate(
-              "UPDATE songs SET play_count = play_count + 1, last_played = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW') WHERE id = ?",
-              [current.id],
-            );
+            await db.rawUpdate("UPDATE songs SET play_count = play_count + 1, last_played = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW') WHERE id = ?", [current.id]);
             // Notify listeners (e.g., playlist counts for system playlists)
             _libraryChangedController.add(null);
             _lastUpdatedSongId = current.id;
@@ -113,28 +107,21 @@ class MusicPlayerService {
       if (_lastUpdatedSongId == current.id) return;
       try {
         final db = await AppDatabase.instance();
-        await db.rawUpdate(
-          "UPDATE songs SET play_count = play_count + 1, last_played = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW') WHERE id = ?",
-          [current.id],
-        );
+        await db.rawUpdate("UPDATE songs SET play_count = play_count + 1, last_played = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW') WHERE id = ?", [current.id]);
         _libraryChangedController.add(null);
         _lastUpdatedSongId = current.id;
       } catch (_) {}
     });
   }
 
-  Future<void> setPlaylist(
-    List<SongsModel> songModels, {
-    int startIndex = 0,
-    bool autoPlay = true,
-  }) async
-  {
+  Future<void> setPlaylist(List<SongsModel> songModels, {int startIndex = 0, bool autoPlay = true}) async {
     if (songModels.isEmpty) return;
     songs = songModels;
 
     // Notify listeners that the songs list has changed
     _songsChangedController.add(songs);
 
+    log('hereeee kl');
     // final playlist = ConcatenatingAudioSource(
     //   useLazyPreparation: true,
     //   children: songModels
@@ -197,12 +184,13 @@ class MusicPlayerService {
     }
   }
 
-  Future<void> setShufflePlaylist(
-      List<SongsModel> songModels, {
-        int startIndex = 0,
-        bool autoPlay = true,
-      }) async
-  {
+  Future<void> resetPlaylist(List<SongsModel> songModels) async {
+    songs = songModels;
+    _songsChangedController.add(songs);
+    player.stop();
+  }
+
+  Future<void> setShufflePlaylist(List<SongsModel> songModels, {int startIndex = 0, bool autoPlay = true}) async {
     if (songModels.isEmpty) return;
     songs = songModels;
 

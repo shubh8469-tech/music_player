@@ -141,6 +141,7 @@ class ImportSongsService {
       Map<String, int> folderIds = {};
       Map<String, int> artistIds = {};
       Map<String, int> albumIds = {};
+      final Set<int> touchedAlbumIds = {};
 
       for (int i = 0; i < files.length; i++) {
         final file = files[i];
@@ -369,6 +370,7 @@ class ImportSongsService {
               }
               albumIds[albumKey] = albumId;
             }
+            touchedAlbumIds.add(albumId);
             await addSongToAlbumUseCase(albumId, songId);
           }
 
@@ -379,6 +381,11 @@ class ImportSongsService {
           failedCount++;
           failedFiles.add(file.name);
         }
+      }
+
+      // Refresh cached artist metadata for touched albums
+      for (final albumId in touchedAlbumIds) {
+        await albumRepository.refreshAlbumCachedArtists(albumId);
       }
 
       // Update album counts for artists

@@ -156,7 +156,7 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                               final artistArtworkPath =
                                   (artist.artworkPath?.isNotEmpty ?? false)
                                       ? artist.artworkPath!
-                                      : Assets.svgMusicIcon;
+                                      : Assets.svgProxyArtist;
                               return MusicListTile(
                                 margin: 7.w,
                                 height: 66.h,
@@ -167,8 +167,11 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                                 cardWidth: 50.w,
                                 cardRadius: 100.r,
                                 cardIconAsset: artistArtworkPath,
-                                isSvgColorNeeded: false,
-                                cardIconSize: 32.r,
+                                noLogoGradientColor: [
+                                  AppColors.black.withValues(alpha: 0.14),
+                                  AppColors.black.withValues(alpha: 0.14),
+                                ],
+                                cardIconSize: 19.r,
                                 title: artist.name,
                                 subtitle:
                                     '${artist.albumCount} Album${artist.albumCount != 1 ? 's' : ''} - ${artist.songCount} Songs',

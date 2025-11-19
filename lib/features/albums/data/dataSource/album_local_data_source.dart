@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:sqflite/sqflite.dart';
 import '../../../songs/data/models/song_model.dart';
 import '../models/album_model.dart';
@@ -10,6 +12,7 @@ abstract class AlbumLocalDataSource {
   Future<void> addSongToAlbum(int albumId, int songId);
   Future<List<SongsModel>> getSongsForAlbum(int albumId);
   Future<List<AlbumModel>> getAlbumsByArtist(String artistName);
+  Future<void> refreshAlbumCachedArtists(int albumId);
   Future<void> clearAllAlbums();
 }
 
@@ -80,13 +83,97 @@ class AlbumLocalDataSourceImpl implements AlbumLocalDataSource {
 
   @override
   Future<List<AlbumModel>> getAlbumsByArtist(String artistName) async {
+    final normalized = artistName.toLowerCase().trim();
+    if (normalized.isEmpty) return [];
+
     final result = await db.query(
       'albums',
-      where: 'LOWER(TRIM(artist)) = LOWER(TRIM(?))',
-      whereArgs: [artistName],
+      where: 'cached_artist_names IS NOT NULL AND cached_artist_names != ""',
       orderBy: 'year DESC, name ASC',
     );
-    return result.map((map) => AlbumModel.fromMap(map)).toList();
+
+    final albums = result.map((map) => AlbumModel.fromMap(map)).toList();
+    final matched = albums.where((album) {
+      final cachedMatch = album.cachedArtistNames.any(
+        (name) => name.toLowerCase().trim() == normalized,
+      );
+      if (cachedMatch) return true;
+      final legacyArtist = album.artist?.toLowerCase().trim();
+      return legacyArtist == normalized;
+    }).toList();
+
+    if (matched.isNotEmpty) return matched;
+
+    final fallbackIdsResult = await db.rawQuery(
+      '''
+      SELECT DISTINCT als.album_id
+      FROM songs s
+      INNER JOIN album_songs als ON s.id = als.song_id
+      WHERE LOWER(TRIM(COALESCE(s.artist, ''))) = ?
+    ''',
+      [normalized],
+    );
+
+    if (fallbackIdsResult.isEmpty) {
+      return [];
+    }
+
+    final ids = fallbackIdsResult
+        .map((row) => row['album_id'] as int)
+        .toSet()
+        .toList();
+
+    final placeholders = List.filled(ids.length, '?').join(',');
+    final fallbackAlbumsQuery = await db.query(
+      'albums',
+      where: 'id IN ($placeholders)',
+      whereArgs: ids,
+      orderBy: 'year DESC, name ASC',
+    );
+    final fallbackAlbums =
+        fallbackAlbumsQuery.map((map) => AlbumModel.fromMap(map)).toList();
+
+    for (final id in ids) {
+      await refreshAlbumCachedArtists(id);
+    }
+
+    return fallbackAlbums;
+  }
+
+  @override
+  Future<void> refreshAlbumCachedArtists(int albumId) async {
+    final artistsResult = await db.rawQuery(
+      '''
+      SELECT DISTINCT
+        CASE
+          WHEN s.artist IS NULL OR TRIM(s.artist) = ''
+            THEN 'Unknown Artist'
+          ELSE s.artist
+        END AS artist_name
+      FROM songs s
+      INNER JOIN album_songs als ON s.id = als.song_id
+      WHERE als.album_id = ?
+    ''',
+      [albumId],
+    );
+
+    final artists = artistsResult
+        .map((row) => (row['artist_name'] as String).trim())
+        .where((name) => name.isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+
+    await db.update(
+      'albums',
+      {
+        'cached_artist_names':
+            artists.isEmpty ? null : jsonEncode(artists),
+        'updated_time': DateTime.now().toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [albumId],
+    );
   }
 
   @override

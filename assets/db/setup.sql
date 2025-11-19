@@ -196,6 +196,7 @@ CREATE TABLE IF NOT EXISTS albums (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     artist TEXT,
+    cached_artist_names TEXT,
     song_count INTEGER NOT NULL DEFAULT 0,
     year INTEGER,
     artwork_path TEXT,

@@ -1,9 +1,11 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../features/songs/data/models/song_model.dart';
 import '../../../../generated/assets.dart';
 import '../../../../themes/color.dart';
 import '../../../../themes/font.dart';
@@ -27,6 +29,8 @@ class MiniPlayerBar extends StatelessWidget {
         final isPlaying = playingSnap.data ?? false;
         final hasAny = musicService.songs.isNotEmpty;
         if (!hasAny && !isPlaying) return const SizedBox.shrink();
+
+        log('in hereeeee again $hasAny $isPlaying');
 
         return GestureDetector(
           onTap: () {
@@ -94,7 +98,7 @@ class MiniPlayerBar extends StatelessWidget {
                                   : null;
                               final hasArtwork =
                                   currentSong?.artwork_path != null &&
-                                  currentSong!.artwork_path!.isNotEmpty;
+                                      currentSong!.artwork_path!.isNotEmpty;
 
                               return Stack(
                                 children: [
@@ -172,8 +176,8 @@ class MiniPlayerBar extends StatelessWidget {
                             final index = snapshot.data ?? 0;
                             final songName = musicService.songs.isNotEmpty
                                 ? musicService.songs[index].title
-                                      .split('/')
-                                      .last
+                                .split('/')
+                                .last
                                 : '';
                             final artistName = musicService.songs.isNotEmpty
                                 ? musicService.songs[index].artist

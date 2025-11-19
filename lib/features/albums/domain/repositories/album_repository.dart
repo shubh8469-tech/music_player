@@ -9,5 +9,6 @@ abstract class AlbumRepository {
   Future<void> addSongToAlbum(int albumId, int songId);
   Future<List<Song>> getSongsForAlbum(int albumId);
   Future<List<Album>> getAlbumsByArtist(String artistName);
+  Future<void> refreshAlbumCachedArtists(int albumId);
   Future<void> clearAllAlbums();
 }

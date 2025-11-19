@@ -99,6 +99,7 @@ class Assets {
   static const String svgPlayLogo = 'assets/svg/playLogo.svg';
   static const String svgPremium = 'assets/svg/premium.svg';
   static const String svgPrivacy = 'assets/svg/privacy.svg';
+  static const String svgProxyArtist = 'assets/svg/proxyArtist.svg';
   static const String svgRecentlyAdded = 'assets/svg/recentlyAdded.svg';
   static const String svgRecentlyPlayed = 'assets/svg/recently_played.svg';
   static const String svgRepeatOff = 'assets/svg/repeat_off.svg';

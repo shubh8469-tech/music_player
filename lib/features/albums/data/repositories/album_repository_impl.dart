@@ -20,6 +20,7 @@ class AlbumRepositoryImpl implements AlbumRepository {
       artworkPath: album.artworkPath,
       createdTime: album.createdTime,
       updatedTime: album.updatedTime,
+      cachedArtistNames: album.cachedArtistNames,
     );
     return await localDataSource.insertAlbum(albumModel);
   }
@@ -52,6 +53,11 @@ class AlbumRepositoryImpl implements AlbumRepository {
   @override
   Future<List<Album>> getAlbumsByArtist(String artistName) async {
     return await localDataSource.getAlbumsByArtist(artistName);
+  }
+
+  @override
+  Future<void> refreshAlbumCachedArtists(int albumId) async {
+    return await localDataSource.refreshAlbumCachedArtists(albumId);
   }
 
   @override

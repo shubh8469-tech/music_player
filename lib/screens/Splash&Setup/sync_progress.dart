@@ -82,7 +82,6 @@ class _SyncProgressState extends State<SyncProgress>
 
   Future<void> scanMusicFiles() async {
     try {
-
       final SongLocalDataSource localDataSource = locator();
 
       final AddSong addSongUseCase = locator();
@@ -110,6 +109,7 @@ class _SyncProgressState extends State<SyncProgress>
       Map<String, int> folderIds = {};
       Map<String, int> artistIds = {};
       Map<String, int> albumIds = {};
+      final Set<int> touchedAlbumIds = {};
 
       for (final song in songs) {
         final String path = song.data;
@@ -138,8 +138,7 @@ class _SyncProgressState extends State<SyncProgress>
               folderName = idx >= 0 ? path.substring(idx + 1) : path;
               folderPath = path;
             }
-          }
-          else {
+          } else {
             folderPath = p.dirname(path);
             folderName = p.basename(folderPath);
           }
@@ -328,6 +327,7 @@ class _SyncProgressState extends State<SyncProgress>
               albumIds[albumKey] = albumId;
               log('✓ Created new album "$albumName" (Various Artists)');
             }
+            touchedAlbumIds.add(albumId);
             await addSongToAlbumUseCase(albumId, song.id);
           }
 
@@ -341,7 +341,11 @@ class _SyncProgressState extends State<SyncProgress>
           scannedFiles.add(item);
           groupedByFolder.putIfAbsent(folderPath, () => []).add(item);
         }
+      }
 
+      // Refresh cached artist metadata for albums touched in this sync
+      for (final albumId in touchedAlbumIds) {
+        await albumRepository.refreshAlbumCachedArtists(albumId);
       }
 
       // Update album counts for artists
@@ -357,7 +361,7 @@ class _SyncProgressState extends State<SyncProgress>
 
       allSongs.forEach((song) {
         localDataSource.updateSongWithRelations(song);
-      },);
+      });
 
       // Debug output
       debugPrint("Found $scannedFiles");

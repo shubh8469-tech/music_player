@@ -236,6 +236,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                             artworkPath: _currentAlbum.artworkPath,
                             createdTime: _currentAlbum.createdTime,
                             updatedTime: _currentAlbum.updatedTime,
+                            cachedArtistNames: _currentAlbum.cachedArtistNames,
                           );
                         });
 
@@ -655,262 +656,263 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
           // ),
           // ],
         ),
-        body: Stack(
-          children: [
-            StreamBuilder<List<SongsModel>>(
-              stream: musicService.songsChanged,
-              initialData: musicService.songs,
-              builder: (context, snapshot) {
-                final albumArtworkPath =
-                    (_currentAlbum.artworkPath?.isNotEmpty ?? false)
-                    ? _currentAlbum.artworkPath!
-                    : Assets.svgAlbum;
-                // Always check the current state, not just the snapshot
-                // final hasAny = musicService.songs.isNotEmpty;
-                // final showMiniPlayer = hasAny;
+        body: SafeArea(
+          child: Stack(
+            children: [
+              StreamBuilder<List<SongsModel>>(
+                stream: musicService.songsChanged,
+                initialData: musicService.songs,
+                builder: (context, snapshot) {
+                  final albumArtworkPath =
+                      (_currentAlbum.artworkPath?.isNotEmpty ?? false)
+                      ? _currentAlbum.artworkPath!
+                      : Assets.svgAlbum;
+                  // Always check the current state, not just the snapshot
+                  final hasAny = musicService.songs.isNotEmpty;
+                  final showMiniPlayer = hasAny;
 
-                return Padding(
-                  padding: EdgeInsets.only(
-                    left: 20.w,
-                    right: 20.w,
-                    top: 10.h,
-                    // bottom: showMiniPlayer
-                    //     ? 74.h
-                    //     : 10.h, // Space for MiniPlayerBar (which includes system nav bar padding)
-                  ),
-                  child: SizedBox(
-                    height: double.infinity,
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          SizedBox(height: 15.h),
-                          GradientCard(
-                            height: 150.h,
-                            width: 150.w,
-                            colors: [
-                              AppColors.mildOrange.withValues(alpha: 0.21),
-                              AppColors.primaryOrange,
-                            ],
-                            borderRadius: 13.r,
-                            iconAsset: albumArtworkPath,
-                            iconSize: 60.r,
-                            margin: 10.w,
-                          ),
-                          SizedBox(height: 14.h),
-                          Texts(
-                            _currentAlbum.name,
-                            fontSize: 20.sp,
-                            fontWeight: AppFontWeights.medium,
-                            fontFamily: AppFonts.inter,
-                            color: AppColors.textColor,
-                            align: TextAlign.center,
-                          ),
-                          if (_currentAlbum.artist != null) ...[
-                            SizedBox(height: 4.h),
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      left: 20.w,
+                      right: 20.w,
+                      top: 10.h,
+                      bottom: showMiniPlayer
+                          ? 91.h
+                          : 3.h, // Space for MiniPlayerBar (which includes system nav bar padding)
+                    ),
+                    child: SizedBox(
+                      height: double.infinity,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            GradientCard(
+                              height: 150.h,
+                              width: 150.w,
+                              colors: [
+                                AppColors.mildOrange.withValues(alpha: 0.21),
+                                AppColors.primaryOrange,
+                              ],
+                              borderRadius: 13.r,
+                              iconAsset: albumArtworkPath,
+                              iconSize: 60.r,
+                              margin: 10.w,
+                            ),
+                            SizedBox(height: 14.h),
                             Texts(
-                              _currentAlbum.artist!,
-                              fontSize: 14.sp,
-                              fontWeight: AppFontWeights.regular,
+                              _currentAlbum.name,
+                              fontSize: 20.sp,
+                              fontWeight: AppFontWeights.medium,
                               fontFamily: AppFonts.inter,
-                              color: AppColors.mediumDarkGrey,
+                              color: AppColors.textColor,
                               align: TextAlign.center,
                             ),
-                          ],
-                          SizedBox(height: 25.h),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              GestureDetector(
-                                onTap: () async {
-                                  if (_songs.isEmpty) return;
+                            // if (_currentAlbum.artist != null) ...[
+                            //   SizedBox(height: 4.h),
+                            //   Texts(
+                            //     _currentAlbum.artist!,
+                            //     fontSize: 14.sp,
+                            //     fontWeight: AppFontWeights.regular,
+                            //     fontFamily: AppFonts.inter,
+                            //     color: AppColors.mediumDarkGrey,
+                            //     align: TextAlign.center,
+                            //   ),
+                            // ],
+                            SizedBox(height: 25.h),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                GestureDetector(
+                                  onTap: () async {
+                                    if (_songs.isEmpty) return;
 
-                                  if (musicService.currentIndex < 0) {
+                                    if (musicService.currentIndex < 0) {
+                                      await musicService.setPlaylist(
+                                        _songs,
+                                        autoPlay: false,
+                                        startIndex: 0,
+                                      );
+                                      await musicService.play();
+                                    } else {
+                                      context.push(
+                                        '/dashboard/playing',
+                                        extra: PlayingSongArgs(songs: _songs),
+                                      );
+                                      await musicService.setShufflePlaylist(
+                                        _songs,
+                                        autoPlay: false,
+                                      );
+                                      await musicService
+                                          .ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
+                                      await musicService.player.currentIndexStream
+                                          .firstWhere(
+                                            (idx) => idx != null && idx != 0,
+                                          );
+                                      await musicService.play();
+                                    }
+
+                                    logS.log("Shuffle Play started");
+                                  },
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    height: 40.h,
+                                    width: 165.w,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.shuffleBackground,
+                                      borderRadius: BorderRadius.circular(100.r),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SvgPicture.asset(
+                                          Assets.svgShuffle,
+                                          height: 16.79.h,
+                                          width: 17.77.w,
+                                        ),
+                                        SizedBox(width: 10.w),
+                                        Texts(
+                                          'Shuffle',
+                                          fontWeight: AppFontWeights.medium,
+                                          fontSize: 14.sp,
+                                          color: AppColors.black,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () async {
+                                    if (_baseSongs.isEmpty) return;
+                                    await musicService.ensureShuffleOff();
+
+                                    // Start from the first song of the album
                                     await musicService.setPlaylist(
-                                      _songs,
-                                      autoPlay: false,
+                                      List<SongsModel>.from(_baseSongs),
                                       startIndex: 0,
+                                      autoPlay: true,
                                     );
                                     await musicService.play();
-                                  } else {
-                                    context.push(
-                                      '/dashboard/playing',
-                                      extra: PlayingSongArgs(songs: _songs),
-                                    );
-                                    await musicService.setShufflePlaylist(
-                                      _songs,
-                                      autoPlay: false,
-                                    );
-                                    await musicService
-                                        .ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
-                                    await musicService.player.currentIndexStream
-                                        .firstWhere(
-                                          (idx) => idx != null && idx != 0,
-                                        );
-                                    await musicService.play();
-                                  }
-
-                                  logS.log("Shuffle Play started");
-                                },
-                                child: Container(
-                                  alignment: Alignment.center,
-                                  height: 40.h,
-                                  width: 165.w,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.shuffleBackground,
-                                    borderRadius: BorderRadius.circular(100.r),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SvgPicture.asset(
-                                        Assets.svgShuffle,
-                                        height: 16.79.h,
-                                        width: 17.77.w,
-                                      ),
-                                      SizedBox(width: 10.w),
-                                      Texts(
-                                        'Shuffle',
-                                        fontWeight: AppFontWeights.medium,
-                                        fontSize: 14.sp,
-                                        color: AppColors.black,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () async {
-                                  if (_baseSongs.isEmpty) return;
-                                  await musicService.ensureShuffleOff();
-
-                                  // Start from the first song of the album
-                                  await musicService.setPlaylist(
-                                    List<SongsModel>.from(_baseSongs),
-                                    startIndex: 0,
-                                    autoPlay: true,
-                                  );
-                                  await musicService.play();
-                                },
-                                child: Container(
-                                  height: 40.h,
-                                  width: 165.w,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryOrange,
-                                    borderRadius: BorderRadius.circular(100.r),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SvgPicture.asset(
-                                        Assets.svgPlay,
-                                        height: 16.79.h,
-                                        width: 17.77.w,
-                                      ),
-                                      SizedBox(width: 10.w),
-                                      Texts(
-                                        'Play',
-                                        fontWeight: AppFontWeights.medium,
-                                        fontSize: 14.sp,
-                                        color: AppColors.white,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 25.h),
-
-                          // Song count header
-                          Row(
-                            children: [
-                              // Bullets icon and song count
-                              GestureDetector(
-                                onTap: () {
-                                  // Navigate to select song screen for album management
-                                  context.push(
-                                    '/dashboard/select-song',
-                                    extra: {
-                                      'album': _currentAlbum,
-                                      'songs': _songs,
-                                      'isSystemPlaylist': false,
-                                    },
-                                  );
-                                },
-                                child: Row(
-                                  children: [
-                                    SvgPicture.asset(Assets.svgSongsCount),
-                                    SizedBox(width: 8.w),
-                                    Texts(
-                                      '${_currentAlbum.songCount} songs',
-                                      fontSize: 16.sp,
-                                      fontWeight: AppFontWeights.medium,
-                                      fontFamily: AppFonts.inter,
-                                      color: AppColors.textColor,
+                                  },
+                                  child: Container(
+                                    height: 40.h,
+                                    width: 165.w,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryOrange,
+                                      borderRadius: BorderRadius.circular(100.r),
                                     ),
-                                    if (_currentAlbum.year != null) ...[
-                                      SizedBox(width: 10.w),
-                                      Texts(
-                                        '• ${_currentAlbum.year}',
-                                        fontSize: 14.sp,
-                                        fontWeight: AppFontWeights.regular,
-                                        fontFamily: AppFonts.inter,
-                                        color: AppColors.mediumDarkGrey,
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-
-                              Spacer(),
-
-                              GestureDetector(
-                                onTap: () {
-                                  showModalBottomSheet(
-                                    context: context,
-                                    backgroundColor: Colors.white,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(40.r),
-                                      ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SvgPicture.asset(
+                                          Assets.svgPlay,
+                                          height: 16.79.h,
+                                          width: 17.77.w,
+                                        ),
+                                        SizedBox(width: 10.w),
+                                        Texts(
+                                          'Play',
+                                          fontWeight: AppFontWeights.medium,
+                                          fontSize: 14.sp,
+                                          color: AppColors.white,
+                                        ),
+                                      ],
                                     ),
-                                    isScrollControlled: true,
-                                    builder: (_) => _buildSortByBottomSheet(),
-                                  );
-                                },
-                                child: SvgPicture.asset(Assets.svgFilter),
-                              ),
-                            ],
-                          ),
-
-                          SizedBox(height: 37.h),
-
-                          if (_songs.isEmpty) ...{
-                            Center(
-                              child: Texts(
-                                'No songs available',
-                                fontSize: 16,
-                                fontWeight: AppFontWeights.regular,
-                                fontFamily: AppFonts.inter,
-                              ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          },
-                          Column(
-                            children: List.generate(_songs.length, (index) {
-                              return _songTile(_songs, index);
-                            }),
-                          ),
-                          SizedBox(height: 200.h),
-                        ],
+                            SizedBox(height: 25.h),
+
+                            // Song count header
+                            Row(
+                              children: [
+                                // Bullets icon and song count
+                                GestureDetector(
+                                  onTap: () {
+                                    // Navigate to select song screen for album management
+                                    context.push(
+                                      '/dashboard/select-song',
+                                      extra: {
+                                        'album': _currentAlbum,
+                                        'songs': _songs,
+                                        'isSystemPlaylist': false,
+                                      },
+                                    );
+                                  },
+                                  child: Row(
+                                    children: [
+                                      SvgPicture.asset(Assets.svgSongsCount),
+                                      SizedBox(width: 8.w),
+                                      Texts(
+                                        '${_currentAlbum.songCount} songs',
+                                        fontSize: 16.sp,
+                                        fontWeight: AppFontWeights.medium,
+                                        fontFamily: AppFonts.inter,
+                                        color: AppColors.textColor,
+                                      ),
+                                      if (_currentAlbum.year != null) ...[
+                                        SizedBox(width: 10.w),
+                                        Texts(
+                                          '• ${_currentAlbum.year}',
+                                          fontSize: 14.sp,
+                                          fontWeight: AppFontWeights.regular,
+                                          fontFamily: AppFonts.inter,
+                                          color: AppColors.mediumDarkGrey,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+
+                                Spacer(),
+
+                                GestureDetector(
+                                  onTap: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      backgroundColor: Colors.white,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(40.r),
+                                        ),
+                                      ),
+                                      isScrollControlled: true,
+                                      builder: (_) => _buildSortByBottomSheet(),
+                                    );
+                                  },
+                                  child: SvgPicture.asset(Assets.svgFilter),
+                                ),
+                              ],
+                            ),
+
+                            SizedBox(height: 25.h),
+
+                            if (_songs.isEmpty) ...{
+                              Center(
+                                child: Texts(
+                                  'No songs available',
+                                  fontSize: 16,
+                                  fontWeight: AppFontWeights.regular,
+                                  fontFamily: AppFonts.inter,
+                                ),
+                              ),
+                            },
+                            Column(
+                              children: List.generate(_songs.length, (index) {
+                                return _songTile(_songs, index);
+                              }),
+                            ),
+                            // SizedBox(height: 200.h),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
-            Positioned(left: 0, right: 0, bottom: 0, child: MiniPlayerBar()),
-          ],
+                  );
+                },
+              ),
+              Positioned(left: 0, right: 0, bottom: 0, child: MiniPlayerBar()),
+            ],
+          ),
         ),
       ),
     );

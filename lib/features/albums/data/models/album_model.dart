@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../../domain/entities/album.dart';
 
 class AlbumModel extends Album {
@@ -10,9 +12,14 @@ class AlbumModel extends Album {
     super.artworkPath,
     required super.createdTime,
     required super.updatedTime,
+    super.cachedArtistNames = const [],
   });
 
   factory AlbumModel.fromMap(Map<String, dynamic> map) {
+    final cachedArtistValue = map['cached_artist_names'] as String?;
+    final cachedArtists = (cachedArtistValue == null || cachedArtistValue.isEmpty)
+        ? <String>[]
+        : List<String>.from(jsonDecode(cachedArtistValue) as List);
     return AlbumModel(
       id: map['id'] as int,
       name: map['name'] as String,
@@ -22,6 +29,7 @@ class AlbumModel extends Album {
       artworkPath: map['artwork_path'] as String?,
       createdTime: DateTime.parse(map['created_time']),
       updatedTime: DateTime.parse(map['updated_time']),
+      cachedArtistNames: cachedArtists,
     );
   }
 
@@ -33,6 +41,8 @@ class AlbumModel extends Album {
       'song_count': songCount,
       'year': year,
       'artwork_path': artworkPath,
+      'cached_artist_names':
+          cachedArtistNames.isEmpty ? null : jsonEncode(cachedArtistNames),
       'created_time': createdTime.toIso8601String(),
       'updated_time': updatedTime.toIso8601String(),
     };

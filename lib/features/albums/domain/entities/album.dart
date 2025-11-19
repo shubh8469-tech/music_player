@@ -7,6 +7,7 @@ class Album {
   final String? artworkPath;
   final DateTime createdTime;
   final DateTime updatedTime;
+  final List<String> cachedArtistNames;
 
   Album({
     required this.id,
@@ -17,5 +18,6 @@ class Album {
     this.artworkPath,
     required this.createdTime,
     required this.updatedTime,
+    this.cachedArtistNames = const [],
   });
 }
