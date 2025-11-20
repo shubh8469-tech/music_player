@@ -445,16 +445,19 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
-                            GradientCard(
-                              height: 100.h,
-                              width: 100.w,
-                              colors: [AppColors.black.withValues(alpha: 0.14), AppColors.black.withValues(alpha: 0.14)],
-                              borderRadius: 100.r,
-                              iconAsset: artistArtworkPath,
-                              iconSize: 37.5.r,
-                              margin: 10.w,
+                            CircleAvatar(
+                              radius: 57.r,
+                              backgroundColor: Colors.transparent,
+                              child: GradientCard(
+                                height: 100.h,
+                                width: 100.w,
+                                colors: [AppColors.black.withValues(alpha: 0.14), AppColors.black.withValues(alpha: 0.14)],
+                                borderRadius: 50.r,
+                                iconAsset: artistArtworkPath,
+                                iconSize: 36.5.r,
+                                margin: 10.w,
+                              ),
                             ),
-                            SizedBox(height: 7.h),
                             Texts(
                               _currentArtist.name,
                               fontSize: 20.sp,
@@ -478,7 +481,7 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
                               ),
                               SizedBox(height: 8.h),
                               SizedBox(
-                                height: 165.h,
+                                height: 170.h,
                                 child: ListView.builder(
                                   scrollDirection: Axis.horizontal,
                                   itemCount: _albums.length,

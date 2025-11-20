@@ -17,6 +17,7 @@ import 'dart:async';
 import '../tabs/music_service.dart';
 import '../../features/playlists/bloc/playlist_bloc.dart';
 import '../../features/songs/data/models/song_model.dart';
+import 'widgets/music_drawer.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -29,6 +30,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int currentIndex = 0;
   final _musicService = MusicPlayerService();
   final _libraryController = LibraryScreenController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   late List<Widget> screens;
 
@@ -75,9 +77,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.dispose();
   }
 
+  void _handleDrawerAction(MusicDrawerAction action) {
+    switch (action) {
+      case MusicDrawerAction.library:
+        setState(() {
+          currentIndex = 2;
+        });
+        break;
+      case MusicDrawerAction.settings:
+        context.push('/dashboard/settings');
+        break;
+      case MusicDrawerAction.equalizer:
+      case MusicDrawerAction.sleepTimer:
+      case MusicDrawerAction.theme:
+      case MusicDrawerAction.widgets:
+      case MusicDrawerAction.musicStops:
+      case MusicDrawerAction.removeAds:
+        final labels = {
+          MusicDrawerAction.equalizer: 'Equalizer',
+          MusicDrawerAction.sleepTimer: 'Sleep timer',
+          MusicDrawerAction.theme: 'Theme',
+          MusicDrawerAction.widgets: 'Widgets',
+          MusicDrawerAction.musicStops: 'Music stops playing?',
+          MusicDrawerAction.removeAds: 'Remove ads',
+        };
+        _showComingSoon(labels[action] ?? 'This');
+        break;
+    }
+  }
+
+  void _showComingSoon(String featureName) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$featureName feature coming soon'),
+        backgroundColor: AppColors.primaryOrange,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: MusicDrawer(
+        onAction: _handleDrawerAction,
+      ),
       appBar: currentIndex != 1
           ? AppBar(
               backgroundColor: AppColors.primaryOrange,
@@ -85,10 +131,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
               toolbarHeight: 58.h,
               leading: Padding(
                 padding: EdgeInsets.only(left: 22.w),
-                child: SizedBox(
-                  width: 26.w,
-                  height: 26.h,
-                  child: SvgPicture.asset(
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
+                      _scaffoldKey.currentState?.closeDrawer();
+                    } else {
+                      _scaffoldKey.currentState?.openDrawer();
+                    }
+                  },
+                  icon: SvgPicture.asset(
                     Assets.svgDrawer,
                     colorFilter: const ColorFilter.mode(
                       AppColors.white,

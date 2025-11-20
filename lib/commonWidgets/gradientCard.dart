@@ -47,27 +47,48 @@ class GradientCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            margin: EdgeInsets.only(right: margin),
-            height: height,
-            width: width,
-            decoration: (iconAsset.isEmpty || iconAsset.contains('.svg')) && !iconAsset.contains('directory')
-                ? BoxDecoration(
-                    gradient: LinearGradient(colors: colors, begin: Alignment.bottomLeft, end: Alignment.topRight),
-                    borderRadius: BorderRadius.circular(borderRadius),
-                  )
-                : BoxDecoration(
-                    borderRadius: BorderRadius.circular(borderRadius),
-                  ),
-            child: Center(
-              child: iconAsset.isEmpty || iconAsset.contains('.svg')
-                  ? SvgPicture.asset(iconAsset.isEmpty ? Assets.svgMusicIcon : iconAsset, height: iconSize, width: iconSize)
-                  : ClipRRect(
-                      borderRadius: BorderRadius.circular(borderRadius),
-                      child: Image.file(File(iconAsset), fit: BoxFit.cover),
+          borderRadius == 100.r
+              ? CircleAvatar(
+            backgroundColor: Colors.transparent,
+                  child: Container(
+                    margin: EdgeInsets.only(right: margin),
+                    height: height,
+                    width: width,
+                    decoration: (iconAsset.isEmpty || iconAsset.contains('.svg')) && !iconAsset.contains('directory')
+                        ? BoxDecoration(
+                            gradient: LinearGradient(colors: colors, begin: Alignment.bottomLeft, end: Alignment.topRight),
+                            borderRadius: BorderRadius.circular(borderRadius),
+                          )
+                        : BoxDecoration(borderRadius: BorderRadius.circular(borderRadius)),
+                    child: Center(
+                      child: iconAsset.isEmpty || iconAsset.contains('.svg')
+                          ? SvgPicture.asset(iconAsset.isEmpty ? Assets.svgMusicIcon : iconAsset, height: iconSize, width: iconSize)
+                          : ClipRRect(
+                              borderRadius: BorderRadius.circular(borderRadius),
+                              child: Image.file(File(iconAsset), fit: BoxFit.cover),
+                            ),
                     ),
-            ),
-          ),
+                  ),
+                )
+              : Container(
+                  margin: EdgeInsets.only(right: margin),
+                  height: height,
+                  width: width,
+                  decoration: (iconAsset.isEmpty || iconAsset.contains('.svg')) && !iconAsset.contains('directory')
+                      ? BoxDecoration(
+                          gradient: LinearGradient(colors: colors, begin: Alignment.bottomLeft, end: Alignment.topRight),
+                          borderRadius: BorderRadius.circular(borderRadius),
+                        )
+                      : BoxDecoration(borderRadius: BorderRadius.circular(borderRadius)),
+                  child: Center(
+                    child: iconAsset.isEmpty || iconAsset.contains('.svg')
+                        ? SvgPicture.asset(iconAsset.isEmpty ? Assets.svgMusicIcon : iconAsset, height: iconSize, width: iconSize)
+                        : ClipRRect(
+                            borderRadius: BorderRadius.circular(borderRadius),
+                            child: Image.file(File(iconAsset), fit: BoxFit.cover),
+                          ),
+                  ),
+                ),
           if (title != null)
             Container(
               margin: EdgeInsets.only(right: margin, top: 5.h),

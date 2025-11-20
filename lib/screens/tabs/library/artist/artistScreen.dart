@@ -165,7 +165,7 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                                     AppColors.musicTileBackgroundColor,
                                 cardHeight: 50.h,
                                 cardWidth: 50.w,
-                                cardRadius: 100.r,
+                                cardRadius: 100.r, 
                                 cardIconAsset: artistArtworkPath,
                                 noLogoGradientColor: [
                                   AppColors.black.withValues(alpha: 0.14),

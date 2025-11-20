@@ -91,6 +91,7 @@ class Assets {
   static const String svgMostPlayed = 'assets/svg/mostPlayed.svg';
   static const String svgMusicIcon = 'assets/svg/musicIcon.svg';
   static const String svgMusicLibrary = 'assets/svg/musicLibrary.svg';
+  static const String svgMusicStops = 'assets/svg/musicStops.svg';
   static const String svgNewPause = 'assets/svg/newPause.svg';
   static const String svgPause = 'assets/svg/pause.svg';
   static const String svgPauseHead = 'assets/svg/pause_head.svg';
@@ -102,6 +103,7 @@ class Assets {
   static const String svgProxyArtist = 'assets/svg/proxyArtist.svg';
   static const String svgRecentlyAdded = 'assets/svg/recentlyAdded.svg';
   static const String svgRecentlyPlayed = 'assets/svg/recently_played.svg';
+  static const String svgRemoveAds = 'assets/svg/removeAds.svg';
   static const String svgRepeatOff = 'assets/svg/repeat_off.svg';
   static const String svgRepeatOn = 'assets/svg/repeat_on.svg';
   static const String svgRepeatOnce = 'assets/svg/repeat_once.svg';
@@ -115,5 +117,6 @@ class Assets {
   static const String svgTermsDoc = 'assets/svg/termsDoc.svg';
   static const String svgThemeBrush = 'assets/svg/themeBrush.svg';
   static const String svgVersion = 'assets/svg/version.svg';
+  static const String svgWidget = 'assets/svg/widget.svg';
 
 }
