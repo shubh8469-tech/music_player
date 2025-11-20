@@ -9,5 +9,6 @@ abstract class ArtistRepository {
   Future<void> addSongToArtist(int artistId, int songId);
   Future<List<Song>> getSongsForArtist(int artistId);
   Future<void> updateArtistAlbumCount(int artistId, int albumCount);
+  Future<void> updateArtistCover(int artistId, String? coverPath);
   Future<void> clearAllArtists();
 }

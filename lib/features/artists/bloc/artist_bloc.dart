@@ -5,6 +5,7 @@ import '../../songs/domain/entities/song.dart';
 import '../domain/entities/artist.dart';
 import '../domain/usecases/get_all_artists.dart';
 import '../domain/usecases/get_artist_songs.dart';
+import '../domain/usecases/update_artist_cover.dart';
 
 part 'artist_event.dart';
 part 'artist_state.dart';
@@ -13,8 +14,13 @@ part 'artist_bloc.freezed.dart';
 class ArtistBloc extends Bloc<ArtistEvent, ArtistState> {
   final GetAllArtists getAllArtists;
   final GetArtistSongs getArtistSongs;
+  final UpdateArtistCover updateArtistCoverUseCase;
 
-  ArtistBloc({required this.getAllArtists, required this.getArtistSongs})
+  ArtistBloc({
+    required this.getAllArtists,
+    required this.getArtistSongs,
+    required this.updateArtistCoverUseCase,
+  })
     : super(const ArtistState.initial()) {
     on<_FetchAllArtists>((event, emit) async {
       try {
@@ -94,6 +100,38 @@ class ArtistBloc extends Bloc<ArtistEvent, ArtistState> {
       } catch (e) {
         log('Error sorting artists: $e');
         emit(ArtistState.error(e.toString()));
+      }
+    });
+
+    on<_UpdateArtistCover>((event, emit) async {
+      try {
+        await updateArtistCoverUseCase(event.artistId, event.coverPath);
+        final currentState = state;
+        if (currentState is _Loaded) {
+          final updatedArtists = currentState.artists.map((artist) {
+            if (artist.id == event.artistId) {
+              return Artist(
+                id: artist.id,
+                name: artist.name,
+                songCount: artist.songCount,
+                albumCount: artist.albumCount,
+                artworkPath: event.coverPath,
+                createdTime: artist.createdTime,
+                updatedTime: DateTime.now(),
+              );
+            }
+            return artist;
+          }).toList();
+
+          emit(
+            ArtistState.loaded(
+              updatedArtists,
+              artistSongs: currentState.artistSongs,
+            ),
+          );
+        }
+      } catch (e) {
+        log('Error updating artist cover: $e');
       }
     });
   }

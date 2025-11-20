@@ -244,7 +244,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.only(top: 30.h),
+          padding: EdgeInsets.only(top: 27.h),
           child: Column(
             children: [
               currentSong?.artwork_path != null &&
@@ -255,8 +255,8 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
                         borderRadius: BorderRadius.circular(9.r),
                         child: Image.file(
                           File(currentSong!.artwork_path!),
-                          width: 250.w,
-                          height: 250.w,
+                          width: 240.w,
+                          height: 240.w,
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -264,8 +264,8 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
                   : Padding(
                       padding: EdgeInsets.symmetric(horizontal: 17.w),
                       child: GradientCard(
-                        width: 250.w,
-                        height: 250.w,
+                        width: 240.w,
+                        height: 240.w,
                         borderRadius: 10.r,
                         iconAsset: Assets.svgMusicIcon,
                         iconSize: 100.r,
@@ -277,13 +277,13 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
                         ],
                       ),
                     ),
-              SizedBox(height: 30.h),
+              SizedBox(height: 25.h),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 17.w),
                 child: Column(
                   children: [
                     songTitlePlaylistWidget(currentSong),
-                    SizedBox(height: 33.h),
+                    SizedBox(height: 27.h),
                     songPropertiesWidget(),
                   ],
                 ),
@@ -299,7 +299,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
 
   Widget songTitlePlaylistWidget(SongsModel? currentSong) {
     return SizedBox(
-      height: 111.h,
+      height: 100.h,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,

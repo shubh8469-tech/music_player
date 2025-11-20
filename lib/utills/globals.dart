@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:music_app/app_router.dart';
 
 import '../generated/assets.dart';
@@ -29,6 +31,7 @@ final List<SongMenuItem> songMenuItems = [
     icon: Assets.svgIcEdit,
     title: S.of(rootNavigatorKey.currentContext!).editDetails,
   ),
+  if(!Platform.isIOS)
   SongMenuItem(
     icon: Assets.svgIcRingtone,
     title: S.of(rootNavigatorKey.currentContext!).setAsRingtone,

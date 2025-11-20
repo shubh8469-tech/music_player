@@ -272,21 +272,21 @@ class _SongsListState extends State<SongsList> {
                                   ),
                                 ),
                                 Spacer(),
-                                GestureDetector(
-                                  onTap: () {
-                                    context.push('/dashboard/hidden-music');
-                                  },
-                                  child: SvgPicture.asset(
-                                    Assets.svgIcHide,
-                                    height: 20.h,
-                                    width: 20.w,
-                                    colorFilter: const ColorFilter.mode(
-                                      AppColors.textColor,
-                                      BlendMode.srcIn,
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: 18.w),
+                                // GestureDetector(
+                                //   onTap: () {
+                                //     context.push('/dashboard/hidden-music');
+                                //   },
+                                //   child: SvgPicture.asset(
+                                //     Assets.svgIcHide,
+                                //     height: 20.h,
+                                //     width: 20.w,
+                                //     colorFilter: const ColorFilter.mode(
+                                //       AppColors.textColor,
+                                //       BlendMode.srcIn,
+                                //     ),
+                                //   ),
+                                // ),
+                                // SizedBox(width: 18.w),
                                 GestureDetector(
                                   onTap: () {
                                     showModalBottomSheet(

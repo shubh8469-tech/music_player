@@ -91,7 +91,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
           ),
         ),
 
-        SizedBox(height: 20.h),
+        SizedBox(height: 10.h),
 
         // Controls
         Row(

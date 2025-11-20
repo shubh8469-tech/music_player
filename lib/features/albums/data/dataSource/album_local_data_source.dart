@@ -13,6 +13,7 @@ abstract class AlbumLocalDataSource {
   Future<List<SongsModel>> getSongsForAlbum(int albumId);
   Future<List<AlbumModel>> getAlbumsByArtist(String artistName);
   Future<void> refreshAlbumCachedArtists(int albumId);
+  Future<void> updateAlbumCover(int albumId, String? coverPath);
   Future<void> clearAllAlbums();
 }
 
@@ -169,6 +170,19 @@ class AlbumLocalDataSourceImpl implements AlbumLocalDataSource {
       {
         'cached_artist_names':
             artists.isEmpty ? null : jsonEncode(artists),
+        'updated_time': DateTime.now().toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [albumId],
+    );
+  }
+
+  @override
+  Future<void> updateAlbumCover(int albumId, String? coverPath) async {
+    await db.update(
+      'albums',
+      {
+        'artwork_path': coverPath,
         'updated_time': DateTime.now().toIso8601String(),
       },
       where: 'id = ?',

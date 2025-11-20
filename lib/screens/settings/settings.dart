@@ -169,8 +169,8 @@ class _SettingsPageState extends State<SettingsPage> {
               ? CrossAxisAlignment.start
               : CrossAxisAlignment.center,
           children: [
-            SvgPicture.asset(asset, width: 24.w, height: 24.w),
-            SizedBox(width: 16.w),
+            SvgPicture.asset(asset, colorFilter: ColorFilter.mode(AppColors.textColor.withValues(alpha: 0.5), BlendMode.srcIn),),
+            SizedBox(width: 17.5.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

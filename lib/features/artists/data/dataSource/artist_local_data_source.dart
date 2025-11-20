@@ -10,6 +10,7 @@ abstract class ArtistLocalDataSource {
   Future<void> addSongToArtist(int artistId, int songId);
   Future<List<SongsModel>> getSongsForArtist(int artistId);
   Future<void> updateArtistAlbumCount(int artistId, int albumCount);
+  Future<void> updateArtistCover(int artistId, String? coverPath);
   Future<void> clearAllArtists();
 }
 
@@ -80,6 +81,19 @@ class ArtistLocalDataSourceImpl implements ArtistLocalDataSource {
     await db.update(
       'artists',
       {'album_count': albumCount},
+      where: 'id = ?',
+      whereArgs: [artistId],
+    );
+  }
+
+  @override
+  Future<void> updateArtistCover(int artistId, String? coverPath) async {
+    await db.update(
+      'artists',
+      {
+        'artwork_path': coverPath,
+        'updated_time': DateTime.now().toIso8601String(),
+      },
       where: 'id = ?',
       whereArgs: [artistId],
     );

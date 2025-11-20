@@ -12,10 +12,12 @@ import 'package:music_app/features/folders/domain/usecases/delete_folder.dart';
 import 'package:music_app/features/artists/bloc/artist_bloc.dart';
 import 'package:music_app/features/artists/domain/usecases/get_all_artists.dart';
 import 'package:music_app/features/artists/domain/usecases/get_artist_songs.dart';
+import 'package:music_app/features/artists/domain/usecases/update_artist_cover.dart';
 import 'package:music_app/features/albums/bloc/album_bloc.dart';
 import 'package:music_app/features/albums/domain/usecases/get_all_albums.dart';
 import 'package:music_app/features/albums/domain/usecases/get_album_songs.dart';
 import 'package:music_app/features/albums/domain/usecases/get_albums_by_artist.dart';
+import 'package:music_app/features/albums/domain/usecases/update_album_cover.dart';
 import 'Blocs/languageBloc/language_bloc.dart';
 import 'app_router.dart';
 import 'core/di/injection.dart';
@@ -84,6 +86,7 @@ Future<void> main() async {
               create: (_) => ArtistBloc(
                 getAllArtists: locator<GetAllArtists>(),
                 getArtistSongs: locator<GetArtistSongs>(),
+                updateArtistCoverUseCase: locator<UpdateArtistCover>(),
               ),
             ),
             BlocProvider<AlbumBloc>(
@@ -91,6 +94,7 @@ Future<void> main() async {
                 getAllAlbums: locator<GetAllAlbums>(),
                 getAlbumSongs: locator<GetAlbumSongs>(),
                 getAlbumsByArtist: locator<GetAlbumsByArtist>(),
+                updateAlbumCoverUseCase: locator<UpdateAlbumCover>(),
               ),
             ),
             BlocProvider<SongsBloc>(

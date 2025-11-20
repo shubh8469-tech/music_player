@@ -9,4 +9,6 @@ class AlbumEvent with _$AlbumEvent {
       _FetchAlbumsByArtist;
   const factory AlbumEvent.sortAlbums(int sortIndex, int sortOrder) =
       _SortAlbums;
+  const factory AlbumEvent.updateAlbumCover(int albumId, String coverPath) =
+      _UpdateAlbumCover;
 }

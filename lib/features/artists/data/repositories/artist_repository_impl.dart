@@ -54,6 +54,11 @@ class ArtistRepositoryImpl implements ArtistRepository {
   }
 
   @override
+  Future<void> updateArtistCover(int artistId, String? coverPath) async {
+    return await localDataSource.updateArtistCover(artistId, coverPath);
+  }
+
+  @override
   Future<void> clearAllArtists() async {
     return await localDataSource.clearAllArtists();
   }

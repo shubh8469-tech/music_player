@@ -6,4 +6,6 @@ class ArtistEvent with _$ArtistEvent {
   const factory ArtistEvent.fetchSongsForArtist(int artistId) =
       _FetchSongsForArtist;
   const factory ArtistEvent.sortArtists(int sortIndex, int order) = _SortArtists;
+  const factory ArtistEvent.updateArtistCover(int artistId, String coverPath) =
+      _UpdateArtistCover;
 }

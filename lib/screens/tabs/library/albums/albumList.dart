@@ -1,9 +1,17 @@
+import 'dart:developer';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image/image.dart' as img;
 import 'package:music_app/themes/color.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import '../../../../commonWidgets/gradientCard.dart';
 import '../../../../commonWidgets/MusicListTile.dart';
 import '../../../../commonWidgets/textWidget.dart';
@@ -19,6 +27,7 @@ import '../../../../themes/font.dart';
 import '../../../../utills/globals.dart';
 import '../../../../utills/snack_bar.dart';
 import '../../music_service.dart';
+import '../../../common/image_crop_screen.dart';
 import '../../../play_song/widget/playlist_bottomsheet.dart';
 import 'sort_by_bottomsheet.dart';
 
@@ -343,6 +352,14 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                     itemCount: albumMenuItems.length,
                     itemBuilder: (context, index) {
                       final menuItem = albumMenuItems[index];
+                      final isChangeCoverItem =
+                          menuItem.title == S.of(context).hideFolder;
+                      final displayTitle = isChangeCoverItem
+                          ? S.of(context).changeCover
+                          : menuItem.title;
+                      final displayIcon = isChangeCoverItem
+                          ? Assets.svgIcCover
+                          : menuItem.icon;
                       return Column(
                         children: [
                           ListTile(
@@ -352,19 +369,19 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                               vertical: 0.h,
                             ),
                             leading: SvgPicture.asset(
-                              menuItem.icon,
+                              displayIcon,
                               height: 24,
                               width: 24,
                             ),
                             title: Texts(
-                              menuItem.title,
+                              displayTitle,
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w400,
                               fontFamily: AppFonts.inter,
                             ),
                             onTap: () {
                               Navigator.pop(context);
-                              _handleAlbumMenuAction(menuItem.title, album);
+                              _handleAlbumMenuAction(displayTitle, album);
                             },
                           ),
                           if (index == 3) ...[
@@ -429,6 +446,8 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
       _addAlbumToQueue(album);
     } else if (menuTitle == S.of(context).addToPlaylist) {
       _addAlbumToPlaylist(album);
+    } else if (menuTitle == S.of(context).changeCover) {
+      _handleAlbumChangeCover(album);
     }
   }
 
@@ -637,4 +656,320 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
       }
     }
   }
+
+  Future<void> _handleAlbumChangeCover(Album album) async {
+    if (album.id == null) return;
+    final action = await _showChangeCoverSelectionSheet();
+    if (!mounted || action == null) return;
+
+    if (action == _ChangeCoverAction.localGallery) {
+      await _handleAlbumLocalGalleryCover(album);
+    } else if (action == _ChangeCoverAction.searchOnline) {
+      showSnackBar(
+        context,
+        () {},
+        message: 'Search online feature coming soon',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    }
+  }
+
+  Future<_ChangeCoverAction?> _showChangeCoverSelectionSheet() {
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+    final bottomPadding = viewInsets > 0
+        ? viewInsets + 16.h
+        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+
+    return showModalBottomSheet<_ChangeCoverAction>(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 20.w,
+            right: 20.w,
+            bottom: bottomPadding,
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(32.r),
+            ),
+            padding: EdgeInsets.symmetric(
+              horizontal: 20.w,
+              vertical: 24.h,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 48.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 18.h),
+                Center(
+                  child: Texts(
+                    'Select cover from',
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: AppFonts.inter,
+                    color: AppColors.textColor,
+                  ),
+                ),
+                SizedBox(height: 24.h),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Container(
+                    width: 21.w,
+                    height: 21.w,
+                    decoration: BoxDecoration(
+                      color: AppColors.white.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: SvgPicture.asset(
+                      Assets.svgLocalGallery,
+                      colorFilter: const ColorFilter.mode(
+                        AppColors.black,
+                        BlendMode.srcIn,
+                      ),
+                      height: 16.h,
+                      width: 16.h,
+                    ),
+                  ),
+                  title: Texts(
+                    'Local gallery',
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: AppFonts.inter,
+                    color: AppColors.textColor,
+                  ),
+                  onTap: () {
+                    Navigator.pop(sheetContext, _ChangeCoverAction.localGallery);
+                  },
+                ),
+                Divider(
+                  color: Colors.black.withOpacity(0.08),
+                  height: 12.h,
+                  thickness: 0.8,
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Container(
+                    width: 23.w,
+                    height: 23.w,
+                    decoration: BoxDecoration(
+                      color: AppColors.white.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: SvgPicture.asset(
+                      Assets.svgSearch,
+                      colorFilter: const ColorFilter.mode(
+                        AppColors.black,
+                        BlendMode.srcIn,
+                      ),
+                      height: 16.h,
+                      width: 16.h,
+                    ),
+                  ),
+                  title: Texts(
+                    'Search online',
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: AppFonts.inter,
+                    color: AppColors.textColor,
+                  ),
+                  onTap: () {
+                    Navigator.pop(
+                      sheetContext,
+                      _ChangeCoverAction.searchOnline,
+                    );
+                  },
+                ),
+                SizedBox(height: 24.h),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    height: 48.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.black.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(24.r),
+                    ),
+                    child: Texts(
+                      'Close',
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: AppFonts.inter,
+                      color: AppColors.textColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _handleAlbumLocalGalleryCover(Album album) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+        withData: true,
+      );
+
+      if (result == null || result.files.isEmpty) {
+        return;
+      }
+
+      final file = result.files.first;
+      Uint8List? bytes = file.bytes;
+
+      if (bytes == null && file.path != null) {
+        bytes = await File(file.path!).readAsBytes();
+      }
+
+      if (bytes == null) {
+        if (!mounted) return;
+        showSnackBar(
+          context,
+          () {},
+          message: 'Unable to read selected image',
+          backgroundColor: Colors.red,
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+        return;
+      }
+
+      final croppedBytes = await Navigator.of(context).push<Uint8List>(
+        MaterialPageRoute(
+          builder: (_) => ImageCropScreen(imageBytes: bytes!),
+          fullscreenDialog: true,
+        ),
+      );
+
+      if (croppedBytes == null) return;
+
+      final optimizedBytes = await _optimizeCoverImage(croppedBytes);
+      final savedFile = await _persistAlbumCoverFile(album.id!, optimizedBytes);
+
+      await _cleanupAlbumCover(album.artworkPath);
+      context.read<AlbumBloc>().add(
+            AlbumEvent.updateAlbumCover(
+              album.id!,
+              savedFile.path,
+            ),
+          );
+
+      if (!mounted) return;
+
+      showSnackBar(
+        context,
+        () {},
+        message: 'Album cover updated successfully',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    } catch (e) {
+      log('Failed to update album cover: $e');
+      if (!mounted) return;
+      showSnackBar(
+        context,
+        () {},
+        message: 'Failed to update cover: $e',
+        backgroundColor: Colors.red,
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    }
+  }
+
+  Future<Uint8List> _optimizeCoverImage(Uint8List bytes) async {
+    final decoded = img.decodeImage(bytes);
+    if (decoded == null) {
+      throw Exception('Unsupported image format');
+    }
+
+    const maxDimension = 720;
+    img.Image processed = decoded;
+    final largestSide =
+        decoded.width > decoded.height ? decoded.width : decoded.height;
+
+    if (largestSide > maxDimension) {
+      if (decoded.width >= decoded.height) {
+        processed = img.copyResize(
+          decoded,
+          width: maxDimension,
+          height: (decoded.height * maxDimension / decoded.width).round(),
+        );
+      } else {
+        processed = img.copyResize(
+          decoded,
+          height: maxDimension,
+          width: (decoded.width * maxDimension / decoded.height).round(),
+        );
+      }
+    }
+
+    final optimizedBytes = img.encodeJpg(
+      processed,
+      quality: 85,
+    );
+
+    return Uint8List.fromList(optimizedBytes);
+  }
+
+  Future<File> _persistAlbumCoverFile(int albumId, Uint8List bytes) async {
+    final documentsDir = await getApplicationDocumentsDirectory();
+    final coversDir = Directory(
+      p.join(documentsDir.path, 'covers', 'albums'),
+    );
+
+    if (!await coversDir.exists()) {
+      await coversDir.create(recursive: true);
+    }
+
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final fileName = 'album_${albumId}_$timestamp.jpg';
+    final filePath = p.join(coversDir.path, fileName);
+    final file = File(filePath);
+    await file.writeAsBytes(bytes, flush: true);
+    return file;
+  }
+
+  Future<void> _cleanupAlbumCover(String? existingPath) async {
+    if (existingPath == null || existingPath.isEmpty) {
+      return;
+    }
+
+    try {
+      final documentsDir = await getApplicationDocumentsDirectory();
+      final coversDirPath = p.join(documentsDir.path, 'covers', 'albums');
+
+      if (p.isWithin(coversDirPath, existingPath)) {
+        final existingFile = File(existingPath);
+        if (await existingFile.exists()) {
+          await existingFile.delete();
+        }
+      }
+    } catch (e) {
+      log('Failed to remove previous album cover: $e');
+    }
+  }
+}
+
+enum _ChangeCoverAction {
+  localGallery,
+  searchOnline,
 }

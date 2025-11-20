@@ -61,6 +61,11 @@ class AlbumRepositoryImpl implements AlbumRepository {
   }
 
   @override
+  Future<void> updateAlbumCover(int albumId, String? coverPath) async {
+    return await localDataSource.updateAlbumCover(albumId, coverPath);
+  }
+
+  @override
   Future<void> clearAllAlbums() async {
     return await localDataSource.clearAllAlbums();
   }

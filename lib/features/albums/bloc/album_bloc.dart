@@ -6,6 +6,7 @@ import '../domain/entities/album.dart';
 import '../domain/usecases/get_all_albums.dart';
 import '../domain/usecases/get_album_songs.dart';
 import '../domain/usecases/get_albums_by_artist.dart';
+import '../domain/usecases/update_album_cover.dart';
 
 part 'album_event.dart';
 part 'album_state.dart';
@@ -15,11 +16,13 @@ class AlbumBloc extends Bloc<AlbumEvent, AlbumState> {
   final GetAllAlbums getAllAlbums;
   final GetAlbumSongs getAlbumSongs;
   final GetAlbumsByArtist getAlbumsByArtist;
+  final UpdateAlbumCover updateAlbumCoverUseCase;
 
   AlbumBloc({
     required this.getAllAlbums,
     required this.getAlbumSongs,
     required this.getAlbumsByArtist,
+    required this.updateAlbumCoverUseCase,
   }) : super(const AlbumState.initial()) {
     on<_FetchAllAlbums>((event, emit) async {
       try {
@@ -110,6 +113,40 @@ class AlbumBloc extends Bloc<AlbumEvent, AlbumState> {
       } catch (e) {
         log('Error sorting albums: $e');
         emit(AlbumState.error(e.toString()));
+      }
+    });
+
+    on<_UpdateAlbumCover>((event, emit) async {
+      try {
+        await updateAlbumCoverUseCase(event.albumId, event.coverPath);
+        final currentState = state;
+        if (currentState is _Loaded) {
+          final updatedAlbums = currentState.albums.map((album) {
+            if (album.id == event.albumId) {
+              return Album(
+                id: album.id,
+                name: album.name,
+                artist: album.artist,
+                songCount: album.songCount,
+                year: album.year,
+                artworkPath: event.coverPath,
+                createdTime: album.createdTime,
+                updatedTime: DateTime.now(),
+                cachedArtistNames: album.cachedArtistNames,
+              );
+            }
+            return album;
+          }).toList();
+
+          emit(
+            AlbumState.loaded(
+              updatedAlbums,
+              albumSongs: currentState.albumSongs,
+            ),
+          );
+        }
+      } catch (e) {
+        log('Error updating album cover: $e');
       }
     });
   }
