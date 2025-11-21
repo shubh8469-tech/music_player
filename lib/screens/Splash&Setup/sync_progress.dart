@@ -409,6 +409,7 @@ class _SyncProgressState extends State<SyncProgress>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.white,
       body: Center(
         child: Stack(
           children: [
