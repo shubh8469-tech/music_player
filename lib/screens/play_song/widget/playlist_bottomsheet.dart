@@ -9,7 +9,9 @@ import '../../../../features/playlists/domain/entities/playlist.dart' as domain;
 import '../../../commonWidgets/MusicListTile.dart';
 import '../../../commonWidgets/bottom_button_two.dart';
 import '../../../commonWidgets/textWidget.dart';
+import '../../../core/di/injection.dart';
 import '../../../features/playlists/bloc/playlist_bloc.dart';
+import '../../../features/playlists/domain/repositories/playlist_repository.dart';
 import '../../../features/songs/data/models/song_model.dart';
 import '../../../generated/assets.dart';
 import '../../../l10n/l10n.dart';
@@ -143,20 +145,89 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
                                       selectedPlaylist = playlist.id!;
                                     }
                                   }),
+
+                                  onPlayTap: () => setState(() {
+                                    if (selectedPlaylist == playlist.id) {
+                                      selectedPlaylist = 0;
+                                    } else {
+                                      selectedPlaylist = playlist.id!;
+                                    }
+                                  }),
                                 ),
 
                                 if (index == playlists.length - 1) ...[
                                   SizedBox(height: 12.h),
-                                  BottomButtonTwo(
-                                    leftBtnTitle: S.of(context).cancel,
-                                    rightBtnTitle: "Add",
-                                    lefBtnTap: () {},
-                                    rightBtnTap: () {
-                                      addSongToPlaylist(
-                                        playlistId: selectedPlaylist,
-                                        position: playlist.songCount,
-                                      );
-                                    },
+                                  Row(
+                                    children: [
+                                      // Cancel button
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: (){
+                                            Navigator.pop(context);
+                                          },
+                                          child: Container(
+                                            height: 48.h,
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey[200],
+                                              borderRadius: BorderRadius.circular(50.r),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                'Cancel',
+                                                style: TextStyle(
+                                                  fontSize: 16.sp,
+                                                  fontWeight: FontWeight.w500,
+                                                  fontFamily: AppFonts.inter,
+                                                  color: AppColors.black,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(width: 12.w),
+
+                                      // Create button
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: (){
+                                            if (selectedPlaylist == 0) {
+                                              showSnackBar(
+                                                context,
+                                                    () {},
+                                                message: "Please select a playlist",
+                                                alertBannerLocation: AlertBannerLocation.bottom,
+                                              );
+                                            }
+                                            else{
+                                              addSongToPlaylist(
+                                                playlistId: selectedPlaylist,
+                                                position: playlist.songCount,
+                                              );
+                                              Navigator.pop(context);
+                                            }
+                                          },
+                                          child: Container(
+                                            height: 48.h,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.primaryOrange,
+                                              borderRadius: BorderRadius.circular(50.r),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                'Add',
+                                                style: TextStyle(
+                                                  fontSize: 16.sp,
+                                                  fontWeight: FontWeight.w500,
+                                                  fontFamily: AppFonts.inter,
+                                                  color: AppColors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   SizedBox(height: 16.h),
                                 ],
@@ -185,23 +256,50 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
     if (_isAddingSongs) return;
     _isAddingSongs = true;
 
+    final repoPlaylist = locator<PlaylistRepository>();
+
     try {
       // Store the bloc reference before any async operations
       final playlistBloc = context.read<PlaylistBloc>();
+      List<int> songIds = [];
+      final repoSongs = await repoPlaylist.getSongsForPlaylist(playlistId);
 
       if (widget.songsList != null && widget.songsList!.isNotEmpty) {
         // Add multiple songs using the new batch method
         log('Adding ${widget.songsList!.length} songs to playlist $playlistId');
-        final songIds = widget.songsList!.map((song) => song.id!).toList();
-        playlistBloc.add(
-          PlaylistEvent.addMultipleSongsToPlaylist(playlistId, songIds),
-        );
-        showSnackBar(
-          context,
-              () {},
-          message: "${songIds.length} songs added to playlist",
-          alertBannerLocation: AlertBannerLocation.bottom,
-        );
+
+        for (var song in widget.songsList!) {
+          final existingIndex = repoSongs.indexWhere((s) => s.id == song.id);
+          log('existingIndex $existingIndex');
+          if (existingIndex == -1) {
+            songIds.add(song.id!);
+          }
+        }
+
+        log('existingIndex last $songIds');
+
+        // final songIds = widget.songsList!.map((song) => song.id!).toList();
+
+        if(songIds.isNotEmpty){
+          playlistBloc.add(
+            PlaylistEvent.addMultipleSongsToPlaylist(playlistId, songIds),
+          );
+          showSnackBar(
+            context,
+                () {},
+            message: "${songIds.length} songs added to playlist",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
+        else{
+          showSnackBar(
+            context,
+                () {},
+            message: "Already added to playlist",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
+
       } else if (widget.songId != null) {
         // Add single song
         if (!mounted) return;
@@ -209,15 +307,28 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
         log(
           'Adding song ${widget.songId} to playlist $playlistId at position $position',
         );
-        playlistBloc.add(
-          PlaylistEvent.addSongToPlaylist(playlistId, widget.songId!, position),
-        );
-        showSnackBar(
-          context,
-              () {},
-          message: "1 songs added to playlist",
-          alertBannerLocation: AlertBannerLocation.bottom,
-        );
+
+        final existingIndex = repoSongs.indexWhere((song) => song.id == widget.songId);
+
+        if (existingIndex == -1) {
+          playlistBloc.add(
+            PlaylistEvent.addSongToPlaylist(playlistId, widget.songId!, position),
+          );
+          showSnackBar(
+            context,
+                () {},
+            message: "1 songs added to playlist",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
+        else{
+          showSnackBar(
+            context,
+                () {},
+            message: "Already added to playlist",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
       }
 
       // Note: BottomButtonTwo already handles popping the navigator

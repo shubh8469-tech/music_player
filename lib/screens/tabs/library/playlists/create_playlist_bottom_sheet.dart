@@ -235,7 +235,7 @@ class _CreatePlaylistBottomSheetState extends State<CreatePlaylistBottomSheet> {
                     height: 48.h,
                     decoration: BoxDecoration(
                       color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(8.r),
+                      borderRadius: BorderRadius.circular(50.r),
                     ),
                     child: Center(
                       child: Text(
@@ -263,7 +263,7 @@ class _CreatePlaylistBottomSheetState extends State<CreatePlaylistBottomSheet> {
                       color: _isCreating
                           ? Colors.grey[400]
                           : AppColors.primaryOrange,
-                      borderRadius: BorderRadius.circular(8.r),
+                      borderRadius: BorderRadius.circular(50.r),
                     ),
                     child: Center(
                       child: _isCreating

@@ -365,9 +365,11 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                   if (existingIndex == -1) {
                                     newSongsList.add(widget.currentSong!);
                                     musicService.setPlaylist(newSongsList, autoPlay: false);
+                                    showSnackBar(context, () {}, message: "1 songs added to queue", alertBannerLocation: AlertBannerLocation.bottom);
                                   }
-
-                                  showSnackBar(context, () {}, message: "1 songs added to queue", alertBannerLocation: AlertBannerLocation.bottom);
+                                  else{
+                                    showSnackBar(context, () {}, message: "Already added to queue", alertBannerLocation: AlertBannerLocation.bottom);
+                                  }
                                 }
 
                                 Navigator.pop(context);

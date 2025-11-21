@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,7 +10,9 @@ import 'package:music_app/themes/font.dart';
 
 import '../../../../commonWidgets/MusicListTile.dart';
 import '../../../../commonWidgets/common_functions.dart';
+import '../../../../core/di/injection.dart';
 import '../../../../features/playlists/bloc/playlist_bloc.dart';
+import '../../../../features/playlists/domain/repositories/playlist_repository.dart';
 import '../../../../generated/assets.dart';
 import '../../../../themes/color.dart';
 import '../../../../utills/snack_bar.dart';
@@ -123,7 +127,7 @@ class _AddSongsScreenState extends State<AddSongsScreen> {
   }
 
   // Add selected songs to playlist
-  void _addSelectedSongsToPlaylist(List<SongsModel> allSongs) {
+  Future<void> _addSelectedSongsToPlaylist(List<SongsModel> allSongs) async {
     final selectedSongs = _getSelectedSongs(allSongs);
 
     if (selectedSongs.isEmpty) {
@@ -138,17 +142,40 @@ class _AddSongsScreenState extends State<AddSongsScreen> {
 
     final playlistBloc = context.read<PlaylistBloc>();
 
-    final songIds = selectedSongs.map((song) => song.id!).toList();
-    playlistBloc.add(
-      PlaylistEvent.addMultipleSongsToPlaylist(widget.playlist.id, songIds),
-    );
+    final repoPlaylist = locator<PlaylistRepository>();
+    final repoSongs = await repoPlaylist.getSongsForPlaylist(widget.playlist.id);
+    List<int> songIds = [];
 
-    showSnackBar(
-      context,
-      () {},
-      message: "${selectedSongs.length} songs added to playlist",
-      alertBannerLocation: AlertBannerLocation.bottom,
-    );
+    for (var song in selectedSongs) {
+      final existingIndex = repoSongs.indexWhere((s) => s.id == song.id);
+      log('existingIndex $existingIndex');
+      if (existingIndex == -1) {
+        songIds.add(song.id!);
+      }
+    }
+
+    // final songIds = selectedSongs.map((song) => song.id!).toList();
+
+    if(songIds.isNotEmpty){
+      playlistBloc.add(
+        PlaylistEvent.addMultipleSongsToPlaylist(widget.playlist.id, songIds),
+      );
+      showSnackBar(
+        context,
+            () {},
+        message: "${songIds.length} songs added to playlist",
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    }
+    else{
+      showSnackBar(
+        context,
+            () {},
+        message: "Already added to playlist",
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    }
+
 
     // Navigate back to previous screen
     context.pop();

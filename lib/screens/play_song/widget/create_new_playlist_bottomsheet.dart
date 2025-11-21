@@ -13,6 +13,7 @@ import '../../../commonWidgets/text_field_widget.dart';
 import '../../../generated/assets.dart';
 import '../../../l10n/l10n.dart';
 import '../../../themes/color.dart';
+import '../../../utills/snack_bar.dart';
 
 class CreateNewPlaylistBottomSheet extends StatefulWidget {
   const CreateNewPlaylistBottomSheet({super.key});
@@ -84,16 +85,98 @@ class _CreateNewPlaylistBottomSheetState
           ),
           SizedBox(height: 25.h),
 
-          BottomButtonTwo(
-            leftBtnTitle: S.of(context).cancel,
-            rightBtnTitle: "Create",
-            lefBtnTap: () {},
-            rightBtnTap: () {
-              context.read<PlaylistBloc>().add(
-                PlaylistEvent.addPlaylist(playlistNameController.text),
-              );
-            },
+          Row(
+            children: [
+              // Cancel button
+              Expanded(
+                child: GestureDetector(
+                  onTap: (){
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    height: 48.h,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(50.r),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: AppFonts.inter,
+                          color: AppColors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
+
+              // Create button
+              Expanded(
+                child: GestureDetector(
+                  onTap: (){
+                    if (playlistNameController.text.isEmpty) {
+                      showSnackBar(
+                        context,
+                            () {},
+                        message: "Please enter a playlist name",
+                        alertBannerLocation: AlertBannerLocation.bottom,
+                      );
+                    }
+                    else{
+                      context.read<PlaylistBloc>().add(
+                        PlaylistEvent.addPlaylist(playlistNameController.text),
+                      );
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: Container(
+                    height: 48.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryOrange,
+                      borderRadius: BorderRadius.circular(50.r),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Create',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: AppFonts.inter,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
+
+          // BottomButtonTwo(
+          //   leftBtnTitle: S.of(context).cancel,
+          //   rightBtnTitle: "Create",
+          //   lefBtnTap: () {},
+          //   rightBtnTap: () {
+          //     if (playlistNameController.text.isEmpty) {
+          //       showSnackBar(
+          //         context,
+          //             () {},
+          //         message: "Please enter a playlist name",
+          //         alertBannerLocation: AlertBannerLocation.bottom,
+          //       );
+          //     }
+          //     else{
+          //       context.read<PlaylistBloc>().add(
+          //         PlaylistEvent.addPlaylist(playlistNameController.text),
+          //       );
+          //     }
+          //   },
+          // ),
         ],
       ),
     );
