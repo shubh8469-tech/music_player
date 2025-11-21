@@ -15,6 +15,7 @@ import 'package:music_app/themes/font.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/services.dart';
 
 import '../core/di/injection.dart';
 import '../features/albums/domain/repositories/album_repository.dart';
@@ -459,6 +460,29 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                               } else if (songItem.title == S.of(context).goToArtist) {
                                 // Navigate to artist detail screen
                                 await _navigateToArtist(context);
+                              } else if (songItem.title == S.of(context).setAsRingtone) {
+                                // Set as ringtone (Android only)
+                                if (!Platform.isAndroid) {
+                                  showSnackBar(
+                                    context,
+                                    () {},
+                                    message: 'Ringtone feature is only available on Android',
+                                    alertBannerLocation: AlertBannerLocation.bottom,
+                                  );
+                                  return;
+                                }
+
+                                if (widget.currentSong == null) {
+                                  showSnackBar(
+                                    context,
+                                    () {},
+                                    message: 'No song selected',
+                                    alertBannerLocation: AlertBannerLocation.bottom,
+                                  );
+                                  return;
+                                }
+
+                                await _setAsRingtone(context);
                               } else if (songItem.title == S.of(context).hideSong) {
                                 if (widget.currentSong?.id == null) {
                                   showSnackBar(
@@ -1152,6 +1176,132 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
     } catch (e) {
       log('Error navigating to artist: $e');
       showSnackBar(context, () {}, message: 'Error opening artist: $e', backgroundColor: Colors.red, alertBannerLocation: AlertBannerLocation.bottom);
+    }
+  }
+
+  Future<void> _setAsRingtone(BuildContext context) async {
+    if (widget.currentSong == null) {
+      return;
+    }
+
+    if (!Platform.isAndroid) {
+      return;
+    }
+
+    try {
+      final song = widget.currentSong!;
+      final filePath = song.filePath;
+
+      if (filePath.isEmpty || !await File(filePath).exists()) {
+        if (mounted) {
+          showSnackBar(
+            context,
+            () {},
+            message: 'Song file not found',
+            backgroundColor: Colors.red,
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
+        return;
+      }
+
+      // Set the ringtone using platform channel
+      const platform = MethodChannel('com.example.music_app/ringtone');
+      try {
+        // First check if we have WRITE_SETTINGS permission
+        final hasPermission = await platform.invokeMethod('checkWriteSettingsPermission') as bool? ?? false;
+        
+        if (!hasPermission) {
+          // Request permission by opening system settings
+          if (mounted) {
+            final shouldOpenSettings = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Permission Required'),
+                content: const Text('To set ringtone, please grant "Modify system settings" permission.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Open Settings'),
+                  ),
+                ],
+              ),
+            );
+
+            if (shouldOpenSettings == true) {
+              // Open system settings for WRITE_SETTINGS permission
+              await platform.invokeMethod('openWriteSettings');
+              
+              // Wait a bit for user to grant permission and return
+              await Future.delayed(const Duration(milliseconds: 500));
+            } else {
+              // User cancelled
+              if (mounted) {
+                Navigator.pop(context);
+              }
+              return;
+            }
+          }
+        }
+
+        // Now set the ringtone (this will check permission again and set if available)
+        final result = await platform.invokeMethod('setRingtone', {'filePath': filePath, 'title': song.title}) as Map<dynamic, dynamic>;
+        
+        final success = result['success'] as bool? ?? false;
+        final setAsDefault = result['setAsDefault'] as bool? ?? false;
+        final needsPermission = result['needsPermission'] as bool? ?? false;
+        
+        if (success) {
+          if (mounted) {
+            if (setAsDefault) {
+              showSnackBar(
+                context,
+                () {},
+                message: '"${song.title}" set as ringtone successfully',
+                alertBannerLocation: AlertBannerLocation.bottom,
+              );
+            } else if (needsPermission) {
+              showSnackBar(
+                context,
+                () {},
+                message: 'Ringtone added. Please select "${song.title}" from Settings > Sound',
+                alertBannerLocation: AlertBannerLocation.bottom,
+              );
+            } else {
+              showSnackBar(
+                context,
+                () {},
+                message: '"${song.title}" added to ringtones',
+                alertBannerLocation: AlertBannerLocation.bottom,
+              );
+            }
+            // Close the menu
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
+          }
+        } else {
+          throw Exception('Failed to set ringtone');
+        }
+      } on PlatformException catch (e) {
+        throw Exception('Platform error: ${e.message}');
+      }
+
+    } catch (e) {
+      log('Error setting ringtone: $e');
+      if (mounted) {
+        showSnackBar(
+          context,
+          () {},
+          message: 'Error setting ringtone: $e',
+          backgroundColor: Colors.red,
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      }
     }
   }
 }
