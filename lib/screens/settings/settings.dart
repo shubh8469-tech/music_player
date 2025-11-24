@@ -1,13 +1,35 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
 
 import '../../commonWidgets/textWidget.dart';
+import '../../core/di/injection.dart';
+import '../../features/songs/data/dataSource/song_local_data_source.dart';
+import '../../features/songs/data/models/song_model.dart';
+import '../../features/songs/domain/usecases/add_song.dart';
+import '../../features/folders/domain/entities/folder.dart';
+import '../../features/folders/domain/usecases/add_folder.dart';
+import '../../features/folders/domain/usecases/add_song_to_folder.dart';
+import '../../features/artists/domain/entities/artist.dart';
+import '../../features/artists/domain/usecases/add_artist.dart';
+import '../../features/artists/domain/usecases/add_song_to_artist.dart';
+import '../../features/albums/domain/entities/album.dart';
+import '../../features/albums/domain/usecases/add_album.dart';
+import '../../features/albums/domain/usecases/add_song_to_album.dart';
+import '../../features/folders/domain/repositories/folder_repository.dart';
+import '../../features/artists/domain/repositories/artist_repository.dart';
+import '../../features/albums/domain/repositories/album_repository.dart';
 import '../../generated/assets.dart';
 import '../../themes/color.dart';
 import '../../themes/font.dart';
 import '../../utills/snack_bar.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -20,6 +42,8 @@ class _SettingsPageState extends State<SettingsPage> {
   bool keepScreenOn = false;
   bool lockScreenPlaying = false;
   bool pauseOnDetach = false;
+  bool _isRefreshing = false;
+  final OnAudioQuery _audioQuery = OnAudioQuery();
 
   void _showComingSoonSnack() {
     showSnackBar(
@@ -28,6 +52,294 @@ class _SettingsPageState extends State<SettingsPage> {
       message: "Coming soon",
       alertBannerLocation: AlertBannerLocation.bottom,
     );
+  }
+
+  Future<bool> _checkPermissions() async {
+    if (Platform.isIOS) {
+      return true;
+    }
+    final storageGranted = await Permission.storage.isGranted;
+    final audioGranted = await Permission.audio.isGranted;
+    if (storageGranted || audioGranted) {
+      return true;
+    }
+    PermissionStatus status;
+    if (await Permission.storage.isGranted) {
+      status = PermissionStatus.granted;
+    } else {
+      status = await Permission.audio.request();
+      if (!status.isGranted) {
+        status = await Permission.storage.request();
+      }
+    }
+    return status.isGranted;
+  }
+
+  Future<void> _refreshLibrary() async {
+    if (_isRefreshing) return;
+
+    setState(() {
+      _isRefreshing = true;
+    });
+
+    try {
+      final hasPermission = await _checkPermissions();
+      if (!hasPermission) {
+        showSnackBar(
+          context,
+          () {},
+          message: "Permission denied. Please grant storage permission.",
+          backgroundColor: Colors.red,
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+        return;
+      }
+
+      showSnackBar(
+        context,
+        () {},
+        message: "Refreshing library...",
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+
+      final SongLocalDataSource localDataSource = locator();
+      final AddSong addSongUseCase = locator();
+      final AddFolder addFolderUseCase = locator();
+      final AddSongToFolder addSongToFolderUseCase = locator();
+      final AddArtist addArtistUseCase = locator();
+      final AddSongToArtist addSongToArtistUseCase = locator();
+      final AddAlbum addAlbumUseCase = locator();
+      final AddSongToAlbum addSongToAlbumUseCase = locator();
+      final FolderRepository folderRepository = locator();
+      final ArtistRepository artistRepository = locator();
+      final AlbumRepository albumRepository = locator();
+
+      // Get songs from device and database
+      List<SongModel> deviceSongs = await _audioQuery.querySongs();
+      List<SongsModel> dbSongs = await localDataSource.getAllSongs(
+        includeHidden: true,
+      );
+
+      // Find new and removed songs
+      Set<int> deviceSongIds = deviceSongs.map((s) => s.id).toSet();
+      Set<int> dbSongIds = dbSongs
+          .map((s) => s.id ?? -1)
+          .where((id) => id != -1)
+          .toSet();
+      Set<int> newSongIds = deviceSongIds.difference(dbSongIds);
+      Set<int> removedSongIds = dbSongIds.difference(deviceSongIds);
+
+      // Remove songs that are no longer on device
+      for (int songId in removedSongIds) {
+        await localDataSource.deleteSong(songId);
+      }
+
+      // Validate file existence
+      final missingSongIds = await localDataSource
+          .validateAndFindMissingFiles();
+      for (int songId in missingSongIds) {
+        await localDataSource.deleteSong(songId);
+      }
+
+      // Process new songs
+      int addedCount = 0;
+      Map<String, int> folderIds = {};
+      Map<String, int> artistIds = {};
+      Map<String, int> albumIds = {};
+      final Set<int> touchedAlbumIds = {};
+
+      for (final song in deviceSongs) {
+        if (!newSongIds.contains(song.id)) continue;
+
+        final String path = song.data;
+        if ((song.duration ?? 0) < 1000) continue;
+
+        final appDocDir = await getApplicationDocumentsDirectory();
+        final artworkDir = Directory(p.join(appDocDir.path, 'artworks'));
+        if (!await artworkDir.exists()) {
+          await artworkDir.create();
+        }
+
+        String folderPath = '';
+        String folderName = '';
+        try {
+          if (path.startsWith('content://')) {
+            final uri = Uri.parse(path);
+            if (uri.pathSegments.length >= 2) {
+              folderPath = uri.pathSegments
+                  .sublist(0, uri.pathSegments.length - 1)
+                  .join('/');
+              folderName = uri.pathSegments[uri.pathSegments.length - 2];
+            } else {
+              final idx = path.lastIndexOf('/');
+              folderName = idx >= 0 ? path.substring(idx + 1) : path;
+              folderPath = path;
+            }
+          } else {
+            folderPath = p.dirname(path);
+            folderName = p.basename(folderPath);
+          }
+        } catch (e) {
+          folderPath = '';
+          folderName = '';
+        }
+
+        // Extract year
+        int? songYear;
+        try {
+          final dateAdded = song.dateAdded ?? 0;
+          if (dateAdded > 0) {
+            songYear = DateTime.fromMillisecondsSinceEpoch(
+              dateAdded * 1000,
+            ).year;
+          }
+        } catch (e) {
+          log('Failed to extract year: $e');
+        }
+
+        final model = SongsModel(
+          id: song.id,
+          title: song.title.trim(),
+          artist: (song.artist ?? '').trim(),
+          album: (song.album ?? '').trim(),
+          genre: (song.genre ?? '').trim(),
+          year: songYear,
+          duration: song.duration ?? 0,
+          filePath: path,
+          folder: folderName,
+          artwork_path: null,
+        );
+
+        await addSongUseCase(model);
+        addedCount++;
+
+        // Add to folder, artist, album (similar to sync_progress.dart)
+        if (folderName.isNotEmpty) {
+          int folderId;
+          if (folderIds.containsKey(folderName)) {
+            folderId = folderIds[folderName]!;
+          } else {
+            final existingFolder = await folderRepository.getFolderByName(
+              folderName,
+            );
+            if (existingFolder != null) {
+              folderId = existingFolder.id!;
+            } else {
+              final folder = Folder(
+                id: null,
+                name: folderName,
+                path: folderPath,
+                songCount: 0,
+                artworkPath: null,
+                createdTime: DateTime.now(),
+                updatedTime: DateTime.now(),
+              );
+              folderId = await addFolderUseCase(folder);
+            }
+            folderIds[folderName] = folderId;
+          }
+          await addSongToFolderUseCase(folderId, song.id);
+        }
+
+        final artistName = (song.artist ?? 'Unknown Artist').trim();
+        if (artistName.isNotEmpty) {
+          int artistId;
+          if (artistIds.containsKey(artistName)) {
+            artistId = artistIds[artistName]!;
+          } else {
+            final existingArtist = await artistRepository.getArtistByName(
+              artistName,
+            );
+            if (existingArtist != null) {
+              artistId = existingArtist.id!;
+            } else {
+              final artist = Artist(
+                id: null,
+                name: artistName,
+                songCount: 0,
+                albumCount: 0,
+                artworkPath: null,
+                createdTime: DateTime.now(),
+                updatedTime: DateTime.now(),
+              );
+              artistId = await addArtistUseCase(artist);
+            }
+            artistIds[artistName] = artistId;
+          }
+          await addSongToArtistUseCase(artistId, song.id);
+        }
+
+        final albumName = (song.album ?? 'Unknown Album').trim();
+        if (albumName.isNotEmpty) {
+          final albumKey = albumName.toLowerCase().trim();
+          int albumId;
+          if (albumIds.containsKey(albumKey)) {
+            albumId = albumIds[albumKey]!;
+          } else {
+            final album = Album(
+              id: null,
+              name: albumName,
+              artist: 'Various Artists',
+              songCount: 0,
+              year: songYear,
+              artworkPath: null,
+              createdTime: DateTime.now(),
+              updatedTime: DateTime.now(),
+            );
+            albumId = await addAlbumUseCase(album);
+            albumIds[albumKey] = albumId;
+          }
+          touchedAlbumIds.add(albumId);
+          await addSongToAlbumUseCase(albumId, song.id);
+        }
+      }
+
+      // Refresh album metadata
+      for (final albumId in touchedAlbumIds) {
+        await albumRepository.refreshAlbumCachedArtists(albumId);
+      }
+
+      // Update album counts for artists
+      for (final entry in artistIds.entries) {
+        final albums = await albumRepository.getAlbumsByArtist(entry.key);
+        await artistRepository.updateArtistAlbumCount(
+          entry.value,
+          albums.length,
+        );
+      }
+
+      // Clean up orphaned entities
+      await localDataSource.cleanupOrphanedEntities();
+
+      // Update song relations
+      final allSongs = await localDataSource.getAllSongs(includeHidden: true);
+      for (final song in allSongs) {
+        await localDataSource.updateSongWithRelations(song);
+      }
+
+      final removedCount = removedSongIds.length + missingSongIds.length;
+      showSnackBar(
+        context,
+        () {},
+        message: "Library refreshed: $addedCount added, $removedCount removed",
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    } catch (e) {
+      log('Error refreshing library: $e');
+      showSnackBar(
+        context,
+        () {},
+        message: "Failed to refresh library: ${e.toString()}",
+        backgroundColor: Colors.red,
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRefreshing = false;
+        });
+      }
+    }
   }
 
   @override
@@ -65,13 +377,28 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               _optionTile(
                 asset: Assets.svgScan,
-                title: "Scan music",
-                onTap: _showComingSoonSnack,
+                title: "Refresh library",
+                subtitle: _isRefreshing
+                    ? "Refreshing..."
+                    : "Sync with device music",
+                trailing: _isRefreshing
+                    ? SizedBox(
+                        width: 20.w,
+                        height: 20.h,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.primaryOrange,
+                          ),
+                        ),
+                      )
+                    : null,
+                onTap: _isRefreshing ? null : _refreshLibrary,
               ),
               _optionTile(
                 asset: Assets.svgHidden,
                 title: "Hidden music",
-                onTap: (){
+                onTap: () {
                   context.push('/dashboard/hidden-music');
                 },
               ),
@@ -169,7 +496,13 @@ class _SettingsPageState extends State<SettingsPage> {
               ? CrossAxisAlignment.start
               : CrossAxisAlignment.center,
           children: [
-            SvgPicture.asset(asset, colorFilter: ColorFilter.mode(AppColors.textColor.withValues(alpha: 0.5), BlendMode.srcIn),),
+            SvgPicture.asset(
+              asset,
+              colorFilter: ColorFilter.mode(
+                AppColors.textColor.withValues(alpha: 0.5),
+                BlendMode.srcIn,
+              ),
+            ),
             SizedBox(width: 17.5.w),
             Expanded(
               child: Column(

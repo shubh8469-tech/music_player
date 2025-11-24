@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:sqflite/sqflite.dart';
 import '../models/song_model.dart';
 
@@ -10,6 +11,8 @@ abstract class SongLocalDataSource {
   Future<int> deleteSong(int id);
   Future<int> updateSong(SongsModel song);
   Future<void> updateSongWithRelations(SongsModel updatedSong);
+  Future<void> cleanupOrphanedEntities();
+  Future<List<int>> validateAndFindMissingFiles();
 }
 
 class SongLocalDataSourceImpl implements SongLocalDataSource {
@@ -159,7 +162,19 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
 
   @override
   Future<int> deleteSong(int id) async {
-    return await db.delete('songs', where: 'id = ?', whereArgs: [id]);
+    final result = await db.transaction((txn) async {
+      // Delete the song (cascade will handle junction tables)
+      final deleted = await txn.delete('songs', where: 'id = ?', whereArgs: [id]);
+      
+      // Clean up orphaned entities after deletion
+      await _cleanupOrphanedEntitiesInTransaction(txn);
+      
+      return deleted;
+    });
+    
+    // Refresh counts after cleanup
+    await refreshRelatedEntityCounts();
+    return result;
   }
 
   @override
@@ -671,6 +686,76 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
     };
 
     return await txn.insert('artists', insertData);
+  }
+
+  @override
+  Future<void> cleanupOrphanedEntities() async {
+    await db.transaction((txn) async {
+      await _cleanupOrphanedEntitiesInTransaction(txn);
+    });
+    await refreshRelatedEntityCounts();
+  }
+
+  Future<void> _cleanupOrphanedEntitiesInTransaction(Transaction txn) async {
+    // Remove folders with no songs
+    await txn.rawDelete('''
+      DELETE FROM folders 
+      WHERE id NOT IN (
+        SELECT DISTINCT folder_id 
+        FROM folder_songs
+      )
+    ''');
+
+    // Remove artists with no songs
+    await txn.rawDelete('''
+      DELETE FROM artists 
+      WHERE id NOT IN (
+        SELECT DISTINCT artist_id 
+        FROM artist_songs
+      )
+    ''');
+
+    // Remove albums with no songs
+    await txn.rawDelete('''
+      DELETE FROM albums 
+      WHERE id NOT IN (
+        SELECT DISTINCT album_id 
+        FROM album_songs
+      )
+    ''');
+  }
+
+  @override
+  Future<List<int>> validateAndFindMissingFiles() async {
+    final allSongs = await getAllSongs(includeHidden: true);
+    final missingSongIds = <int>[];
+
+    for (final song in allSongs) {
+      final songId = song.id;
+      if (songId == null) continue;
+
+      if (song.filePath.startsWith('content://')) {
+        // For Android content URIs, we can't easily check existence
+        // Skip validation for content URIs - they're managed by MediaStore
+        continue;
+      }
+
+      // For file paths, check file system
+      bool fileExists = false;
+      try {
+        final file = File(song.filePath);
+        fileExists = await file.exists();
+      } catch (e) {
+        // If we can't check, assume file doesn't exist
+        fileExists = false;
+      }
+
+      if (!fileExists) {
+        missingSongIds.add(songId);
+      }
+    }
+
+    return missingSongIds;
   }
 }
 

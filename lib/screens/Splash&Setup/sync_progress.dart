@@ -137,12 +137,45 @@ class _SyncProgressState extends State<SyncProgress>
       final ArtistRepository artistRepository = locator();
       final AlbumRepository albumRepository = locator();
 
-      // Clear existing data before sync
-      await folderRepository.clearAllFolders();
-      await artistRepository.clearAllArtists();
-      await albumRepository.clearAllAlbums();
+      // Get songs from device
+      List<SongModel> deviceSongs = await _audioQuery.querySongs();
 
-      List<SongModel> songs = await _audioQuery.querySongs();
+      // Get songs from database
+      List<SongsModel> dbSongs = await localDataSource.getAllSongs(
+        includeHidden: true,
+      );
+
+      // Find new songs (in device but not in DB)
+      Set<int> deviceSongIds = deviceSongs.map((s) => s.id).toSet();
+      Set<int> dbSongIds = dbSongs
+          .map((s) => s.id ?? -1)
+          .where((id) => id != -1)
+          .toSet();
+      Set<int> newSongIds = deviceSongIds.difference(dbSongIds);
+
+      // Find removed songs (in DB but not in device)
+      Set<int> removedSongIds = dbSongIds.difference(deviceSongIds);
+
+      log(
+        'Incremental sync: ${newSongIds.length} new songs, ${removedSongIds.length} removed songs',
+      );
+
+      // Remove songs that are no longer on device
+      for (int songId in removedSongIds) {
+        await localDataSource.deleteSong(songId);
+      }
+
+      // Validate file existence for remaining songs
+      final missingSongIds = await localDataSource
+          .validateAndFindMissingFiles();
+      for (int songId in missingSongIds) {
+        await localDataSource.deleteSong(songId);
+      }
+
+      // Process new songs
+      List<SongModel> songs = deviceSongs
+          .where((s) => newSongIds.contains(s.id))
+          .toList();
 
       scannedFiles.clear();
       groupedByFolder.clear();
@@ -399,6 +432,9 @@ class _SyncProgressState extends State<SyncProgress>
         );
       }
 
+      // Clean up orphaned entities (folders, artists, albums with no songs)
+      await localDataSource.cleanupOrphanedEntities();
+
       final allSongs = await localDataSource.getAllSongs(includeHidden: true);
 
       allSongs.forEach((song) {
@@ -409,6 +445,9 @@ class _SyncProgressState extends State<SyncProgress>
       debugPrint("Found $scannedFiles");
       debugPrint("Found ${scannedFiles.length} songs");
       debugPrint("Found ${groupedByFolder.length} folders");
+      debugPrint(
+        "Sync completed: ${newSongIds.length} added, ${removedSongIds.length + missingSongIds.length} removed",
+      );
 
       // Mark sync as successful
       _syncSuccessful = true;
