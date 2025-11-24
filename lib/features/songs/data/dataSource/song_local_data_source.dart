@@ -164,14 +164,18 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
   Future<int> deleteSong(int id) async {
     final result = await db.transaction((txn) async {
       // Delete the song (cascade will handle junction tables)
-      final deleted = await txn.delete('songs', where: 'id = ?', whereArgs: [id]);
-      
+      final deleted = await txn.delete(
+        'songs',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+
       // Clean up orphaned entities after deletion
       await _cleanupOrphanedEntitiesInTransaction(txn);
-      
+
       return deleted;
     });
-    
+
     // Refresh counts after cleanup
     await refreshRelatedEntityCounts();
     return result;
@@ -216,8 +220,9 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
         whereArgs: [songId],
         limit: 1,
       );
-      final int? oldAlbumId =
-          oldAlbumLink.isNotEmpty ? oldAlbumLink.first['album_id'] as int : null;
+      final int? oldAlbumId = oldAlbumLink.isNotEmpty
+          ? oldAlbumLink.first['album_id'] as int
+          : null;
 
       final oldArtistLink = await txn.query(
         'artist_songs',
@@ -242,8 +247,7 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
         oldAlbumId: oldAlbumId,
         existingSong: existingSong,
         newAlbumName: trimmedAlbum.isEmpty ? 'Unknown Album' : trimmedAlbum,
-        newArtistName:
-            trimmedArtist.isEmpty ? 'Unknown Artist' : trimmedArtist,
+        newArtistName: trimmedArtist.isEmpty ? 'Unknown Artist' : trimmedArtist,
         nowIso: nowIso,
       );
 
@@ -252,8 +256,7 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
         songId: songId,
         oldArtistId: oldArtistId,
         existingSong: existingSong,
-        newArtistName:
-            trimmedArtist.isEmpty ? 'Unknown Artist' : trimmedArtist,
+        newArtistName: trimmedArtist.isEmpty ? 'Unknown Artist' : trimmedArtist,
         nowIso: nowIso,
       );
 
@@ -289,10 +292,7 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
         final albumCount = Sqflite.firstIntValue(albumCountResult) ?? 0;
         await txn.update(
           'artists',
-          {
-            'album_count': albumCount,
-            'updated_time': nowIso,
-          },
+          {'album_count': albumCount, 'updated_time': nowIso},
           where: 'id = ?',
           whereArgs: [artistId],
         );
@@ -318,7 +318,8 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
     // Remove album relations if user cleared the album value.
     if (sanitizedAlbum.isEmpty) {
       if (oldAlbumId != null) {
-        final oldAlbumCount = Sqflite.firstIntValue(
+        final oldAlbumCount =
+            Sqflite.firstIntValue(
               await txn.rawQuery(
                 'SELECT COUNT(*) FROM album_songs WHERE album_id = ?',
                 [oldAlbumId],
@@ -333,11 +334,7 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
         );
 
         if (oldAlbumCount == 1) {
-          await txn.delete(
-            'albums',
-            where: 'id = ?',
-            whereArgs: [oldAlbumId],
-          );
+          await txn.delete('albums', where: 'id = ?', whereArgs: [oldAlbumId]);
         }
       }
       return null;
@@ -362,7 +359,8 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
     }
 
     if (oldAlbumId == null) {
-      final targetAlbumId = existingAlbumId ??
+      final targetAlbumId =
+          existingAlbumId ??
           await _insertAlbum(
             txn,
             sanitizedAlbum,
@@ -371,16 +369,16 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
             nowIso,
           );
 
-      await txn.insert(
-        'album_songs',
-        {'album_id': targetAlbumId, 'song_id': songId},
-        conflictAlgorithm: ConflictAlgorithm.ignore,
-      );
+      await txn.insert('album_songs', {
+        'album_id': targetAlbumId,
+        'song_id': songId,
+      }, conflictAlgorithm: ConflictAlgorithm.ignore);
 
       return existingAlbumCanonicalName ?? sanitizedAlbum;
     }
 
-    final oldAlbumCount = Sqflite.firstIntValue(
+    final oldAlbumCount =
+        Sqflite.firstIntValue(
           await txn.rawQuery(
             'SELECT COUNT(*) FROM album_songs WHERE album_id = ?',
             [oldAlbumId],
@@ -406,7 +404,9 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
           'albums',
           {
             'name': sanitizedAlbum,
-            'artist': newArtistName.isNotEmpty ? newArtistName : 'Various Artists',
+            'artist': newArtistName.isNotEmpty
+                ? newArtistName
+                : 'Various Artists',
             'updated_time': nowIso,
           },
           where: 'id = ?',
@@ -424,18 +424,13 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
         where: 'song_id = ?',
         whereArgs: [songId],
       );
-      await txn.insert(
-        'album_songs',
-        {'album_id': existingAlbumId, 'song_id': songId},
-        conflictAlgorithm: ConflictAlgorithm.ignore,
-      );
+      await txn.insert('album_songs', {
+        'album_id': existingAlbumId,
+        'song_id': songId,
+      }, conflictAlgorithm: ConflictAlgorithm.ignore);
 
       if (oldAlbumCount == 1) {
-        await txn.delete(
-          'albums',
-          where: 'id = ?',
-          whereArgs: [oldAlbumId],
-        );
+        await txn.delete('albums', where: 'id = ?', whereArgs: [oldAlbumId]);
       }
 
       return existingAlbumCanonicalName ?? sanitizedAlbum;
@@ -446,7 +441,9 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
         'albums',
         {
           'name': sanitizedAlbum,
-          'artist': newArtistName.isNotEmpty ? newArtistName : 'Various Artists',
+          'artist': newArtistName.isNotEmpty
+              ? newArtistName
+              : 'Various Artists',
           'updated_time': nowIso,
         },
         where: 'id = ?',
@@ -455,11 +452,7 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
       return sanitizedAlbum;
     }
 
-    await txn.delete(
-      'album_songs',
-      where: 'song_id = ?',
-      whereArgs: [songId],
-    );
+    await txn.delete('album_songs', where: 'song_id = ?', whereArgs: [songId]);
 
     final newAlbumId = await _insertAlbum(
       txn,
@@ -469,11 +462,10 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
       nowIso,
     );
 
-    await txn.insert(
-      'album_songs',
-      {'album_id': newAlbumId, 'song_id': songId},
-      conflictAlgorithm: ConflictAlgorithm.ignore,
-    );
+    await txn.insert('album_songs', {
+      'album_id': newAlbumId,
+      'song_id': songId,
+    }, conflictAlgorithm: ConflictAlgorithm.ignore);
 
     return sanitizedAlbum;
   }
@@ -507,11 +499,10 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
         nowIso,
       );
 
-      await txn.insert(
-        'artist_songs',
-        {'artist_id': newArtistId, 'song_id': songId},
-        conflictAlgorithm: ConflictAlgorithm.ignore,
-      );
+      await txn.insert('artist_songs', {
+        'artist_id': newArtistId,
+        'song_id': songId,
+      }, conflictAlgorithm: ConflictAlgorithm.ignore);
 
       affectedArtistIds.add(newArtistId);
 
@@ -521,7 +512,8 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
       );
     }
 
-    final oldArtistCount = Sqflite.firstIntValue(
+    final oldArtistCount =
+        Sqflite.firstIntValue(
           await txn.rawQuery(
             'SELECT COUNT(*) FROM artist_songs WHERE artist_id = ?',
             [oldArtistId],
@@ -537,11 +529,7 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
       );
 
       if (oldArtistCount == 1) {
-        await txn.delete(
-          'artists',
-          where: 'id = ?',
-          whereArgs: [oldArtistId],
-        );
+        await txn.delete('artists', where: 'id = ?', whereArgs: [oldArtistId]);
       } else {
         affectedArtistIds.add(oldArtistId);
       }
@@ -566,11 +554,9 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
       resolvedArtistName = existingArtistRow.first['name'] as String;
     }
 
-    final normalizedExistingArtist =
-        existingSong.artist.trim().toLowerCase();
+    final normalizedExistingArtist = existingSong.artist.trim().toLowerCase();
     final normalizedSanitizedArtist = sanitizedArtist.toLowerCase();
-    final artistChanged =
-        normalizedExistingArtist != normalizedSanitizedArtist;
+    final artistChanged = normalizedExistingArtist != normalizedSanitizedArtist;
 
     if (!artistChanged) {
       if (resolvedArtistName != null &&
@@ -584,10 +570,7 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
       if (oldArtistCount == 1 && sanitizedArtist != existingSong.artist) {
         await txn.update(
           'artists',
-          {
-            'name': sanitizedArtist,
-            'updated_time': nowIso,
-          },
+          {'name': sanitizedArtist, 'updated_time': nowIso},
           where: 'id = ?',
           whereArgs: [oldArtistId],
         );
@@ -601,32 +584,19 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
       );
     }
 
-    final targetArtistId = resolvedArtistId ??
-        await _resolveArtistId(
-          txn,
-          sanitizedArtist,
-          existingSong,
-          nowIso,
-        );
+    final targetArtistId =
+        resolvedArtistId ??
+        await _resolveArtistId(txn, sanitizedArtist, existingSong, nowIso);
 
-    await txn.delete(
-      'artist_songs',
-      where: 'song_id = ?',
-      whereArgs: [songId],
-    );
+    await txn.delete('artist_songs', where: 'song_id = ?', whereArgs: [songId]);
 
-    await txn.insert(
-      'artist_songs',
-      {'artist_id': targetArtistId, 'song_id': songId},
-      conflictAlgorithm: ConflictAlgorithm.ignore,
-    );
+    await txn.insert('artist_songs', {
+      'artist_id': targetArtistId,
+      'song_id': songId,
+    }, conflictAlgorithm: ConflictAlgorithm.ignore);
 
     if (oldArtistCount == 1) {
-      await txn.delete(
-        'artists',
-        where: 'id = ?',
-        whereArgs: [oldArtistId],
-      );
+      await txn.delete('artists', where: 'id = ?', whereArgs: [oldArtistId]);
     } else {
       affectedArtistIds.add(oldArtistId);
     }

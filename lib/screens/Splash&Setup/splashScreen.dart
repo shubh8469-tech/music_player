@@ -109,10 +109,10 @@ class _SplashScreenState extends State<SplashScreen>
 
     // Verify actual runtime permissions (not just stored flag)
     final hasRuntimePermission = await _checkRuntimePermissions();
-    
+
     // Check stored permission flag
     final permissionGranted = await appStateService.isPermissionGranted();
-    
+
     // If stored flag says granted but runtime permission is not actually granted,
     // reset the flag and go to permission screen
     if (permissionGranted && !hasRuntimePermission) {

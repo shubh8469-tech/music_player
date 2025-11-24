@@ -28,6 +28,12 @@ class MusicPlayerService {
   LoopMode _loopMode = LoopMode.off;
   bool _isShuffleEnabled = false;
 
+  double _playbackSpeed = 1.0;
+
+  double get playbackSpeed => _playbackSpeed;
+
+  Stream<double> get playbackSpeedStream => player.speedStream;
+
   bool get isShuffleEnabled => _isShuffleEnabled;
 
   LoopMode get loopMode => _loopMode;
@@ -111,6 +117,10 @@ class MusicPlayerService {
         _libraryChangedController.add(null);
         _lastUpdatedSongId = current.id;
       } catch (_) {}
+    });
+
+    player.speedStream.listen((speed) {
+      _playbackSpeed = speed;
     });
   }
 
@@ -346,6 +356,12 @@ class MusicPlayerService {
       _isShuffleEnabled = false;
       await player.setShuffleModeEnabled(false);
     }
+  }
+
+  Future<void> setPlaybackSpeed(double speed) async {
+    final clampedSpeed = speed.clamp(0.5, 2.0);
+    _playbackSpeed = clampedSpeed;
+    await player.setSpeed(clampedSpeed);
   }
 
   // Cycle Loop mode Off → All → One → Off

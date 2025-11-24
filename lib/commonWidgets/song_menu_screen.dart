@@ -17,6 +17,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
 
+import '../app_router.dart';
 import '../core/di/injection.dart';
 import '../features/albums/domain/repositories/album_repository.dart';
 import '../features/artists/domain/repositories/artist_repository.dart';
@@ -28,6 +29,7 @@ import '../generated/assets.dart';
 import '../l10n/l10n.dart';
 import '../model/song_menu_model.dart';
 import '../screens/common/image_crop_screen.dart';
+import '../screens/play_song/widget/playback_speed_bottom_sheet.dart';
 import '../screens/play_song/widget/playlist_bottomsheet.dart';
 import '../screens/tabs/music_service.dart';
 import '../themes/color.dart';
@@ -250,6 +252,20 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     }
                                   }
                                 }
+                              } else if (songItem.title == localization.speed) {
+                                final rootContext = rootNavigatorKey.currentContext;
+                                Navigator.pop(context);
+                                if (rootContext != null) {
+                                  Future.microtask(() {
+                                    showModalBottomSheet(
+                                      context: rootContext,
+                                      backgroundColor: AppColors.white,
+                                      isScrollControlled: true,
+                                      builder: (_) => const PlaybackSpeedBottomSheet(),
+                                    );
+                                  });
+                                }
+                                return;
                               } else if (songItem.title == S.of(context).playNext) {
                                 // Handle Play Next for playlist or individual song
                                 if (widget.from == 'playlist') {
@@ -820,35 +836,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                   child: GestureDetector(
                     onTap: () async {
                       Navigator.pop(sheetContext);
-                      if (widget.currentSong != null) {
-                        try {
-                          var musicService = MusicPlayerService();
-                          final songsBloc = context.read<SongsBloc>();
-                          songsBloc.add(SongsEvent.removeSong(widget.currentSong!.id!));
-                          final currentSongs = List<SongsModel>.from(musicService.songs);
-                          currentSongs.removeWhere((element) => element.id == widget.currentSong!.id,);
-
-                          log('currentSongs ${currentSongs.length} ${widget.currentSong!.title}');
-                          await musicService.player.stop();
-                          if(currentSongs.isNotEmpty){
-                            musicService.setPlaylist(currentSongs);
-                          }
-                          else{
-                            musicService.resetPlaylist(currentSongs);
-                          }
-
-                          showSnackBar(context, () {}, message: 'Song removed from library', alertBannerLocation: AlertBannerLocation.bottom);
-                        } catch (e) {
-                          showSnackBar(
-                            context,
-                            () {},
-                            message: 'Failed to remove song: $e',
-                            backgroundColor: Colors.red,
-                            alertBannerLocation: AlertBannerLocation.bottom,
-                          );
-                        }
-                      }
-                      Navigator.pop(context);
+                      await _deleteSongFile(context);
                     },
                     child: Container(
                       height: 48.h,

@@ -54,6 +54,9 @@ class _SyncProgressState extends State<SyncProgress>
   // Track if sync was successful
   bool _syncSuccessful = false;
 
+  // Track scan start time
+  DateTime? _scanStartTime;
+
   Future<Uint8List?> _fetchBestArtwork(SongModel song) async {
     Future<Uint8List?> tryFetch(int? id, ArtworkType type) async {
       if (id == null) return null;
@@ -110,6 +113,9 @@ class _SyncProgressState extends State<SyncProgress>
   }
 
   Future<void> scanMusicFiles() async {
+    // Record scan start time
+    _scanStartTime = DateTime.now();
+
     try {
       // Verify permissions before accessing library
       final hasPermission = await _checkPermissions();
@@ -451,10 +457,40 @@ class _SyncProgressState extends State<SyncProgress>
 
       // Mark sync as successful
       _syncSuccessful = true;
+
+      // Calculate actual scan duration and update animation
+      if (_scanStartTime != null) {
+        final scanDuration = DateTime.now().difference(_scanStartTime!);
+        // Ensure minimum duration of 1 second for smooth animation
+        final animationDuration = scanDuration.inMilliseconds < 1000
+            ? const Duration(seconds: 1)
+            : scanDuration;
+
+        if (mounted) {
+          // Reset controller with actual scan duration
+          _controller.duration = animationDuration;
+          _controller.reset();
+          _controller.forward();
+        }
+      }
     } catch (e) {
       // Log error but don't mark sync as successful
       log('Error during sync: $e');
       _syncSuccessful = false;
+
+      // Still update animation even on error
+      if (_scanStartTime != null) {
+        final scanDuration = DateTime.now().difference(_scanStartTime!);
+        final animationDuration = scanDuration.inMilliseconds < 1000
+            ? const Duration(seconds: 1)
+            : scanDuration;
+
+        if (mounted) {
+          _controller.duration = animationDuration;
+          _controller.reset();
+          _controller.forward();
+        }
+      }
 
       // Check if it's a permission error
       final errorString = e.toString().toLowerCase();
@@ -475,10 +511,11 @@ class _SyncProgressState extends State<SyncProgress>
   @override
   void initState() {
     super.initState();
+    // Initialize with a placeholder duration - will be updated after scan completes
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 5), // total time to reach 100%
-    )..forward(); // start animation
+      duration: const Duration(seconds: 1), // placeholder, will be updated
+    );
 
     scanMusicFiles();
 
