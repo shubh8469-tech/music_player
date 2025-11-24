@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../commonWidgets/textWidget.dart';
 import '../../core/di/injection.dart';
@@ -73,6 +74,19 @@ class _SplashScreenState extends State<SplashScreen>
     });
   }
 
+  /// Check actual runtime permission status
+  Future<bool> _checkRuntimePermissions() async {
+    if (Platform.isIOS) {
+      return true; // iOS doesn't need explicit permission for media library
+    }
+
+    // Check actual runtime permission status
+    final storageGranted = await Permission.storage.isGranted;
+    final audioGranted = await Permission.audio.isGranted;
+
+    return storageGranted || audioGranted;
+  }
+
   /// Determines the next screen based on app state
   Future<void> _navigateToNextScreen() async {
     if (!mounted) return;
@@ -87,15 +101,32 @@ class _SplashScreenState extends State<SplashScreen>
     final appStateService = locator<AppStateService>();
 
     // Check if sync has been completed
-    final syncCompleted = await appStateService.isSyncCompleted();
-    if (syncCompleted) {
-      if (mounted) context.go('/dashboard');
+    // final syncCompleted = await appStateService.isSyncCompleted();
+    // if (syncCompleted) {
+    //   if (mounted) context.go('/dashboard');
+    //   return;
+    // }
+
+    // Verify actual runtime permissions (not just stored flag)
+    final hasRuntimePermission = await _checkRuntimePermissions();
+    
+    // Check stored permission flag
+    final permissionGranted = await appStateService.isPermissionGranted();
+    
+    // If stored flag says granted but runtime permission is not actually granted,
+    // reset the flag and go to permission screen
+    if (permissionGranted && !hasRuntimePermission) {
+      await appStateService.setPermissionGranted(false);
+      if (mounted) context.go('/permission');
       return;
     }
 
-    // Check if permission has been granted
-    final permissionGranted = await appStateService.isPermissionGranted();
-    if (permissionGranted) {
+    // If runtime permission is actually granted, proceed to sync
+    if (hasRuntimePermission) {
+      // Update stored flag if it's not set
+      if (!permissionGranted) {
+        await appStateService.setPermissionGranted(true);
+      }
       // Permission granted but sync not completed, go to sync
       if (mounted) context.go('/sync');
       return;

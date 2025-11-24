@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:permission_handler/permission_handler.dart';
 // Note: metadata_god package available if needed for additional metadata extraction
 import '../../core/di/injection.dart';
 import '../../core/services/app_state_service.dart';
@@ -80,8 +81,49 @@ class _SyncProgressState extends State<SyncProgress>
     return bytes;
   }
 
+  /// Check if runtime permissions are actually granted
+  Future<bool> _checkPermissions() async {
+    if (Platform.isIOS) {
+      return true; // iOS doesn't need explicit permission for media library
+    }
+
+    // Check actual runtime permission status
+    final storageGranted = await Permission.storage.isGranted;
+    final audioGranted = await Permission.audio.isGranted;
+
+    if (storageGranted || audioGranted) {
+      return true;
+    }
+
+    // If not granted, try to request
+    PermissionStatus status;
+    if (await Permission.storage.isGranted) {
+      status = PermissionStatus.granted;
+    } else {
+      status = await Permission.audio.request();
+      if (!status.isGranted) {
+        status = await Permission.storage.request();
+      }
+    }
+
+    return status.isGranted;
+  }
+
   Future<void> scanMusicFiles() async {
     try {
+      // Verify permissions before accessing library
+      final hasPermission = await _checkPermissions();
+      if (!hasPermission) {
+        log('Permission not granted, redirecting to permission screen');
+        if (mounted) {
+          // Reset permission flag since actual permission is not granted
+          final appStateService = locator<AppStateService>();
+          await appStateService.setPermissionGranted(false);
+          context.go('/permission');
+        }
+        return;
+      }
+
       final SongLocalDataSource localDataSource = locator();
 
       final AddSong addSongUseCase = locator();
@@ -374,6 +416,20 @@ class _SyncProgressState extends State<SyncProgress>
       // Log error but don't mark sync as successful
       log('Error during sync: $e');
       _syncSuccessful = false;
+
+      // Check if it's a permission error
+      final errorString = e.toString().toLowerCase();
+      if (errorString.contains('missingpermissions') ||
+          errorString.contains('permission') ||
+          errorString.contains('access denied')) {
+        log('Permission error detected, redirecting to permission screen');
+        if (mounted) {
+          // Reset permission flag since actual permission is not granted
+          final appStateService = locator<AppStateService>();
+          await appStateService.setPermissionGranted(false);
+          context.go('/permission');
+        }
+      }
     }
   }
 
