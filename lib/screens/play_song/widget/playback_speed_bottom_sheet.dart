@@ -66,7 +66,7 @@ class _PlaybackSpeedBottomSheetState extends State<PlaybackSpeedBottomSheet> {
           color: AppColors.white,
           borderRadius: BorderRadius.only(topLeft: Radius.circular(32.r), topRight: Radius.circular(32.r)),
         ),
-        padding: EdgeInsets.symmetric(horizontal: 0.w, vertical: 24.h),
+        padding: EdgeInsets.symmetric(vertical: 24.h),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -116,62 +116,70 @@ class _PlaybackSpeedBottomSheetState extends State<PlaybackSpeedBottomSheet> {
               },
             ),
             SizedBox(height: 22.h),
-            Row(
-              children: _presetSpeeds
-                  .map(
-                    (speed) => Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 4.w),
+
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.h),
+              child: Column(
+                children: [
+                  Row(
+                    children: _presetSpeeds
+                        .map(
+                          (speed) => Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4.w),
+                              child: GestureDetector(
+                                onTap: () => _tapPreset(speed),
+                                child: Container(
+                                  height: 42.h,
+                                  decoration: BoxDecoration(
+                                    color: (speed - _selectedSpeed).abs() < 0.05 ? AppColors.primaryOrange : AppColors.textColor.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(10.r),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Texts(
+                                    '${speed.toStringAsFixed(1)}x',
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: (speed - _selectedSpeed).abs() < 0.05 ? AppColors.white : AppColors.textColor,
+                                    fontFamily: AppFonts.inter,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  SizedBox(height: 28.h),
+                  Row(
+                    children: [
+                      Expanded(
                         child: GestureDetector(
-                          onTap: () => _tapPreset(speed),
+                          onTap: () => Navigator.pop(context),
                           child: Container(
-                            height: 42.h,
-                            decoration: BoxDecoration(
-                              color: (speed - _selectedSpeed).abs() < 0.05 ? AppColors.primaryOrange : AppColors.textColor.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(10.r),
-                            ),
+                            height: 52.h,
+                            decoration: BoxDecoration(color: AppColors.black.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(30.r)),
                             alignment: Alignment.center,
-                            child: Texts(
-                              '${speed.toStringAsFixed(1)}x',
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                              color: (speed - _selectedSpeed).abs() < 0.05 ? AppColors.white : AppColors.textColor,
-                              fontFamily: AppFonts.inter,
-                            ),
+                            child: Texts(localization.cancel, fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.medium, color: AppColors.textColor),
                           ),
                         ),
                       ),
-                    ),
-                  )
-                  .toList(),
-            ),
-            SizedBox(height: 28.h),
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      height: 52.h,
-                      decoration: BoxDecoration(color: AppColors.black.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(30.r)),
-                      alignment: Alignment.center,
-                      child: Texts(localization.cancel, fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.medium, color: AppColors.textColor),
-                    ),
+                      SizedBox(width: 16.w),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: _apply,
+                          child: Container(
+                            height: 52.h,
+                            decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(30.r)),
+                            alignment: Alignment.center,
+                            child: Texts('Done', fontSize: 16.sp, fontWeight: FontWeight.w600, fontFamily: AppFonts.medium, color: AppColors.white),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                SizedBox(width: 16.w),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: _apply,
-                    child: Container(
-                      height: 52.h,
-                      decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(30.r)),
-                      alignment: Alignment.center,
-                      child: Texts('Done', fontSize: 16.sp, fontWeight: FontWeight.w600, fontFamily: AppFonts.medium, color: AppColors.white),
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -229,10 +237,7 @@ class _SliderWithFixedLabels extends StatelessWidget {
                     top: (56.h - 4.h) / 2,
                     child: Container(
                       height: 4.h,
-                      decoration: BoxDecoration(
-                        color: AppColors.textColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(40.r),
-                      ),
+                      decoration: BoxDecoration(color: AppColors.textColor.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(40.r)),
                     ),
                   ),
                   Positioned(
@@ -241,10 +246,7 @@ class _SliderWithFixedLabels extends StatelessWidget {
                     child: Container(
                       width: barWidth,
                       height: barHeight,
-                      decoration: BoxDecoration(
-                        color: AppColors.black,
-                        borderRadius: BorderRadius.circular(3.r),
-                      ),
+                      decoration: BoxDecoration(color: AppColors.black, borderRadius: BorderRadius.circular(3.r)),
                     ),
                   ),
                   Positioned(
@@ -253,10 +255,7 @@ class _SliderWithFixedLabels extends StatelessWidget {
                     child: Container(
                       width: barWidth,
                       height: barHeight,
-                      decoration: BoxDecoration(
-                        color: AppColors.black,
-                        borderRadius: BorderRadius.circular(3.r),
-                      ),
+                      decoration: BoxDecoration(color: AppColors.black, borderRadius: BorderRadius.circular(3.r)),
                     ),
                   ),
                   for (final stop in dotStops)
@@ -266,10 +265,7 @@ class _SliderWithFixedLabels extends StatelessWidget {
                       child: Container(
                         width: dotDiameter,
                         height: dotDiameter,
-                        decoration: const BoxDecoration(
-                          color: AppColors.black,
-                          shape: BoxShape.circle,
-                        ),
+                        decoration: const BoxDecoration(color: AppColors.black, shape: BoxShape.circle),
                       ),
                     ),
                   Positioned.fill(
@@ -284,13 +280,7 @@ class _SliderWithFixedLabels extends StatelessWidget {
                           overlayShape: SliderComponentShape.noOverlay,
                           thumbShape: RoundSliderThumbShape(enabledThumbRadius: 10.r),
                         ),
-                        child: Slider(
-                          value: value,
-                          min: min,
-                          max: max,
-                          divisions: totalDivisions,
-                          onChanged: onChanged,
-                        ),
+                        child: Slider(value: value, min: min, max: max, divisions: totalDivisions, onChanged: onChanged),
                       ),
                     ),
                   ),
