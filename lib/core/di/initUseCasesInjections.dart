@@ -24,6 +24,12 @@ import '../../features/albums/domain/usecases/get_album_songs.dart';
 import '../../features/albums/domain/usecases/add_song_to_album.dart';
 import '../../features/albums/domain/usecases/get_albums_by_artist.dart';
 import '../../features/albums/domain/usecases/update_album_cover.dart';
+import '../../features/genres/domain/repositories/genre_repository.dart';
+import '../../features/genres/domain/usecases/add_genre.dart';
+import '../../features/genres/domain/usecases/get_all_genres.dart';
+import '../../features/genres/domain/usecases/get_genre_songs.dart';
+import '../../features/genres/domain/usecases/add_song_to_genre.dart';
+import '../../features/genres/domain/usecases/update_genre_cover.dart';
 import 'injection.dart';
 
 Future<void> initUseCaseInjections() async {
@@ -59,4 +65,11 @@ Future<void> initUseCaseInjections() async {
   locator.registerFactory(() => AddSongToAlbum(locator<AlbumRepository>()));
   locator.registerFactory(() => GetAlbumsByArtist(locator<AlbumRepository>()));
   locator.registerFactory(() => UpdateAlbumCover(locator<AlbumRepository>()));
+
+  ///---> Genres UseCases
+  locator.registerFactory(() => AddGenre(locator<GenreRepository>()));
+  locator.registerFactory(() => GetAllGenres(locator<GenreRepository>()));
+  locator.registerFactory(() => GetGenreSongs(locator<GenreRepository>()));
+  locator.registerFactory(() => AddSongToGenre(locator<GenreRepository>()));
+  locator.registerFactory(() => UpdateGenreCover(locator<GenreRepository>()));
 }

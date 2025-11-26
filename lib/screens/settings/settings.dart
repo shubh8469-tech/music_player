@@ -406,7 +406,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 asset: Assets.svgBackup,
                 title: "Backup & restore",
                 subtitle: "Last backup: 2025-08-25 13:52:14",
-                onTap: _showComingSoonSnack,
+                onTap: () {
+                  context.push('/dashboard/backup-restore');
+                },
               ),
               _sectionDivider(),
               _optionTile(
@@ -496,11 +498,18 @@ class _SettingsPageState extends State<SettingsPage> {
               ? CrossAxisAlignment.start
               : CrossAxisAlignment.center,
           children: [
-            SvgPicture.asset(
-              asset,
-              colorFilter: ColorFilter.mode(
-                AppColors.textColor.withValues(alpha: 0.5),
-                BlendMode.srcIn,
+            SizedBox(
+              height: 24.h,
+              width: 24.w,
+              child: Padding(
+                padding: const EdgeInsets.all(1.0),
+                child: SvgPicture.asset(
+                  asset,
+                  colorFilter: ColorFilter.mode(
+                    AppColors.textColor.withValues(alpha: 0.5),
+                    BlendMode.srcIn,
+                  ),
+                ),
               ),
             ),
             SizedBox(width: 17.5.w),

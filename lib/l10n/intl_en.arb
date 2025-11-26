@@ -43,6 +43,7 @@
   "deleteSong":"Delete Song",
   "deletePlaylist":"Delete Playlist",
   "areYouSureDeleteSong":"Are you sure you want to delete these 2 songs?",
-  "rename":"Rename"
+  "rename":"Rename",
+  "done": "Done"
 
 }

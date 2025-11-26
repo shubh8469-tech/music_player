@@ -31,6 +31,8 @@ class Assets {
   static const String svgBackup = 'assets/svg/backup.svg';
   static const String svgBulb = 'assets/svg/bulb.svg';
   static const String svgCancel = 'assets/svg/cancel.svg';
+  static const String svgClockRestore = 'assets/svg/clockRestore.svg';
+  static const String svgCloudBackup = 'assets/svg/cloud_backup.svg';
   static const String svgDirectory = 'assets/svg/directory.svg';
   static const String svgDraggable = 'assets/svg/draggable.svg';
   static const String svgDrawer = 'assets/svg/drawer.svg';
@@ -85,6 +87,7 @@ class Assets {
   static const String svgIcTimer = 'assets/svg/ic_timer.svg';
   static const String svgIcTunes = 'assets/svg/ic_tunes.svg';
   static const String svgIcUncheck = 'assets/svg/ic_uncheck.svg';
+  static const String svgLocalBackup = 'assets/svg/localBackup.svg';
   static const String svgLocalGallery = 'assets/svg/localGallery.svg';
   static const String svgLock = 'assets/svg/lock.svg';
   static const String svgMenuIcon = 'assets/svg/menuIcon.svg';
@@ -107,6 +110,7 @@ class Assets {
   static const String svgRepeatOff = 'assets/svg/repeat_off.svg';
   static const String svgRepeatOn = 'assets/svg/repeat_on.svg';
   static const String svgRepeatOnce = 'assets/svg/repeat_once.svg';
+  static const String svgRestore = 'assets/svg/restore.svg';
   static const String svgScan = 'assets/svg/scan.svg';
   static const String svgSearch = 'assets/svg/search.svg';
   static const String svgSelectListIcon = 'assets/svg/selectListIcon.svg';

@@ -6,18 +6,18 @@ import 'package:music_app/commonWidgets/textWidget.dart';
 import 'package:music_app/themes/font.dart';
 
 import '../../../../commonWidgets/bottom_button_two.dart';
-import '../../../../features/artists/bloc/artist_bloc.dart';
+import '../../../../features/genres/bloc/genre_bloc.dart';
 import '../../../../generated/assets.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../themes/color.dart';
 import '../../../../utills/globals.dart';
 
-class ArtistSortByBottomSheet extends StatefulWidget {
+class GenreSortByBottomSheet extends StatefulWidget {
   final int selectedIndex;
   final int selectedOrder; // 0 = ascending, 1 = descending
   final Function(int, int) onItemSelected; // (sortIndex, orderIndex)
 
-  const ArtistSortByBottomSheet({
+  const GenreSortByBottomSheet({
     required this.selectedIndex,
     this.selectedOrder = 0, // Default to ascending
     required this.onItemSelected,
@@ -25,10 +25,10 @@ class ArtistSortByBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<ArtistSortByBottomSheet> createState() => _ArtistSortByBottomSheetState();
+  State<GenreSortByBottomSheet> createState() => _GenreSortByBottomSheetState();
 }
 
-class _ArtistSortByBottomSheetState extends State<ArtistSortByBottomSheet> {
+class _GenreSortByBottomSheetState extends State<GenreSortByBottomSheet> {
   late int localSelectedIndex;
   late int localSelectedOrder; // 0 = ascending, 1 = descending
 
@@ -72,8 +72,8 @@ class _ArtistSortByBottomSheetState extends State<ArtistSortByBottomSheet> {
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ...List.generate(artistSortByItems.length, (index) {
-                var item = artistSortByItems[index];
+              ...List.generate(genreSortByItems.length, (index) {
+                var item = genreSortByItems[index];
                 return ListTile(
                   dense: true,
                   visualDensity: VisualDensity(horizontal: 0.w, vertical: -2.h),
@@ -112,7 +112,7 @@ class _ArtistSortByBottomSheetState extends State<ArtistSortByBottomSheet> {
               ),
 
               // Only show Ascending/Descending if not Random
-              if (localSelectedIndex != 3) ...[
+              if (localSelectedIndex != 2) ...[
                 // Ascending Option
                 ListTile(
                   dense: true,
@@ -182,8 +182,8 @@ class _ArtistSortByBottomSheetState extends State<ArtistSortByBottomSheet> {
               rightBtnTitle: "Done",
               lefBtnTap: () {},
               rightBtnTap: () {
-                context.read<ArtistBloc>().add(
-                  ArtistEvent.sortArtists(localSelectedIndex, localSelectedOrder),
+                context.read<GenreBloc>().add(
+                  GenreEvent.sortGenres(localSelectedIndex, localSelectedOrder),
                 );
                 widget.onItemSelected(localSelectedIndex, localSelectedOrder);
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -198,14 +198,4 @@ class _ArtistSortByBottomSheetState extends State<ArtistSortByBottomSheet> {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
 

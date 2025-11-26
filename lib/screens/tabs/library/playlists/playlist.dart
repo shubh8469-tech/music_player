@@ -134,7 +134,12 @@ class _PlayListScreenState extends State<PlayListScreen> {
                     ),
                   ),
                   SizedBox(width: 15.w),
-                  SvgPicture.asset(Assets.svgMenuIcon),
+                  GestureDetector(
+                    onTap: () {
+                      shortMenu();
+                    },
+                    child: SvgPicture.asset(Assets.svgMenuIcon, height: 25),
+                  ),
                 ],
               ),
               SizedBox(height: 33.h),
@@ -263,8 +268,9 @@ class _PlayListScreenState extends State<PlayListScreen> {
                         children: List.generate(userPlaylists.length, (index) {
                           final p = userPlaylists[index];
                           final hasCover = (p.coverPath?.isNotEmpty ?? false);
-                          final coverAsset =
-                              hasCover ? p.coverPath! : Assets.svgMusicIcon;
+                          final coverAsset = hasCover
+                              ? p.coverPath!
+                              : Assets.svgMusicIcon;
                           final coverIsSvg = coverAsset.contains('.svg');
                           return MusicListTile(
                             margin: 7.w,
@@ -373,6 +379,79 @@ class _PlayListScreenState extends State<PlayListScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  shortMenu() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Stack(
+          children: [
+            Positioned(
+              top: 180.h,
+              right: 10.w,
+              child: Material(
+                type: MaterialType.transparency,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(20.w),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 15,
+                        children: [
+                          InkWell(
+                            onTap: () {},
+                            child: Texts(
+                              'Back Up Playlist',
+                              fontSize: 15.sp,
+                              fontWeight: AppFontWeights.regular,
+                              fontFamily: AppFonts.inter,
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {},
+                            child: Texts(
+                              'Restore Playlist',
+                              fontSize: 15.sp,
+                              fontWeight: AppFontWeights.regular,
+                              fontFamily: AppFonts.inter,
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {},
+                            child: Texts(
+                              'Import Playlist',
+                              fontSize: 15.sp,
+                              fontWeight: AppFontWeights.regular,
+                              fontFamily: AppFonts.inter,
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {},
+                            child: Texts(
+                              'Manage',
+                              fontSize: 15.sp,
+                              fontWeight: AppFontWeights.regular,
+                              fontFamily: AppFonts.inter,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

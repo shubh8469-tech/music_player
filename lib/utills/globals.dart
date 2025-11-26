@@ -193,6 +193,18 @@ final List<SongMenuItem> artistSortByItems = [
   SongMenuItem(icon: "", title: "Random"),
 ];
 
+final List<SongMenuItem> genreSortByItems = [
+  SongMenuItem(
+    icon: "",
+    title: "Genre Name",
+  ),
+  SongMenuItem(
+    icon: "",
+    title: S.of(rootNavigatorKey.currentContext!).songCount,
+  ),
+  SongMenuItem(icon: "", title: "Random"),
+];
+
 final List<SongMenuItem> albumMenuItems = [
   SongMenuItem(
     icon: Assets.svgPlayBlackBorder,
@@ -217,6 +229,29 @@ final List<SongMenuItem> albumMenuItems = [
 ];
 
 final List<SongMenuItem> artistMenuItems = [
+  SongMenuItem(
+    icon: Assets.svgPlayBlackBorder,
+    title: S.of(rootNavigatorKey.currentContext!).play,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcMenuPlaynext,
+    title: S.of(rootNavigatorKey.currentContext!).playNext,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcMenuQueue,
+    title: S.of(rootNavigatorKey.currentContext!).addToQueue,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcMenuPlaylist,
+    title: S.of(rootNavigatorKey.currentContext!).addToPlaylist,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcHide,
+    title: S.of(rootNavigatorKey.currentContext!).hideFolder,
+  ),
+];
+
+final List<SongMenuItem> genreMenuItems = [
   SongMenuItem(
     icon: Assets.svgPlayBlackBorder,
     title: S.of(rootNavigatorKey.currentContext!).play,

@@ -163,14 +163,19 @@ class MusicDrawer extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 14.h),
         child: Row(
           children: [
-            SvgPicture.asset(
-              assetPath,
-              width: 24.r,
-              height: 24.r,
-              colorFilter: assetPath != Assets.svgThemeBrush ? const ColorFilter.mode(
-                AppColors.black,
-                BlendMode.srcIn,
-              ) : null,
+            SizedBox(
+              height: 25.h,
+              width: 25.w,
+              child: Padding(
+                padding: const EdgeInsets.all(1.0),
+                child: SvgPicture.asset(
+                  assetPath,
+                  colorFilter: assetPath != Assets.svgThemeBrush ? const ColorFilter.mode(
+                    AppColors.black,
+                    BlendMode.srcIn,
+                  ) : null,
+                ),
+              ),
             ),
             SizedBox(width: 16.w),
             Expanded(
@@ -184,11 +189,6 @@ class MusicDrawer extends StatelessWidget {
                 ),
               ),
             ),
-            // Icon(
-            //   Icons.chevron_right,
-            //   size: 22.r,
-            //   color: AppColors.textColor.withOpacity(0.6),
-            // ),
           ],
         ),
       ),

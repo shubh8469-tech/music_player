@@ -20,9 +20,13 @@ import '../../features/artists/domain/usecases/add_song_to_artist.dart';
 import '../../features/albums/domain/entities/album.dart';
 import '../../features/albums/domain/usecases/add_album.dart';
 import '../../features/albums/domain/usecases/add_song_to_album.dart';
+import '../../features/genres/domain/entities/genre.dart';
+import '../../features/genres/domain/usecases/add_genre.dart';
+import '../../features/genres/domain/usecases/add_song_to_genre.dart';
 import '../../features/folders/domain/repositories/folder_repository.dart';
 import '../../features/artists/domain/repositories/artist_repository.dart';
 import '../../features/albums/domain/repositories/album_repository.dart';
+import '../../features/genres/domain/repositories/genre_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -139,9 +143,12 @@ class _SyncProgressState extends State<SyncProgress>
       final AddSongToArtist addSongToArtistUseCase = locator();
       final AddAlbum addAlbumUseCase = locator();
       final AddSongToAlbum addSongToAlbumUseCase = locator();
+      final AddGenre addGenreUseCase = locator();
+      final AddSongToGenre addSongToGenreUseCase = locator();
       final FolderRepository folderRepository = locator();
       final ArtistRepository artistRepository = locator();
       final AlbumRepository albumRepository = locator();
+      final GenreRepository genreRepository = locator();
 
       // Get songs from device
       List<SongModel> deviceSongs = await _audioQuery.querySongs();
@@ -186,10 +193,11 @@ class _SyncProgressState extends State<SyncProgress>
       scannedFiles.clear();
       groupedByFolder.clear();
 
-      // Track unique folders, artists, and albums
+      // Track unique folders, artists, albums, and genres
       Map<String, int> folderIds = {};
       Map<String, int> artistIds = {};
       Map<String, int> albumIds = {};
+      Map<String, int> genreIds = {};
       final Set<int> touchedAlbumIds = {};
 
       for (final song in songs) {
@@ -410,6 +418,34 @@ class _SyncProgressState extends State<SyncProgress>
             }
             touchedAlbumIds.add(albumId);
             await addSongToAlbumUseCase(albumId, song.id);
+          }
+
+          // Add to Genre
+          final genreName = (song.genre ?? 'Unknown Genre').trim();
+          if (genreName.isNotEmpty) {
+            int genreId;
+            if (genreIds.containsKey(genreName)) {
+              genreId = genreIds[genreName]!;
+            } else {
+              final existingGenre = await genreRepository.getGenreByName(
+                genreName,
+              );
+              if (existingGenre != null) {
+                genreId = existingGenre.id!;
+              } else {
+                final genre = Genre(
+                  id: null,
+                  name: genreName,
+                  songCount: 0,
+                  artworkPath: artworkPath.isNotEmpty ? artworkPath : null,
+                  createdTime: DateTime.now(),
+                  updatedTime: DateTime.now(),
+                );
+                genreId = await addGenreUseCase(genre);
+              }
+              genreIds[genreName] = genreId;
+            }
+            await addSongToGenreUseCase(genreId, song.id);
           }
 
           final item = {

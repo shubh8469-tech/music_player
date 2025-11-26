@@ -140,10 +140,9 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
 
     try {
       // Set playlist with selected songs and start playing
+      showSnackBar(context, () {}, message: "Playing ${selectedSongs.length} songs", alertBannerLocation: AlertBannerLocation.bottom);
       await musicService.setPlaylist(selectedSongs, startIndex: 0);
       await musicService.play();
-
-      showSnackBar(context, () {}, message: "Playing ${selectedSongs.length} songs", alertBannerLocation: AlertBannerLocation.bottom);
       // Navigate back or stay, depending on your preference
       context.pop();
     } catch (e) {
@@ -293,8 +292,9 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
       // Check if there are existing songs in the queue
       if (musicService.songs.isEmpty) {
         // No songs in queue - add all selected songs and start playing
-        await musicService.setPlaylist(selectedSongs, startIndex: 0);
-        await musicService.play();
+        showSnackBar(context, () {}, message: "${selectedSongs.length} songs added to play next", alertBannerLocation: AlertBannerLocation.bottom);
+        await musicService.setPlaylist(selectedSongs, startIndex: 0, autoPlay: true);
+        // await musicService.play();
       } else {
         // Songs exist in queue - insert selected songs after current playing song
         final currentIndex = musicService.currentIndex;
@@ -313,12 +313,13 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
 
         // Update the playlist, keeping the current song playing
         await musicService.setPlaylist(newSongsList, startIndex: currentIndex >= 0 ? currentIndex : 0, autoPlay: false);
+        showSnackBar(context, () {}, message: "${selectedSongs.length} songs added to play next", alertBannerLocation: AlertBannerLocation.bottom);
       }
 
-      if (mounted) {
-        showSnackBar(context, () {}, message: "${selectedSongs.length} songs added to play next", alertBannerLocation: AlertBannerLocation.bottom);
-        context.pop();
-      }
+      // if (mounted) {
+        // showSnackBar(context, () {}, message: "${selectedSongs.length} songs added to play next", alertBannerLocation: AlertBannerLocation.bottom);
+        // context.pop();
+      // }
     } catch (e) {
       log('Error adding songs to play next: $e');
       if (mounted) {

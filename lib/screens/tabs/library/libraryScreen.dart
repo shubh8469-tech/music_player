@@ -8,6 +8,7 @@ import 'package:music_app/themes/font.dart';
 import 'albums/albumList.dart';
 import 'artist/artistScreen.dart';
 import 'folders/folders.dart';
+import 'genres/genreList.dart';
 
 // Public controller to control LibraryScreen from outside
 class LibraryScreenController {
@@ -44,6 +45,7 @@ class _LibraryScreenState extends State<LibraryScreen>
     "FOLDERS",
     "ALBUMS",
     "ARTISTS",
+    "GENRES",
   ];
 
   @override
@@ -107,6 +109,7 @@ class _LibraryScreenState extends State<LibraryScreen>
                 FolderListScreen(),
                 AlbumListScreen(),
                 ArtistListScreen(),
+                GenreListScreen(),
               ],
             ),
           ),

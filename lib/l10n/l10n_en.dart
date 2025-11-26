@@ -134,4 +134,7 @@ class SEn extends S {
 
   @override
   String get rename => 'Rename';
+
+  @override
+  String get done => 'Done';
 }

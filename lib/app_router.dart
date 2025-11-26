@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:music_app/screens/settings/backup_restore_page.dart';
 import 'package:music_app/screens/settings/settings.dart';
 import 'package:music_app/screens/tabs/library/songs/select_song_screen.dart';
 import 'package:music_app/screens/tabs/library/songs/add_songs_screen.dart';
@@ -13,6 +14,8 @@ import 'package:music_app/screens/tabs/library/artist/artist_detail_screen.dart'
 import 'package:music_app/screens/tabs/library/artist/select_artist_screen.dart';
 import 'package:music_app/screens/tabs/library/albums/album_detail_screen.dart';
 import 'package:music_app/screens/tabs/library/albums/select_album_screen.dart';
+import 'package:music_app/screens/tabs/library/genres/genre_detail_screen.dart';
+import 'package:music_app/screens/tabs/library/genres/select_genre_screen.dart';
 
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'screens/Splash&Setup/permission.dart';
@@ -47,7 +50,10 @@ enum AppRouteName {
   selectArtist,
   albumDetail,
   selectAlbum,
+  genreDetail,
+  selectGenre,
   settings,
+  backupRestore,
 }
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
@@ -87,6 +93,11 @@ final GoRouter appRouter = GoRouter(
           name: AppRouteName.settings.name,
           path: 'settings',
           builder: (context, state) => const SettingsPage(),
+        ),
+        GoRoute(
+          name: AppRouteName.backupRestore.name,
+          path: 'backup-restore',
+          builder: (context, state) => const BackupRestorePage(),
         ),
         GoRoute(
           name: AppRouteName.library.name,
@@ -143,9 +154,7 @@ final GoRouter appRouter = GoRouter(
             final song = state.extra as SongsModel?;
             if (song == null) {
               return const Scaffold(
-                body: Center(
-                  child: Text('No song selected for editing'),
-                ),
+                body: Center(child: Text('No song selected for editing')),
               );
             }
             return EditSongDetailsScreen(song: song);
@@ -219,7 +228,7 @@ final GoRouter appRouter = GoRouter(
           name: AppRouteName.artistDetail.name,
           path: 'artist-detail',
           builder: (context, state) {
-final artist = state.extra as dynamic;
+            final artist = state.extra as dynamic;
             return ArtistDetailScreen(artist: artist);
           },
         ),
@@ -240,6 +249,19 @@ final artist = state.extra as dynamic;
           name: AppRouteName.selectAlbum.name,
           path: 'select-albums',
           builder: (context, state) => const SelectAlbumScreen(),
+        ),
+        GoRoute(
+          name: AppRouteName.genreDetail.name,
+          path: 'genre-detail',
+          builder: (context, state) {
+            final genre = state.extra as dynamic;
+            return GenreDetailScreen(genre: genre);
+          },
+        ),
+        GoRoute(
+          name: AppRouteName.selectGenre.name,
+          path: 'select-genre',
+          builder: (context, state) => const SelectGenreScreen(),
         ),
       ],
     ),

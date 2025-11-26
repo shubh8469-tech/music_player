@@ -18,6 +18,10 @@ import 'package:music_app/features/albums/domain/usecases/get_all_albums.dart';
 import 'package:music_app/features/albums/domain/usecases/get_album_songs.dart';
 import 'package:music_app/features/albums/domain/usecases/get_albums_by_artist.dart';
 import 'package:music_app/features/albums/domain/usecases/update_album_cover.dart';
+import 'package:music_app/features/genres/bloc/genre_bloc.dart';
+import 'package:music_app/features/genres/domain/usecases/get_all_genres.dart';
+import 'package:music_app/features/genres/domain/usecases/get_genre_songs.dart';
+import 'package:music_app/features/genres/domain/usecases/update_genre_cover.dart';
 import 'Blocs/languageBloc/language_bloc.dart';
 import 'app_router.dart';
 import 'core/di/injection.dart';
@@ -97,6 +101,13 @@ Future<void> main() async {
                 updateAlbumCoverUseCase: locator<UpdateAlbumCover>(),
               ),
             ),
+            BlocProvider<GenreBloc>(
+              create: (_) => GenreBloc(
+                getAllGenres: locator<GetAllGenres>(),
+                getGenreSongs: locator<GetGenreSongs>(),
+                updateGenreCoverUseCase: locator<UpdateGenreCover>(),
+              ),
+            ),
             BlocProvider<SongsBloc>(
               create: (context) => SongsBloc(
                 locator<SongLocalDataSource>(),
@@ -113,6 +124,9 @@ Future<void> main() async {
                       );
                   context.read<AlbumBloc>().add(
                         const AlbumEvent.fetchAllAlbums(),
+                      );
+                  context.read<GenreBloc>().add(
+                        const GenreEvent.fetchAllGenres(),
                       );
                 },
               )..add(const SongsEvent.getAllSongs()),

@@ -348,6 +348,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Rename'**
   String get rename;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

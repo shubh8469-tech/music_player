@@ -13,6 +13,9 @@ import '../../features/artists/domain/repositories/artist_repository.dart';
 import '../../features/albums/data/dataSource/album_local_data_source.dart';
 import '../../features/albums/data/repositories/album_repository_impl.dart';
 import '../../features/albums/domain/repositories/album_repository.dart';
+import '../../features/genres/data/dataSource/genre_local_data_source.dart';
+import '../../features/genres/data/repositories/genre_repository_impl.dart';
+import '../../features/genres/domain/repositories/genre_repository.dart';
 import 'injection.dart';
 
 Future<void> initRepositoryInjections() async {
@@ -39,5 +42,10 @@ Future<void> initRepositoryInjections() async {
   ///---> Albums Repositories
   locator.registerLazySingleton<AlbumRepository>(
     () => AlbumRepositoryImpl(locator<AlbumLocalDataSource>()),
+  );
+
+  ///---> Genres Repositories
+  locator.registerLazySingleton<GenreRepository>(
+    () => GenreRepositoryImpl(locator<GenreLocalDataSource>()),
   );
 }

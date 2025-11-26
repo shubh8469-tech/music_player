@@ -134,4 +134,7 @@ class SHi extends S {
 
   @override
   String get rename => 'नाम बदलें';
+
+  @override
+  String get done => 'Done';
 }
