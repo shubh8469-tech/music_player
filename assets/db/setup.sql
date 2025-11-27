@@ -308,3 +308,88 @@ BEGIN
         updated_time = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')
     WHERE id = OLD.album_id;
 END;
+
+---------------------------------------------------------------------------
+-- Genres table
+---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS genres (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    song_count INTEGER NOT NULL DEFAULT 0,
+    artwork_path TEXT,
+    created_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')),
+    updated_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))
+);
+
+CREATE TRIGGER IF NOT EXISTS genres_updated_time_trigger
+AFTER UPDATE ON genres
+FOR EACH ROW
+WHEN NEW.updated_time = OLD.updated_time
+  AND (SELECT execute_updated_time_triggers FROM trigger_control) = 1
+BEGIN
+    UPDATE genres
+    SET updated_time = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')
+    WHERE id = OLD.id;
+END;
+
+---------------------------------------------------------------------------
+-- Genre_songs junction table
+---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS genre_songs (
+    genre_id INTEGER NOT NULL,
+    song_id INTEGER NOT NULL,
+    PRIMARY KEY (genre_id, song_id),
+    FOREIGN KEY (genre_id) REFERENCES genres(id) ON DELETE CASCADE,
+    FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
+);
+
+CREATE TRIGGER IF NOT EXISTS genre_song_insert_trigger
+AFTER INSERT ON genre_songs
+FOR EACH ROW
+BEGIN
+    UPDATE genres
+    SET song_count = song_count + 1,
+        updated_time = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')
+    WHERE id = NEW.genre_id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS genre_song_delete_trigger
+AFTER DELETE ON genre_songs
+FOR EACH ROW
+BEGIN
+    UPDATE genres
+    SET song_count = song_count - 1,
+        updated_time = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')
+    WHERE id = OLD.genre_id;
+END;
+
+---------------------------------------------------------------------------
+-- Backup options table
+---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS backup_options (
+    key TEXT PRIMARY KEY,
+    label TEXT NOT NULL,
+    is_selected INTEGER NOT NULL DEFAULT 1,
+    updated_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))
+);
+
+INSERT INTO backup_options (key, label, is_selected)
+SELECT 'tags', 'Tags', 1
+WHERE NOT EXISTS (SELECT 1 FROM backup_options WHERE key = 'tags');
+
+INSERT INTO backup_options (key, label, is_selected)
+SELECT 'covers', 'Covers', 1
+WHERE NOT EXISTS (SELECT 1 FROM backup_options WHERE key = 'covers');
+
+INSERT INTO backup_options (key, label, is_selected)
+SELECT 'playlists', 'Playlists', 1
+WHERE NOT EXISTS (SELECT 1 FROM backup_options WHERE key = 'playlists');
+
+INSERT INTO backup_options (key, label, is_selected)
+SELECT 'sort_settings', 'Sort Settings', 1
+WHERE NOT EXISTS (SELECT 1 FROM backup_options WHERE key = 'sort_settings');
+
+INSERT INTO backup_options (key, label, is_selected)
+SELECT 'scan_hide_settings', 'Scan and hide Settings', 1
+WHERE NOT EXISTS (SELECT 1 FROM backup_options WHERE key = 'scan_hide_settings');
+

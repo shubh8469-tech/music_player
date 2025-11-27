@@ -21,6 +21,7 @@ class MusicListTile extends StatelessWidget {
   final double cardRadius;
   final List<Color>? noLogoGradientColor;
   final String cardIconAsset;
+  final Widget? cardContent;
   final double cardIconSize;
   final bool isSvgCardIcon;
   final bool isSvgColorNeeded;
@@ -82,6 +83,7 @@ class MusicListTile extends StatelessWidget {
     required this.cardRadius,
     this.noLogoGradientColor,
     required this.cardIconAsset,
+    this.cardContent,
     required this.cardIconSize,
     this.isSvgCardIcon = true,
     this.isSvgColorNeeded = true,
@@ -162,6 +164,7 @@ class MusicListTile extends StatelessWidget {
                     colors: noLogoGradientColor ?? [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange],
                     borderRadius: cardRadius,
                     iconAsset: cardIconAsset,
+                    content: cardContent,
                     iconSize: cardIconSize,
                     isSvg: isSvgCardIcon,
                     isSvgColorNeeded: isSvgColorNeeded,

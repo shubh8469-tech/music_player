@@ -519,6 +519,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                   if (mounted) {
                                     showSnackBar(context, () {}, message: '"${widget.currentSong!.title}" hidden', alertBannerLocation: AlertBannerLocation.bottom);
                                   }
+
+                                  widget.onSongDeleted?.call();
                                 } catch (e) {
                                   showSnackBar(
                                     context,

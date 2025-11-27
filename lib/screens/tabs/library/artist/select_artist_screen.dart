@@ -566,6 +566,9 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
       // Artist items
       ...artists.map((artist) {
         final isSelected = selectedArtistIds.contains(artist.id);
+        final hasArtwork = artist.artworkPath?.isNotEmpty ?? false;
+        final artistArtworkPath =
+            hasArtwork ? artist.artworkPath! : Assets.svgMusicIcon;
 
         return Padding(
           padding: EdgeInsets.symmetric(horizontal: 15.w),
@@ -577,9 +580,9 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
             cardHeight: 50.h,
             cardWidth: 50.w,
             cardRadius: 100.r,
-            cardIconAsset: Assets.svgMusicIcon,
+            cardIconAsset: artistArtworkPath,
             cardIconSize: 32.r,
-            isSvgCardIcon: true,
+            isSvgCardIcon: !hasArtwork,
             isSvgColorNeeded: false,
             title: artist.name,
             subtitle:

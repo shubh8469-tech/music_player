@@ -14,6 +14,7 @@ class GradientCard extends StatelessWidget {
   final List<Color> colors;
   final double borderRadius;
   final String iconAsset;
+  final Widget? content;
   final String? title;
   final double? titleSize;
   final double iconSize;
@@ -32,6 +33,7 @@ class GradientCard extends StatelessWidget {
     required this.iconAsset,
     required this.iconSize,
     required this.margin,
+    this.content,
     this.isSvg = true,
     this.isSvgColorNeeded = true,
     this.iconColor,
@@ -42,6 +44,21 @@ class GradientCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Widget childWidget = content ??
+        ((iconAsset.isEmpty || iconAsset.contains('.svg'))
+            ? SvgPicture.asset(
+                iconAsset.isEmpty ? Assets.svgMusicIcon : iconAsset,
+                height: iconSize,
+                width: iconSize,
+              )
+            : ClipRRect(
+                borderRadius: BorderRadius.circular(borderRadius),
+                child: Image.file(
+                  File(iconAsset),
+                  fit: BoxFit.cover,
+                ),
+              ));
+
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -49,7 +66,7 @@ class GradientCard extends StatelessWidget {
         children: [
           borderRadius == 100.r
               ? CircleAvatar(
-            backgroundColor: Colors.transparent,
+                  backgroundColor: Colors.transparent,
                   child: Container(
                     margin: EdgeInsets.only(right: margin),
                     height: height,
@@ -60,14 +77,7 @@ class GradientCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(borderRadius),
                           )
                         : BoxDecoration(borderRadius: BorderRadius.circular(borderRadius)),
-                    child: Center(
-                      child: iconAsset.isEmpty || iconAsset.contains('.svg')
-                          ? SvgPicture.asset(iconAsset.isEmpty ? Assets.svgMusicIcon : iconAsset, height: iconSize, width: iconSize)
-                          : ClipRRect(
-                              borderRadius: BorderRadius.circular(borderRadius),
-                              child: Image.file(File(iconAsset), fit: BoxFit.cover),
-                            ),
-                    ),
+                    child: Center(child: childWidget),
                   ),
                 )
               : Container(
@@ -80,14 +90,7 @@ class GradientCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(borderRadius),
                         )
                       : BoxDecoration(borderRadius: BorderRadius.circular(borderRadius)),
-                  child: Center(
-                    child: iconAsset.isEmpty || iconAsset.contains('.svg')
-                        ? SvgPicture.asset(iconAsset.isEmpty ? Assets.svgMusicIcon : iconAsset, height: iconSize, width: iconSize)
-                        : ClipRRect(
-                            borderRadius: BorderRadius.circular(borderRadius),
-                            child: Image.file(File(iconAsset), fit: BoxFit.cover),
-                          ),
-                  ),
+                  child: Center(child: childWidget),
                 ),
           if (title != null)
             Container(

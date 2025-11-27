@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:characters/characters.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,6 +14,7 @@ import 'package:music_app/themes/color.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import '../../../../commonWidgets/MusicListTile.dart';
+import '../../../../commonWidgets/common_functions.dart';
 import '../../../../commonWidgets/textWidget.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../features/genres/bloc/genre_bloc.dart';
@@ -158,10 +160,10 @@ class _GenreListScreenState extends State<GenreListScreen> {
                       }
                       return Column(
                         children: genres.map((genre) {
+                          final hasArtwork =
+                              genre.artworkPath?.isNotEmpty ?? false;
                           final genreArtworkPath =
-                              (genre.artworkPath?.isNotEmpty ?? false)
-                                  ? genre.artworkPath!
-                                  : Assets.svgProxyArtist;
+                              hasArtwork ? genre.artworkPath! : '';
                           return MusicListTile(
                             margin: 7.w,
                             height: 66.h,
@@ -171,9 +173,15 @@ class _GenreListScreenState extends State<GenreListScreen> {
                             cardWidth: 50.w,
                             cardRadius: 100.r,
                             cardIconAsset: genreArtworkPath,
+                            cardContent: hasArtwork
+                                ? null
+                                : buildGenreInitialAvatar(
+                                    genre.name,
+                                    20.sp,
+                                  ),
                             noLogoGradientColor: [
-                              AppColors.black.withValues(alpha: 0.14),
-                              AppColors.black.withValues(alpha: 0.14),
+                              AppColors.primaryOrange.withValues(alpha: 0.21),
+                              AppColors.primaryOrange,
                             ],
                             cardIconSize: 19.r,
                             title: genre.name,
@@ -231,9 +239,8 @@ class _GenreListScreenState extends State<GenreListScreen> {
         ? viewInsets + 16.h
         : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
 
-    final genreArtworkPath = (genre.artworkPath?.isNotEmpty ?? false)
-        ? genre.artworkPath!
-        : Assets.svgMusicIcon;
+    final hasArtwork = genre.artworkPath?.isNotEmpty ?? false;
+    final genreArtworkPath = hasArtwork ? genre.artworkPath! : '';
 
     return Container(
       constraints: BoxConstraints(maxHeight: 0.63.sh),
@@ -261,6 +268,12 @@ class _GenreListScreenState extends State<GenreListScreen> {
                     cardWidth: 50.w,
                     cardRadius: 100.r,
                     cardIconAsset: genreArtworkPath,
+                    cardContent: hasArtwork
+                        ? null
+                        : buildGenreInitialAvatar(
+                            genre.name,
+                            24.sp,
+                          ),
                     cardIconSize: 32.r,
                     isSvgColorNeeded: false,
                     title: genre.name,

@@ -170,6 +170,7 @@ final GoRouter appRouter = GoRouter(
                 playlist: args['playlist'],
                 album: args['album'],
                 artist: args['artist'],
+                genre: args['genre'],
                 folder: args['folder'],
                 playlistSongs: args['songs'],
                 isSystemPlaylist: args['isSystemPlaylist'],

@@ -157,6 +157,16 @@ class SongLocalDataSourceImpl implements SongLocalDataSource {
           WHERE ars.artist_id = artists.id AND s.is_hidden = 0
         )
       ''');
+
+      await txn.rawUpdate('''
+        UPDATE genres
+        SET song_count = (
+          SELECT COUNT(*)
+          FROM genre_songs gs
+          INNER JOIN songs s ON s.id = gs.song_id
+          WHERE gs.genre_id = genres.id AND s.is_hidden = 0
+        )
+      ''');
     });
   }
 

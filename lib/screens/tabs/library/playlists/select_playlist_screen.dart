@@ -638,14 +638,18 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
       ...playlists.map((playlist) {
         final isSystem = playlist.isSystem == true;
         final isSelected = selectedPlaylistIds.contains(playlist.id);
+        final hasCover = playlist.coverPath?.isNotEmpty ?? false;
 
         // Get icon and color for system playlists
-        final icon = isSystem && playlist.systemKey != null
-            ? (systemIcon[playlist.systemKey] ?? Assets.svgMusicIcon)
-            : Assets.svgMusicIcon;
-        final color = isSystem && playlist.systemKey != null
+        final icon = hasCover
+            ? playlist.coverPath!
+            : isSystem && playlist.systemKey != null
+                ? (systemIcon[playlist.systemKey] ?? Assets.svgMusicIcon)
+                : Assets.svgMusicIcon;
+        final color = !hasCover && isSystem && playlist.systemKey != null
             ? (systemColor[playlist.systemKey] ?? AppColors.mildBlue)
             : null;
+        final isSvgIcon = !hasCover && icon.contains('.svg');
 
         return Padding(
           padding: EdgeInsets.symmetric(horizontal: 15.w),
@@ -659,10 +663,11 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
             cardRadius: 7.r,
             cardIconAsset: icon,
             cardIconSize: 32.r,
-            isSvgCardIcon: icon.contains('.svg'),
+            isSvgCardIcon: isSvgIcon,
+            isSvgColorNeeded: isSvgIcon,
             title: playlist.name,
             subtitle: '${playlist.songCount} Songs',
-            noLogoGradientColor: isSystem && color != null
+            noLogoGradientColor: color != null
                 ? [color.withValues(alpha: 0.21), color]
                 : null,
             trailingIconAsset: isSelected

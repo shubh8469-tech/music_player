@@ -567,6 +567,9 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
       // Album items
       ...albums.map((album) {
         final isSelected = selectedAlbumIds.contains(album.id);
+        final hasArtwork = album.artworkPath?.isNotEmpty ?? false;
+        final albumArtworkPath =
+            hasArtwork ? album.artworkPath! : Assets.svgAlbum;
 
         return Padding(
           padding: EdgeInsets.symmetric(horizontal: 15.w),
@@ -578,9 +581,10 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
             cardHeight: 50.h,
             cardWidth: 50.w,
             cardRadius: 7.r,
-            cardIconAsset: Assets.svgAlbum,
+            cardIconAsset: albumArtworkPath,
             cardIconSize: 32.r,
-            isSvgCardIcon: true,
+            isSvgCardIcon: !hasArtwork,
+            isSvgColorNeeded: !hasArtwork,
             title: album.name,
             subtitle:
                 '${album.songCount} Songs${album.artist != null ? " • ${album.artist}" : ""}',
