@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:music_app/screens/equilizer/equilizer_screen.dart';
 import 'package:music_app/screens/settings/backup_restore_page.dart';
 import 'package:music_app/screens/settings/settings.dart';
 import 'package:music_app/screens/tabs/library/songs/select_song_screen.dart';
@@ -52,6 +53,7 @@ enum AppRouteName {
   selectAlbum,
   genreDetail,
   selectGenre,
+  equalizer,
   settings,
   backupRestore,
 }
@@ -262,6 +264,11 @@ final GoRouter appRouter = GoRouter(
           name: AppRouteName.selectGenre.name,
           path: 'select-genre',
           builder: (context, state) => const SelectGenreScreen(),
+        ),
+        GoRoute(
+          name: AppRouteName.equalizer.name,
+          path: 'equalizer',
+          builder: (context, state) => const EqualizerScreen(),
         ),
       ],
     ),

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:music_app/screens/play_song/widget/audio_player.dart';
 import 'package:music_app/screens/play_song/widget/playlist_bottomsheet.dart';
 import 'package:music_app/screens/play_song/queue_navigation_helper.dart';
@@ -56,9 +57,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
         _updateFavoriteStatus();
       }
     });
-    final path = musicService.songs.isNotEmpty && musicService.currentIndex >= 0
-        ? musicService.songs[musicService.currentIndex].artwork_path
-        : null;
+    final path = musicService.songs.isNotEmpty && musicService.currentIndex >= 0 ? musicService.songs[musicService.currentIndex].artwork_path : null;
 
     hasArtwork = path != null && path.isNotEmpty && File(path).existsSync();
 
@@ -81,9 +80,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
     final newFavoriteStatus = !isFavorite;
 
     try {
-      context.read<SongsBloc>().add(
-        SongsEvent.updateSongFavorite(currentSong.id!, newFavoriteStatus),
-      );
+      context.read<SongsBloc>().add(SongsEvent.updateSongFavorite(currentSong.id!, newFavoriteStatus));
 
       if (newFavoriteStatus) {
         context.read<PlaylistBloc>().add(
@@ -94,38 +91,24 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
           ),
         );
       } else {
-        context.read<PlaylistBloc>().add(
-          PlaylistEvent.removeSongFromPlaylist(
-            await _getFavoritesPlaylistId(),
-            currentSong.id!,
-          ),
-        );
+        context.read<PlaylistBloc>().add(PlaylistEvent.removeSongFromPlaylist(await _getFavoritesPlaylistId(), currentSong.id!));
       }
 
       setState(() {
         isFavorite = newFavoriteStatus;
       });
 
-      musicService.songs[musicService.currentIndex].isFavorite =
-          newFavoriteStatus;
+      musicService.songs[musicService.currentIndex].isFavorite = newFavoriteStatus;
 
       showSnackBar(
         context,
         () {},
-        message: newFavoriteStatus
-            ? 'Added to favorites'
-            : 'Removed from favorites',
+        message: newFavoriteStatus ? 'Added to favorites' : 'Removed from favorites',
         backgroundColor: AppColors.primaryOrange,
         alertBannerLocation: AlertBannerLocation.bottom,
       );
     } catch (e) {
-      showSnackBar(
-        context,
-        () {},
-        message: 'Error updating favorites: $e',
-        backgroundColor: Colors.red,
-        alertBannerLocation: AlertBannerLocation.bottom,
-      );
+      showSnackBar(context, () {}, message: 'Error updating favorites: $e', backgroundColor: Colors.red, alertBannerLocation: AlertBannerLocation.bottom);
     }
   }
 
@@ -156,10 +139,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentSong =
-        (musicService.songs.isNotEmpty && musicService.currentIndex >= 0)
-        ? musicService.songs[musicService.currentIndex]
-        : null;
+    final currentSong = (musicService.songs.isNotEmpty && musicService.currentIndex >= 0) ? musicService.songs[musicService.currentIndex] : null;
 
     print("currentSong?.artwork_path---->${currentSong?.artwork_path}");
 
@@ -177,13 +157,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
             child: SizedBox(
               width: 26.w,
               height: 26.h,
-              child: SvgPicture.asset(
-                Assets.svgIcDownArrow,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.white,
-                  BlendMode.srcIn,
-                ),
-              ),
+              child: SvgPicture.asset(Assets.svgIcDownArrow, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
             ),
           ),
         ),
@@ -201,11 +175,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
                   alertBannerLocation: AlertBannerLocation.bottom,
                 );
               },
-              icon: SvgPicture.asset(
-                Assets.svgIcShirt,
-                height: 26.h,
-                width: 26.w,
-              ),
+              icon: SvgPicture.asset(Assets.svgIcShirt, height: 26.h, width: 26.w),
             ),
           ),
           IconButton(
@@ -214,11 +184,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
                 context: context,
                 backgroundColor: Colors.white,
                 elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(40.r),
-                  ),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
                 isScrollControlled: true,
                 builder: (_) => SongMenuScreen(
                   songMenuList: songPlayingMenuItems,
@@ -230,15 +196,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
                 ),
               );
             },
-            icon: SvgPicture.asset(
-              Assets.svgIcDots,
-              height: 26.h,
-              width: 26.w,
-              colorFilter: const ColorFilter.mode(
-                AppColors.white,
-                BlendMode.srcIn,
-              ),
-            ),
+            icon: SvgPicture.asset(Assets.svgIcDots, height: 26.h, width: 26.w, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
           ),
         ],
       ),
@@ -247,18 +205,12 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
           padding: EdgeInsets.only(top: 27.h),
           child: Column(
             children: [
-              currentSong?.artwork_path != null &&
-                      currentSong?.artwork_path != ''
+              currentSong?.artwork_path != null && currentSong?.artwork_path != ''
                   ? Padding(
                       padding: EdgeInsets.symmetric(horizontal: 17.w),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(9.r),
-                        child: Image.file(
-                          File(currentSong!.artwork_path!),
-                          width: 240.w,
-                          height: 240.w,
-                          fit: BoxFit.cover,
-                        ),
+                        child: Image.file(File(currentSong!.artwork_path!), width: 240.w, height: 240.w, fit: BoxFit.cover),
                       ),
                     )
                   : Padding(
@@ -271,10 +223,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
                         iconSize: 100.r,
                         isSvg: false,
                         margin: 0.w,
-                        colors: [
-                          AppColors.mildOrange.withValues(alpha: 0.21),
-                          AppColors.mildOrange,
-                        ],
+                        colors: [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange],
                       ),
                     ),
               SizedBox(height: 25.h),
@@ -317,9 +266,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
               ),
               SizedBox(height: 4.h),
               Texts(
-                currentSong?.artist.isNotEmpty == true
-                    ? currentSong!.artist
-                    : 'Unknown Artist',
+                currentSong?.artist.isNotEmpty == true ? currentSong!.artist : 'Unknown Artist',
                 fontSize: 14.sp,
                 color: AppColors.textColor,
                 fontWeight: FontWeight.w400,
@@ -335,11 +282,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
           onTap: () {
             _showPlaylistBottomSheet(context, currentSong);
           },
-          child: SvgPicture.asset(
-            Assets.svgIcPlaylist,
-            width: 32.w,
-            height: 32.h,
-          ),
+          child: SvgPicture.asset(Assets.svgIcPlaylist, width: 32.w, height: 32.h),
         ),
       ],
     );
@@ -350,9 +293,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
       context: context,
       backgroundColor: Colors.white,
       elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
       isScrollControlled: true,
       builder: (_) => PlaylistBottomSheet(songId: currentSong!.id!),
     );
@@ -382,13 +323,14 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
         ),
         GestureDetector(
           onTap: () {
-            showSnackBar(
-              context,
-              () {},
-              message: 'Equalizer feature coming soon',
-              backgroundColor: AppColors.primaryOrange,
-              alertBannerLocation: AlertBannerLocation.bottom,
-            );
+            context.push('/dashboard/equalizer');
+            // showSnackBar(
+            //   context,
+            //   () {},
+            //   message: 'Equalizer feature coming soon',
+            //   backgroundColor: AppColors.primaryOrange,
+            //   alertBannerLocation: AlertBannerLocation.bottom,
+            // );
           },
           child: SvgPicture.asset(Assets.svgIEquilizerc, width: 23.w, height: 23.h),
         ),
@@ -398,10 +340,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
             isFavorite ? Assets.svgFavOn : Assets.svgFav,
             width: 23.w,
             height: 23.h,
-            colorFilter: ColorFilter.mode(
-              isFavorite ? AppColors.primaryOrange : AppColors.black,
-              BlendMode.srcIn,
-            ),
+            colorFilter: ColorFilter.mode(isFavorite ? AppColors.primaryOrange : AppColors.black, BlendMode.srcIn),
           ),
         ),
       ],
