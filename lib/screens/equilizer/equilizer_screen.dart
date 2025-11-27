@@ -73,8 +73,8 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
             onPressed: () {},
           ),
         ),
-        body: Container(
-          padding: EdgeInsets.symmetric(vertical: 20.h),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(vertical: 15.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -228,7 +228,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
                         Texts("Bass Boost", fontSize: 14.sp),
                         SizedBox(width: 10.w),
                         Expanded(
-                          child: LevelBarSlider(level: bassBoostLevel, maxLevel: 21, onChanged: (value) => setState(() => bassBoostLevel = value)),
+                          child: LevelBarSlider(level: bassBoostLevel, displayMaxLevel: 21, onChanged: (value) => setState(() => bassBoostLevel = value)),
                         ),
                       ],
                     ),
@@ -241,7 +241,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
                         Texts("Virtualizer", fontSize: 14.sp),
                         SizedBox(width: 15.w),
                         Expanded(
-                          child: LevelBarSlider(level: virtualizerLevel, maxLevel: 21, onChanged: (value) => setState(() => virtualizerLevel = value)),
+                          child: LevelBarSlider(level: virtualizerLevel, displayMaxLevel: 21, onChanged: (value) => setState(() => virtualizerLevel = value)),
                         ),
                       ],
                     ),
