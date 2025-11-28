@@ -12,6 +12,7 @@ import 'package:music_app/screens/play_song/playing_song_screen.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
 import 'package:music_app/screens/tabs/music_service.dart';
+import 'package:music_app/l10n/l10n.dart';
 
 import '../../commonWidgets/MusicListTile.dart';
 import '../../commonWidgets/common_functions.dart';
@@ -62,7 +63,7 @@ class _QueueScreenState extends State<QueueScreen> {
       }
     });
 
-    // Listen to songs list changes
+    // Listen to songs list changes - this will automatically update when actions are performed in select_song_screen
     _songsSubscription = musicService.songsChanged.listen((newSongs) {
       if (mounted) {
         setState(() {
@@ -87,24 +88,6 @@ class _QueueScreenState extends State<QueueScreen> {
     });
   }
 
-  void _removeSelectedSongs() {
-    if (selectedSongs.isEmpty) return;
-
-    setState(() {
-      // Remove selected songs from queue
-      List<SongsModel> newQueue = [];
-      for (int i = 0; i < queueSongs.length; i++) {
-        if (!selectedSongs.contains(i)) {
-          newQueue.add(queueSongs[i]);
-        }
-      }
-      queueSongs = newQueue;
-      selectedSongs.clear();
-    });
-
-    // Update music service
-    musicService.setPlaylist(queueSongs);
-  }
 
   void _removeSongAtIndex(int index) {
     if (index < 0 || index >= queueSongs.length) return;
@@ -177,6 +160,152 @@ class _QueueScreenState extends State<QueueScreen> {
     }
   }
 
+  void _clearQueue() async {
+    setState(() {
+      queueSongs = [];
+      selectedSongs.clear();
+    });
+
+    // Clear the music service playlist - resetPlaylist already stops the player
+    await musicService.resetPlaylist([]);
+  }
+
+  void _showClearQueueDialog() {
+    if (queueSongs.isEmpty) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
+      ),
+      isScrollControlled: true,
+      builder: (_) => _buildClearQueueConfirmationDialog(),
+    );
+  }
+
+  Widget _buildClearQueueConfirmationDialog() {
+    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+    final bottomPadding = viewInsets > 0
+        ? viewInsets + 16.h
+        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+
+    return Container(
+      padding: EdgeInsets.only(
+        left: 16.w,
+        right: 16.w,
+        top: 10.h,
+        bottom: bottomPadding,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Top handle bar
+          Container(
+            width: 40.w,
+            height: 4.h,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2.r),
+            ),
+          ),
+          SizedBox(height: 30.h),
+
+          // Title
+          Texts(
+            'Clear the queue',
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w500,
+            fontFamily: AppFonts.inter,
+            color: AppColors.textColor,
+          ),
+          SizedBox(height: 30.h),
+
+          // Message
+          Texts(
+            'Are you sure you want to clear the queue?',
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w400,
+            fontFamily: AppFonts.inter,
+            color: AppColors.textColor,
+            align: TextAlign.center,
+          ),
+          SizedBox(height: 25.h),
+
+          // Action buttons
+          Row(
+            children: [
+              // Cancel button
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    height: 48.h,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Center(
+                      child: Texts(
+                        S.of(context).cancel,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: AppFonts.inter,
+                        color: AppColors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
+
+              // Clear button
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    _clearQueue();
+                  },
+                  child: Container(
+                    height: 48.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryOrange,
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Center(
+                      child: Texts(
+                        'Clear',
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: AppFonts.inter,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToSelectSongScreen() {
+    if (queueSongs.isEmpty) return;
+
+    context.push(
+      '/dashboard/select-song',
+      extra: {
+        'songs': queueSongs,
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<SongsBloc, SongsState>(
@@ -214,7 +343,7 @@ class _QueueScreenState extends State<QueueScreen> {
           title: Texts("Playing Queue", fontSize: 18.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.white),
           actions: [
             IconButton(
-              onPressed: _removeSelectedSongs,
+              onPressed: _showClearQueueDialog,
               icon: SvgPicture.asset(Assets.svgIcDelete, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn), height: 26.h, width: 26.w),
             ),
           ],
@@ -228,20 +357,23 @@ class _QueueScreenState extends State<QueueScreen> {
                   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                   child: Row(
                     children: [
-                      Row(
-                        children: [
-                          SvgPicture.asset(Assets.svgSongsCount),
-                          SizedBox(width: 8.w),
-                          if (queueSongs.isNotEmpty && musicService.currentIndex >= 0) ...[
-                            Texts(
-                              "${musicService.currentIndex + 1}/${queueSongs.length}",
-                              fontSize: 14.sp,
-                              color: AppColors.textColor,
-                              fontWeight: FontWeight.w400,
-                              fontFamily: AppFonts.inter,
-                            ),
+                      GestureDetector(
+                        onTap: _navigateToSelectSongScreen,
+                        child: Row(
+                          children: [
+                            SvgPicture.asset(Assets.svgSongsCount),
+                            SizedBox(width: 8.w),
+                            if (queueSongs.isNotEmpty && musicService.currentIndex >= 0) ...[
+                              Texts(
+                                "${musicService.currentIndex + 1}/${queueSongs.length}",
+                                fontSize: 14.sp,
+                                color: AppColors.textColor,
+                                fontWeight: FontWeight.w400,
+                                fontFamily: AppFonts.inter,
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                       const Spacer(),
                       Row(

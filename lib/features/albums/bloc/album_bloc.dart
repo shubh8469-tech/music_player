@@ -7,6 +7,7 @@ import '../domain/usecases/get_all_albums.dart';
 import '../domain/usecases/get_album_songs.dart';
 import '../domain/usecases/get_albums_by_artist.dart';
 import '../domain/usecases/update_album_cover.dart';
+import '../domain/usecases/update_album_name.dart';
 
 part 'album_event.dart';
 part 'album_state.dart';
@@ -17,12 +18,14 @@ class AlbumBloc extends Bloc<AlbumEvent, AlbumState> {
   final GetAlbumSongs getAlbumSongs;
   final GetAlbumsByArtist getAlbumsByArtist;
   final UpdateAlbumCover updateAlbumCoverUseCase;
+  final UpdateAlbumName updateAlbumNameUseCase;
 
   AlbumBloc({
     required this.getAllAlbums,
     required this.getAlbumSongs,
     required this.getAlbumsByArtist,
     required this.updateAlbumCoverUseCase,
+    required this.updateAlbumNameUseCase,
   }) : super(const AlbumState.initial()) {
     on<_FetchAllAlbums>((event, emit) async {
       try {
@@ -147,6 +150,40 @@ class AlbumBloc extends Bloc<AlbumEvent, AlbumState> {
         }
       } catch (e) {
         log('Error updating album cover: $e');
+      }
+    });
+
+    on<_UpdateAlbumName>((event, emit) async {
+      try {
+        await updateAlbumNameUseCase(event.albumId, event.newName);
+        final currentState = state;
+        if (currentState is _Loaded) {
+          final updatedAlbums = currentState.albums.map((album) {
+            if (album.id == event.albumId) {
+              return Album(
+                id: album.id,
+                name: event.newName,
+                artist: album.artist,
+                songCount: album.songCount,
+                year: album.year,
+                artworkPath: album.artworkPath,
+                createdTime: album.createdTime,
+                updatedTime: DateTime.now(),
+                cachedArtistNames: album.cachedArtistNames,
+              );
+            }
+            return album;
+          }).toList();
+
+          emit(
+            AlbumState.loaded(
+              updatedAlbums,
+              albumSongs: currentState.albumSongs,
+            ),
+          );
+        }
+      } catch (e) {
+        log('Error updating album name: $e');
       }
     });
   }

@@ -11,7 +11,7 @@ class AppDatabase {
     if (_db != null) return _db!;
     _db = await openDatabase(
       join(await getDatabasesPath(), 'music_app.db'),
-      version: 10,
+      version: 11,
       onOpen: (db) async {
         // Enable foreign keys to make CASCADE deletes work
         await db.execute('PRAGMA foreign_keys = ON');
@@ -43,16 +43,18 @@ class AppDatabase {
           String key,
           String label,
           int isSelected,
+          String metaLabel,
         ) async {
           await db.execute(
             '''
-            INSERT INTO backup_options (key, label, is_selected)
-            VALUES (?, ?, ?)
+            INSERT INTO backup_options (key, label, metaLabel, is_selected)
+            VALUES (?, ?, ?, ?)
             ON CONFLICT(key) DO UPDATE SET
               label = excluded.label,
+              metaLabel = excluded.metaLabel,
               is_selected = excluded.is_selected
             ''',
-            [key, label, isSelected],
+            [key, label, metaLabel, isSelected],
           );
         }
 
@@ -81,19 +83,21 @@ class AppDatabase {
             CREATE TABLE IF NOT EXISTS backup_options (
               key TEXT PRIMARY KEY,
               label TEXT NOT NULL,
+              metaLabel TEXT NOT NULL,
               is_selected INTEGER NOT NULL DEFAULT 1,
               updated_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))
             );
           ''');
 
-          await upsertBackupOption('tags', 'Tags', 1);
-          await upsertBackupOption('covers', 'Covers', 1);
-          await upsertBackupOption('playlists', 'Playlists', 1);
-          await upsertBackupOption('sort_settings', 'Sort Settings', 1);
+          await upsertBackupOption('tags', 'Tags', 1, "Songs, albums, artists, genres, track number");
+          await upsertBackupOption('covers', 'Covers', 1, "Songs, albums");
+          await upsertBackupOption('playlists', 'Playlists', 1, "");
+          await upsertBackupOption('sort_settings', 'Sort Settings', 1, "Songs, folders, albums, artists, genres");
           await upsertBackupOption(
             'scan_hide_settings',
             'Scan and hide Settings',
             1,
+              "Music scanning filters, hidden songs and folders"
           );
         }
         if (oldVersion < 7) {
@@ -230,6 +234,27 @@ class AppDatabase {
           }
 
           log('Backfilled ${genreMap.length} genres from ${songs.length} songs');
+        }
+        if (oldVersion < 11) {
+          await db.execute('''
+            CREATE TABLE IF NOT EXISTS scan_preferences (
+              id INTEGER PRIMARY KEY CHECK (id = 1),
+              min_duration_ms INTEGER NOT NULL DEFAULT 30000,
+              min_size_bytes INTEGER NOT NULL DEFAULT 50000,
+              updated_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))
+            );
+          ''');
+
+          await db.insert(
+            'scan_preferences',
+            {
+              'id': 1,
+              'min_duration_ms': 30000,
+              'min_size_bytes': 50000,
+              'updated_time': DateTime.now().toIso8601String(),
+            },
+            conflictAlgorithm: ConflictAlgorithm.ignore,
+          );
         }
       },
     );

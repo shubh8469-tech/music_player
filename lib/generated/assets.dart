@@ -112,6 +112,8 @@ class Assets {
   static const String svgRepeatOnce = 'assets/svg/repeat_once.svg';
   static const String svgRestore = 'assets/svg/restore.svg';
   static const String svgScan = 'assets/svg/scan.svg';
+  static const String svgScannedSongs = 'assets/svg/scanned_songs.svg';
+  static const String svgScanning = 'assets/svg/scanning.svg';
   static const String svgSearch = 'assets/svg/search.svg';
   static const String svgSelectListIcon = 'assets/svg/selectListIcon.svg';
   static const String svgSetting = 'assets/svg/setting.svg';

@@ -137,4 +137,10 @@ class SHi extends S {
 
   @override
   String get done => 'Done';
+
+  @override
+  String get editTags => 'टैग संपादित करें';
+
+  @override
+  String get albumTitle => 'एल्बम शीर्षक';
 }

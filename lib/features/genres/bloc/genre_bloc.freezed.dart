@@ -55,14 +55,15 @@ extension GenreEventPatterns on GenreEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _FetchAllGenres value)?  fetchAllGenres,TResult Function( _FetchSongsForGenre value)?  fetchSongsForGenre,TResult Function( _SortGenres value)?  sortGenres,TResult Function( _UpdateGenreCover value)?  updateGenreCover,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _FetchAllGenres value)?  fetchAllGenres,TResult Function( _FetchSongsForGenre value)?  fetchSongsForGenre,TResult Function( _SortGenres value)?  sortGenres,TResult Function( _UpdateGenreCover value)?  updateGenreCover,TResult Function( _UpdateGenreName value)?  updateGenreName,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _FetchAllGenres() when fetchAllGenres != null:
 return fetchAllGenres(_that);case _FetchSongsForGenre() when fetchSongsForGenre != null:
 return fetchSongsForGenre(_that);case _SortGenres() when sortGenres != null:
 return sortGenres(_that);case _UpdateGenreCover() when updateGenreCover != null:
-return updateGenreCover(_that);case _:
+return updateGenreCover(_that);case _UpdateGenreName() when updateGenreName != null:
+return updateGenreName(_that);case _:
   return orElse();
 
 }
@@ -80,14 +81,15 @@ return updateGenreCover(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _FetchAllGenres value)  fetchAllGenres,required TResult Function( _FetchSongsForGenre value)  fetchSongsForGenre,required TResult Function( _SortGenres value)  sortGenres,required TResult Function( _UpdateGenreCover value)  updateGenreCover,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _FetchAllGenres value)  fetchAllGenres,required TResult Function( _FetchSongsForGenre value)  fetchSongsForGenre,required TResult Function( _SortGenres value)  sortGenres,required TResult Function( _UpdateGenreCover value)  updateGenreCover,required TResult Function( _UpdateGenreName value)  updateGenreName,}){
 final _that = this;
 switch (_that) {
 case _FetchAllGenres():
 return fetchAllGenres(_that);case _FetchSongsForGenre():
 return fetchSongsForGenre(_that);case _SortGenres():
 return sortGenres(_that);case _UpdateGenreCover():
-return updateGenreCover(_that);case _:
+return updateGenreCover(_that);case _UpdateGenreName():
+return updateGenreName(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -104,14 +106,15 @@ return updateGenreCover(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _FetchAllGenres value)?  fetchAllGenres,TResult? Function( _FetchSongsForGenre value)?  fetchSongsForGenre,TResult? Function( _SortGenres value)?  sortGenres,TResult? Function( _UpdateGenreCover value)?  updateGenreCover,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _FetchAllGenres value)?  fetchAllGenres,TResult? Function( _FetchSongsForGenre value)?  fetchSongsForGenre,TResult? Function( _SortGenres value)?  sortGenres,TResult? Function( _UpdateGenreCover value)?  updateGenreCover,TResult? Function( _UpdateGenreName value)?  updateGenreName,}){
 final _that = this;
 switch (_that) {
 case _FetchAllGenres() when fetchAllGenres != null:
 return fetchAllGenres(_that);case _FetchSongsForGenre() when fetchSongsForGenre != null:
 return fetchSongsForGenre(_that);case _SortGenres() when sortGenres != null:
 return sortGenres(_that);case _UpdateGenreCover() when updateGenreCover != null:
-return updateGenreCover(_that);case _:
+return updateGenreCover(_that);case _UpdateGenreName() when updateGenreName != null:
+return updateGenreName(_that);case _:
   return null;
 
 }
@@ -128,13 +131,14 @@ return updateGenreCover(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  fetchAllGenres,TResult Function( int genreId)?  fetchSongsForGenre,TResult Function( int sortIndex,  int order)?  sortGenres,TResult Function( int genreId,  String coverPath)?  updateGenreCover,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  fetchAllGenres,TResult Function( int genreId)?  fetchSongsForGenre,TResult Function( int sortIndex,  int order)?  sortGenres,TResult Function( int genreId,  String coverPath)?  updateGenreCover,TResult Function( int genreId,  String newName)?  updateGenreName,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FetchAllGenres() when fetchAllGenres != null:
 return fetchAllGenres();case _FetchSongsForGenre() when fetchSongsForGenre != null:
 return fetchSongsForGenre(_that.genreId);case _SortGenres() when sortGenres != null:
 return sortGenres(_that.sortIndex,_that.order);case _UpdateGenreCover() when updateGenreCover != null:
-return updateGenreCover(_that.genreId,_that.coverPath);case _:
+return updateGenreCover(_that.genreId,_that.coverPath);case _UpdateGenreName() when updateGenreName != null:
+return updateGenreName(_that.genreId,_that.newName);case _:
   return orElse();
 
 }
@@ -152,13 +156,14 @@ return updateGenreCover(_that.genreId,_that.coverPath);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  fetchAllGenres,required TResult Function( int genreId)  fetchSongsForGenre,required TResult Function( int sortIndex,  int order)  sortGenres,required TResult Function( int genreId,  String coverPath)  updateGenreCover,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  fetchAllGenres,required TResult Function( int genreId)  fetchSongsForGenre,required TResult Function( int sortIndex,  int order)  sortGenres,required TResult Function( int genreId,  String coverPath)  updateGenreCover,required TResult Function( int genreId,  String newName)  updateGenreName,}) {final _that = this;
 switch (_that) {
 case _FetchAllGenres():
 return fetchAllGenres();case _FetchSongsForGenre():
 return fetchSongsForGenre(_that.genreId);case _SortGenres():
 return sortGenres(_that.sortIndex,_that.order);case _UpdateGenreCover():
-return updateGenreCover(_that.genreId,_that.coverPath);case _:
+return updateGenreCover(_that.genreId,_that.coverPath);case _UpdateGenreName():
+return updateGenreName(_that.genreId,_that.newName);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -175,13 +180,14 @@ return updateGenreCover(_that.genreId,_that.coverPath);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  fetchAllGenres,TResult? Function( int genreId)?  fetchSongsForGenre,TResult? Function( int sortIndex,  int order)?  sortGenres,TResult? Function( int genreId,  String coverPath)?  updateGenreCover,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  fetchAllGenres,TResult? Function( int genreId)?  fetchSongsForGenre,TResult? Function( int sortIndex,  int order)?  sortGenres,TResult? Function( int genreId,  String coverPath)?  updateGenreCover,TResult? Function( int genreId,  String newName)?  updateGenreName,}) {final _that = this;
 switch (_that) {
 case _FetchAllGenres() when fetchAllGenres != null:
 return fetchAllGenres();case _FetchSongsForGenre() when fetchSongsForGenre != null:
 return fetchSongsForGenre(_that.genreId);case _SortGenres() when sortGenres != null:
 return sortGenres(_that.sortIndex,_that.order);case _UpdateGenreCover() when updateGenreCover != null:
-return updateGenreCover(_that.genreId,_that.coverPath);case _:
+return updateGenreCover(_that.genreId,_that.coverPath);case _UpdateGenreName() when updateGenreName != null:
+return updateGenreName(_that.genreId,_that.newName);case _:
   return null;
 
 }
@@ -416,6 +422,74 @@ class __$UpdateGenreCoverCopyWithImpl<$Res>
   return _then(_UpdateGenreCover(
 null == genreId ? _self.genreId : genreId // ignore: cast_nullable_to_non_nullable
 as int,null == coverPath ? _self.coverPath : coverPath // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _UpdateGenreName implements GenreEvent {
+  const _UpdateGenreName(this.genreId, this.newName);
+  
+
+ final  int genreId;
+ final  String newName;
+
+/// Create a copy of GenreEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$UpdateGenreNameCopyWith<_UpdateGenreName> get copyWith => __$UpdateGenreNameCopyWithImpl<_UpdateGenreName>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UpdateGenreName&&(identical(other.genreId, genreId) || other.genreId == genreId)&&(identical(other.newName, newName) || other.newName == newName));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,genreId,newName);
+
+@override
+String toString() {
+  return 'GenreEvent.updateGenreName(genreId: $genreId, newName: $newName)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$UpdateGenreNameCopyWith<$Res> implements $GenreEventCopyWith<$Res> {
+  factory _$UpdateGenreNameCopyWith(_UpdateGenreName value, $Res Function(_UpdateGenreName) _then) = __$UpdateGenreNameCopyWithImpl;
+@useResult
+$Res call({
+ int genreId, String newName
+});
+
+
+
+
+}
+/// @nodoc
+class __$UpdateGenreNameCopyWithImpl<$Res>
+    implements _$UpdateGenreNameCopyWith<$Res> {
+  __$UpdateGenreNameCopyWithImpl(this._self, this._then);
+
+  final _UpdateGenreName _self;
+  final $Res Function(_UpdateGenreName) _then;
+
+/// Create a copy of GenreEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? genreId = null,Object? newName = null,}) {
+  return _then(_UpdateGenreName(
+null == genreId ? _self.genreId : genreId // ignore: cast_nullable_to_non_nullable
+as int,null == newName ? _self.newName : newName // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }

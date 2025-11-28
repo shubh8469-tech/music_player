@@ -53,8 +53,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
     final index = _backupOptions.indexWhere((option) => option.key == key);
     if (index == -1 || !mounted) return;
     setState(() {
-      _backupOptions[index] =
-          _backupOptions[index].copyWith(isSelected: isSelected);
+      _backupOptions[index] = _backupOptions[index].copyWith(isSelected: isSelected);
     });
     _backupOptionsLocalDataSource.updateSelection(key, isSelected);
   }
@@ -66,8 +65,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
     if (_backupOptions.isEmpty) {
       return 'No backup items configured yet';
     }
-    final selected =
-        _backupOptions.where((option) => option.isSelected).toList();
+    final selected = _backupOptions.where((option) => option.isSelected).toList();
     if (selected.isEmpty) {
       return 'No items selected';
     }
@@ -97,18 +95,14 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
                 children: [
                   SizedBox(height: 30.h),
                   Center(
-                    child: Texts(
-                      "Select backup items",
-                      fontSize: 16.sp,
-                      fontWeight: AppFontWeights.medium,
-                      fontFamily: AppFonts.inter,
-                      color: AppColors.textColor,
-                    ),
+                    child: Texts("Select backup items", fontSize: 16.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.textColor),
                   ),
                   SizedBox(height: 15.h),
                   ..._backupOptions.map(
                     (option) => _checkTag(
                       label: option.label,
+                      key: option.key,
+                      metaLabel: option.metaLabel,
                       value: option.isSelected,
                       onChanged: (bool? value) {
                         if (value == null) return;
@@ -125,18 +119,9 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
                           onTap: () => Navigator.pop(context),
                           child: Container(
                             height: 48.h,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              borderRadius: BorderRadius.circular(50.r),
-                            ),
+                            decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(50.r)),
                             child: Center(
-                              child: Texts(
-                                S.of(context).cancel,
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: AppFonts.inter,
-                                color: AppColors.black,
-                              ),
+                              child: Texts(S.of(context).cancel, fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter, color: AppColors.black),
                             ),
                           ),
                         ),
@@ -144,24 +129,12 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
                       SizedBox(width: 25.w),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => Navigator.pop(context, {
-                            for (final option in _backupOptions)
-                              option.key: option.isSelected,
-                          }),
+                          onTap: () => Navigator.pop(context, {for (final option in _backupOptions) option.key: option.isSelected}),
                           child: Container(
                             height: 48.h,
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryOrange,
-                              borderRadius: BorderRadius.circular(50.r),
-                            ),
+                            decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(50.r)),
                             child: Center(
-                              child: Texts(
-                                S.of(context).done,
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: AppFonts.inter,
-                                color: AppColors.white,
-                              ),
+                              child: Texts(S.of(context).done, fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter, color: AppColors.white),
                             ),
                           ),
                         ),
@@ -181,13 +154,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
   void _showComingSoonSnack() {
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: const Text('Coming soon'),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.primaryOrange,
-      ),
-    );
+    messenger.showSnackBar(SnackBar(content: const Text('Coming soon'), behavior: SnackBarBehavior.floating, backgroundColor: AppColors.primaryOrange));
   }
 
   @override
@@ -197,20 +164,10 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
       appBar: AppBar(
         backgroundColor: AppColors.primaryOrange,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            color: AppColors.white,
-            size: 20,
-          ),
+          icon: const Icon(Icons.arrow_back_ios, color: AppColors.white, size: 20),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Texts(
-          "Backup & Restore",
-          fontSize: 18.sp,
-          fontWeight: AppFontWeights.medium,
-          fontFamily: AppFonts.inter,
-          color: AppColors.white,
-        ),
+        title: Texts("Backup & Restore", fontSize: 18.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.white),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -221,10 +178,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
                 iconAsset: Assets.svgLocalBackup,
                 title: "Select backup items",
                 subtitle: _selectedItemsSummary,
-                trailing: Icon(
-                  Icons.chevron_right,
-                  color: AppColors.primaryOrange,
-                ),
+                trailing: Icon(Icons.chevron_right, color: AppColors.primaryOrange),
                 onTap: _showSelectionSheet,
               ),
               SizedBox(height: 12.h),
@@ -232,12 +186,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
                 iconAsset: Assets.svgRestore,
                 title: "Backup",
                 subtitle: "Last backup: 2025-08-25 13:52:14",
-                trailing: Center(
-                  child: SvgPicture.asset(
-                    Assets.svgClockRestore,
-                    colorFilter: ColorFilter.mode(AppColors.primaryOrange, BlendMode.srcIn),
-                  ),
-                ),
+                trailing: Center(child: SvgPicture.asset(Assets.svgClockRestore, colorFilter: ColorFilter.mode(AppColors.primaryOrange, BlendMode.srcIn))),
                 onTap: _showComingSoonSnack,
               ),
               SizedBox(height: 12.h),
@@ -245,12 +194,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
                 iconAsset: Assets.svgCloudBackup,
                 title: "Restore",
                 subtitle: "Tap to start restoring",
-                trailing: Center(
-                  child: SvgPicture.asset(
-                    Assets.svgClockRestore,
-                    colorFilter: ColorFilter.mode(AppColors.primaryOrange, BlendMode.srcIn),
-                  ),
-                ),
+                trailing: Center(child: SvgPicture.asset(Assets.svgClockRestore, colorFilter: ColorFilter.mode(AppColors.primaryOrange, BlendMode.srcIn))),
                 onTap: _showComingSoonSnack,
               ),
             ],
@@ -260,29 +204,36 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
     );
   }
 
-  Widget _checkTag({
-    required String label,
-    required bool value,
-    required ValueChanged<bool?> onChanged,
-  }) {
+  Widget _checkTag({required String label, required bool value, required String key, required String metaLabel, required ValueChanged<bool?> onChanged}) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 5.h),
+      width: MediaQuery.sizeOf(context).width,
       child: Row(
         children: [
-          Texts(
-            label,
-            fontSize: 16.sp,
-            fontWeight: AppFontWeights.regular,
-            fontFamily: AppFonts.inter,
-            color: AppColors.textColor,
+          SizedBox(
+            width: MediaQuery.sizeOf(context).width * 0.8,
+            child: key == "tags" || key == "covers" || key == "sort_settings" || key == "scan_hide_settings"
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Texts(label, fontSize: 16.sp, fontWeight: AppFontWeights.regular, fontFamily: AppFonts.inter, color: AppColors.textColor),
+                      Texts(
+                        metaLabel,
+                        fontSize: 10.5.sp,
+                        fontWeight: AppFontWeights.regular,
+                        fontFamily: AppFonts.inter,
+                        color: AppColors.textColor,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  )
+                : Texts(label, fontSize: 16.sp, fontWeight: AppFontWeights.regular, fontFamily: AppFonts.inter, color: AppColors.textColor),
           ),
-          const Spacer(),
-          Checkbox(
-            value: value,
-            onChanged: onChanged,
-            shape: const CircleBorder(),
-            activeColor: AppColors.primaryOrange,
-            checkColor: AppColors.textColor,
+
+          SizedBox(
+            width: MediaQuery.sizeOf(context).width * 0.1,
+            child: Checkbox(value: value, onChanged: onChanged, shape: const CircleBorder(), activeColor: AppColors.primaryOrange, checkColor: AppColors.textColor),
           ),
         ],
       ),
@@ -291,13 +242,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
 }
 
 class _ActionTile extends StatelessWidget {
-  const _ActionTile({
-    required this.iconAsset,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-    this.trailing,
-  });
+  const _ActionTile({required this.iconAsset, required this.title, required this.subtitle, required this.onTap, this.trailing});
 
   final String iconAsset;
   final String title;
@@ -313,39 +258,18 @@ class _ActionTile extends StatelessWidget {
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
-        decoration: BoxDecoration(
-          color: AppColors.musicTileBackgroundColor,
-          borderRadius: BorderRadius.circular(16.r),
-        ),
+        decoration: BoxDecoration(color: AppColors.musicTileBackgroundColor, borderRadius: BorderRadius.circular(16.r)),
         child: Row(
           children: [
-            Center(
-              child: SvgPicture.asset(
-                iconAsset,
-                height: 24,
-                width: 24,
-              ),
-            ),
+            Center(child: SvgPicture.asset(iconAsset, height: 24, width: 24)),
             SizedBox(width: 14.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Texts(
-                    title,
-                    fontSize: 16.sp,
-                    fontWeight: AppFontWeights.medium,
-                    fontFamily: AppFonts.inter,
-                    color: AppColors.textColor,
-                  ),
+                  Texts(title, fontSize: 16.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.textColor),
                   SizedBox(height: 6.h),
-                  Texts(
-                    subtitle,
-                    fontSize: 12.sp,
-                    fontWeight: AppFontWeights.regular,
-                    fontFamily: AppFonts.inter,
-                    color: AppColors.textColor
-                  ),
+                  Texts(subtitle, fontSize: 12.sp, fontWeight: AppFontWeights.regular, fontFamily: AppFonts.inter, color: AppColors.textColor),
                 ],
               ),
             ),
@@ -367,15 +291,8 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       height: 32,
       width: 32,
-      decoration: BoxDecoration(
-        color: AppColors.primaryOrange.withOpacity(0.15),
-        shape: BoxShape.circle,
-      ),
-      child: SvgPicture.asset(
-        Assets.svgClockRestore,
-      ),
+      decoration: BoxDecoration(color: AppColors.primaryOrange.withOpacity(0.15), shape: BoxShape.circle),
+      child: SvgPicture.asset(Assets.svgClockRestore),
     );
   }
 }
-
-

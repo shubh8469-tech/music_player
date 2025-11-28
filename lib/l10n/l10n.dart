@@ -354,6 +354,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Done'**
   String get done;
+
+  /// No description provided for @editTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Tags'**
+  String get editTags;
+
+  /// No description provided for @albumTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Album Title'**
+  String get albumTitle;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

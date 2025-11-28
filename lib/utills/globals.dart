@@ -226,6 +226,10 @@ final List<SongMenuItem> albumMenuItems = [
     icon: Assets.svgIcHide,
     title: S.of(rootNavigatorKey.currentContext!).hideFolder,
   ),
+  SongMenuItem(
+    icon: Assets.svgIcEdit,
+    title: S.of(rootNavigatorKey.currentContext!).editTags,
+  ),
 ];
 
 final List<SongMenuItem> artistMenuItems = [
@@ -249,6 +253,10 @@ final List<SongMenuItem> artistMenuItems = [
     icon: Assets.svgIcHide,
     title: S.of(rootNavigatorKey.currentContext!).hideFolder,
   ),
+  SongMenuItem(
+    icon: Assets.svgIcEdit,
+    title: S.of(rootNavigatorKey.currentContext!).editTags,
+  ),
 ];
 
 final List<SongMenuItem> genreMenuItems = [
@@ -271,5 +279,9 @@ final List<SongMenuItem> genreMenuItems = [
   SongMenuItem(
     icon: Assets.svgIcHide,
     title: S.of(rootNavigatorKey.currentContext!).hideFolder,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcEdit,
+    title: S.of(rootNavigatorKey.currentContext!).editTags,
   ),
 ];

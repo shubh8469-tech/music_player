@@ -3,6 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:music_app/screens/equilizer/equilizer_screen.dart';
 import 'package:music_app/screens/settings/backup_restore_page.dart';
 import 'package:music_app/screens/settings/settings.dart';
+import 'package:music_app/screens/settings/scan_music_screen.dart';
+import 'package:music_app/screens/settings/scan_select_folders_screen.dart';
+import 'package:music_app/screens/settings/scanning_progress_screen.dart';
+import 'package:music_app/screens/settings/scan_complete_screen.dart';
 import 'package:music_app/screens/tabs/library/songs/select_song_screen.dart';
 import 'package:music_app/screens/tabs/library/songs/add_songs_screen.dart';
 import 'package:music_app/screens/tabs/library/playlists/create_playlist_screen.dart';
@@ -56,6 +60,10 @@ enum AppRouteName {
   equalizer,
   settings,
   backupRestore,
+  scanMusic,
+  scanSelectFolders,
+  scanningProgress,
+  scanComplete,
 }
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
@@ -64,7 +72,7 @@ final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
 
 final GoRouter appRouter = GoRouter(
   navigatorKey: rootNavigatorKey,
-  initialLocation: '/splash',
+  initialLocation: '/dashboard',
   routes: [
     GoRoute(
       name: AppRouteName.splash.name,
@@ -100,6 +108,26 @@ final GoRouter appRouter = GoRouter(
           name: AppRouteName.backupRestore.name,
           path: 'backup-restore',
           builder: (context, state) => const BackupRestorePage(),
+        ),
+        GoRoute(
+          name: AppRouteName.scanMusic.name,
+          path: 'scan-music',
+          builder: (context, state) => const ScanMusicScreen(),
+        ),
+        GoRoute(
+          name: AppRouteName.scanSelectFolders.name,
+          path: 'scan-select-folders',
+          builder: (context, state) => const ScanSelectFoldersScreen(),
+        ),
+        GoRoute(
+          name: AppRouteName.scanningProgress.name,
+          path: 'scanning-progress',
+          builder: (context, state) => const ScanningProgressScreen(),
+        ),
+        GoRoute(
+          name: AppRouteName.scanComplete.name,
+          path: 'scan-complete',
+          builder: (context, state) => const ScanCompleteScreen(),
         ),
         GoRoute(
           name: AppRouteName.library.name,

@@ -369,6 +369,7 @@ END;
 CREATE TABLE IF NOT EXISTS backup_options (
     key TEXT PRIMARY KEY,
     label TEXT NOT NULL,
+    metaLabel TEXT NOT NULL,
     is_selected INTEGER NOT NULL DEFAULT 1,
     updated_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))
 );
@@ -392,4 +393,18 @@ WHERE NOT EXISTS (SELECT 1 FROM backup_options WHERE key = 'sort_settings');
 INSERT INTO backup_options (key, label, is_selected)
 SELECT 'scan_hide_settings', 'Scan and hide Settings', 1
 WHERE NOT EXISTS (SELECT 1 FROM backup_options WHERE key = 'scan_hide_settings');
+
+---------------------------------------------------------------------------
+-- Scan preferences table
+---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS scan_preferences (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    min_duration_ms INTEGER NOT NULL DEFAULT 30000,
+    min_size_bytes INTEGER NOT NULL DEFAULT 50000,
+    updated_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))
+);
+
+INSERT INTO scan_preferences (id, min_duration_ms, min_size_bytes)
+SELECT 1, 30000, 50000
+WHERE NOT EXISTS (SELECT 1 FROM scan_preferences WHERE id = 1);
 

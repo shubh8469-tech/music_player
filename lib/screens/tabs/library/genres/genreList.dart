@@ -27,6 +27,7 @@ import '../../../../l10n/l10n.dart';
 import '../../../../themes/font.dart';
 import '../../../../utills/globals.dart';
 import '../../../../utills/snack_bar.dart';
+import '../../../../commonWidgets/edit_tag_bottom_sheet.dart';
 import '../../music_service.dart';
 import '../../../common/image_crop_screen.dart';
 import '../../../play_song/widget/playlist_bottomsheet.dart';
@@ -401,7 +402,37 @@ class _GenreListScreenState extends State<GenreListScreen> {
       _addGenreToPlaylist(genre);
     } else if (menuTitle == S.of(context).changeCover) {
       _handleGenreChangeCover(genre);
+    } else if (menuTitle == S.of(context).editTags) {
+      _handleEditGenreTags(genre);
     }
+  }
+
+  void _handleEditGenreTags(Genre genre) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => BlocProvider.value(
+        value: context.read<GenreBloc>(),
+        child: EditTagBottomSheet(
+          initialValue: genre.name,
+          title: S.of(context).editTags,
+          onSave: (newName) {
+            if (genre.id != null && newName.trim().isNotEmpty) {
+              context.read<GenreBloc>().add(
+                    GenreEvent.updateGenreName(genre.id!, newName),
+                  );
+              showSnackBar(
+                context,
+                () {},
+                message: 'Genre name updated successfully',
+                alertBannerLocation: AlertBannerLocation.bottom,
+              );
+            }
+          },
+        ),
+      ),
+    );
   }
 
   // Play genre

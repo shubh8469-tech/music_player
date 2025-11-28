@@ -6,6 +6,7 @@ import '../domain/entities/artist.dart';
 import '../domain/usecases/get_all_artists.dart';
 import '../domain/usecases/get_artist_songs.dart';
 import '../domain/usecases/update_artist_cover.dart';
+import '../domain/usecases/update_artist_name.dart';
 
 part 'artist_event.dart';
 part 'artist_state.dart';
@@ -15,11 +16,13 @@ class ArtistBloc extends Bloc<ArtistEvent, ArtistState> {
   final GetAllArtists getAllArtists;
   final GetArtistSongs getArtistSongs;
   final UpdateArtistCover updateArtistCoverUseCase;
+  final UpdateArtistName updateArtistNameUseCase;
 
   ArtistBloc({
     required this.getAllArtists,
     required this.getArtistSongs,
     required this.updateArtistCoverUseCase,
+    required this.updateArtistNameUseCase,
   })
     : super(const ArtistState.initial()) {
     on<_FetchAllArtists>((event, emit) async {
@@ -132,6 +135,38 @@ class ArtistBloc extends Bloc<ArtistEvent, ArtistState> {
         }
       } catch (e) {
         log('Error updating artist cover: $e');
+      }
+    });
+
+    on<_UpdateArtistName>((event, emit) async {
+      try {
+        await updateArtistNameUseCase(event.artistId, event.newName);
+        final currentState = state;
+        if (currentState is _Loaded) {
+          final updatedArtists = currentState.artists.map((artist) {
+            if (artist.id == event.artistId) {
+              return Artist(
+                id: artist.id,
+                name: event.newName,
+                songCount: artist.songCount,
+                albumCount: artist.albumCount,
+                artworkPath: artist.artworkPath,
+                createdTime: artist.createdTime,
+                updatedTime: DateTime.now(),
+              );
+            }
+            return artist;
+          }).toList();
+
+          emit(
+            ArtistState.loaded(
+              updatedArtists,
+              artistSongs: currentState.artistSongs,
+            ),
+          );
+        }
+      } catch (e) {
+        log('Error updating artist name: $e');
       }
     });
   }

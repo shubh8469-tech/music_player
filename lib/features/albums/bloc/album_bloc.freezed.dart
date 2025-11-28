@@ -55,7 +55,7 @@ extension AlbumEventPatterns on AlbumEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _FetchAllAlbums value)?  fetchAllAlbums,TResult Function( _FetchSongsForAlbum value)?  fetchSongsForAlbum,TResult Function( _FetchAlbumsByArtist value)?  fetchAlbumsByArtist,TResult Function( _SortAlbums value)?  sortAlbums,TResult Function( _UpdateAlbumCover value)?  updateAlbumCover,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _FetchAllAlbums value)?  fetchAllAlbums,TResult Function( _FetchSongsForAlbum value)?  fetchSongsForAlbum,TResult Function( _FetchAlbumsByArtist value)?  fetchAlbumsByArtist,TResult Function( _SortAlbums value)?  sortAlbums,TResult Function( _UpdateAlbumCover value)?  updateAlbumCover,TResult Function( _UpdateAlbumName value)?  updateAlbumName,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _FetchAllAlbums() when fetchAllAlbums != null:
@@ -63,7 +63,8 @@ return fetchAllAlbums(_that);case _FetchSongsForAlbum() when fetchSongsForAlbum 
 return fetchSongsForAlbum(_that);case _FetchAlbumsByArtist() when fetchAlbumsByArtist != null:
 return fetchAlbumsByArtist(_that);case _SortAlbums() when sortAlbums != null:
 return sortAlbums(_that);case _UpdateAlbumCover() when updateAlbumCover != null:
-return updateAlbumCover(_that);case _:
+return updateAlbumCover(_that);case _UpdateAlbumName() when updateAlbumName != null:
+return updateAlbumName(_that);case _:
   return orElse();
 
 }
@@ -81,7 +82,7 @@ return updateAlbumCover(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _FetchAllAlbums value)  fetchAllAlbums,required TResult Function( _FetchSongsForAlbum value)  fetchSongsForAlbum,required TResult Function( _FetchAlbumsByArtist value)  fetchAlbumsByArtist,required TResult Function( _SortAlbums value)  sortAlbums,required TResult Function( _UpdateAlbumCover value)  updateAlbumCover,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _FetchAllAlbums value)  fetchAllAlbums,required TResult Function( _FetchSongsForAlbum value)  fetchSongsForAlbum,required TResult Function( _FetchAlbumsByArtist value)  fetchAlbumsByArtist,required TResult Function( _SortAlbums value)  sortAlbums,required TResult Function( _UpdateAlbumCover value)  updateAlbumCover,required TResult Function( _UpdateAlbumName value)  updateAlbumName,}){
 final _that = this;
 switch (_that) {
 case _FetchAllAlbums():
@@ -89,7 +90,8 @@ return fetchAllAlbums(_that);case _FetchSongsForAlbum():
 return fetchSongsForAlbum(_that);case _FetchAlbumsByArtist():
 return fetchAlbumsByArtist(_that);case _SortAlbums():
 return sortAlbums(_that);case _UpdateAlbumCover():
-return updateAlbumCover(_that);case _:
+return updateAlbumCover(_that);case _UpdateAlbumName():
+return updateAlbumName(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -106,7 +108,7 @@ return updateAlbumCover(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _FetchAllAlbums value)?  fetchAllAlbums,TResult? Function( _FetchSongsForAlbum value)?  fetchSongsForAlbum,TResult? Function( _FetchAlbumsByArtist value)?  fetchAlbumsByArtist,TResult? Function( _SortAlbums value)?  sortAlbums,TResult? Function( _UpdateAlbumCover value)?  updateAlbumCover,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _FetchAllAlbums value)?  fetchAllAlbums,TResult? Function( _FetchSongsForAlbum value)?  fetchSongsForAlbum,TResult? Function( _FetchAlbumsByArtist value)?  fetchAlbumsByArtist,TResult? Function( _SortAlbums value)?  sortAlbums,TResult? Function( _UpdateAlbumCover value)?  updateAlbumCover,TResult? Function( _UpdateAlbumName value)?  updateAlbumName,}){
 final _that = this;
 switch (_that) {
 case _FetchAllAlbums() when fetchAllAlbums != null:
@@ -114,7 +116,8 @@ return fetchAllAlbums(_that);case _FetchSongsForAlbum() when fetchSongsForAlbum 
 return fetchSongsForAlbum(_that);case _FetchAlbumsByArtist() when fetchAlbumsByArtist != null:
 return fetchAlbumsByArtist(_that);case _SortAlbums() when sortAlbums != null:
 return sortAlbums(_that);case _UpdateAlbumCover() when updateAlbumCover != null:
-return updateAlbumCover(_that);case _:
+return updateAlbumCover(_that);case _UpdateAlbumName() when updateAlbumName != null:
+return updateAlbumName(_that);case _:
   return null;
 
 }
@@ -131,14 +134,15 @@ return updateAlbumCover(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  fetchAllAlbums,TResult Function( int albumId)?  fetchSongsForAlbum,TResult Function( String artistName)?  fetchAlbumsByArtist,TResult Function( int sortIndex,  int sortOrder)?  sortAlbums,TResult Function( int albumId,  String coverPath)?  updateAlbumCover,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  fetchAllAlbums,TResult Function( int albumId)?  fetchSongsForAlbum,TResult Function( String artistName)?  fetchAlbumsByArtist,TResult Function( int sortIndex,  int sortOrder)?  sortAlbums,TResult Function( int albumId,  String coverPath)?  updateAlbumCover,TResult Function( int albumId,  String newName)?  updateAlbumName,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FetchAllAlbums() when fetchAllAlbums != null:
 return fetchAllAlbums();case _FetchSongsForAlbum() when fetchSongsForAlbum != null:
 return fetchSongsForAlbum(_that.albumId);case _FetchAlbumsByArtist() when fetchAlbumsByArtist != null:
 return fetchAlbumsByArtist(_that.artistName);case _SortAlbums() when sortAlbums != null:
 return sortAlbums(_that.sortIndex,_that.sortOrder);case _UpdateAlbumCover() when updateAlbumCover != null:
-return updateAlbumCover(_that.albumId,_that.coverPath);case _:
+return updateAlbumCover(_that.albumId,_that.coverPath);case _UpdateAlbumName() when updateAlbumName != null:
+return updateAlbumName(_that.albumId,_that.newName);case _:
   return orElse();
 
 }
@@ -156,14 +160,15 @@ return updateAlbumCover(_that.albumId,_that.coverPath);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  fetchAllAlbums,required TResult Function( int albumId)  fetchSongsForAlbum,required TResult Function( String artistName)  fetchAlbumsByArtist,required TResult Function( int sortIndex,  int sortOrder)  sortAlbums,required TResult Function( int albumId,  String coverPath)  updateAlbumCover,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  fetchAllAlbums,required TResult Function( int albumId)  fetchSongsForAlbum,required TResult Function( String artistName)  fetchAlbumsByArtist,required TResult Function( int sortIndex,  int sortOrder)  sortAlbums,required TResult Function( int albumId,  String coverPath)  updateAlbumCover,required TResult Function( int albumId,  String newName)  updateAlbumName,}) {final _that = this;
 switch (_that) {
 case _FetchAllAlbums():
 return fetchAllAlbums();case _FetchSongsForAlbum():
 return fetchSongsForAlbum(_that.albumId);case _FetchAlbumsByArtist():
 return fetchAlbumsByArtist(_that.artistName);case _SortAlbums():
 return sortAlbums(_that.sortIndex,_that.sortOrder);case _UpdateAlbumCover():
-return updateAlbumCover(_that.albumId,_that.coverPath);case _:
+return updateAlbumCover(_that.albumId,_that.coverPath);case _UpdateAlbumName():
+return updateAlbumName(_that.albumId,_that.newName);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -180,14 +185,15 @@ return updateAlbumCover(_that.albumId,_that.coverPath);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  fetchAllAlbums,TResult? Function( int albumId)?  fetchSongsForAlbum,TResult? Function( String artistName)?  fetchAlbumsByArtist,TResult? Function( int sortIndex,  int sortOrder)?  sortAlbums,TResult? Function( int albumId,  String coverPath)?  updateAlbumCover,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  fetchAllAlbums,TResult? Function( int albumId)?  fetchSongsForAlbum,TResult? Function( String artistName)?  fetchAlbumsByArtist,TResult? Function( int sortIndex,  int sortOrder)?  sortAlbums,TResult? Function( int albumId,  String coverPath)?  updateAlbumCover,TResult? Function( int albumId,  String newName)?  updateAlbumName,}) {final _that = this;
 switch (_that) {
 case _FetchAllAlbums() when fetchAllAlbums != null:
 return fetchAllAlbums();case _FetchSongsForAlbum() when fetchSongsForAlbum != null:
 return fetchSongsForAlbum(_that.albumId);case _FetchAlbumsByArtist() when fetchAlbumsByArtist != null:
 return fetchAlbumsByArtist(_that.artistName);case _SortAlbums() when sortAlbums != null:
 return sortAlbums(_that.sortIndex,_that.sortOrder);case _UpdateAlbumCover() when updateAlbumCover != null:
-return updateAlbumCover(_that.albumId,_that.coverPath);case _:
+return updateAlbumCover(_that.albumId,_that.coverPath);case _UpdateAlbumName() when updateAlbumName != null:
+return updateAlbumName(_that.albumId,_that.newName);case _:
   return null;
 
 }
@@ -488,6 +494,74 @@ class __$UpdateAlbumCoverCopyWithImpl<$Res>
   return _then(_UpdateAlbumCover(
 null == albumId ? _self.albumId : albumId // ignore: cast_nullable_to_non_nullable
 as int,null == coverPath ? _self.coverPath : coverPath // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _UpdateAlbumName implements AlbumEvent {
+  const _UpdateAlbumName(this.albumId, this.newName);
+  
+
+ final  int albumId;
+ final  String newName;
+
+/// Create a copy of AlbumEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$UpdateAlbumNameCopyWith<_UpdateAlbumName> get copyWith => __$UpdateAlbumNameCopyWithImpl<_UpdateAlbumName>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UpdateAlbumName&&(identical(other.albumId, albumId) || other.albumId == albumId)&&(identical(other.newName, newName) || other.newName == newName));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,albumId,newName);
+
+@override
+String toString() {
+  return 'AlbumEvent.updateAlbumName(albumId: $albumId, newName: $newName)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$UpdateAlbumNameCopyWith<$Res> implements $AlbumEventCopyWith<$Res> {
+  factory _$UpdateAlbumNameCopyWith(_UpdateAlbumName value, $Res Function(_UpdateAlbumName) _then) = __$UpdateAlbumNameCopyWithImpl;
+@useResult
+$Res call({
+ int albumId, String newName
+});
+
+
+
+
+}
+/// @nodoc
+class __$UpdateAlbumNameCopyWithImpl<$Res>
+    implements _$UpdateAlbumNameCopyWith<$Res> {
+  __$UpdateAlbumNameCopyWithImpl(this._self, this._then);
+
+  final _UpdateAlbumName _self;
+  final $Res Function(_UpdateAlbumName) _then;
+
+/// Create a copy of AlbumEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? albumId = null,Object? newName = null,}) {
+  return _then(_UpdateAlbumName(
+null == albumId ? _self.albumId : albumId // ignore: cast_nullable_to_non_nullable
+as int,null == newName ? _self.newName : newName // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }

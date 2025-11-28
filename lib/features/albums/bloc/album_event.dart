@@ -11,4 +11,6 @@ class AlbumEvent with _$AlbumEvent {
       _SortAlbums;
   const factory AlbumEvent.updateAlbumCover(int albumId, String coverPath) =
       _UpdateAlbumCover;
+  const factory AlbumEvent.updateAlbumName(int albumId, String newName) =
+      _UpdateAlbumName;
 }

@@ -59,6 +59,11 @@ class ArtistRepositoryImpl implements ArtistRepository {
   }
 
   @override
+  Future<void> updateArtistName(int artistId, String newName) async {
+    return await localDataSource.updateArtistName(artistId, newName);
+  }
+
+  @override
   Future<void> clearAllArtists() async {
     return await localDataSource.clearAllArtists();
   }

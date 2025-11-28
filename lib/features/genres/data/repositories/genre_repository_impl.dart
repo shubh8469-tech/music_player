@@ -53,6 +53,11 @@ class GenreRepositoryImpl implements GenreRepository {
   }
 
   @override
+  Future<void> updateGenreName(int genreId, String newName) async {
+    return await localDataSource.updateGenreName(genreId, newName);
+  }
+
+  @override
   Future<void> clearAllGenres() async {
     return await localDataSource.clearAllGenres();
   }

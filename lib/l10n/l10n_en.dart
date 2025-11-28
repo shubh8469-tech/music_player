@@ -137,4 +137,10 @@ class SEn extends S {
 
   @override
   String get done => 'Done';
+
+  @override
+  String get editTags => 'Edit Tags';
+
+  @override
+  String get albumTitle => 'Album Title';
 }

@@ -9,6 +9,7 @@ abstract class GenreRepository {
   Future<void> addSongToGenre(int genreId, int songId);
   Future<List<Song>> getSongsForGenre(int genreId);
   Future<void> updateGenreCover(int genreId, String? coverPath);
+  Future<void> updateGenreName(int genreId, String newName);
   Future<void> clearAllGenres();
 }
 

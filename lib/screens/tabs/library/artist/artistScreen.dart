@@ -28,6 +28,7 @@ import '../../../../utills/snack_bar.dart';
 import '../../music_service.dart';
 import '../../../common/image_crop_screen.dart';
 import '../../../play_song/widget/playlist_bottomsheet.dart';
+import '../../../../commonWidgets/edit_tag_bottom_sheet.dart';
 import 'sort_by_bottomsheet.dart';
 
 class ArtistListScreen extends StatefulWidget {
@@ -397,7 +398,37 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
       _addArtistToPlaylist(artist);
     } else if (menuTitle == S.of(context).changeCover) {
       _handleArtistChangeCover(artist);
+    } else if (menuTitle == S.of(context).editTags) {
+      _handleEditArtistTags(artist);
     }
+  }
+
+  void _handleEditArtistTags(Artist artist) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => BlocProvider.value(
+        value: context.read<ArtistBloc>(),
+        child: EditTagBottomSheet(
+          initialValue: artist.name,
+          title: S.of(context).editTags,
+          onSave: (newName) {
+            if (artist.id != null && newName.trim().isNotEmpty) {
+              context.read<ArtistBloc>().add(
+                    ArtistEvent.updateArtistName(artist.id!, newName),
+                  );
+              showSnackBar(
+                context,
+                () {},
+                message: 'Artist name updated successfully',
+                alertBannerLocation: AlertBannerLocation.bottom,
+              );
+            }
+          },
+        ),
+      ),
+    );
   }
 
   // Play artist

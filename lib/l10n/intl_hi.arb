@@ -40,6 +40,8 @@
   "delete": "हटाएं",
   "play": "चलाएं",
   "rename": "नाम बदलें",
-    "done": "Done"
+    "done": "Done",
+  "editTags": "टैग संपादित करें",
+  "albumTitle": "एल्बम शीर्षक"
 
 }

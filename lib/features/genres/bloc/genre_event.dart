@@ -8,5 +8,7 @@ class GenreEvent with _$GenreEvent {
   const factory GenreEvent.sortGenres(int sortIndex, int order) = _SortGenres;
   const factory GenreEvent.updateGenreCover(int genreId, String coverPath) =
       _UpdateGenreCover;
+  const factory GenreEvent.updateGenreName(int genreId, String newName) =
+      _UpdateGenreName;
 }
 

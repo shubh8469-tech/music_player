@@ -377,6 +377,14 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               _optionTile(
                 asset: Assets.svgScan,
+                title: "Scan Music",
+                subtitle: "Scan and add music from device",
+                onTap: () {
+                  context.push('/dashboard/scan-music');
+                },
+              ),
+              _optionTile(
+                asset: Assets.svgScan,
                 title: "Refresh library",
                 subtitle: _isRefreshing
                     ? "Refreshing..."

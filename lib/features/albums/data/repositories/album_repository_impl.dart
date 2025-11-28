@@ -66,6 +66,11 @@ class AlbumRepositoryImpl implements AlbumRepository {
   }
 
   @override
+  Future<void> updateAlbumName(int albumId, String newName) async {
+    return await localDataSource.updateAlbumName(albumId, newName);
+  }
+
+  @override
   Future<void> clearAllAlbums() async {
     return await localDataSource.clearAllAlbums();
   }

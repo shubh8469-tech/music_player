@@ -3,17 +3,20 @@ import 'package:sqflite/sqflite.dart';
 class BackupOption {
   final String key;
   final String label;
+  final String metaLabel;
   final bool isSelected;
 
   const BackupOption({
     required this.key,
     required this.label,
+    required this.metaLabel,
     required this.isSelected,
   });
 
   BackupOption copyWith({bool? isSelected}) => BackupOption(
         key: key,
         label: label,
+        metaLabel: metaLabel,
         isSelected: isSelected ?? this.isSelected,
       );
 
@@ -21,6 +24,7 @@ class BackupOption {
     return BackupOption(
       key: map['key'] as String,
       label: map['label'] as String,
+      metaLabel: map['metaLabel'] as String,
       isSelected: (map['is_selected'] as int? ?? 0) == 1,
     );
   }
@@ -46,14 +50,15 @@ class BackupOptionsLocalDataSourceImpl implements BackupOptionsLocalDataSource {
   final Database _db;
 
   static const List<BackupOption> _defaultOptions = [
-    BackupOption(key: 'tags', label: 'Tags', isSelected: true),
-    BackupOption(key: 'covers', label: 'Covers', isSelected: true),
-    BackupOption(key: 'playlists', label: 'Playlists', isSelected: true),
-    BackupOption(key: 'sort_settings', label: 'Sort Settings', isSelected: true),
+    BackupOption(key: 'tags', label: 'Tags', isSelected: true, metaLabel: "Songs, albums, artists, genres, track number"),
+    BackupOption(key: 'covers', label: 'Covers', isSelected: true, metaLabel: "Songs, albums"),
+    BackupOption(key: 'playlists', label: 'Playlists', isSelected: true, metaLabel: ""),
+    BackupOption(key: 'sort_settings', label: 'Sort Settings', isSelected: true, metaLabel: "Songs, folders, albums, artists, genres"),
     BackupOption(
       key: 'scan_hide_settings',
       label: 'Scan and hide Settings',
       isSelected: true,
+        metaLabel: "Music scanning filters, hidden songs and folders"
     ),
   ];
 

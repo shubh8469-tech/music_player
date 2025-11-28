@@ -6,6 +6,7 @@ import '../domain/entities/genre.dart';
 import '../domain/usecases/get_all_genres.dart';
 import '../domain/usecases/get_genre_songs.dart';
 import '../domain/usecases/update_genre_cover.dart';
+import '../domain/usecases/update_genre_name.dart';
 
 part 'genre_event.dart';
 part 'genre_state.dart';
@@ -15,11 +16,13 @@ class GenreBloc extends Bloc<GenreEvent, GenreState> {
   final GetAllGenres getAllGenres;
   final GetGenreSongs getGenreSongs;
   final UpdateGenreCover updateGenreCoverUseCase;
+  final UpdateGenreName updateGenreNameUseCase;
 
   GenreBloc({
     required this.getAllGenres,
     required this.getGenreSongs,
     required this.updateGenreCoverUseCase,
+    required this.updateGenreNameUseCase,
   })
     : super(const GenreState.initial()) {
     on<_FetchAllGenres>((event, emit) async {
@@ -124,6 +127,37 @@ class GenreBloc extends Bloc<GenreEvent, GenreState> {
         }
       } catch (e) {
         log('Error updating genre cover: $e');
+      }
+    });
+
+    on<_UpdateGenreName>((event, emit) async {
+      try {
+        await updateGenreNameUseCase(event.genreId, event.newName);
+        final currentState = state;
+        if (currentState is _Loaded) {
+          final updatedGenres = currentState.genres.map((genre) {
+            if (genre.id == event.genreId) {
+              return Genre(
+                id: genre.id,
+                name: event.newName,
+                songCount: genre.songCount,
+                artworkPath: genre.artworkPath,
+                createdTime: genre.createdTime,
+                updatedTime: DateTime.now(),
+              );
+            }
+            return genre;
+          }).toList();
+
+          emit(
+            GenreState.loaded(
+              updatedGenres,
+              genreSongs: currentState.genreSongs,
+            ),
+          );
+        }
+      } catch (e) {
+        log('Error updating genre name: $e');
       }
     });
   }

@@ -10,6 +10,7 @@ abstract class GenreLocalDataSource {
   Future<void> addSongToGenre(int genreId, int songId);
   Future<List<SongsModel>> getSongsForGenre(int genreId);
   Future<void> updateGenreCover(int genreId, String? coverPath);
+  Future<void> updateGenreName(int genreId, String newName);
   Future<void> clearAllGenres();
 }
 
@@ -84,6 +85,36 @@ class GenreLocalDataSourceImpl implements GenreLocalDataSource {
         'updated_time': DateTime.now().toIso8601String(),
       },
       where: 'id = ?',
+      whereArgs: [genreId],
+    );
+  }
+
+  @override
+  Future<void> updateGenreName(int genreId, String newName) async {
+    final trimmedName = newName.trim();
+    if (trimmedName.isEmpty) {
+      throw Exception('Genre name cannot be empty');
+    }
+
+    // Update genre name
+    await db.update(
+      'genres',
+      {
+        'name': trimmedName,
+        'updated_time': DateTime.now().toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [genreId],
+    );
+
+    // Update all songs with this genre to have the new genre name
+    await db.update(
+      'songs',
+      {
+        'genre': trimmedName,
+        'updated_time': DateTime.now().toIso8601String(),
+      },
+      where: 'id IN (SELECT song_id FROM genre_songs WHERE genre_id = ?)',
       whereArgs: [genreId],
     );
   }

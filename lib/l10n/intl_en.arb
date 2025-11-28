@@ -44,6 +44,8 @@
   "deletePlaylist":"Delete Playlist",
   "areYouSureDeleteSong":"Are you sure you want to delete these 2 songs?",
   "rename":"Rename",
-  "done": "Done"
+  "done": "Done",
+  "editTags": "Edit Tags",
+  "albumTitle": "Album Title"
 
 }

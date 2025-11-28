@@ -29,6 +29,7 @@ import '../../../../utills/snack_bar.dart';
 import '../../music_service.dart';
 import '../../../common/image_crop_screen.dart';
 import '../../../play_song/widget/playlist_bottomsheet.dart';
+import 'edit_album_tags_screen.dart';
 import 'sort_by_bottomsheet.dart';
 
 class AlbumListScreen extends StatefulWidget {
@@ -455,7 +456,20 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
       _addAlbumToPlaylist(album);
     } else if (menuTitle == S.of(context).changeCover) {
       _handleAlbumChangeCover(album);
+    } else if (menuTitle == S.of(context).editTags) {
+      _handleEditAlbumTags(album);
     }
+  }
+
+  void _handleEditAlbumTags(Album album) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: context.read<AlbumBloc>(),
+          child: EditAlbumTagsScreen(album: album),
+        ),
+      ),
+    );
   }
 
   // Play album

@@ -11,6 +11,7 @@ abstract class ArtistLocalDataSource {
   Future<List<SongsModel>> getSongsForArtist(int artistId);
   Future<void> updateArtistAlbumCount(int artistId, int albumCount);
   Future<void> updateArtistCover(int artistId, String? coverPath);
+  Future<void> updateArtistName(int artistId, String newName);
   Future<void> clearAllArtists();
 }
 
@@ -95,6 +96,36 @@ class ArtistLocalDataSourceImpl implements ArtistLocalDataSource {
         'updated_time': DateTime.now().toIso8601String(),
       },
       where: 'id = ?',
+      whereArgs: [artistId],
+    );
+  }
+
+  @override
+  Future<void> updateArtistName(int artistId, String newName) async {
+    final trimmedName = newName.trim();
+    if (trimmedName.isEmpty) {
+      throw Exception('Artist name cannot be empty');
+    }
+
+    // Update artist name
+    await db.update(
+      'artists',
+      {
+        'name': trimmedName,
+        'updated_time': DateTime.now().toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [artistId],
+    );
+
+    // Update all songs with this artist to have the new artist name
+    await db.update(
+      'songs',
+      {
+        'artist': trimmedName,
+        'updated_time': DateTime.now().toIso8601String(),
+      },
+      where: 'id IN (SELECT song_id FROM artist_songs WHERE artist_id = ?)',
       whereArgs: [artistId],
     );
   }
