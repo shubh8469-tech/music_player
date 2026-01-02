@@ -292,13 +292,18 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
                                     // Insert playlist songs after current song
                                     if (musicService.songs.isEmpty) {
+                                      print('📀 Queue empty, starting playlist');
                                       // No songs playing, start playing the playlist
-                                      await musicService.setPlaylist(_songs, startIndex: 0);
-                                      await musicService.play();
+                                      await musicService.setPlaylist(_songs, startIndex: 0, autoPlay: true);
+                                      // await musicService.play();
                                     } else {
+                                      print('📀 Inserting playlist after current song at index ${musicService.currentIndex + 1}');
                                       final currentIndex = musicService.currentIndex;
-                                      final insertIndex = currentIndex + 1;
                                       final newSongsList = List<SongsModel>.from(musicService.songs);
+
+                                      final insertIndex = currentIndex + 1; // Insert right after current
+
+                                      print('  Insert index: $insertIndex');
 
                                       // Filter out songs that are already in the queue
                                       final songsToAdd = _songs.where((song) {
@@ -308,7 +313,10 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       // Insert the new songs after the current song
                                       newSongsList.insertAll(insertIndex, songsToAdd);
 
-                                      await musicService.setPlaylist(newSongsList, startIndex: currentIndex >= 0 ? currentIndex : 0, autoPlay: false);
+                                      print('✅ Inserted ${songsToAdd.length} songs at position $insertIndex');
+
+                                      // await musicService.setPlaylist(newSongsList, startIndex: currentIndex >= 0 ? currentIndex : 0, autoPlay: false);
+                                      await musicService.updateSongsInQueue(newSongsList);
                                     }
 
                                     if (mounted) {
@@ -320,35 +328,58 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     }
                                   }
                                 } else {
-                                  // Add individual song to play next (insert after current song)
-                                  final currentIndex = musicService.currentIndex;
-                                  final insertIndex = currentIndex + 1;
-
-                                  // Create a new list with the song inserted at the correct position
-                                  final newSongsList = List<SongsModel>.from(musicService.songs);
-
-                                  // Check if song is already in the queue
-                                  final existingIndex = newSongsList.indexWhere((song) => song.id == widget.currentSong!.id);
-
-                                  if (existingIndex != -1) {
-                                    // Song already exists, move it to the correct position
-                                    final songToMove = newSongsList.removeAt(existingIndex);
-                                    final adjustedInsertIndex = existingIndex < insertIndex ? insertIndex - 1 : insertIndex;
-                                    newSongsList.insert(adjustedInsertIndex, songToMove);
+                                  if (musicService.songs.isEmpty) {
+                                    // No songs playing, just play this song
+                                    print('🎵 Play Next: Queue empty, starting song');
+                                    await musicService.setPlaylist([widget.currentSong!], startIndex: 0, autoPlay: true);
                                   } else {
-                                    // Song doesn't exist, insert it
-                                    newSongsList.insert(insertIndex, widget.currentSong!);
+                                    // Add individual song to play next (insert after current song)
+                                    final currentIndex = musicService.currentIndex;
+                                    final newSongsList = List<SongsModel>.from(musicService.songs);
+
+                                    final insertIndex = currentIndex + 1; // Right after current
+                                    print('  Insert index: $insertIndex');
+
+                                    // Check if song is already in the queue
+                                    final existingIndex = newSongsList.indexWhere((song) => song.id == widget.currentSong!.id);
+
+                                    if (existingIndex != -1 && existingIndex != insertIndex) {
+                                      print('  Song exists at index $existingIndex, moving to $insertIndex');
+                                      // Song already exists, move it to the correct position
+                                      final songToMove = newSongsList.removeAt(existingIndex);
+                                      // final adjustedInsertIndex = existingIndex < insertIndex ? insertIndex - 1 : insertIndex;
+                                      newSongsList.insert(insertIndex, songToMove);
+                                    } else if (existingIndex == -1) {
+                                      // Song not in queue, insert it
+                                      print('  Song not in queue, inserting at $insertIndex');
+                                      newSongsList.insert(insertIndex, widget.currentSong!);
+                                    } else {
+                                      // Song is already at the correct position
+                                      print('  Song already at correct play next position');
+                                    }
+
+                                    await musicService.updateSongsInQueue(newSongsList);
                                   }
 
-                                  // Update the music service with the new playlist
+                                    // Update the music service with the new playlist
 
-                                  musicService.setPlaylist(
-                                    newSongsList,
-                                    autoPlay: false,
-                                    startIndex: !(existingIndex > musicService.currentIndex) ? musicService.currentIndex - 1 : musicService.currentIndex,
-                                  );
-                                  Navigator.pop(context);
-                                }
+                                    // await musicService.setPlaylist(
+                                    //   newSongsList,
+                                    //   startIndex: currentIndex >= 0 ? currentIndex : 0,
+                                    //   autoPlay: false, // ✅ CRITICAL: Don't play, just queue
+                                    // );
+                                    print('✅ Play Next: Song queued, continuing current playback');
+                                    if (mounted) {
+                                      showSnackBar(
+                                        context,
+                                            () {},
+                                        message: '"${widget.currentSong!.title}" will play next',
+                                        alertBannerLocation: AlertBannerLocation.bottom,
+                                      );
+                                    }
+                                      Navigator.pop(context);
+                                  }
+
                               } else if (songItem.title == S.of(context).addToQueue) {
                                 if (widget.from == 'playlist') {
                                   List<SongsModel> _songs = [];
@@ -382,8 +413,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     newSongsList.add(widget.currentSong!);
                                     musicService.setPlaylist(newSongsList, autoPlay: false);
                                     showSnackBar(context, () {}, message: "1 songs added to queue", alertBannerLocation: AlertBannerLocation.bottom);
-                                  }
-                                  else{
+                                  } else {
                                     showSnackBar(context, () {}, message: "Already added to queue", alertBannerLocation: AlertBannerLocation.bottom);
                                   }
                                 }
@@ -429,14 +459,13 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                         playlistBloc.add(PlaylistEvent.removeSongFromPlaylist(int.parse(widget.systemKeyOrId!), widget.currentSong!.id!));
 
                                         final currentSongs = List<SongsModel>.from(musicService.songs);
-                                        currentSongs.removeWhere((element) => element.id == widget.currentSong!.id,);
+                                        currentSongs.removeWhere((element) => element.id == widget.currentSong!.id);
 
                                         log('currentSongs ${currentSongs.length} ${widget.currentSong!.title}');
                                         await musicService.player.stop();
-                                        if(currentSongs.isNotEmpty){
+                                        if (currentSongs.isNotEmpty) {
                                           musicService.setPlaylist(currentSongs);
-                                        }
-                                        else{
+                                        } else {
                                           musicService.resetPlaylist(currentSongs);
                                         }
                                         // Show success message
@@ -456,14 +485,12 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     // Close the menu to refresh the view
                                     Navigator.pop(context);
                                   }
-                                }
-                                else if (widget.from == 'folder_in') {
+                                } else if (widget.from == 'folder_in') {
                                   // Handle delete song from folder (delete file from system)
                                   if (widget.currentSong != null) {
                                     _showDeleteFromFolderConfirmation(context);
                                   }
-                                }
-                                else {
+                                } else {
                                   _showDeleteFromLibraryBottomSheet(context);
                                 }
                               } else if (songItem.title == S.of(context).deletePlaylist) {
@@ -481,22 +508,12 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                               } else if (songItem.title == S.of(context).setAsRingtone) {
                                 // Set as ringtone (Android only)
                                 if (!Platform.isAndroid) {
-                                  showSnackBar(
-                                    context,
-                                    () {},
-                                    message: 'Ringtone feature is only available on Android',
-                                    alertBannerLocation: AlertBannerLocation.bottom,
-                                  );
+                                  showSnackBar(context, () {}, message: 'Ringtone feature is only available on Android', alertBannerLocation: AlertBannerLocation.bottom);
                                   return;
                                 }
 
                                 if (widget.currentSong == null) {
-                                  showSnackBar(
-                                    context,
-                                    () {},
-                                    message: 'No song selected',
-                                    alertBannerLocation: AlertBannerLocation.bottom,
-                                  );
+                                  showSnackBar(context, () {}, message: 'No song selected', alertBannerLocation: AlertBannerLocation.bottom);
                                   return;
                                 }
 
@@ -1056,13 +1073,12 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
       // Call the callback to refresh the folder detail screen
       var musicService = MusicPlayerService();
       final currentSongs = List<SongsModel>.from(musicService.songs);
-      currentSongs.removeWhere((element) => element.id == widget.currentSong!.id,);
+      currentSongs.removeWhere((element) => element.id == widget.currentSong!.id);
 
       await musicService.player.stop();
-      if(currentSongs.isNotEmpty){
+      if (currentSongs.isNotEmpty) {
         musicService.setPlaylist(currentSongs);
-      }
-      else{
+      } else {
         musicService.resetPlaylist(currentSongs);
       }
 
@@ -1184,13 +1200,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
       if (filePath.isEmpty || !await File(filePath).exists()) {
         if (mounted) {
-          showSnackBar(
-            context,
-            () {},
-            message: 'Song file not found',
-            backgroundColor: Colors.red,
-            alertBannerLocation: AlertBannerLocation.bottom,
-          );
+          showSnackBar(context, () {}, message: 'Song file not found', backgroundColor: Colors.red, alertBannerLocation: AlertBannerLocation.bottom);
         }
         return;
       }
@@ -1200,7 +1210,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
       try {
         // First check if we have WRITE_SETTINGS permission
         final hasPermission = await platform.invokeMethod('checkWriteSettingsPermission') as bool? ?? false;
-        
+
         if (!hasPermission) {
           // Request permission by opening system settings
           if (mounted) {
@@ -1210,14 +1220,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                 title: const Text('Permission Required'),
                 content: const Text('To set ringtone, please grant "Modify system settings" permission.'),
                 actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text('Open Settings'),
-                  ),
+                  TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                  TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Open Settings')),
                 ],
               ),
             );
@@ -1225,7 +1229,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
             if (shouldOpenSettings == true) {
               // Open system settings for WRITE_SETTINGS permission
               await platform.invokeMethod('openWriteSettings');
-              
+
               // Wait a bit for user to grant permission and return
               await Future.delayed(const Duration(milliseconds: 500));
             } else {
@@ -1240,20 +1244,15 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
         // Now set the ringtone (this will check permission again and set if available)
         final result = await platform.invokeMethod('setRingtone', {'filePath': filePath, 'title': song.title}) as Map<dynamic, dynamic>;
-        
+
         final success = result['success'] as bool? ?? false;
         final setAsDefault = result['setAsDefault'] as bool? ?? false;
         final needsPermission = result['needsPermission'] as bool? ?? false;
-        
+
         if (success) {
           if (mounted) {
             if (setAsDefault) {
-              showSnackBar(
-                context,
-                () {},
-                message: '"${song.title}" set as ringtone successfully',
-                alertBannerLocation: AlertBannerLocation.bottom,
-              );
+              showSnackBar(context, () {}, message: '"${song.title}" set as ringtone successfully', alertBannerLocation: AlertBannerLocation.bottom);
             } else if (needsPermission) {
               showSnackBar(
                 context,
@@ -1262,12 +1261,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                 alertBannerLocation: AlertBannerLocation.bottom,
               );
             } else {
-              showSnackBar(
-                context,
-                () {},
-                message: '"${song.title}" added to ringtones',
-                alertBannerLocation: AlertBannerLocation.bottom,
-              );
+              showSnackBar(context, () {}, message: '"${song.title}" added to ringtones', alertBannerLocation: AlertBannerLocation.bottom);
             }
             // Close the menu
             if (Navigator.canPop(context)) {
@@ -1280,17 +1274,10 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
       } on PlatformException catch (e) {
         throw Exception('Platform error: ${e.message}');
       }
-
     } catch (e) {
       log('Error setting ringtone: $e');
       if (mounted) {
-        showSnackBar(
-          context,
-          () {},
-          message: 'Error setting ringtone: $e',
-          backgroundColor: Colors.red,
-          alertBannerLocation: AlertBannerLocation.bottom,
-        );
+        showSnackBar(context, () {}, message: 'Error setting ringtone: $e', backgroundColor: Colors.red, alertBannerLocation: AlertBannerLocation.bottom);
       }
     }
   }

@@ -3,6 +3,7 @@ import 'package:music_app/core/di/initUseCasesInjections.dart';
 import 'package:music_app/core/services/app_state_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../services/unified_equalizer_service.dart';
 import 'initLocalDataSourceInjection.dart';
 import 'initRepositoryInjections.dart';
 
@@ -13,6 +14,7 @@ Future<void> initInjections() async {
   final prefs = await SharedPreferences.getInstance();
   locator.registerSingleton<SharedPreferences>(prefs);
 
+  UnifiedEqualizerService().attachPrefs(prefs);
   // Register AppStateService
   locator.registerSingleton<AppStateService>(AppStateService(locator()));
 

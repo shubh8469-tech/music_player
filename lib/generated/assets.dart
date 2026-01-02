@@ -2,6 +2,7 @@
 class Assets {
   Assets._();
 
+  static const String assetsSilence = 'assets/silence.mp3';
   static const String dbSetup = 'assets/db/setup.sql';
   static const String interInterBlack = 'assets/fonts/inter/Inter-Black.ttf';
   static const String interInterBold = 'assets/fonts/inter/Inter-Bold.ttf';
