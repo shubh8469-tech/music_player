@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+
 // import 'package:just_audio/just_audio.dart';
 // import 'package:music_app/app_router.dart';
 import 'package:music_app/commonWidgets/textWidget.dart';
@@ -24,6 +25,7 @@ import '../../../../commonWidgets/song_menu_screen.dart';
 import '../../../../features/songs/bloc/songs_bloc.dart';
 import '../../../../generated/assets.dart';
 import '../../../../utills/globals.dart';
+
 // import '../../../../l10n/l10n.dart';
 import '../../../play_song/playing_song_screen.dart';
 import '../../music_service.dart';
@@ -108,23 +110,9 @@ class _SongsListState extends State<SongsList> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        SvgPicture.asset(
-                          Assets.svgMusicLibrary,
-                          height: 64.h,
-                          width: 64.w,
-                          colorFilter: const ColorFilter.mode(
-                            AppColors.textColor,
-                            BlendMode.srcIn,
-                          ),
-                        ),
+                        SvgPicture.asset(Assets.svgMusicLibrary, height: 64.h, width: 64.w, colorFilter: const ColorFilter.mode(AppColors.textColor, BlendMode.srcIn)),
                         SizedBox(height: 20.h),
-                        Texts(
-                          "No songs available",
-                          fontSize: 18.sp,
-                          fontWeight: AppFontWeights.semiBold,
-                          color: AppColors.textColor,
-                          align: TextAlign.center,
-                        ),
+                        Texts("No songs available", fontSize: 18.sp, fontWeight: AppFontWeights.semiBold, color: AppColors.textColor, align: TextAlign.center),
                         SizedBox(height: 12.h),
                         Texts(
                           "If you have hidden songs, you can manage them from the Hidden Music screen.",
@@ -139,33 +127,14 @@ class _SongsListState extends State<SongsList> {
                             context.push('/dashboard/hidden-music');
                           },
                           child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 24.w,
-                              vertical: 12.h,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryOrange,
-                              borderRadius: BorderRadius.circular(24.r),
-                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                            decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(24.r)),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                SvgPicture.asset(
-                                  Assets.svgIcHide,
-                                  height: 18.h,
-                                  width: 18.w,
-                                  colorFilter: const ColorFilter.mode(
-                                    AppColors.white,
-                                    BlendMode.srcIn,
-                                  ),
-                                ),
+                                SvgPicture.asset(Assets.svgIcHide, height: 18.h, width: 18.w, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
                                 SizedBox(width: 8.w),
-                                Texts(
-                                  "Go to Hidden Music",
-                                  fontSize: 14.sp,
-                                  fontWeight: AppFontWeights.medium,
-                                  color: AppColors.white,
-                                ),
+                                Texts("Go to Hidden Music", fontSize: 14.sp, fontWeight: AppFontWeights.medium, color: AppColors.white),
                               ],
                             ),
                           ),
@@ -188,25 +157,45 @@ class _SongsListState extends State<SongsList> {
                               children: [
                                 GestureDetector(
                                   onTap: () async {
-                                    // final shuffledSongs = List<SongsModel>.from(songs);
-                                    // shuffledSongs.shuffle();
-                                    // context.read<SongsBloc>().add(SongsEvent.shuffleSongs(shuffledSongs));
+                                    try {
+                                      print('🔀 Shuffle button tapped');
+                                      print('Current state - playing: ${musicService.isPlaying}, currentIndex: ${musicService.currentIndex}');
 
-                                    if (musicService.currentIndex < 0) {
-                                      await musicService.setPlaylist(songs, autoPlay: false, startIndex: 0);
-                                      await musicService.play();
-                                    } else {
-                                      await musicService.setShufflePlaylist(
-                                        songs,
-                                        autoPlay: false,
-                                        startIndex: musicService.currentIndex != -1 ? musicService.currentIndex : 0,
-                                      );
-                                      await musicService.ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
-                                      await musicService.player.currentIndexStream.firstWhere((idx) => idx != null && idx != 0);
-                                      await musicService.play();
+                                      // Stop any current playback
+                                      await musicService.stop();
+
+                                      // if (musicService.currentIndex < 0) {
+                                      //   await musicService.setPlaylist(songs, autoPlay: true, startIndex: 0);
+                                      // } else {
+                                      // ✅ Use setShufflePlaylist which handles shuffle setup
+                                      await musicService.setShufflePlaylist(songs, autoPlay: true);
+
+                                      log("✅ Shuffle Play started successfully");
+                                      // }
+
+                                      if (mounted) {
+                                        setState(() {
+                                          _showMiniPlayer = true;
+                                        });
+                                      }
+                                    } catch (e) {
+                                      log("❌ Shuffle error: $e");
+                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error starting shuffle: $e')));
                                     }
 
-                                    log("New Shuffle Play started");
+                                    // if (musicService.currentIndex < 0) {
+                                    //   await musicService.setPlaylist(songs, autoPlay: false, startIndex: 0);
+                                    //   await musicService.play();
+                                    // } else {
+                                    //   await musicService.setShufflePlaylist(
+                                    //     songs,
+                                    //     autoPlay: false,
+                                    //     startIndex: musicService.currentIndex != -1 ? musicService.currentIndex : 0,
+                                    //   );
+                                    //   await musicService.ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
+                                    //   await musicService.player.currentIndexStream.firstWhere((idx) => idx != null && idx != 0);
+                                    //   await musicService.play();
+                                    // }
                                   },
                                   child: Container(
                                     alignment: Alignment.center,
@@ -225,19 +214,29 @@ class _SongsListState extends State<SongsList> {
                                 ),
                                 GestureDetector(
                                   onTap: () async {
-                                    // Ensure shuffle is OFF
-                                    await musicService.ensureShuffleOff();
+                                    try {
+                                      print('▶️ Play button tapped');
+                                      // Stop current playback first
+                                      await musicService.stop();
+                                      // Ensure shuffle is OFF for normal play
+                                      await musicService.ensureShuffleOff();
+                                      print('✅ Shuffle disabled');
+                                      // Set playlist starting from index 0
+                                      await musicService.setPlaylist(songs, startIndex: 0, autoPlay: true);
 
-                                    // Play from the first song in order
-                                    await musicService.setPlaylist(songs, startIndex: 0);
-                                    await musicService.play();
+                                      print('✅ Normal Play started from index 0');
 
-                                    if (mounted) {
-                                      setState(() {
-                                        _showMiniPlayer = true;
-                                      });
+                                      if (mounted) {
+                                        setState(() {
+                                          _showMiniPlayer = true;
+                                        });
+                                      }
+                                    } catch (e) {
+                                      print('❌ Play error: $e');
+                                      // ScaffoldMessenger.of(context).showSnackBar(
+                                      //   SnackBar(content: Text('Error starting playback: $e')),
+                                      // );
                                     }
-
                                     log("Playing all songs from first position");
                                   },
                                   child: Container(

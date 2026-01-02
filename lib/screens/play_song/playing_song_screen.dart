@@ -18,6 +18,7 @@ import '../../commonWidgets/song_menu_screen.dart';
 import '../../commonWidgets/textWidget.dart';
 import '../../features/songs/data/models/song_model.dart';
 import '../../generated/assets.dart';
+import '../../services/unified_equalizer_service.dart';
 import '../../themes/color.dart';
 import '../../themes/font.dart';
 import '../../utills/snack_bar.dart';
@@ -43,6 +44,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
   late final bool hasArtwork;
   StreamSubscription<int?>? _indexSubscription;
   bool isFavorite = false;
+  final UnifiedEqualizerService equalizerService = UnifiedEqualizerService();
 
   @override
   void initState() {
@@ -324,6 +326,42 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
         GestureDetector(
           onTap: () {
             context.push('/dashboard/equalizer');
+          },
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              SvgPicture.asset(
+                Assets.svgIEquilizerc,
+                width: 23.w,
+                height: 23.h,
+                colorFilter: ColorFilter.mode(
+                  equalizerService.isEnabled
+                      ? AppColors.primaryOrange  // Active color when ON
+                      : Colors.grey,              // Grey when OFF
+                  BlendMode.srcIn,
+                ),
+              ),
+              // ON/OFF indicator badge
+              if (equalizerService.isEnabled)
+                Positioned(
+                  right: -2.w,
+                  top: -2.h,
+                  child: Container(
+                    width: 8.w,
+                    height: 8.h,
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        /*GestureDetector(
+          onTap: () {
+            context.push('/dashboard/equalizer');
             // showSnackBar(
             //   context,
             //   () {},
@@ -333,7 +371,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
             // );
           },
           child: SvgPicture.asset(Assets.svgIEquilizerc, width: 23.w, height: 23.h),
-        ),
+        ),*/
         GestureDetector(
           onTap: _toggleFavorite,
           child: SvgPicture.asset(
