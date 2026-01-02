@@ -374,24 +374,24 @@ CREATE TABLE IF NOT EXISTS backup_options (
     updated_time DATETIME NOT NULL DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))
 );
 
-INSERT INTO backup_options (key, label, is_selected)
-SELECT 'tags', 'Tags', 1
+INSERT INTO backup_options (key, label, metaLabel, is_selected)
+SELECT 'tags', 'Tags', 'Songs, albums, artists, genres, track number', 1
 WHERE NOT EXISTS (SELECT 1 FROM backup_options WHERE key = 'tags');
 
-INSERT INTO backup_options (key, label, is_selected)
-SELECT 'covers', 'Covers', 1
+INSERT INTO backup_options (key, label, metaLabel, is_selected)
+SELECT 'covers', 'Covers', 'Songs, albums', 1
 WHERE NOT EXISTS (SELECT 1 FROM backup_options WHERE key = 'covers');
 
-INSERT INTO backup_options (key, label, is_selected)
-SELECT 'playlists', 'Playlists', 1
+INSERT INTO backup_options (key, label, metaLabel, is_selected)
+SELECT 'playlists', 'Playlists', '', 1
 WHERE NOT EXISTS (SELECT 1 FROM backup_options WHERE key = 'playlists');
 
-INSERT INTO backup_options (key, label, is_selected)
-SELECT 'sort_settings', 'Sort Settings', 1
+INSERT INTO backup_options (key, label, metaLabel, is_selected)
+SELECT 'sort_settings', 'Sort Settings', 'Songs, folders, albums, artists, genres', 1
 WHERE NOT EXISTS (SELECT 1 FROM backup_options WHERE key = 'sort_settings');
 
-INSERT INTO backup_options (key, label, is_selected)
-SELECT 'scan_hide_settings', 'Scan and hide Settings', 1
+INSERT INTO backup_options (key, label, metaLabel, is_selected)
+SELECT 'scan_hide_settings', 'Scan and hide Settings', 'Music scanning filters, hidden songs and folders', 1
 WHERE NOT EXISTS (SELECT 1 FROM backup_options WHERE key = 'scan_hide_settings');
 
 ---------------------------------------------------------------------------
