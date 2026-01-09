@@ -32,6 +32,10 @@ class MusicPlayerService {
 
   Stream<List<SongsModel>> get songsChanged => _songsChangedController.stream;
 
+  /// Expose the songs changed controller for direct manipulation
+  /// (Used by queue screen for seamless updates)
+  StreamController<List<SongsModel>> get songsChangedController => _songsChangedController;
+
   int? _lastUpdatedSongId;
 
   // Loop and Shuffle state variables
@@ -44,6 +48,33 @@ class MusicPlayerService {
   // ============================================
   // Public getters for backward compatibility
   // ============================================
+
+  void updateSongsList(List<SongsModel> newSongs) {
+    // Create a new mutable list
+    songs = List<SongsModel>.from(newSongs);
+    songsChangedController.add(List.from(songs));
+    print('📝 Songs list updated: ${songs.length} songs');
+  }
+
+  Future<void> removeFromQueueAtIndex(int removeIndex, int newCurrentIndex) async {
+    if (!Platform.isIOS) {
+      throw Exception('This method is only for iOS');
+    }
+
+    try {
+      print('📱 iOS: Removing song at index $removeIndex, new current: $newCurrentIndex');
+
+      await _iosPlayer!.removeFromQueueAtIndex(removeIndex, newCurrentIndex);
+
+
+
+      print('✅ iOS: Song removed seamlessly');
+    } catch (e) {
+      print('❌ iOS: Error removing song: $e');
+      rethrow;
+    }
+  }
+
 
   /// Access to the underlying player (platform-agnostic)
   dynamic get player {
@@ -272,10 +303,7 @@ class MusicPlayerService {
       if (_lastUpdatedSongId == current.id) return;
       try {
         final db = await AppDatabase.instance();
-        await db.rawUpdate(
-            "UPDATE songs SET play_count = play_count + 1, last_played = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW') WHERE id = ?",
-            [current.id]
-        );
+        await db.rawUpdate("UPDATE songs SET play_count = play_count + 1, last_played = STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW') WHERE id = ?", [current.id]);
         _libraryChangedController.add(null);
         _lastUpdatedSongId = current.id;
       } catch (_) {}
@@ -290,7 +318,10 @@ class MusicPlayerService {
   }
 
   Future<void> setPlaylist(List<SongsModel> songModels, {int startIndex = 0, bool autoPlay = true}) async {
-    if (songModels.isEmpty) return;
+    if (songModels.isEmpty) {
+      await stopAndClearQueue();
+      return;
+    }
 
     print('🎵 MusicPlayerService.setPlaylist called - startIndex: $startIndex, songCount: ${songModels.length}');
 
@@ -333,7 +364,7 @@ class MusicPlayerService {
       }).toList(),
     );
 
-    try{
+    try {
       print('📍 Step 1: Setting audio source...');
       // ✅ Set the audio source - this will update the playlist
       await _androidPlayer!.setAudioSource(playlist, initialIndex: startIndex);
@@ -347,7 +378,7 @@ class MusicPlayerService {
       if (_isShuffleEnabled) {
         await _androidPlayer!.shuffle();
         print('✅ Android: Shuffle enabled');
-      }else {
+      } else {
         print('✅ Step 2: Shuffle disabled');
       }
 
@@ -355,7 +386,6 @@ class MusicPlayerService {
       print('📍 Step 3: Waiting for duration to load...');
       await _androidPlayer!.durationStream.firstWhere((d) => d != null);
       print('✅ Step 3: Duration loaded');
-
 
       // ✅ NOW initialize equalizer after audio is loaded
       if (!equalizerService.isInitialized) {
@@ -376,12 +406,10 @@ class MusicPlayerService {
           print('⏸️ Android: autoPlay is false - playlist ready but not playing');
         }
       }
-    }catch(e){
+    } catch (e) {
       print('❌ Android Playlist Error: $e');
       rethrow;
     }
-
-
 
     print('✅ Android: Playlist set successfully');
   }
@@ -425,8 +453,7 @@ class MusicPlayerService {
     }
   }
 
-
-/*
+  /*
   Future<void> _setIOSPlaylist(List<SongsModel> songModels, int startIndex, bool autoPlay) async {
     final filePaths = songModels.map((song) => song.filePath).toList();
 
@@ -526,9 +553,14 @@ class MusicPlayerService {
   }
 
   Future<void> resetPlaylist(List<SongsModel> songModels) async {
-    songs = songModels;
-    _songsChangedController.add(songs);
-    await stop();
+    // songs = songModels;
+    // _songsChangedController.add(songs);
+    // await stop();
+    if (songModels.isEmpty) {
+      await stopAndClearQueue();
+    } else {
+      await setPlaylist(songModels);
+    }
   }
 
   Future<void> play() async {
@@ -596,6 +628,33 @@ class MusicPlayerService {
     }
   }
 
+  Future<void> stopAndClearQueue() async {
+    try {
+      if (Platform.isAndroid && _androidPlayer != null) {
+        await _androidPlayer!.stop();
+        await _androidPlayer!.seek(Duration.zero);
+      } else if (Platform.isIOS && _iosPlayer != null) {
+        await _iosPlayer!.stop();
+        await _iosPlayer!.seek(Duration.zero);
+      }
+    } catch (_) {}
+
+    // 🔴 CRITICAL: reset internal state
+    // songs.clear();
+    songs = [];
+    _shuffleIndices.clear();
+    _lastUpdatedSongId = null;
+
+    // Reset modes
+    _isShuffleEnabled = false;
+    _loopMode = LoopMode.off;
+
+    // 🔴 Notify ALL listeners
+    _songsChangedController.add([]);
+
+    print('✅ Queue cleared and playback stopped');
+  }
+
   Future<void> previous() async {
     if (_isChangingTrack) {
       print('⚠️ Track change already in progress, ignoring previous() call');
@@ -638,7 +697,6 @@ class MusicPlayerService {
         print('✅ Android Shuffle: OFF - Normal order');
       }
     } else if (Platform.isIOS) {
-
       await _iosPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
       print('✅ iOS Shuffle: ${_isShuffleEnabled ? "ON" : "OFF"}');
     }
@@ -707,7 +765,7 @@ class MusicPlayerService {
         await _iosPlayer!.setShuffleModeEnabled(false);
         print('✅ iOS Shuffle: OFF');
       }
-    }else{
+    } else {
       print('ℹ️ Shuffle already OFF');
     }
     // if (_isShuffleEnabled) {
@@ -753,8 +811,6 @@ class MusicPlayerService {
       }
       await _iosPlayer!.setLoopMode(iosLoopMode);
     }
-
-
   }
 
   /// Re-schedule the current track to apply new loop mode immediately
@@ -765,11 +821,161 @@ class MusicPlayerService {
     print('✅ Loop mode updated - will apply on next track completion');
   }
 
+  // Optimized updateSongsInQueue - only for major changes (not reordering)
   Future<void> updateSongsInQueue(List<SongsModel> newSongsList) async {
+    print('🎵 Updating songs queue (major update)');
+
+    // ✅ CRITICAL: Ensure we have a mutable copy
+    final mutableSongsList = List<SongsModel>.from(newSongsList);
+
+    // Get current state
+    final wasPlaying = isPlaying;
+    final currentPlayingSongId = currentSongId;
+    final currentPos = position;
+
+    print('  Current song ID: $currentPlayingSongId');
+    print('  Was playing: $wasPlaying');
+
+    // Update internal list
+    songs = mutableSongsList;
+    _songsChangedController.add(songs);
+
+    // Find new index by song ID
+    int newCurrentIndex = 0;
+    if (currentPlayingSongId != null) {
+      final foundIndex = mutableSongsList.indexWhere((song) => song.id == currentPlayingSongId);
+      if (foundIndex >= 0) {
+        newCurrentIndex = foundIndex;
+        print('  Found current song at new index: $newCurrentIndex');
+      } else {
+        print('  ⚠️ Current song not found in new list, defaulting to 0');
+      }
+    }
+
+    if (Platform.isAndroid) {
+      try {
+        final source = _androidPlayer!.audioSource;
+
+        if (source is ConcatenatingAudioSource) {
+          final currentCount = source.children.length;
+          final newCount = mutableSongsList.length;
+
+          print('  Android: Modifying playlist (old: $currentCount, new: $newCount)');
+
+          // ✅ FIX: Track if we need to adjust the player's internal index
+          bool needsIndexAdjustment = currentCount != newCount;
+
+          // Smart update: only modify what changed
+          if (currentCount > newCount) {
+            // Remove excess items from the end
+            for (int i = currentCount - 1; i >= newCount; i--) {
+              await source.removeAt(i);
+            }
+          } else if (newCount > currentCount) {
+            // Add new items
+            for (int i = currentCount; i < newCount; i++) {
+              await source.add(_createAudioSource(mutableSongsList[i]));
+            }
+          }
+
+          // ✅ If the current playing index changed, we need to rebuild to update it
+          if (needsIndexAdjustment && currentIndex != newCurrentIndex) {
+            print('  Index changed: $currentIndex → $newCurrentIndex, rebuilding...');
+            await _rebuildPlaylist(mutableSongsList, newCurrentIndex, currentPos, wasPlaying);
+          } else {
+            print('✅ Android: Queue updated via smart modification');
+          }
+        } else {
+          // Fallback: full rebuild
+          await _rebuildPlaylist(mutableSongsList, newCurrentIndex, currentPos, wasPlaying);
+        }
+      } catch (e) {
+        print('❌ Android update error: $e, falling back to rebuild');
+        await _rebuildPlaylist(mutableSongsList, newCurrentIndex, currentPos, wasPlaying);
+      }
+    } else if (Platform.isIOS) {
+      // iOS: Always rebuild to ensure correct index
+      await _rebuildIOSPlaylist(mutableSongsList, newCurrentIndex, wasPlaying);
+    }
+  }
+
+  // Helper: Rebuild Android playlist
+  Future<void> _rebuildPlaylist(List<SongsModel> songsList, int newIndex, Duration currentPos, bool wasPlaying) async {
+    final playlist = ConcatenatingAudioSource(useLazyPreparation: true, children: songsList.map(_createAudioSource).toList());
+
+    await _androidPlayer!.setAudioSource(playlist, initialIndex: newIndex, initialPosition: currentPos, preload: false);
+
+    _androidPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
+
+    if (wasPlaying) {
+      _androidPlayer!.play();
+    }
+  }
+
+  // Helper: Rebuild iOS playlist
+  Future<void> _rebuildIOSPlaylist(List<SongsModel> songsList, int startIndex, bool autoPlay) async {
+    final filePaths = songsList.map((song) => song.filePath).toList();
+
+    await _iosPlayer!.setAudioSource(filePaths, initialIndex: startIndex, autoPlay: autoPlay);
+
+    _iosPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
+
+    String iosLoopMode = 'off';
+    if (_loopMode == LoopMode.one) {
+      iosLoopMode = 'one';
+    } else if (_loopMode == LoopMode.all) {
+      iosLoopMode = 'all';
+    }
+    _iosPlayer!.setLoopMode(iosLoopMode);
+  }
+
+  // Keep the old _rebuildAndroidPlaylist for backwards compatibility
+  Future<void> _rebuildAndroidPlaylist(List<SongsModel> songsList, {bool preservePlayback = false}) async {
+    final wasPlaying = isPlaying;
+    final currentIdx = currentIndex;
+    final currentPos = position;
+
+    if (preservePlayback && currentIdx >= 0) {
+      await _rebuildPlaylist(songsList, currentIdx, currentPos, wasPlaying);
+    } else {
+      await _rebuildPlaylist(songsList, 0, Duration.zero, false);
+    }
+  }
+
+  // Helper: Create AudioSource from song
+  AudioSource _createAudioSource(SongsModel song) {
+    Uri? artUri;
+    try {
+      if (song.artwork_path != null && song.artwork_path!.isNotEmpty) {
+        artUri = Uri.file(song.artwork_path!);
+      }
+    } catch (e) {}
+
+    return AudioSource.uri(
+      Uri.file(song.filePath),
+      tag: MediaItem(
+        id: song.id?.toString() ?? '',
+        title: song.title,
+        artist: song.artist,
+        album: song.album,
+        duration: Duration(milliseconds: song.duration),
+        artUri: artUri,
+      ),
+    );
+  }
+
+  /*  Future<void> updateSongsInQueue(List<SongsModel> newSongsList) async {
     print('🎵 Updating songs queue (seamless update)');
     print('  Old queue size: ${songs.length}');
     print('  New queue size: ${newSongsList.length}');
     print('  Current playing index: $currentIndex');
+
+    // Get current state BEFORE any updates
+    final wasPlaying = isPlaying;
+    final currentPlayingSongId = currentSongId; // Get the ID of currently playing song
+    final currentPos = position; // Get current playback position
+
+    print('  Current state: playing=$wasPlaying, songId=$currentPlayingSongId, pos=${currentPos.inSeconds}s');
 
     // Update the songs list
     songs = newSongsList;
@@ -777,71 +983,105 @@ class MusicPlayerService {
     // Notify listeners that songs changed
     _songsChangedController.add(songs);
 
+    // Find the new index of the currently playing song
+    int newCurrentIndex = 0;
+    if (currentPlayingSongId != null) {
+      final foundIndex = newSongsList.indexWhere((song) => song.id == currentPlayingSongId);
+      if (foundIndex >= 0) {
+        newCurrentIndex = foundIndex;
+        print('  Found current song at new index: $newCurrentIndex');
+      } else {
+        print('  ⚠️ Current song not found in new list, defaulting to index 0');
+      }
+    }
+
     if (Platform.isAndroid) {
       try {
-        // Use ConcatenatingAudioSource's add/insert/remove methods for seamless updates
-        final currentSource = _androidPlayer!.audioSource as ConcatenatingAudioSource?;
+        print('📱 Android: Seamless queue update');
 
-        if (currentSource == null) {
-          print('⚠️ No audio source found, doing full rebuild');
-          await _rebuildAndroidPlaylist(newSongsList);
-          return;
+        // Build new playlist
+        final playlist = ConcatenatingAudioSource(
+          useLazyPreparation: true,
+          children: newSongsList.map((song) {
+            Uri? artUri;
+            try {
+              if (song.artwork_path != null && song.artwork_path!.isNotEmpty) {
+                artUri = Uri.file(song.artwork_path!);
+              }
+            } catch (e) {
+              // Ignore artwork errors
+            }
+
+            return AudioSource.uri(
+              Uri.file(song.filePath),
+              tag: MediaItem(
+                id: song.id?.toString() ?? '',
+                title: song.title,
+                artist: song.artist,
+                album: song.album,
+                duration: Duration(milliseconds: song.duration),
+                artUri: artUri,
+              ),
+            );
+          }).toList(),
+        );
+
+        // ⚡ OPTIMIZATION: Don't pause, just rebuild in one go
+        // Set audio source with current position preserved
+        await _androidPlayer!.setAudioSource(
+          playlist,
+          initialIndex: newCurrentIndex,
+          initialPosition: currentPos, // ✅ Preserve playback position
+          preload: false, // Don't preload to reduce delay
+        );
+
+        // Restore shuffle state (without awaiting to reduce delay)
+        _androidPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
+
+        // Resume playback immediately if it was playing
+        if (wasPlaying) {
+          _androidPlayer!.play(); // Don't await - let it play immediately
         }
 
-        // Get current state
-        final wasPlaying = isPlaying;
-        final currentIdx = currentIndex;
-        final currentPos = position;
-
-        // Calculate differences and update queue
-        final oldLength = currentSource.children.length;
-        final newLength = newSongsList.length;
-
-        // Simple approach: rebuild playlist but preserve current playback
-        await _rebuildAndroidPlaylist(newSongsList, preservePlayback: true);
-
-        print('✅ Android queue updated seamlessly - Index: $currentIdx, Playing: $wasPlaying');
+        print('✅ Android queue updated - Index: $newCurrentIndex, Pos: ${currentPos.inSeconds}s, Playing: $wasPlaying');
       } catch (e) {
         print('❌ Error updating Android queue: $e');
         rethrow;
       }
     } else if (Platform.isIOS) {
       try {
-        // For iOS, we need to rebuild the playlist but preserve current playback
         final filePaths = newSongsList.map((song) => song.filePath).toList();
-        final wasPlaying = isPlaying;
-        final currentIdx = currentIndex;
-        final currentPos = position;
 
-        print('📀 iOS: Rebuilding playlist while preserving playback');
-        print('  Current: idx=$currentIdx, pos=${currentPos.inSeconds}s, playing=$wasPlaying');
+        print('📀 iOS: Seamless queue update');
+        print('  Target: idx=$newCurrentIndex, pos=${currentPos.inSeconds}s, playing=$wasPlaying');
 
-        // Stop playback temporarily
-        if (wasPlaying) {
-          await _iosPlayer!.pause();
-        }
-
+        // ⚡ OPTIMIZATION: Don't pause/unpause, rebuild instantly
         // Update the audio source with current index
         await _iosPlayer!.setAudioSource(
           filePaths,
-          initialIndex: currentIdx >= 0 ? currentIdx : 0,
-          autoPlay: false,
+          initialIndex: newCurrentIndex,
+          autoPlay: wasPlaying, // ✅ Auto-resume if was playing
         );
+        print('✅ iOS: Audio source set');
 
-        // Restore shuffle state
-        await _iosPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
+        // Restore settings quickly (no await to reduce delay)
+        _iosPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
 
-        // Seek back to the exact position in the current song
+        String iosLoopMode = 'off';
+        if (_loopMode == LoopMode.one) {
+          iosLoopMode = 'one';
+        } else if (_loopMode == LoopMode.all) {
+          iosLoopMode = 'all';
+        }
+        _iosPlayer!.setLoopMode(iosLoopMode);
+
+        // ⚡ Seek to exact position (this is critical for seamless playback)
         if (currentPos > Duration.zero) {
-          await _iosPlayer!.seek(currentPos, index: currentIdx);
+          await _iosPlayer!.seek(currentPos, index: newCurrentIndex);
+          print('✅ iOS: Seeked to ${currentPos.inSeconds}s at index $newCurrentIndex');
         }
 
-        // Resume playback if it was playing
-        if (wasPlaying) {
-          await _iosPlayer!.play();
-        }
-
-        print('✅ iOS queue updated - resumed at ${currentPos.inSeconds}s');
+        print('✅ iOS queue updated successfully');
       } catch (e) {
         print('❌ Error updating iOS queue: $e');
         rethrow;
@@ -849,59 +1089,207 @@ class MusicPlayerService {
     }
 
     print('✅ Queue updated successfully');
+  }*/
+
+  Future<void> reorderSongInQueue(int oldIndex, int newIndex) async {
+    if (oldIndex == newIndex) return;
+
+    print('🔄 Reordering song: $oldIndex → $newIndex (seamless mode)');
+
+    // ✅ CRITICAL FIX: Create a mutable copy of the list
+    final mutableSongs = List<SongsModel>.from(songs);
+
+    // Update internal songs list
+    final item = mutableSongs.removeAt(oldIndex);
+    mutableSongs.insert(newIndex, item);
+
+    // Now update the actual songs list
+    songs = mutableSongs;
+    _songsChangedController.add(songs);
+
+    if (Platform.isAndroid) {
+      try {
+        // ⚡ ANDROID: Use ConcatenatingAudioSource's move() - NO REBUILD!
+        final source = _androidPlayer!.audioSource;
+        if (source is ConcatenatingAudioSource) {
+          // This is INSTANT - no audio interruption at all!
+          await source.move(oldIndex, newIndex);
+          print('✅ Android: Song moved seamlessly (no rebuild)');
+        } else {
+          print('⚠️ Android: Source is not ConcatenatingAudioSource, falling back');
+          await updateSongsInQueue(songs);
+        }
+      } catch (e) {
+        print('❌ Android reorder error: $e');
+      }
+    } else if (Platform.isIOS) {
+      // iOS: For reordering, we DON'T update the native playlist at all
+      // Just update our internal list and wait for natural transitions
+      // The native player will keep playing the current song uninterrupted
+      print('✅ iOS: Internal list updated (no native update during playback)');
+
+      // Only update the native playlist if nothing is playing
+      if (!isPlaying && currentIndex < 0) {
+        await updateSongsInQueue(songs);
+      }
+    }
   }
 
-  Future<void> _rebuildAndroidPlaylist(List<SongsModel> songsList, {bool preservePlayback = false}) async {
-    final wasPlaying = isPlaying;
-    final currentIdx = currentIndex;
-    final currentPos = position;
+  // Helper: Rebuild playlist without seeking (for fallback only)
+  Future<void> _rebuildPlaylistNoSeek(List<SongsModel> songsList, int currentIdx, bool wasPlaying) async {
+    print('  Rebuilding Android playlist at index $currentIdx');
 
     final playlist = ConcatenatingAudioSource(
       useLazyPreparation: true,
-      children: songsList.map((song) {
-        Uri? artUri;
-        try {
-          if (song.artwork_path != null && song.artwork_path!.isNotEmpty) {
-            artUri = Uri.file(song.artwork_path!);
-          }
-        } catch (e) {
-          // Ignore artwork errors
-        }
-
-        return AudioSource.uri(
-          Uri.file(song.filePath),
-          tag: MediaItem(
-            id: song.id?.toString() ?? '',
-            title: song.title,
-            artist: song.artist,
-            album: song.album,
-            duration: Duration(milliseconds: song.duration),
-            artUri: artUri,
-          ),
-        );
-      }).toList(),
+      children: songsList.map(_createAudioSource).toList(),
     );
 
-    if (preservePlayback && currentIdx >= 0) {
-      // Preserve current playback position
-      await _androidPlayer!.setAudioSource(
-        playlist,
-        initialIndex: currentIdx,
-        initialPosition: currentPos,
-      );
+    // DON'T set initialPosition - let it continue from current position
+    await _androidPlayer!.setAudioSource(
+      playlist,
+      initialIndex: currentIdx,
+      preload: false,
+    );
 
-      // Restore shuffle state
-      await _androidPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
+    _androidPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
 
-      // Resume if was playing
-      if (wasPlaying) {
-        await _androidPlayer!.play();
-      }
-    } else {
-      // Normal playlist set
-      await _androidPlayer!.setAudioSource(playlist, initialIndex: 0);
-      await _androidPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
+    if (wasPlaying) {
+      _androidPlayer!.play();
     }
+  }
+
+  Future<void> updateSongsInQueueWithIndex(List<SongsModel> newSongsList, int preserveIndex) async {
+    print('🎵 Updating queue with preserved index: $preserveIndex');
+    print('  Old queue size: ${songs.length}');
+    print('  New queue size: ${newSongsList.length}');
+
+    // ✅ CRITICAL: Ensure we have a mutable copy
+    final mutableList = List<SongsModel>.from(newSongsList);
+
+    // Get current state
+    final wasPlaying = isPlaying;
+    final currentPos = position;
+
+    // Validate preserve index
+    final safePreserveIndex = preserveIndex.clamp(0, mutableList.length - 1);
+
+    if (preserveIndex != safePreserveIndex) {
+      print('⚠️ Adjusted preserve index from $preserveIndex to $safePreserveIndex');
+    }
+
+    print('  Preserving playback at index: $safePreserveIndex');
+    print('  Current position: ${currentPos.inSeconds}s');
+    print('  Was playing: $wasPlaying');
+
+    // Update internal list
+    songs = mutableList;
+    _songsChangedController.add(songs);
+
+    if (Platform.isAndroid) {
+      try {
+        print('📱 Android: Seamlessly updating queue without interruption');
+
+        final source = _androidPlayer!.audioSource;
+
+        if (source is ConcatenatingAudioSource) {
+          // ✅ SMART UPDATE: Modify existing playlist without rebuilding
+          final currentCount = source.children.length;
+          final newCount = mutableList.length;
+
+          print('  Current playlist count: $currentCount, New count: $newCount');
+
+          // Calculate the difference
+          if (currentCount > newCount) {
+            // Remove excess items from the end (except the one we're preserving)
+            for (int i = currentCount - 1; i >= newCount; i--) {
+              if (i != safePreserveIndex) {
+                print('  Removing index $i');
+                await source.removeAt(i);
+              }
+            }
+          } else if (newCount > currentCount) {
+            // Add new items
+            for (int i = currentCount; i < newCount; i++) {
+              print('  Adding new song at index $i');
+              await source.add(_createAudioSource(mutableList[i]));
+            }
+          }
+
+          // ✅ CRITICAL: If the preserve index is different from current, we need to rebuild
+          // because ConcatenatingAudioSource doesn't have a method to change current index
+          if (_androidPlayer!.currentIndex != safePreserveIndex) {
+            print('  Index mismatch: ${_androidPlayer!.currentIndex} != $safePreserveIndex');
+            print('  Rebuilding playlist to correct index...');
+            await _rebuildPlaylistNoSeek(mutableList, safePreserveIndex, wasPlaying);
+          } else {
+            print('✅ Android: Queue updated seamlessly (no playback interruption)');
+          }
+        } else {
+          print('⚠️ Android: Source is not ConcatenatingAudioSource, rebuilding');
+          await _rebuildPlaylistNoSeek(mutableList, safePreserveIndex, wasPlaying);
+        }
+      } catch (e) {
+        print('❌ Android update error: $e, falling back');
+        await _rebuildPlaylistNoSeek(mutableList, safePreserveIndex, wasPlaying);
+      }
+    } else if (Platform.isIOS) {
+      try {
+        print('📀 iOS: Updating queue with preserved index');
+
+        // For iOS, if currently playing, always rebuild to ensure correct index
+        if (wasPlaying && currentIndex >= 0) {
+          print('  Rebuilding playlist at preserved index');
+          final filePaths = mutableList.map((song) => song.filePath).toList();
+
+          await _iosPlayer!.setAudioSource(
+            filePaths,
+            initialIndex: safePreserveIndex,
+            autoPlay: false, // Don't auto-play, let it continue
+          );
+
+          _iosPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
+
+          String iosLoopMode = 'off';
+          if (_loopMode == LoopMode.one) {
+            iosLoopMode = 'one';
+          } else if (_loopMode == LoopMode.all) {
+            iosLoopMode = 'all';
+          }
+          _iosPlayer!.setLoopMode(iosLoopMode);
+
+          // Resume playing if it was playing
+          if (wasPlaying) {
+            await _iosPlayer!.play();
+          }
+        } else {
+          print('  Not playing, updating quietly');
+          final filePaths = mutableList.map((song) => song.filePath).toList();
+
+          await _iosPlayer!.setAudioSource(
+            filePaths,
+            initialIndex: safePreserveIndex,
+            autoPlay: false,
+          );
+
+          _iosPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
+
+          String iosLoopMode = 'off';
+          if (_loopMode == LoopMode.one) {
+            iosLoopMode = 'one';
+          } else if (_loopMode == LoopMode.all) {
+            iosLoopMode = 'all';
+          }
+          _iosPlayer!.setLoopMode(iosLoopMode);
+        }
+
+        print('✅ iOS: Queue updated successfully at index $safePreserveIndex');
+      } catch (e) {
+        print('❌ iOS update error: $e');
+        rethrow;
+      }
+    }
+
+    print('✅ Queue updated with preserved index (no interruption)');
   }
 }
 
@@ -1073,7 +1461,7 @@ class MusicPlayerService {
     _initializePlayers();
   }
 
-  *//*Future<void> _initializePlayers() async {
+  */ /*Future<void> _initializePlayers() async {
     if (Platform.isAndroid) {
       // Create Android player with equalizer
       _androidPlayer = equalizerService.createAndroidPlayerWithEqualizer();
@@ -1097,7 +1485,7 @@ class MusicPlayerService {
       // Setup iOS listeners
       _setupIOSListeners();
     }
-  }*//*
+  }*/ /*
 
   Future<void> _initializePlayers() async {
     if (Platform.isAndroid) {
@@ -1273,7 +1661,7 @@ class MusicPlayerService {
     }
   }
 
-  *//*  Future<void> _setAndroidPlaylist(
+  */ /*  Future<void> _setAndroidPlaylist(
       List<SongsModel> songModels,
       int startIndex,
       bool autoPlay,
@@ -1316,7 +1704,7 @@ class MusicPlayerService {
     if (autoPlay) {
       await _androidPlayer!.play();
     }
-  }*//*
+  }*/ /*
 
   Future<void> _setIOSPlaylist(List<SongsModel> songModels, int startIndex, bool autoPlay) async {
     final filePaths = songModels.map((song) => song.filePath).toList();

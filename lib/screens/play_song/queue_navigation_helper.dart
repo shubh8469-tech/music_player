@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:music_app/screens/play_song/queue_screen.dart';
 import 'package:music_app/screens/play_song/select_queue_screen.dart';
 
@@ -6,9 +7,7 @@ import 'package:music_app/screens/play_song/select_queue_screen.dart';
 class QueueNavigationHelper {
   /// Navigate to the playing queue screen
   static void navigateToQueueScreen(BuildContext context) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => const QueueScreen()));
+    context.push('/dashboard/queue');
   }
 
   /// Navigate to the select queue screen

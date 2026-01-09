@@ -459,6 +459,28 @@ class IOSAudioPlayer {
     }
   }
 
+  Future<void> removeFromQueueAtIndex(int removeIndex, int newCurrentIndex) async {
+    if (!_isInitialized) throw Exception('Player not initialized');
+
+    try {
+      log('📱 Dart: Calling removeFromQueueAtIndex - remove: $removeIndex, newCurrent: $newCurrentIndex');
+
+      await _channel.invokeMethod('removeFromQueueAtIndex', {
+        'removeIndex': removeIndex,
+        'newCurrentIndex': newCurrentIndex,
+      });
+
+      // Update local state
+      _currentIndex = newCurrentIndex;
+      _playerStateController.add(null);
+
+      log('✅ Dart: removeFromQueueAtIndex completed');
+    } catch (e) {
+      log('❌ Error removing from queue: $e');
+      rethrow;
+    }
+  }
+
   /// Dispose and clean up resources
   void dispose() {
     _playerStateController.close();

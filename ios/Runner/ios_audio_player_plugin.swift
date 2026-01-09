@@ -143,7 +143,8 @@ public class IOSAudioPlayerPlugin: NSObject, FlutterPlugin {
                 return
             }
             setShuffleEnabled(enabled: enabled, result: result)
-
+        case "removeFromQueueAtIndex":
+            removeFromQueueAtIndex(removeIndex: removeIndex, newCurrentIndex: newCurrentIndex, result: result)
         case "getCurrentIndex":
             result(currentIndex)
 
@@ -192,7 +193,108 @@ public class IOSAudioPlayerPlugin: NSObject, FlutterPlugin {
             result(FlutterMethodNotImplemented)
         }
     }
-    
+    private func removeFromQueueAtIndex(removeIndex: Int, newCurrentIndex: Int, result: @escaping FlutterResult) {
+        guard removeIndex >= 0 && removeIndex < audioFiles.count else {
+            result(FlutterError(code: "INVALID_INDEX", message: "Remove index out of bounds", details: nil))
+            return
+        }
+
+        guard newCurrentIndex >= 0 && newCurrentIndex < audioFiles.count - 1 else {
+            result(FlutterError(code: "INVALID_INDEX", message: "New current index out of bounds", details: nil))
+            return
+        }
+
+        print("🗑️ iOS: Removing song at index \(removeIndex), new current: \(newCurrentIndex)")
+        print("  Current playing index: \(currentIndex)")
+        print("  Queue size: \(audioFiles.count)")
+
+        // ✅ CRITICAL: Get playback state before modifications
+        let wasPlaying = isPlaying
+        let savedPosition = positionInSamples
+        let savedSeekPosition = seekPosition
+
+        // Remove from audioFiles array
+        let removedFile = audioFiles[removeIndex]
+        audioFiles.remove(at: removeIndex)
+
+        print("  Removed: \(removedFile.url.lastPathComponent)")
+        print("  New queue size: \(audioFiles.count)")
+
+        // ✅ KEY: Only interrupt playback if removing the CURRENT song
+        // For songs before/after current, just update the list - no interruption
+
+        if removeIndex == currentIndex {
+            // Removing currently playing song - need to switch to next
+            print("  ⚠️ Removing CURRENT song - switching to next")
+
+            stopPositionTimer()
+            safeStopPlayerNode()
+
+            // Update to new current index
+            currentIndex = newCurrentIndex
+
+            // Reset position tracking
+            positionInSamples = 0
+            seekPosition = 0
+            lastNotifiedPosition = -1
+
+            // Schedule new current file
+            scheduleCurrentFile()
+
+            // Notify index change
+            if currentIndex != lastNotifiedIndex {
+                lastNotifiedIndex = currentIndex
+                indexEventSink?(currentIndex)
+            }
+
+            // Resume playback if was playing
+            if wasPlaying {
+                guard let node = playerNode, let engine = audioEngine else {
+                    result(FlutterError(code: "NOT_INITIALIZED", message: "Player not initialized", details: nil))
+                    return
+                }
+
+                do {
+                    if !engine.isRunning {
+                        try engine.start()
+                    }
+
+                    node.play()
+                    isPlaying = true
+                    startPositionTimer()
+                    notifyPlayingStateChanged()
+                    updateNowPlayingInfo()
+
+                    print("✅ Playback resumed at new index")
+                } catch {
+                    print("❌ Error resuming playback: \(error)")
+                    result(FlutterError(code: "PLAY_ERROR", message: error.localizedDescription, details: nil))
+                    return
+                }
+            }
+
+        } else {
+            // ✅ Removing a song that's NOT currently playing
+            // Just update the index reference - NO playback interruption
+
+            print("  ℹ️ Removing song that's NOT current - seamless update")
+
+            // Update current index reference (but don't interrupt playback)
+            currentIndex = newCurrentIndex
+
+            // Preserve playback position (no change to currently playing song)
+            positionInSamples = savedPosition
+            seekPosition = savedSeekPosition
+
+            print("  Updated index reference: \(currentIndex)")
+            print("  ✅ Playback continues uninterrupted")
+
+            // No need to schedule or interrupt - current song keeps playing
+        }
+
+        print("✅ iOS: Song removed successfully - Queue: \(audioFiles.count) songs")
+        result(true)
+    }
     
     // MARK: - Shuffle Indices
 

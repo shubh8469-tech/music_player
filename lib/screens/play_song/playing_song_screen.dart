@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:music_app/screens/play_song/queue_screen.dart';
 import 'package:music_app/screens/play_song/widget/audio_player.dart';
 import 'package:music_app/screens/play_song/widget/playlist_bottomsheet.dart';
 import 'package:music_app/screens/play_song/queue_navigation_helper.dart';
@@ -43,6 +44,8 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
   late MusicPlayerService musicService;
   late final bool hasArtwork;
   StreamSubscription<int?>? _indexSubscription;
+  StreamSubscription<List<SongsModel>>? _songsSubscription;
+
   bool isFavorite = false;
   final UnifiedEqualizerService equalizerService = UnifiedEqualizerService();
 
@@ -59,6 +62,39 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
         _updateFavoriteStatus();
       }
     });
+
+    _songsSubscription = musicService.songsChanged.listen((songs) {
+      if (!mounted) return;
+
+      print('🎵 Playing screen: Queue changed, ${songs.length} songs');
+
+      if (songs.isEmpty) {
+        // Queue is empty - close playing screen
+        print('🔙 Queue empty, closing playing screen');
+        // Cancel subscriptions to prevent further updates
+        _indexSubscription?.cancel();
+        _songsSubscription?.cancel();
+        Future.microtask(() {
+          if (mounted && context.mounted) {
+            print('  ✅ Executing pop on playing screen');
+            try {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                print('  ⚠️ Cannot pop, going to dashboard');
+                context.go('/dashboard');
+              }
+            } catch (e) {
+              print('  ❌ Playing screen pop failed: $e');
+            }
+          }
+        });
+      } else {
+        // Update UI with current songs
+        setState(() {});
+      }
+    });
+
     final path = musicService.songs.isNotEmpty && musicService.currentIndex >= 0 ? musicService.songs[musicService.currentIndex].artwork_path : null;
 
     hasArtwork = path != null && path.isNotEmpty && File(path).existsSync();
@@ -136,11 +172,38 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
   @override
   void dispose() {
     _indexSubscription?.cancel();
+    _songsSubscription?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+
+    if (musicService.songs.isEmpty) {
+      print('⚠️ Build: Empty queue detected, returning empty container');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && context.mounted && musicService.songs.isEmpty) {
+          print('  📍 Post-frame callback: Attempting navigation');
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/dashboard');
+          }
+        }
+      });
+      return Scaffold(
+        backgroundColor: Colors.transparent, // Changed from Colors.black
+        body: SizedBox.shrink(), // Empty instead of loading indicator
+      );
+      // Return loading indicator while popping
+      // return Scaffold(
+      //   backgroundColor: Colors.black,
+      //   body: Center(
+      //     child: CircularProgressIndicator(color: AppColors.primaryOrange),
+      //   ),
+      // );
+    }
+
     final currentSong = (musicService.songs.isNotEmpty && musicService.currentIndex >= 0) ? musicService.songs[musicService.currentIndex] : null;
 
     print("currentSong?.artwork_path---->${currentSong?.artwork_path}");
@@ -307,7 +370,8 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
       children: [
         GestureDetector(
           onTap: () {
-            QueueNavigationHelper.navigateToQueueScreen(context);
+            _openQueueScreen();
+            // QueueNavigationHelper.navigateToQueueScreen(context);
           },
           child: SvgPicture.asset(Assets.svgIcQueue, width: 23.w, height: 23.h),
         ),
@@ -387,5 +451,22 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
 
   Widget songProgressBarWidget() {
     return AudioPlayerWidget();
+  }
+
+  void _openQueueScreen() async {
+    print('Opening queue screen');
+
+    // Navigate to queue and wait for return
+    context.push('/dashboard/queue');
+
+    print('Returned from queue screen');
+
+    // Double-check if queue is empty after returning
+    if (mounted && musicService.songs.isEmpty) {
+      print('⚠️ Queue is empty after returning, closing playing screen');
+      if (context.canPop()) {
+        context.pop();
+      }
+    }
   }
 }

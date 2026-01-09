@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:music_app/screens/equilizer/equilizer_screen.dart';
+import 'package:music_app/screens/play_song/queue_screen.dart';
 import 'package:music_app/screens/settings/backup_restore_page.dart';
 import 'package:music_app/screens/settings/settings.dart';
 import 'package:music_app/screens/settings/scan_music_screen.dart';
@@ -39,6 +40,7 @@ enum AppRouteName {
   sync,
   dashboard,
   playing,
+  queue,
   home,
   library,
   importSongs,
@@ -72,7 +74,7 @@ final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
 
 final GoRouter appRouter = GoRouter(
   navigatorKey: rootNavigatorKey,
-  initialLocation: '/dashboard',
+  initialLocation: '/splash',
   routes: [
     GoRoute(
       name: AppRouteName.splash.name,
@@ -144,7 +146,31 @@ final GoRouter appRouter = GoRouter(
           path: 'import-songs',
           builder: (context, state) => const ImportSongsScreen(),
         ),
+        GoRoute(
+          name: 'queue',
+          path: 'queue',
+          pageBuilder: (context, state) {
+            return CustomTransitionPage(
+              key: state.pageKey,
+              child: const QueueScreen(),
+              transitionDuration: const Duration(milliseconds: 300),
+              reverseTransitionDuration: const Duration(milliseconds: 300),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                const begin = Offset(0.0, 1.0);
+                const end = Offset.zero;
+                const curve = Curves.easeInOut;
 
+                final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                final offsetAnimation = animation.drive(tween);
+
+                return SlideTransition(
+                  position: offsetAnimation,
+                  child: child,
+                );
+              },
+            );
+          },
+        ),
         GoRoute(
           path: 'playing',
           pageBuilder: (context, state) {
@@ -153,8 +179,8 @@ final GoRouter appRouter = GoRouter(
             return CustomTransitionPage(
               key: state.pageKey,
               child: PlayingSongScreen(songs: args.songs),
-              transitionDuration: const Duration(milliseconds: 500),
-              reverseTransitionDuration: const Duration(milliseconds: 500),
+              transitionDuration: const Duration(milliseconds: 300),
+              reverseTransitionDuration: const Duration(milliseconds: 300),
 
               // your existing screen
               transitionsBuilder:
