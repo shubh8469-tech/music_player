@@ -54,7 +54,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
     super.initState();
     musicService = MusicPlayerService();
     if (musicService.songs.isEmpty || musicService.songs != widget.songs) {
-      musicService.setPlaylist(widget.songs);
+      musicService.setPlaylist(widget.songs, startIndex: musicService.currentIndex);
     }
     _indexSubscription = musicService.currentIndexStream.listen((index) {
       if (mounted) {

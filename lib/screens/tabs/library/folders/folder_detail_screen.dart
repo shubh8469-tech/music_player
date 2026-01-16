@@ -645,6 +645,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                                     // Start from the first song of the folder
                                     await musicService.setPlaylist(List<SongsModel>.from(_baseSongs), startIndex: 0, autoPlay: true);
                                     await musicService.play();
+                                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
                                   },
                                   child: Container(
                                     height: 40.h,

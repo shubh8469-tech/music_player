@@ -579,6 +579,7 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
                                     // Start from the first song of the artist
                                     await musicService.setPlaylist(List<SongsModel>.from(_baseSongs), startIndex: 0, autoPlay: true);
                                     await musicService.play();
+                                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
                                   },
                                   child: Container(
                                     height: 40.h,

@@ -556,6 +556,19 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     // Check if song already exists
                                     final existingIndex = newSongsList.indexWhere((song) => song.id == widget.currentSong!.id);
 
+                                    if (existingIndex == currentIndex) {
+                                      showSnackBar(context, () {}, message: 'Song is already playing', alertBannerLocation: AlertBannerLocation.bottom);
+                                      Navigator.pop(context);
+                                      return;
+                                    }
+
+                                    // Don't move if it's already next
+                                    if (existingIndex == currentIndex + 1) {
+                                      showSnackBar(context, () {}, message: 'Song is already next in queue', alertBannerLocation: AlertBannerLocation.bottom);
+                                      Navigator.pop(context);
+                                      return;
+                                    }
+
                                     if (existingIndex != -1 && existingIndex != insertIndex) {
                                       print('  Song exists at index $existingIndex, moving to $insertIndex');
                                       // Remove from old position
@@ -564,6 +577,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       // Adjust insert index if we removed a song before the insert point
                                       final adjustedInsertIndex = existingIndex < insertIndex ? insertIndex - 1 : insertIndex;
                                       newSongsList.insert(adjustedInsertIndex, songToMove);
+
+                                      await musicService.reorderSongInQueue(existingIndex, adjustedInsertIndex);
 
                                       print('  Moved to adjusted index: $adjustedInsertIndex');
                                     } else if (existingIndex == -1) {
@@ -575,13 +590,14 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
                                     // ✅ CRITICAL FIX: Calculate the correct current index after modifications
                                     final newCurrentIndex = existingIndex != -1 && existingIndex < insertIndex
-                                        ? currentIndex // If we moved a song from before current, current stays same
+                                        ? currentIndex - 1 // If we moved a song from before current, current stays same
                                         : currentIndex; // Otherwise current index is unchanged
 
                                     print('  New current index: $newCurrentIndex');
 
                                     // Update with explicit current index preservation
-                                    await musicService.updateSongsInQueueWithIndex(newSongsList, newCurrentIndex);
+                                    // await musicService.reorderSongInQueue(existingIndex, adjustedInsertIndex);
+                                    // await musicService.updateSongsInQueueWithIndex(newSongsList, newCurrentIndex);
                                   }
 
                                   if (mounted) {

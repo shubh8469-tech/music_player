@@ -791,6 +791,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                                       autoPlay: true,
                                     );
                                     await musicService.play();
+                                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
                                   },
                                   child: Container(
                                     height: 40.h,

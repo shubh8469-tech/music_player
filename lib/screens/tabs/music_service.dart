@@ -397,7 +397,7 @@ class MusicPlayerService {
       // This allows playlist updates without interruption
       if (autoPlay) {
         await _androidPlayer!.play();
-        print('▶️ Android: Playing from index $startIndex');
+        print('▶️ Android: Playing from shuffle index $startIndex');
       } else {
         // ✅ If already playing, don't pause - just update the queue
         if (isPlaying) {
@@ -529,7 +529,7 @@ class MusicPlayerService {
     // final randomStartIndex = _shuffleIndices[0];
     final randomStartIndex = Random().nextInt(songModels.length);
 
-    print('🔀 Shuffle Playlist - Starting from random index: $randomStartIndex (shuffle order: $_shuffleIndices)');
+    print('🔀 Shuffle Playlist - Starting from random shuffle index: $randomStartIndex (shuffle order: $_shuffleIndices)');
     print('🔀 Setting playlist with shuffle enabled');
 
     songs = songModels;

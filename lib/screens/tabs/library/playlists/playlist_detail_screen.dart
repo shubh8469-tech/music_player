@@ -1,4 +1,4 @@
-import 'dart:developer' as logS;
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -341,13 +341,15 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                     if (_songs.isEmpty) return;
           
                                     if (musicService.currentIndex < 0) {
+                                      log('shuffle:- Current index is invalid, resetting to 0');
                                       await musicService.setPlaylist(_songs, autoPlay: false, startIndex: 0);
                                       await musicService.play();
                                       context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
                                     } else {
+                                      log('shuffle:- Setting shuffle playlist');
                                       await musicService.setShufflePlaylist(
                                         _songs,
-                                        autoPlay: false,
+                                        autoPlay: true,
                                       );
                                       context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
                                       await musicService.ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
@@ -396,6 +398,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                     // Start from the first song of the playlist
                                     await musicService.setPlaylist(List<SongsModel>.from(_baseSongs), startIndex: 0, autoPlay: true);
                                     await musicService.play();
+                                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
                                   },
                                   child: Container(
                                     height: 40.h,
