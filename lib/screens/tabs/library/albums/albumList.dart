@@ -531,32 +531,42 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
         await musicService.setPlaylist(albumSongs, startIndex: 0);
         await musicService.play();
       } else {
-        final currentIndex = musicService.currentIndex;
-        final insertIndex = currentIndex + 1;
-        final newSongsList = List<SongsModel>.from(musicService.songs);
-
-        final songsToAdd = albumSongs.where((song) {
-          return !newSongsList.any(
-            (existingSong) => existingSong.id == song.id,
+        final updateCount = await musicService.playNextMultipleSongs(albumSongs);
+        // final currentIndex = musicService.currentIndex;
+        // final insertIndex = currentIndex + 1;
+        // final newSongsList = List<SongsModel>.from(musicService.songs);
+        //
+        // final songsToAdd = albumSongs.where((song) {
+        //   return !newSongsList.any(
+        //     (existingSong) => existingSong.id == song.id,
+        //   );
+        // }).toList();
+        //
+        // newSongsList.insertAll(insertIndex, songsToAdd);
+        //
+        // await musicService.setPlaylist(
+        //   newSongsList,
+        //   startIndex: currentIndex >= 0 ? currentIndex : 0,
+        //   autoPlay: false,
+        // );
+        if(updateCount < 1){
+          showSnackBar(
+            context,
+                () {},
+            message: "Songs already added to play next",
+            alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }).toList();
-
-        newSongsList.insertAll(insertIndex, songsToAdd);
-
-        await musicService.setPlaylist(
-          newSongsList,
-          startIndex: currentIndex >= 0 ? currentIndex : 0,
-          autoPlay: false,
-        );
+        }
+        else{
+          showSnackBar(
+            context,
+                () {},
+            message: "$updateCount songs added to play next",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
       }
 
-      showSnackBar(
-        context,
-        () {},
-        message:
-            "${albumSongs.length} songs from ${album.name} added to play next",
-        alertBannerLocation: AlertBannerLocation.bottom,
-      );
     } catch (e) {
       showSnackBar(
         context,

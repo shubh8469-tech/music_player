@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:developer' as developer;
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../features/songs/data/models/song_model.dart';
@@ -1135,6 +1136,89 @@ class MusicPlayerService {
     }
   }
 
+  Future<int> playNextMultipleSongs(
+      List<SongsModel> nextSongs,
+      ) async {
+    if (nextSongs.isEmpty) return 0;
+    if (currentIndex < 0 || currentIndex >= songs.length) return 0;
+
+    final mutableSongs = List<SongsModel>.from(songs);
+    final addingList = List<SongsModel>.from(nextSongs);
+
+    // 🔹 Remove duplicates from queue
+    mutableSongs.removeWhere(
+          (s) => nextSongs.any((n) => n.id == s.id),
+    );
+
+    // 🔹 Remove already-existing songs from adding list
+    addingList.removeWhere(
+          (s) => songs.any((n) => n.id == s.id),
+    );
+
+    if (addingList.isEmpty) return 0;
+
+    // 🔹 Calculate SAFE insert index ✅
+    final rawInsertIndex = currentIndex + 1;
+    final insertIndex = rawInsertIndex.clamp(0, mutableSongs.length);
+
+    try {
+      // 🔹 INSERT CORRECT LIST ✅
+      mutableSongs.insertAll(insertIndex, addingList);
+    } catch (e) {
+      developer.log('❌ Error inserting songs: $e');
+      return 0;
+    }
+
+    // 🔹 Update internal queue
+    songs = mutableSongs;
+    _songsChangedController.add(songs);
+
+    // ====================== ANDROID ======================
+    if (Platform.isAndroid) {
+      try {
+        final player = _androidPlayer!;
+        final source = player.audioSource;
+
+        if (source is ConcatenatingAudioSource) {
+          final int? currentIndexBefore = player.currentIndex;
+          final Duration currentPosition = player.position;
+          final bool wasPlaying = player.playing;
+
+          int targetIndex = insertIndex;
+
+          // 🔹 INSERT ONLY addingList ✅
+          for (final song in addingList) {
+            await source.insert(
+              targetIndex,
+              _createAudioSource(song),
+            );
+            targetIndex++;
+          }
+
+          if (currentIndexBefore != null &&
+              player.currentIndex == currentIndexBefore) {
+            await player.seek(currentPosition, index: currentIndexBefore);
+            if (wasPlaying) await player.play();
+          }
+        } else {
+          await updateSongsInQueue(songs);
+        }
+      } catch (e) {
+        developer.log('❌ Android Play Next error: $e');
+      }
+    }
+
+    // ======================== iOS ========================
+    else if (Platform.isIOS) {
+      if (!isPlaying && currentIndex < 0) {
+        await updateSongsInQueue(songs);
+      }
+    }
+
+    return addingList.length;
+  }
+
+
   // Helper: Rebuild playlist without seeking (for fallback only)
   Future<void> _rebuildPlaylistNoSeek(List<SongsModel> songsList, int currentIdx, bool wasPlaying) async {
     print('  Rebuilding Android playlist at index $currentIdx');
@@ -1461,7 +1545,8 @@ class MusicPlayerService {
     _initializePlayers();
   }
 
-  */ /*Future<void> _initializePlayers() async {
+  */
+/*Future<void> _initializePlayers() async {
     if (Platform.isAndroid) {
       // Create Android player with equalizer
       _androidPlayer = equalizerService.createAndroidPlayerWithEqualizer();
@@ -1485,7 +1570,8 @@ class MusicPlayerService {
       // Setup iOS listeners
       _setupIOSListeners();
     }
-  }*/ /*
+  }*/
+/*
 
   Future<void> _initializePlayers() async {
     if (Platform.isAndroid) {
@@ -1661,7 +1747,8 @@ class MusicPlayerService {
     }
   }
 
-  */ /*  Future<void> _setAndroidPlaylist(
+  */
+/*  Future<void> _setAndroidPlaylist(
       List<SongsModel> songModels,
       int startIndex,
       bool autoPlay,
@@ -1704,7 +1791,8 @@ class MusicPlayerService {
     if (autoPlay) {
       await _androidPlayer!.play();
     }
-  }*/ /*
+  }*/
+/*
 
   Future<void> _setIOSPlaylist(List<SongsModel> songModels, int startIndex, bool autoPlay) async {
     final filePaths = songModels.map((song) => song.filePath).toList();

@@ -280,10 +280,10 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
   // Handle Play Next
   void _handlePlayNext() async {
     // Close the bottom sheet first
-    Navigator.pop(context);
 
     List<SongsModel> _songs = [];
     final _repo = locator<PlaylistRepository>();
+    int updateCount = 0;
     try {
       if (widget.isSystemPlaylist) {
         log('Playing next songs from system playlist ${widget.systemKeyOrId}');
@@ -312,36 +312,57 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
         // No songs playing, start playing the playlist
         await musicService.setPlaylist(_songs, startIndex: 0);
         await musicService.play();
-      } else {
-        final currentIndex = musicService.currentIndex;
-        final insertIndex = currentIndex + 1;
-        final newSongsList = List<SongsModel>.from(musicService.songs);
-
-        // Filter out songs that are already in the queue
-        final songsToAdd = _songs.where((song) {
-          return !newSongsList.any(
-            (existingSong) => existingSong.id == song.id,
-          );
-        }).toList();
-
-        // Insert the new songs after the current song
-        newSongsList.insertAll(insertIndex, songsToAdd);
-
-        await musicService.setPlaylist(
-          newSongsList,
-          startIndex: currentIndex >= 0 ? currentIndex : 0,
-          autoPlay: false,
-        );
       }
-
-      if (mounted) {
+      else {
+        updateCount = await musicService.playNextMultipleSongs(_songs);
+        log('Not Added $updateCount songs to play next');
         showSnackBar(
           context,
-          () {},
-          message: "${_songs.length} songs added to play next",
+              () {},
+          message: "$updateCount songs added to play next",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
+        // final currentIndex = musicService.currentIndex;
+        // final insertIndex = currentIndex + 1;
+        // final newSongsList = List<SongsModel>.from(musicService.songs);
+        //
+        // // Filter out songs that are already in the queue
+        // final songsToAdd = _songs.where((song) {
+        //   return !newSongsList.any(
+        //     (existingSong) => existingSong.id == song.id,
+        //   );
+        // }).toList();
+        //
+        // // Insert the new songs after the current song
+        // newSongsList.insertAll(insertIndex, songsToAdd);
+        //
+        // await musicService.setPlaylist(
+        //   newSongsList,
+        //   startIndex: currentIndex >= 0 ? currentIndex : 0,
+        //   autoPlay: false,
+        // );
       }
+      if (mounted) {
+        if(updateCount < 1){
+          log('Not Added $updateCount songs to play next');
+          showSnackBar(
+            context,
+                () {},
+            message: "Songs already added to play next",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
+        else{
+          log('Added $updateCount songs to play next');
+          showSnackBar(
+            context,
+                () {},
+            message: "$updateCount songs added to play next",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
+      }
+      Navigator.pop(context);
     } catch (e) {
       if (mounted) {
         showSnackBar(
@@ -351,6 +372,7 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
           alertBannerLocation: AlertBannerLocation.bottom,
         );
       }
+      Navigator.pop(context);
     }
   }
 

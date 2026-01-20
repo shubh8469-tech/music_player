@@ -1061,20 +1061,37 @@ class _FolderActionSheet extends StatelessWidget {
         await musicService.setPlaylist(folderSongs, startIndex: 0);
         await musicService.play();
       } else {
-        final currentIndex = musicService.currentIndex;
-        final insertIndex = currentIndex + 1;
-        final newSongsList = List<SongsModel>.from(musicService.songs);
+        // final currentIndex = musicService.currentIndex;
+        // final insertIndex = currentIndex + 1;
+        // final newSongsList = List<SongsModel>.from(musicService.songs);
+        //
+        // final songsToAdd = folderSongs.where((song) {
+        //   return !newSongsList.any((existingSong) => existingSong.id == song.id);
+        // }).toList();
+        //
+        // newSongsList.insertAll(insertIndex, songsToAdd);
+        //
+        // await musicService.setPlaylist(newSongsList, startIndex: currentIndex >= 0 ? currentIndex : 0, autoPlay: false);
+        final updateCount = await musicService.playNextMultipleSongs(folderSongs);
 
-        final songsToAdd = folderSongs.where((song) {
-          return !newSongsList.any((existingSong) => existingSong.id == song.id);
-        }).toList();
-
-        newSongsList.insertAll(insertIndex, songsToAdd);
-
-        await musicService.setPlaylist(newSongsList, startIndex: currentIndex >= 0 ? currentIndex : 0, autoPlay: false);
+        if(updateCount < 1){
+          showSnackBar(
+            context,
+                () {},
+            message: "Songs already added to play next",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
+        else{
+          showSnackBar(
+            context,
+                () {},
+            message: "$updateCount songs added to play next",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
       }
 
-      showSnackBar(context, () {}, message: '${folderSongs.length} songs from ${folder.name} added to play next', alertBannerLocation: AlertBannerLocation.bottom);
     } catch (e) {
       showSnackBar(context, () {}, message: 'Error adding folder to play next', alertBannerLocation: AlertBannerLocation.bottom);
     }
@@ -1341,20 +1358,36 @@ class _AlbumActionSheet extends StatelessWidget {
         await musicService.setPlaylist(albumSongs, startIndex: 0);
         await musicService.play();
       } else {
-        final currentIndex = musicService.currentIndex;
-        final insertIndex = currentIndex + 1;
-        final newSongsList = List<SongsModel>.from(musicService.songs);
+        // final currentIndex = musicService.currentIndex;
+        // final insertIndex = currentIndex + 1;
+        // final newSongsList = List<SongsModel>.from(musicService.songs);
+        //
+        // final songsToAdd = albumSongs.where((song) {
+        //   return !newSongsList.any((existingSong) => existingSong.id == song.id);
+        // }).toList();
+        //
+        // newSongsList.insertAll(insertIndex, songsToAdd);
+        //
+        // await musicService.setPlaylist(newSongsList, startIndex: currentIndex >= 0 ? currentIndex : 0, autoPlay: false);
+        final updateCount = await musicService.playNextMultipleSongs(albumSongs);
 
-        final songsToAdd = albumSongs.where((song) {
-          return !newSongsList.any((existingSong) => existingSong.id == song.id);
-        }).toList();
-
-        newSongsList.insertAll(insertIndex, songsToAdd);
-
-        await musicService.setPlaylist(newSongsList, startIndex: currentIndex >= 0 ? currentIndex : 0, autoPlay: false);
+        if(updateCount < 1){
+          showSnackBar(
+            context,
+                () {},
+            message: "Songs already added to play next",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
+        else{
+          showSnackBar(
+            context,
+                () {},
+            message: "$updateCount songs added to play next",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
       }
-
-      showSnackBar(context, () {}, message: '${albumSongs.length} songs from ${album.name} added to play next', alertBannerLocation: AlertBannerLocation.bottom);
     } catch (e) {
       showSnackBar(context, () {}, message: 'Error adding album to play next', alertBannerLocation: AlertBannerLocation.bottom);
     }
@@ -1603,17 +1636,36 @@ class _ArtistActionSheet extends StatelessWidget {
         await musicService.setPlaylist(artistSongs, startIndex: 0);
         await musicService.play();
       } else {
-        final currentIndex = musicService.currentIndex;
-        final insertIndex = currentIndex + 1;
-        final newSongsList = List<SongsModel>.from(musicService.songs);
+        // final currentIndex = musicService.currentIndex;
+        // final insertIndex = currentIndex + 1;
+        // final newSongsList = List<SongsModel>.from(musicService.songs);
+        //
+        // final songsToAdd = artistSongs.where((song) {
+        //   return !newSongsList.any((existingSong) => existingSong.id == song.id);
+        // }).toList();
+        //
+        // newSongsList.insertAll(insertIndex, songsToAdd);
+        //
+        // await musicService.setPlaylist(newSongsList, startIndex: currentIndex >= 0 ? currentIndex : 0, autoPlay: false);
 
-        final songsToAdd = artistSongs.where((song) {
-          return !newSongsList.any((existingSong) => existingSong.id == song.id);
-        }).toList();
+        final updateCount = await musicService.playNextMultipleSongs(artistSongs);
 
-        newSongsList.insertAll(insertIndex, songsToAdd);
-
-        await musicService.setPlaylist(newSongsList, startIndex: currentIndex >= 0 ? currentIndex : 0, autoPlay: false);
+        if(updateCount < 1){
+          showSnackBar(
+            context,
+                () {},
+            message: "Songs already added to play next",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
+        else{
+          showSnackBar(
+            context,
+                () {},
+            message: "$updateCount songs added to play next",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
       }
 
       showSnackBar(context, () {}, message: '${artistSongs.length} songs from ${artist.name} added to play next', alertBannerLocation: AlertBannerLocation.bottom);
