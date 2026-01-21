@@ -1444,6 +1444,177 @@ class MusicPlayerService {
 
     print('✅ Queue updated with preserved index (no interruption)');
   }
+
+  /// Add to queue at the end
+
+  Future<bool> addSingleSongToQueue(
+      SongsModel song,
+      ) async
+  {
+    // ❌ Skip if already in queue
+    if (songs.any((s) => s.id == song.id)) {
+      print('⚠️ Song already in queue, skipping');
+      return false;
+    }
+
+    print('➕ Add to Queue (single song)');
+
+    // 🔹 Update internal queue
+    final mutableSongs = List<SongsModel>.from(songs);
+    final insertIndex = mutableSongs.length;
+
+    mutableSongs.add(song);
+
+    songs = mutableSongs;
+    _songsChangedController.add(songs);
+
+    // ====================== ANDROID ======================
+    if (Platform.isAndroid) {
+      try {
+        final source = _androidPlayer!.audioSource;
+
+        if (source is ConcatenatingAudioSource) {
+          await source.add(
+            _createAudioSource(song),
+          );
+          print('✅ Android: Song appended without restart');
+        } else {
+          await updateSongsInQueue(songs);
+        }
+      } catch (e) {
+        print('❌ Android Add to Queue error: $e');
+      }
+    }
+
+    // ======================== iOS ========================
+    else if (Platform.isIOS) {
+      // iOS: never touch native queue during playback
+      if (!isPlaying && currentIndex < 0) {
+        await updateSongsInQueue(songs);
+      }
+    }
+
+    return true;
+  }
+
+  Future<int> addMultipleSongsToQueue(
+      List<SongsModel> songsToAdd,
+      ) async
+  {
+    if (songsToAdd.isEmpty) return 0;
+
+    print('➕ Add to Queue (multiple songs): ${songsToAdd.length}');
+
+    // 🔹 Filter songs not already in queue
+    final addingList = songsToAdd.where(
+          (song) => !songs.any((q) => q.id == song.id),
+    ).toList();
+
+    if (addingList.isEmpty) return 0;
+
+    // 🔹 Update internal queue
+    final mutableSongs = List<SongsModel>.from(songs)
+      ..addAll(addingList);
+
+    songs = mutableSongs;
+    _songsChangedController.add(songs);
+
+    // ====================== ANDROID ======================
+    if (Platform.isAndroid) {
+      try {
+        final source = _androidPlayer!.audioSource;
+
+        if (source is ConcatenatingAudioSource) {
+          for (final song in addingList) {
+            await source.add(
+              _createAudioSource(song),
+            );
+          }
+          print('✅ Android: Multiple songs appended seamlessly');
+        } else {
+          await updateSongsInQueue(songs);
+        }
+      } catch (e) {
+        print('❌ Android Add to Queue (multi) error: $e');
+      }
+    }
+
+    // ======================== iOS ========================
+    else if (Platform.isIOS) {
+      if (!isPlaying && currentIndex < 0) {
+        await updateSongsInQueue(songs);
+      }
+    }
+
+    return addingList.length;
+  }
+
+  /// Remove song from the playlist and queue
+
+  Future<void> removeSongFromQueue(int removeIndex) async {
+    if (removeIndex < 0 || removeIndex >= songs.length) return;
+
+    print('🗑 Removing song from queue at index $removeIndex');
+
+    final mutableSongs = List<SongsModel>.from(songs);
+    mutableSongs.removeAt(removeIndex);
+
+    // Update internal list FIRST
+    songs = mutableSongs;
+    _songsChangedController.add(songs);
+
+    // ====================== ANDROID ======================
+    if (Platform.isAndroid) {
+      try {
+        final player = _androidPlayer!;
+        final source = player.audioSource;
+
+        if (source is ConcatenatingAudioSource) {
+          final int? currentIndexBefore = player.currentIndex;
+          final Duration currentPosition = player.position;
+          final bool wasPlaying = player.playing;
+
+          await source.removeAt(removeIndex);
+
+          // 🧠 If removed song was BEFORE current song
+          if (currentIndexBefore != null &&
+              removeIndex < currentIndexBefore) {
+            await player.seek(
+              currentPosition,
+              index: currentIndexBefore - 1,
+            );
+          }
+
+          // 🧠 If removed song WAS the current song
+          else if (currentIndexBefore == removeIndex) {
+            if (mutableSongs.isNotEmpty) {
+              final newIndex =
+              removeIndex < mutableSongs.length ? removeIndex : mutableSongs.length - 1;
+              await player.seek(Duration.zero, index: newIndex);
+              if (wasPlaying) await player.play();
+            }
+          }
+
+          print('✅ Android: Song removed without restart');
+        } else {
+          await updateSongsInQueue(songs);
+        }
+      } catch (e) {
+        print('❌ Android remove error: $e');
+        await updateSongsInQueue(songs);
+      }
+    }
+
+    // ======================== iOS ========================
+    else if (Platform.isIOS) {
+      // iOS: rebuild ONLY if idle
+      if (!isPlaying && currentIndex < 0) {
+        await updateSongsInQueue(songs);
+      }
+    }
+  }
+
+
 }
 
 /*class MusicPlayerService {

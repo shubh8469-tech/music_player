@@ -142,7 +142,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
                     isScrollControlled: true,
                     builder: (_) => SongMenuScreen(
-                      songMenuList: songMenuItems,
+                      songMenuList: playlistSongMenuItems,
                       isPlaying: false,
                       currentSong: song,
                       songIndex: index,

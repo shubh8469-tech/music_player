@@ -751,9 +751,11 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                   final existingIndex = newSongsList.indexWhere((song) => song.id == widget.currentSong!.id);
 
                                   if (existingIndex == -1) {
-                                    newSongsList.add(widget.currentSong!);
-                                    musicService.setPlaylist(newSongsList, autoPlay: false);
-                                    showSnackBar(context, () {}, message: "1 songs added to queue", alertBannerLocation: AlertBannerLocation.bottom);
+                                    final status = await musicService.addSingleSongToQueue(widget.currentSong!);
+                                    if(status)
+                                      {
+                                        showSnackBar(context, () {}, message: "1 songs added to queue", alertBannerLocation: AlertBannerLocation.bottom);
+                                      }
                                   } else {
                                     showSnackBar(context, () {}, message: "Already added to queue", alertBannerLocation: AlertBannerLocation.bottom);
                                   }
@@ -780,7 +782,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                 }
                               } else if (songItem.title == S.of(context).changeCover) {
                                 await _handleChangeCover(context);
-                              } else if (songItem.title == S.of(context).deleteSong) {
+                              }
+                              else if (songItem.title == S.of(context).deleteSong) {
 
                                 if (widget.from == 'queue') {
                                   Navigator.pop(context);
@@ -932,127 +935,19 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
                                   return;
                                 }
-                               /* if (widget.from == 'queue') {
-                                  Navigator.pop(context);
 
-                                  if (widget.currentSong == null || widget.songIndex == null) {
-                                    showSnackBar(context, () {}, message: 'Unable to remove song', alertBannerLocation: AlertBannerLocation.bottom);
-                                    return;
+                               if (widget.from == 'folder_in') {
+                                  // Handle delete song from folder (delete file from system)
+                                  if (widget.currentSong != null) {
+                                    _showDeleteFromFolderConfirmation(context);
                                   }
+                                }
+                                // else {
+                                //   _showDeleteFromLibraryBottomSheet(context);
+                                // }
+                              }
+                              else if (songItem.title == S.of(context).removeFromPlaylist) {
 
-                                  final currentIndex = musicService.currentIndex;
-                                  final removeIndex = widget.songIndex!;
-
-                                  print('🗑️ Removing song from queue at index $removeIndex');
-
-                                  // ✅ CRITICAL: Get playback state BEFORE modifications
-                                  final wasPlaying = musicService.isPlaying;
-                                  final currentPosition = musicService.position;
-
-                                  // Update queue
-                                  final mutableSongs = List<SongsModel>.from(musicService.songs);
-                                  mutableSongs.removeAt(removeIndex);
-
-                                  if (mutableSongs.isEmpty) {
-                                    await musicService.stopAndClearQueue();
-                                    showSnackBar(context, () {}, message: 'Queue cleared', alertBannerLocation: AlertBannerLocation.bottom);
-                                    // Notify parent to refresh
-                                    widget.onSongDeleted?.call();
-                                    return;
-                                  }
-
-                                  // Handle current song removal
-                                  try {
-                                    // Handle current song removal
-                                    if (removeIndex == currentIndex) {
-                                      final nextIndex = removeIndex < mutableSongs.length ? removeIndex : 0;
-                                      print('  Removed current song, playing next at: $nextIndex');
-                                      await musicService.setPlaylist(mutableSongs, startIndex: nextIndex, autoPlay: true);
-                                    } else if (removeIndex < currentIndex) {
-                                      // ✅ CRITICAL: Removing BEFORE current - use seamless update
-                                      final newCurrentIndex = currentIndex - 1;
-                                      print('  Removed BEFORE current: $currentIndex → $newCurrentIndex');
-
-                                      if (Platform.isAndroid) {
-                                        if (musicService.isShuffleEnabled) {
-                                          print('  Android: Shuffle enabled - rebuilding');
-                                          await musicService.updateSongsInQueueWithIndex(mutableSongs, newCurrentIndex);
-
-                                          if (wasPlaying) {
-                                            await musicService.seek(currentPosition, index: newCurrentIndex);
-                                            await musicService.play();
-                                          }
-                                        } else {
-                                          final source = musicService.player.audioSource;
-                                          if (source is ConcatenatingAudioSource) {
-                                            await source.removeAt(removeIndex);
-                                            musicService.songs.clear();
-                                            musicService.songs.addAll(mutableSongs);
-                                            musicService.songsChangedController.add(List.from(musicService.songs));
-
-                                            if (wasPlaying && !musicService.isPlaying) {
-                                              await musicService.play();
-                                            }
-                                          } else {
-                                            await musicService.updateSongsInQueueWithIndex(mutableSongs, newCurrentIndex);
-                                            if (wasPlaying) {
-                                              await musicService.seek(currentPosition, index: newCurrentIndex);
-                                              await musicService.play();
-                                            }
-                                          }
-                                        }
-                                      } else if (Platform.isIOS) {
-                                        musicService.songs.clear();
-                                        musicService.songs.addAll(mutableSongs);
-                                        musicService.songsChangedController.add(List.from(musicService.songs));
-                                      }
-                                    } else {
-                                      // ✅ Removing AFTER current - seamless update
-                                      print('  Removed AFTER current, keeping index: $currentIndex');
-
-                                      if (Platform.isAndroid) {
-                                        if (musicService.isShuffleEnabled) {
-                                          // If shuffle enabled, rebuild to maintain shuffle order
-                                          print('  Android: Shuffle enabled - rebuilding');
-                                          await musicService.updateSongsInQueueWithIndex(mutableSongs, currentIndex);
-                                        } else {
-                                          // No shuffle - use seamless removal
-                                          final source = musicService.player.audioSource;
-                                          if (source is ConcatenatingAudioSource) {
-                                            await source.removeAt(removeIndex);
-                                            musicService.songs.clear();
-                                            musicService.songs.addAll(mutableSongs);
-                                            musicService.songsChangedController.add(List.from(musicService.songs));
-                                          } else {
-                                            await musicService.updateSongsInQueueWithIndex(mutableSongs, currentIndex);
-                                          }
-                                        }
-                                      } else if (Platform.isIOS) {
-                                        musicService.songs.clear();
-                                        musicService.songs.addAll(mutableSongs);
-                                        musicService.songsChangedController.add(List.from(musicService.songs));
-                                      }
-                                    }
-
-                                    showSnackBar(context, () {}, message: 'Song removed from queue', alertBannerLocation: AlertBannerLocation.bottom);
-                                    widget.onSongDeleted?.call();
-                                  } catch (e) {
-                                    print('❌ Error removing song: $e');
-                                    showSnackBar(
-                                      context,
-                                      () {},
-                                      message: 'Failed to remove song',
-                                      backgroundColor: Colors.red,
-                                      alertBannerLocation: AlertBannerLocation.bottom,
-                                    );
-                                  }
-
-                                  return;
-                                }*/
-
-                                // ✅ EXISTING CODE: Handle other delete contexts
-
-                                if (widget.from == 'playlist_in') {
                                   // Remove song from current playlist
                                   if (widget.currentSong != null) {
                                     try {
@@ -1070,16 +965,16 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                         final playlistBloc = context.read<PlaylistBloc>();
                                         playlistBloc.add(PlaylistEvent.removeSongFromPlaylist(int.parse(widget.systemKeyOrId!), widget.currentSong!.id!));
 
-                                        final currentSongs = List<SongsModel>.from(musicService.songs);
-                                        currentSongs.removeWhere((element) => element.id == widget.currentSong!.id);
-
-                                        log('currentSongs ${currentSongs.length} ${widget.currentSong!.title}');
-                                        await musicService.player.stop();
-                                        if (currentSongs.isNotEmpty) {
-                                          musicService.setPlaylist(currentSongs);
-                                        } else {
-                                          musicService.resetPlaylist(currentSongs);
-                                        }
+                                        // final currentSongs = List<SongsModel>.from(musicService.songs);
+                                        // currentSongs.removeWhere((element) => element.id == widget.currentSong!.id);
+                                        //
+                                        // log('currentSongs ${currentSongs.length} ${widget.currentSong!.title}');
+                                        // await musicService.player.stop();
+                                        // if (currentSongs.isNotEmpty) {
+                                        //   musicService.setPlaylist(currentSongs);
+                                        // } else {
+                                        //   musicService.resetPlaylist(currentSongs);
+                                        // }
                                         // Show success message
                                         showSnackBar(context, () {}, message: 'Song removed from playlist', alertBannerLocation: AlertBannerLocation.bottom);
                                       }
@@ -1097,15 +992,9 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     // Close the menu to refresh the view
                                     Navigator.pop(context);
                                   }
-                                } else if (widget.from == 'folder_in') {
-                                  // Handle delete song from folder (delete file from system)
-                                  if (widget.currentSong != null) {
-                                    _showDeleteFromFolderConfirmation(context);
-                                  }
-                                } else {
-                                  _showDeleteFromLibraryBottomSheet(context);
-                                }
-                              } else if (songItem.title == S.of(context).deletePlaylist) {
+
+                              }
+                              else if (songItem.title == S.of(context).deletePlaylist) {
                                 if (!widget.isSystemPlaylist) {
                                   _showDeletePlaylistBottomSheet(context);
                                 } else {

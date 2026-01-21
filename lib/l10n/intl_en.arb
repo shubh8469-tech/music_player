@@ -46,6 +46,6 @@
   "rename":"Rename",
   "done": "Done",
   "editTags": "Edit Tags",
-  "albumTitle": "Album Title"
-
+  "albumTitle": "Album Title",
+  "removeFromPlaylist": "Remove from playlist"
 }

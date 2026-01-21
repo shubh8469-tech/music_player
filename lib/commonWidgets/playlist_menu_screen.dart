@@ -391,47 +391,67 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
         );
       }
 
-      if (_songs.isEmpty) {
-        showSnackBar(
-          context,
-          () {},
-          message: "Playlist contains no songs",
-          alertBannerLocation: AlertBannerLocation.bottom,
-        );
-        Navigator.pop(context);
-        return;
-      }
+      final addedSong = await musicService.addMultipleSongsToQueue(_songs);
 
-      // Add entire songs list to queue
-      final newSongsList = List<SongsModel>.from(musicService.songs);
-      int addedCount = 0;
-
-      for (var song in _songs) {
-        final existingIndex = newSongsList.indexWhere((s) => s.id == song.id);
-        if (existingIndex == -1) {
-          newSongsList.add(song);
-          addedCount++;
-        }
-      }
-
-      await musicService.setPlaylist(newSongsList, autoPlay: false);
-
-        if(addedCount < 1){
+      if (mounted) {
+        if (addedSong < 1) {
           showSnackBar(
             context,
                 () {},
             message: "Songs already added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }
-        else{
+        } else {
           showSnackBar(
             context,
                 () {},
-            message: "$addedCount songs added to queue",
+            message: "$addedSong songs added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         }
+      }
+
+      // if (_songs.isEmpty) {
+      //   showSnackBar(
+      //     context,
+      //     () {},
+      //     message: "Playlist contains no songs",
+      //     alertBannerLocation: AlertBannerLocation.bottom,
+      //   );
+      //   Navigator.pop(context);
+      //   return;
+      // }
+      //
+      // // Add entire songs list to queue
+      // final newSongsList = List<SongsModel>.from(musicService.songs);
+      // int addedCount = 0;
+      //
+      // for (var song in _songs) {
+      //   final existingIndex = newSongsList.indexWhere((s) => s.id == song.id);
+      //   if (existingIndex == -1) {
+      //     newSongsList.add(song);
+      //     addedCount++;
+      //   }
+      // }
+      //
+      // await musicService.setPlaylist(newSongsList, autoPlay: false);
+      //
+      //   if(addedCount < 1){
+      //     showSnackBar(
+      //       context,
+      //           () {},
+      //       message: "Songs already added to queue",
+      //       alertBannerLocation: AlertBannerLocation.bottom,
+      //     );
+      //   }
+      //   else{
+      //     showSnackBar(
+      //       context,
+      //           () {},
+      //       message: "$addedCount songs added to queue",
+      //       alertBannerLocation: AlertBannerLocation.bottom,
+      //     );
+      //   }
     } catch (e) {
       showSnackBar(
         context,

@@ -143,4 +143,7 @@ class SEn extends S {
 
   @override
   String get albumTitle => 'Album Title';
+
+  @override
+  String get removeFromPlaylist => 'Remove from playlist';
 }

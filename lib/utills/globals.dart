@@ -50,6 +50,54 @@ final List<SongMenuItem> songMenuItems = [
   ),
 ];
 
+final List<SongMenuItem> playlistSongMenuItems = [
+  SongMenuItem(
+    icon: Assets.svgIcMenuPlaynext,
+    title: S.of(rootNavigatorKey.currentContext!).playNext,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcMenuQueue,
+    title: S.of(rootNavigatorKey.currentContext!).addToQueue,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcMenuPlaylist,
+    title: S.of(rootNavigatorKey.currentContext!).addToPlaylist,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcGotoalbum,
+    title: S.of(rootNavigatorKey.currentContext!).goToAlbum,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcArtist,
+    title: S.of(rootNavigatorKey.currentContext!).goToArtist,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcEdit,
+    title: S.of(rootNavigatorKey.currentContext!).editDetails,
+  ),
+  if(!Platform.isIOS)
+  SongMenuItem(
+    icon: Assets.svgIcRingtone,
+    title: S.of(rootNavigatorKey.currentContext!).setAsRingtone,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcCover,
+    title: S.of(rootNavigatorKey.currentContext!).changeCover,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcHide,
+    title: S.of(rootNavigatorKey.currentContext!).hideSong,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcDelete,
+    title: S.of(rootNavigatorKey.currentContext!).removeFromPlaylist,
+  ),
+  SongMenuItem(
+    icon: Assets.svgIcDelete,
+    title: S.of(rootNavigatorKey.currentContext!).deleteSong,
+  ),
+];
+
 final List<SongMenuItem> songPlayingMenuItems = [
   SongMenuItem(
     icon: Assets.svgIcGotoalbum,

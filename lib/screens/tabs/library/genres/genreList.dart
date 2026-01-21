@@ -558,37 +558,57 @@ class _GenreListScreenState extends State<GenreListScreen> {
         return;
       }
 
-      final newSongsList = List<SongsModel>.from(musicService.songs);
-      int addedCount = 0;
+      final addedSong = await musicService.addMultipleSongsToQueue(genreSongs);
 
-      for (final song in genreSongs) {
-        final existingIndex = newSongsList.indexWhere(
-          (existingSong) => existingSong.id == song.id,
-        );
-
-        if (existingIndex == -1) {
-          newSongsList.add(song);
-          addedCount++;
+      if (mounted) {
+        if (addedSong < 1) {
+          showSnackBar(
+            context,
+                () {},
+            message: "Songs already added to queue",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        } else {
+          showSnackBar(
+            context,
+                () {},
+            message: "$addedSong songs added to queue",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
         }
       }
 
-      await musicService.setPlaylist(newSongsList, autoPlay: false);
-
-      if (addedCount < 1) {
-        showSnackBar(
-          context,
-          () {},
-          message: "Songs already added to queue",
-          alertBannerLocation: AlertBannerLocation.bottom,
-        );
-      } else {
-        showSnackBar(
-          context,
-          () {},
-          message: "$addedCount songs from ${genre.name} added to queue",
-          alertBannerLocation: AlertBannerLocation.bottom,
-        );
-      }
+      // final newSongsList = List<SongsModel>.from(musicService.songs);
+      // int addedCount = 0;
+      //
+      // for (final song in genreSongs) {
+      //   final existingIndex = newSongsList.indexWhere(
+      //     (existingSong) => existingSong.id == song.id,
+      //   );
+      //
+      //   if (existingIndex == -1) {
+      //     newSongsList.add(song);
+      //     addedCount++;
+      //   }
+      // }
+      //
+      // await musicService.setPlaylist(newSongsList, autoPlay: false);
+      //
+      // if (addedCount < 1) {
+      //   showSnackBar(
+      //     context,
+      //     () {},
+      //     message: "Songs already added to queue",
+      //     alertBannerLocation: AlertBannerLocation.bottom,
+      //   );
+      // } else {
+      //   showSnackBar(
+      //     context,
+      //     () {},
+      //     message: "$addedCount songs from ${genre.name} added to queue",
+      //     alertBannerLocation: AlertBannerLocation.bottom,
+      //   );
+      // }
     } catch (e) {
       showSnackBar(
         context,

@@ -143,4 +143,7 @@ class SHi extends S {
 
   @override
   String get albumTitle => 'एल्बम शीर्षक';
+
+  @override
+  String get removeFromPlaylist => 'प्लेलिस्ट से हटाएँ';
 }

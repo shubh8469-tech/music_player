@@ -374,45 +374,65 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
         return;
       }
 
-      // Create a copy of the existing songs list
-      final newSongsList = List<SongsModel>.from(musicService.songs);
-
-      // Add each selected song to the queue if it's not already there
-      int addedCount = 0;
-      for (final song in allSongsFromAlbums) {
-        final existingIndex = newSongsList.indexWhere(
-          (existingSong) => existingSong.id == song.id,
-        );
-
-        if (existingIndex == -1) {
-          newSongsList.add(song);
-          addedCount++;
-        }
-      }
-
-      // Update the playlist with the new songs list
-      await musicService.setPlaylist(newSongsList);
+      final addedSong = await musicService.addMultipleSongsToQueue(allSongsFromAlbums);
 
       if (mounted) {
-
-        if(addedCount < 1){
+        if (addedSong < 1) {
           showSnackBar(
             context,
                 () {},
             message: "Songs already added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }
-        else{
+        } else {
           showSnackBar(
             context,
                 () {},
-            message:
-            "$addedCount songs from ${selectedAlbums.length} albums added to queue",
+            message: "$addedSong songs added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         }
       }
+
+      // Create a copy of the existing songs list
+      // final newSongsList = List<SongsModel>.from(musicService.songs);
+      //
+      // // Add each selected song to the queue if it's not already there
+      // int addedCount = 0;
+      // for (final song in allSongsFromAlbums) {
+      //   final existingIndex = newSongsList.indexWhere(
+      //     (existingSong) => existingSong.id == song.id,
+      //   );
+      //
+      //   if (existingIndex == -1) {
+      //     newSongsList.add(song);
+      //     addedCount++;
+      //   }
+      // }
+      //
+      // // Update the playlist with the new songs list
+      // await musicService.setPlaylist(newSongsList);
+      //
+      // if (mounted) {
+      //
+      //   if(addedCount < 1){
+      //     showSnackBar(
+      //       context,
+      //           () {},
+      //       message: "Songs already added to queue",
+      //       alertBannerLocation: AlertBannerLocation.bottom,
+      //     );
+      //   }
+      //   else{
+      //     showSnackBar(
+      //       context,
+      //           () {},
+      //       message:
+      //       "$addedCount songs from ${selectedAlbums.length} albums added to queue",
+      //       alertBannerLocation: AlertBannerLocation.bottom,
+      //     );
+      //   }
+      // }
     } catch (e) {
       if (mounted) {
         showSnackBar(

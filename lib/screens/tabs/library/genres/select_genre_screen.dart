@@ -471,54 +471,74 @@ class _SelectGenreScreenState extends State<SelectGenreScreen> {
         return;
       }
 
-      // Create a copy of the existing songs list
-      final newSongsList = List<SongsModel>.from(musicService.songs);
-
-      // Add each selected song to the queue if it's not already there
-      int addedCount = 0;
-      for (final song in allSongsFromGenres) {
-        final existingIndex = newSongsList.indexWhere(
-          (existingSong) => existingSong.id == song.id,
-        );
-
-        if (existingIndex == -1) {
-          newSongsList.add(song);
-          addedCount++;
-        }
-      }
-
-      final startIndex = musicService.currentIndex >= 0
-          ? musicService.currentIndex
-          : 0;
-      final shouldAutoPlay = musicService.isPlaying;
-
-      await musicService.setPlaylist(
-        newSongsList,
-        startIndex: startIndex,
-        autoPlay: shouldAutoPlay,
-      );
+      final addedSong = await musicService.addMultipleSongsToQueue(allSongsFromGenres);
 
       if (mounted) {
-
-        if (addedCount < 1) {
+        if (addedSong < 1) {
           showSnackBar(
             context,
-            () {},
+                () {},
             message: "Songs already added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }
-        else {
+        } else {
           showSnackBar(
             context,
-            () {},
-            message:
-                "$addedCount songs from ${selectedGenres.length} genres added to queue",
+                () {},
+            message: "$addedSong songs added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         }
-
       }
+
+      // Create a copy of the existing songs list
+      // final newSongsList = List<SongsModel>.from(musicService.songs);
+      //
+      // // Add each selected song to the queue if it's not already there
+      // int addedCount = 0;
+      // for (final song in allSongsFromGenres) {
+      //   final existingIndex = newSongsList.indexWhere(
+      //     (existingSong) => existingSong.id == song.id,
+      //   );
+      //
+      //   if (existingIndex == -1) {
+      //     newSongsList.add(song);
+      //     addedCount++;
+      //   }
+      // }
+      //
+      // final startIndex = musicService.currentIndex >= 0
+      //     ? musicService.currentIndex
+      //     : 0;
+      // final shouldAutoPlay = musicService.isPlaying;
+      //
+      // await musicService.setPlaylist(
+      //   newSongsList,
+      //   startIndex: startIndex,
+      //   autoPlay: shouldAutoPlay,
+      // );
+      //
+      // if (mounted) {
+      //
+      //   if (addedCount < 1) {
+      //     showSnackBar(
+      //       context,
+      //       () {},
+      //       message: "Songs already added to queue",
+      //       alertBannerLocation: AlertBannerLocation.bottom,
+      //     );
+      //   }
+      //   else {
+      //     showSnackBar(
+      //       context,
+      //       () {},
+      //       message:
+      //           "$addedCount songs from ${selectedGenres.length} genres added to queue",
+      //       alertBannerLocation: AlertBannerLocation.bottom,
+      //     );
+      //   }
+      //
+      // }
     } catch (e) {
       if (mounted) {
         showSnackBar(

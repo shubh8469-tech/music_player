@@ -560,38 +560,58 @@ class _FolderListScreenState extends State<FolderListScreen> {
         return;
       }
 
-      final newSongsList = List<SongsModel>.from(musicService.songs);
-      int addedCount = 0;
+      final addedSong = await musicService.addMultipleSongsToQueue(folderSongs);
 
-      for (final song in folderSongs) {
-        final existingIndex = newSongsList.indexWhere(
-          (existingSong) => existingSong.id == song.id,
-        );
-
-        if (existingIndex == -1) {
-          newSongsList.add(song);
-          addedCount++;
-        }
-      }
-
-      await musicService.setPlaylist(newSongsList, autoPlay: false);
-
-        if(addedCount < 1){
+      if (mounted) {
+        if (addedSong < 1) {
           showSnackBar(
             context,
                 () {},
             message: "Songs already added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }
-        else{
+        } else {
           showSnackBar(
             context,
                 () {},
-            message: "$addedCount songs from ${folder.name} added to queue",
+            message: "$addedSong songs added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         }
+      }
+
+      // final newSongsList = List<SongsModel>.from(musicService.songs);
+      // int addedCount = 0;
+      //
+      // for (final song in folderSongs) {
+      //   final existingIndex = newSongsList.indexWhere(
+      //     (existingSong) => existingSong.id == song.id,
+      //   );
+      //
+      //   if (existingIndex == -1) {
+      //     newSongsList.add(song);
+      //     addedCount++;
+      //   }
+      // }
+      //
+      // await musicService.setPlaylist(newSongsList, autoPlay: false);
+      //
+      //   if(addedCount < 1){
+      //     showSnackBar(
+      //       context,
+      //           () {},
+      //       message: "Songs already added to queue",
+      //       alertBannerLocation: AlertBannerLocation.bottom,
+      //     );
+      //   }
+      //   else{
+      //     showSnackBar(
+      //       context,
+      //           () {},
+      //       message: "$addedCount songs from ${folder.name} added to queue",
+      //       alertBannerLocation: AlertBannerLocation.bottom,
+      //     );
+      //   }
 
     } catch (e) {
       showSnackBar(

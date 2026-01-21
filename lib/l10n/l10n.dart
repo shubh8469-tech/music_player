@@ -366,6 +366,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Album Title'**
   String get albumTitle;
+
+  /// No description provided for @removeFromPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from playlist'**
+  String get removeFromPlaylist;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {
