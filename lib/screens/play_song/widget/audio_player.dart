@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -85,6 +86,8 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   @override
   Widget build(BuildContext context) {
     // Ensure max value is never zero to avoid slider issues
+    final song = _musicService.songs[_musicService.currentIndex ?? 0];
+    log('music name ${song.title} ${song.duration} ${_musicService.duration} ${_musicService.position}');
     final maxValue = _duration.inMilliseconds > 0 ? _duration.inMilliseconds.toDouble() : 1.0;
 
     // Clamp position to valid range

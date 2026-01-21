@@ -411,6 +411,11 @@ class _SongsSection extends StatelessWidget {
                         songIndex: currentIndex >= 0 ? currentIndex : index,
                         songsList: filtered,
                         maxHeight: 0.87.sh,
+                        onSongDeleted: () {
+                          // Refresh global songs after deletion so search results stay in sync
+                          final bloc = context.read<SongsBloc>();
+                          bloc.add(const SongsEvent.getAllSongs());
+                        },
                       ),
                     );
                   },

@@ -151,6 +151,21 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       systemKeyOrId: widget.playlist.isSystem! ? widget.playlist.systemKey : widget.playlist.id.toString(),
                       isSystemPlaylist: _isSystem,
                       from: 'playlist_in',
+                      onSongDeleted: () {
+                        // Immediately remove the song from local list for instant UI update
+                        final songId = song.id;
+                        setState(() {
+                          _songs.removeWhere((s) => s.id == songId);
+                          _baseSongs.removeWhere((s) => s.id == songId);
+                        });
+
+                        // Wait for database operations and any triggers to complete, then sync with DB
+                        Future.delayed(const Duration(milliseconds: 800), () async {
+                          if (mounted) {
+                            await _loadSongs();
+                          }
+                        });
+                      },
                     ),
                   );
                 },

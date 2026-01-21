@@ -394,6 +394,12 @@ class _SongsListState extends State<SongsList> {
                                                 songIndex: index,
                                                 songsList: songs,
                                                 maxHeight: 0.87.sh,
+                                                onSongDeleted: () {
+                                                  // Ensure the global songs list is refreshed after deletion
+                                                  // (Folder/album/artist screens handle their own local lists)
+                                                  if (!context.mounted) return;
+                                                  context.read<SongsBloc>().add(const SongsEvent.getAllSongs());
+                                                },
                                               ),
                                             );
                                           },

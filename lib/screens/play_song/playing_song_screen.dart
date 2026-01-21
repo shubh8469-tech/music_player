@@ -265,47 +265,45 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.only(top: 27.h),
-          child: Column(
-            children: [
-              currentSong?.artwork_path != null && currentSong?.artwork_path != ''
-                  ? Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 17.w),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(9.r),
-                        child: Image.file(File(currentSong!.artwork_path!), width: 240.w, height: 240.w, fit: BoxFit.cover),
-                      ),
-                    )
-                  : Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 17.w),
-                      child: GradientCard(
-                        width: 240.w,
-                        height: 240.w,
-                        borderRadius: 10.r,
-                        iconAsset: Assets.svgMusicIcon,
-                        iconSize: 100.r,
-                        isSvg: false,
-                        margin: 0.w,
-                        colors: [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange],
-                      ),
+      body: Padding(
+        padding: EdgeInsets.only(top: 27.h),
+        child: Column(
+          children: [
+            currentSong?.artwork_path != null && currentSong?.artwork_path != ''
+                ? Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 17.w),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(9.r),
+                      child: Image.file(File(currentSong!.artwork_path!), width: 250.w, height: 250.w, fit: BoxFit.cover),
                     ),
-              SizedBox(height: 25.h),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 17.w),
-                child: Column(
-                  children: [
-                    songTitlePlaylistWidget(currentSong),
-                    SizedBox(height: 50.h),
-                    songPropertiesWidget(),
-                  ],
-                ),
-              ),
-              SizedBox(height: 15.h),
-              songProgressBarWidget(),
-            ],
-          ),
+                  )
+                : Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 17.w),
+                    child: GradientCard(
+                      width: 250.w,
+                      height: 250.w,
+                      borderRadius: 10.r,
+                      iconAsset: Assets.svgMusicIcon,
+                      iconSize: 100.r,
+                      isSvg: false,
+                      margin: 0.w,
+                      colors: [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange],
+                    ),
+                  ),
+            SizedBox(height: 33.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 17.w),
+              child: songTitlePlaylistWidget(currentSong),
+            ),
+            Spacer(),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 17.w),
+              child: songPropertiesWidget(),
+            ),
+            SizedBox(height: 10.h),
+            songProgressBarWidget(),
+            SizedBox(height: 70.h),
+          ],
         ),
       ),
     );

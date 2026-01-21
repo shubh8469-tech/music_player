@@ -123,6 +123,7 @@ class MusicPlayerService {
   /// Current duration - works on both platforms
   Duration? get duration {
     if (Platform.isAndroid && _androidPlayer != null) {
+      developer.log('android Player ${_androidPlayer == null} ${_androidPlayer!.duration}');
       return _androidPlayer?.duration;
     } else if (Platform.isIOS && _iosPlayer != null) {
       return _iosPlayer?.duration;
@@ -1551,15 +1552,38 @@ class MusicPlayerService {
 
   /// Remove song from the playlist and queue
 
-  Future<void> removeSongFromQueue(int removeIndex) async {
+  Future<void> removeDeletedSongFromQueue(int songId) async {
+    final removeIndex = songs.indexWhere((s) => s.id == songId);
+
+    final mutableSongs = List<SongsModel>.from(songs);
+    if (mutableSongs.length == 1) {
+      final index = player.currentIndex ?? 0;
+
+      await player.seek(
+        player.position,
+        index: index,
+      );
+    }
+
+    // Song not in queue → nothing to do
+    if (removeIndex == -1) {
+      print('ℹ️ Deleted song not found in queue');
+      return;
+    }
+
+    await _removeSongFromQueueAtIndex(removeIndex);
+  }
+
+
+  Future<void> _removeSongFromQueueAtIndex(int removeIndex) async {
     if (removeIndex < 0 || removeIndex >= songs.length) return;
 
-    print('🗑 Removing song from queue at index $removeIndex');
+    print('🗑 Removing deleted song from queue at index $removeIndex');
 
     final mutableSongs = List<SongsModel>.from(songs);
     mutableSongs.removeAt(removeIndex);
 
-    // Update internal list FIRST
+    // ✅ Update internal queue FIRST
     songs = mutableSongs;
     _songsChangedController.add(songs);
 
@@ -1576,26 +1600,27 @@ class MusicPlayerService {
 
           await source.removeAt(removeIndex);
 
-          // 🧠 If removed song was BEFORE current song
-          if (currentIndexBefore != null &&
-              removeIndex < currentIndexBefore) {
+          // 🧠 Removed song was BEFORE current
+          if (currentIndexBefore != null && removeIndex < currentIndexBefore) {
             await player.seek(
               currentPosition,
               index: currentIndexBefore - 1,
             );
           }
 
-          // 🧠 If removed song WAS the current song
+          // 🧠 Removed song IS the current song
           else if (currentIndexBefore == removeIndex) {
             if (mutableSongs.isNotEmpty) {
-              final newIndex =
-              removeIndex < mutableSongs.length ? removeIndex : mutableSongs.length - 1;
+              final newIndex = removeIndex < mutableSongs.length
+                  ? removeIndex
+                  : mutableSongs.length - 1;
+
               await player.seek(Duration.zero, index: newIndex);
               if (wasPlaying) await player.play();
             }
           }
 
-          print('✅ Android: Song removed without restart');
+          print('✅ Android: Deleted song removed without restart');
         } else {
           await updateSongsInQueue(songs);
         }
@@ -1607,13 +1632,12 @@ class MusicPlayerService {
 
     // ======================== iOS ========================
     else if (Platform.isIOS) {
-      // iOS: rebuild ONLY if idle
+      // iOS: Only rebuild if idle
       if (!isPlaying && currentIndex < 0) {
         await updateSongsInQueue(songs);
       }
     }
   }
-
 
 }
 

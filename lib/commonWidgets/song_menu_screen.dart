@@ -936,14 +936,14 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                   return;
                                 }
 
-                               if (widget.from == 'folder_in') {
+                               // if (widget.from == 'folder_in') {
                                   // Handle delete song from folder (delete file from system)
                                   if (widget.currentSong != null) {
-                                    _showDeleteFromFolderConfirmation(context);
+                                    // _showDeleteFromFolderConfirmation(context);
                                   }
-                                }
+                                // }
                                 // else {
-                                //   _showDeleteFromLibraryBottomSheet(context);
+                                  _showDeleteFromLibraryBottomSheet(context);
                                 // }
                               }
                               else if (songItem.title == S.of(context).removeFromPlaylist) {
@@ -1575,12 +1575,14 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
       // Call the callback to refresh the folder detail screen
       var musicService = MusicPlayerService();
+      // await musicService.player.stop();
+
       final currentSongs = List<SongsModel>.from(musicService.songs);
       currentSongs.removeWhere((element) => element.id == widget.currentSong!.id);
 
-      await musicService.player.stop();
       if (currentSongs.isNotEmpty) {
-        musicService.setPlaylist(currentSongs);
+        musicService.removeDeletedSongFromQueue(widget.currentSong!.id!);
+        // musicService.setPlaylist(currentSongs);
       } else {
         musicService.resetPlaylist(currentSongs);
       }
