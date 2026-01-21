@@ -1215,7 +1215,78 @@ class MusicPlayerService {
     return addingList.length;
   }
 
+  Future<bool> playNextSingleSong(
+      SongsModel song,
+      ) async {
+    if (currentIndex < 0 || currentIndex >= songs.length) return false;
 
+    // 🔹 If song already exists, fallback to reorder logic
+    final existingIndex = songs.indexWhere((s) => s.id == song.id);
+    if (existingIndex != -1) {
+      await reorderSongInQueue(existingIndex, currentIndex + 1);
+      return true;
+    }
+
+    print('⏭️ Play Next (single song)');
+
+    // 🔹 Internal queue update
+    final mutableSongs = List<SongsModel>.from(songs);
+
+    final rawInsertIndex = currentIndex + 1;
+    final insertIndex = rawInsertIndex.clamp(0, mutableSongs.length);
+
+    mutableSongs.insert(insertIndex, song);
+
+    songs = mutableSongs;
+    _songsChangedController.add(songs);
+
+    // ====================== ANDROID ======================
+    if (Platform.isAndroid) {
+      try {
+        final player = _androidPlayer!;
+        final source = player.audioSource;
+
+        if (source is ConcatenatingAudioSource) {
+          // 🔒 Preserve playback state
+          final int? currentIndexBefore = player.currentIndex;
+          final Duration currentPosition = player.position;
+          final bool wasPlaying = player.playing;
+
+          // 🔹 Insert ONE audio source
+          await source.insert(
+            insertIndex,
+            _createAudioSource(song),
+          );
+
+          // 🔁 Restore playback (CRITICAL)
+          if (currentIndexBefore != null &&
+              player.currentIndex == currentIndexBefore) {
+            await player.seek(
+              currentPosition,
+              index: currentIndexBefore,
+            );
+            if (wasPlaying) await player.play();
+          }
+
+          print('✅ Android: Single song inserted without restart');
+        } else {
+          await updateSongsInQueue(songs);
+        }
+      } catch (e) {
+        print('❌ Android Play Next (single) error: $e');
+      }
+    }
+
+    // ======================== iOS ========================
+    else if (Platform.isIOS) {
+      // iOS: do NOT touch native queue during playback
+      if (!isPlaying && currentIndex < 0) {
+        await updateSongsInQueue(songs);
+      }
+    }
+
+    return true;
+  }
 
   // Helper: Rebuild playlist without seeking (for fallback only)
   Future<void> _rebuildPlaylistNoSeek(List<SongsModel> songsList, int currentIdx, bool wasPlaying) async {

@@ -569,6 +569,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       return;
                                     }
 
+                                    log('  Existing index in queue: $existingIndex');
                                     if (existingIndex != -1 && existingIndex != insertIndex) {
                                       print('  Song exists at index $existingIndex, moving to $insertIndex');
                                       // Remove from old position
@@ -583,7 +584,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       print('  Moved to adjusted index: $adjustedInsertIndex');
                                     } else if (existingIndex == -1) {
                                       print('  Song not in queue, inserting at $insertIndex');
-                                      newSongsList.insert(insertIndex, widget.currentSong!);
+                                      await musicService.playNextSingleSong(widget.currentSong!);
+                                      // newSongsList.insert(insertIndex, widget.currentSong!);
                                     } else {
                                       print('  Song already at correct position');
                                     }
@@ -742,7 +744,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                   musicService.setPlaylist(newSongsList, autoPlay: false);
 
                                   showSnackBar(context, () {}, message: "${newSongsList.length} songs added to queue", alertBannerLocation: AlertBannerLocation.bottom);
-                                } else {
+                                }
+                                else {
                                   final newSongsList = List<SongsModel>.from(musicService.songs);
 
                                   final existingIndex = newSongsList.indexWhere((song) => song.id == widget.currentSong!.id);
