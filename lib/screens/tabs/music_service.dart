@@ -1142,32 +1142,24 @@ class MusicPlayerService {
     if (nextSongs.isEmpty) return 0;
     if (currentIndex < 0 || currentIndex >= songs.length) return 0;
 
+    print('⏭️ Play Next (multiple songs): ${nextSongs.length}');
+
+    // 🔹 Copy current queue (DO NOT REMOVE FROM THIS)
     final mutableSongs = List<SongsModel>.from(songs);
-    final addingList = List<SongsModel>.from(nextSongs);
 
-    // 🔹 Remove duplicates from queue
-    mutableSongs.removeWhere(
-          (s) => nextSongs.any((n) => n.id == s.id),
-    );
-
-    // 🔹 Remove already-existing songs from adding list
-    addingList.removeWhere(
-          (s) => songs.any((n) => n.id == s.id),
-    );
+    // 🔹 Filter songs that are NOT already in queue
+    final addingList = nextSongs.where(
+          (song) => !songs.any((q) => q.id == song.id),
+    ).toList();
 
     if (addingList.isEmpty) return 0;
 
-    // 🔹 Calculate SAFE insert index ✅
+    // 🔹 Safe insert index
     final rawInsertIndex = currentIndex + 1;
     final insertIndex = rawInsertIndex.clamp(0, mutableSongs.length);
 
-    try {
-      // 🔹 INSERT CORRECT LIST ✅
-      mutableSongs.insertAll(insertIndex, addingList);
-    } catch (e) {
-      developer.log('❌ Error inserting songs: $e');
-      return 0;
-    }
+    // 🔹 Insert new songs ONLY
+    mutableSongs.insertAll(insertIndex, addingList);
 
     // 🔹 Update internal queue
     songs = mutableSongs;
@@ -1180,13 +1172,13 @@ class MusicPlayerService {
         final source = player.audioSource;
 
         if (source is ConcatenatingAudioSource) {
+          // 🔒 Preserve playback state
           final int? currentIndexBefore = player.currentIndex;
           final Duration currentPosition = player.position;
           final bool wasPlaying = player.playing;
 
           int targetIndex = insertIndex;
 
-          // 🔹 INSERT ONLY addingList ✅
           for (final song in addingList) {
             await source.insert(
               targetIndex,
@@ -1195,9 +1187,13 @@ class MusicPlayerService {
             targetIndex++;
           }
 
+          // 🔁 Restore playback
           if (currentIndexBefore != null &&
               player.currentIndex == currentIndexBefore) {
-            await player.seek(currentPosition, index: currentIndexBefore);
+            await player.seek(
+              currentPosition,
+              index: currentIndexBefore,
+            );
             if (wasPlaying) await player.play();
           }
         } else {
@@ -1210,6 +1206,7 @@ class MusicPlayerService {
 
     // ======================== iOS ========================
     else if (Platform.isIOS) {
+      // Do NOT touch native queue during playback
       if (!isPlaying && currentIndex < 0) {
         await updateSongsInQueue(songs);
       }
@@ -1217,6 +1214,7 @@ class MusicPlayerService {
 
     return addingList.length;
   }
+
 
 
   // Helper: Rebuild playlist without seeking (for fallback only)

@@ -259,39 +259,58 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
         await musicService.setPlaylist(allSongsFromArtists, startIndex: 0);
         await musicService.play();
       } else {
-        // Songs exist in queue - insert selected songs after current playing song
-        final currentIndex = musicService.currentIndex;
-        final insertIndex = currentIndex + 1;
 
-        // Create a new list with selected songs inserted at the right position
-        final newSongsList = List<SongsModel>.from(musicService.songs);
-
-        // Filter out songs that are already in the list to avoid duplicates
-        final songsToAdd = allSongsFromArtists.where((song) {
-          return !newSongsList.any(
-            (existingSong) => existingSong.id == song.id,
+        final updateCount = await musicService.playNextMultipleSongs(allSongsFromArtists);
+        if(updateCount < 1){
+          showSnackBar(
+            context,
+                () {},
+            message: "Songs already added to play next",
+            alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }).toList();
+        }
+        else{
+          showSnackBar(
+            context,
+                () {},
+            message: "$updateCount songs added to play next",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
 
-        // Insert songs at the position after current playing song
-        newSongsList.insertAll(insertIndex, songsToAdd);
-
-        // Update the playlist, keeping the current song playing
-        await musicService.setPlaylist(
-          newSongsList,
-          startIndex: currentIndex >= 0 ? currentIndex : 0,
-          autoPlay: false,
-        );
+        // Songs exist in queue - insert selected songs after current playing song
+        // final currentIndex = musicService.currentIndex;
+        // final insertIndex = currentIndex + 1;
+        //
+        // // Create a new list with selected songs inserted at the right position
+        // final newSongsList = List<SongsModel>.from(musicService.songs);
+        //
+        // // Filter out songs that are already in the list to avoid duplicates
+        // final songsToAdd = allSongsFromArtists.where((song) {
+        //   return !newSongsList.any(
+        //     (existingSong) => existingSong.id == song.id,
+        //   );
+        // }).toList();
+        //
+        // // Insert songs at the position after current playing song
+        // newSongsList.insertAll(insertIndex, songsToAdd);
+        //
+        // // Update the playlist, keeping the current song playing
+        // await musicService.setPlaylist(
+        //   newSongsList,
+        //   startIndex: currentIndex >= 0 ? currentIndex : 0,
+        //   autoPlay: false,
+        // );
       }
 
       if (mounted) {
-        showSnackBar(
-          context,
-          () {},
-          message:
-              "${allSongsFromArtists.length} songs from ${selectedArtists.length} artists added to play next",
-          alertBannerLocation: AlertBannerLocation.bottom,
-        );
+        // showSnackBar(
+        //   context,
+        //   () {},
+        //   message:
+        //       "${allSongsFromArtists.length} songs from ${selectedArtists.length} artists added to play next",
+        //   alertBannerLocation: AlertBannerLocation.bottom,
+        // );
         context.pop();
       }
     } catch (e) {

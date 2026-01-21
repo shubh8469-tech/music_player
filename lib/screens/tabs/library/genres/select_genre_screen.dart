@@ -382,34 +382,53 @@ class _SelectGenreScreenState extends State<SelectGenreScreen> {
         await musicService.setPlaylist(allSongsFromGenres, startIndex: 0);
         await musicService.play();
       } else {
-        final currentIndex = musicService.currentIndex;
-        final insertIndex = currentIndex >= 0 ? currentIndex + 1 : 0;
 
-        final newSongsList = List<SongsModel>.from(musicService.songs);
-
-        final songsToAdd = allSongsFromGenres.where((song) {
-          return !newSongsList.any(
-            (existingSong) => existingSong.id == song.id,
+        final updateCount = await musicService.playNextMultipleSongs(allSongsFromGenres);
+        if(updateCount < 1){
+          showSnackBar(
+            context,
+                () {},
+            message: "Songs already added to play next",
+            alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }).toList();
+        }
+        else{
+          showSnackBar(
+            context,
+                () {},
+            message: "$updateCount songs added to play next",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
 
-        newSongsList.insertAll(insertIndex, songsToAdd);
-
-        await musicService.setPlaylist(
-          newSongsList,
-          startIndex: currentIndex >= 0 ? currentIndex : 0,
-          autoPlay: false,
-        );
+        // final currentIndex = musicService.currentIndex;
+        // final insertIndex = currentIndex >= 0 ? currentIndex + 1 : 0;
+        //
+        // final newSongsList = List<SongsModel>.from(musicService.songs);
+        //
+        // final songsToAdd = allSongsFromGenres.where((song) {
+        //   return !newSongsList.any(
+        //     (existingSong) => existingSong.id == song.id,
+        //   );
+        // }).toList();
+        //
+        // newSongsList.insertAll(insertIndex, songsToAdd);
+        //
+        // await musicService.setPlaylist(
+        //   newSongsList,
+        //   startIndex: currentIndex >= 0 ? currentIndex : 0,
+        //   autoPlay: false,
+        // );
       }
 
       if (mounted) {
-        showSnackBar(
-          context,
-          () {},
-          message:
-              "${allSongsFromGenres.length} songs from ${selectedGenres.length} genres added to play next",
-          alertBannerLocation: AlertBannerLocation.bottom,
-        );
+        // showSnackBar(
+        //   context,
+        //   () {},
+        //   message:
+        //       "${allSongsFromGenres.length} songs from ${selectedGenres.length} genres added to play next",
+        //   alertBannerLocation: AlertBannerLocation.bottom,
+        // );
         context.pop();
       }
     } catch (e) {
