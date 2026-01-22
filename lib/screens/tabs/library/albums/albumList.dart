@@ -300,7 +300,7 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
         : Assets.svgAlbum;
 
     return Container(
-      constraints: BoxConstraints(maxHeight: 0.63.sh),
+      constraints: BoxConstraints(maxHeight: 0.67.sh),
       padding: EdgeInsets.only(top: 10.h, bottom: bottomPadding),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -311,55 +311,60 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
             child: Column(
               children: [
                 // Album info
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 12.h,
-                  ),
-                  child: MusicListTile(
-                    margin: 7.w,
-                    height: 66.h,
-                    borderRadius: 10.r,
-                    backgroundColor: AppColors.musicTileBackgroundColor,
-                    cardHeight: 50.h,
-                    cardWidth: 50.w,
-                    cardRadius: 7.r,
-                    noLogoGradientColor: [
-                      AppColors.mildOrange.withValues(alpha: 0.21),
-                      AppColors.mildOrange,
-                    ],
-                    cardIconAsset: albumArtworkPath,
-                    cardIconSize: 32.r,
-                    isSvgCardIcon: true,
-                    title: album.name,
-                    subtitle: '${album.songCount} Songs',
-                    trailingIconAsset: Assets.svgIcShare,
-                    trailingIconHeight: 25.h,
-                    trailingIconWidth: 25.w,
-                    trailingMargin: 2.w,
-                    onTap: () {
-                      showSnackBar(
-                        context,
-                        () {},
-                        message: 'Share album feature coming soon',
-                        alertBannerLocation: AlertBannerLocation.bottom,
-                      );
-                    },
-                    onPlayTap: () {
-                      showSnackBar(
-                        context,
-                        () {},
-                        message: 'Play album feature coming soon',
-                        alertBannerLocation: AlertBannerLocation.bottom,
-                      );
-                    },
-                  ),
-                ),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: albumMenuItems.length,
+                    itemCount: albumMenuItems.length + 1,
+                    padding: EdgeInsets.zero,
                     itemBuilder: (context, index) {
-                      final menuItem = albumMenuItems[index];
+
+                      if(index == 0){
+                        return Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 12.h,
+                          ),
+                          child: MusicListTile(
+                            margin: 7.w,
+                            height: 66.h,
+                            borderRadius: 10.r,
+                            backgroundColor: AppColors.musicTileBackgroundColor,
+                            cardHeight: 50.h,
+                            cardWidth: 50.w,
+                            cardRadius: 7.r,
+                            noLogoGradientColor: [
+                              AppColors.mildOrange.withValues(alpha: 0.21),
+                              AppColors.mildOrange,
+                            ],
+                            cardIconAsset: albumArtworkPath,
+                            cardIconSize: 32.r,
+                            isSvgCardIcon: true,
+                            title: album.name,
+                            subtitle: '${album.songCount} Songs',
+                            trailingIconAsset: Assets.svgIcShare,
+                            trailingIconHeight: 25.h,
+                            trailingIconWidth: 25.w,
+                            trailingMargin: 2.w,
+                            onTap: () {
+                              showSnackBar(
+                                context,
+                                    () {},
+                                message: 'Share album feature coming soon',
+                                alertBannerLocation: AlertBannerLocation.bottom,
+                              );
+                            },
+                            onPlayTap: () {
+                              showSnackBar(
+                                context,
+                                    () {},
+                                message: 'Play album feature coming soon',
+                                alertBannerLocation: AlertBannerLocation.bottom,
+                              );
+                            },
+                          ),
+                        );
+                      }
+
+                      final menuItem = albumMenuItems[index - 1];
                       final isChangeCoverItem =
                           menuItem.title == S.of(context).hideFolder;
                       final displayTitle = isChangeCoverItem
@@ -368,6 +373,7 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                       final displayIcon = isChangeCoverItem
                           ? Assets.svgIcCover
                           : menuItem.icon;
+
                       return Column(
                         children: [
                           ListTile(
@@ -392,7 +398,7 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                               _handleAlbumMenuAction(displayTitle, album);
                             },
                           ),
-                          if (index == 3) ...[
+                          if (index - 1 == 3) ...[
                             Padding(
                               padding: EdgeInsets.symmetric(
                                 horizontal: 15.w,
@@ -436,10 +442,10 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                     ),
                   ),
                 ),
+                SizedBox(height: 44.h),
               ],
             ),
           ),
-          SizedBox(height: 25.h),
         ],
       ),
     );

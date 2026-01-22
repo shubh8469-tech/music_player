@@ -245,7 +245,7 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
         : Assets.svgMusicIcon;
 
     return Container(
-      constraints: BoxConstraints(maxHeight: 0.63.sh),
+      constraints: BoxConstraints(maxHeight: 0.67.sh),
       padding: EdgeInsets.only(top: 10.h, bottom: bottomPadding),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -256,52 +256,57 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
             child: Column(
               children: [
                 // Artist info
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 12.h,
-                  ),
-                  child: MusicListTile(
-                    margin: 7.w,
-                    height: 66.h,
-                    borderRadius: 10.r,
-                    backgroundColor: AppColors.musicTileBackgroundColor,
-                    cardHeight: 50.h,
-                    cardWidth: 50.w,
-                    cardRadius: 100.r,
-                    cardIconAsset: artistArtworkPath,
-                    cardIconSize: 32.r,
-                    isSvgColorNeeded: false,
-                    title: artist.name,
-                    subtitle:
-                        '${artist.albumCount} Album${artist.albumCount != 1 ? 's' : ''} - ${artist.songCount} Songs',
-                    trailingIconAsset: Assets.svgIcShare,
-                    trailingIconHeight: 25.h,
-                    trailingIconWidth: 25.w,
-                    trailingMargin: 2.w,
-                    onTap: () {
-                      showSnackBar(
-                        context,
-                        () {},
-                        message: 'Share artist feature coming soon',
-                        alertBannerLocation: AlertBannerLocation.bottom,
-                      );
-                    },
-                    onPlayTap: () {
-                      showSnackBar(
-                        context,
-                        () {},
-                        message: 'Play artist feature coming soon',
-                        alertBannerLocation: AlertBannerLocation.bottom,
-                      );
-                    },
-                  ),
-                ),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: artistMenuItems.length,
+                    itemCount: artistMenuItems.length + 1,
+                    padding: EdgeInsets.zero,
                     itemBuilder: (context, index) {
-                      final menuItem = artistMenuItems[index];
+
+                      if(index == 0){
+                        return Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 12.h,
+                          ),
+                          child: MusicListTile(
+                            margin: 7.w,
+                            height: 66.h,
+                            borderRadius: 10.r,
+                            backgroundColor: AppColors.musicTileBackgroundColor,
+                            cardHeight: 50.h,
+                            cardWidth: 50.w,
+                            cardRadius: 100.r,
+                            cardIconAsset: artistArtworkPath,
+                            cardIconSize: 32.r,
+                            isSvgColorNeeded: false,
+                            title: artist.name,
+                            subtitle:
+                            '${artist.albumCount} Album${artist.albumCount != 1 ? 's' : ''} - ${artist.songCount} Songs',
+                            trailingIconAsset: Assets.svgIcShare,
+                            trailingIconHeight: 25.h,
+                            trailingIconWidth: 25.w,
+                            trailingMargin: 2.w,
+                            onTap: () {
+                              showSnackBar(
+                                context,
+                                    () {},
+                                message: 'Share artist feature coming soon',
+                                alertBannerLocation: AlertBannerLocation.bottom,
+                              );
+                            },
+                            onPlayTap: () {
+                              showSnackBar(
+                                context,
+                                    () {},
+                                message: 'Play artist feature coming soon',
+                                alertBannerLocation: AlertBannerLocation.bottom,
+                              );
+                            },
+                          ),
+                        );
+                      }
+
+                      final menuItem = artistMenuItems[index - 1];
                       final isChangeCoverItem =
                           menuItem.title == S.of(context).hideFolder;
                       final displayTitle = isChangeCoverItem
@@ -334,7 +339,7 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                               _handleArtistMenuAction(displayTitle, artist);
                             },
                           ),
-                          if (index == 3) ...[
+                          if (index - 1 == 3) ...[
                             Padding(
                               padding: EdgeInsets.symmetric(
                                 horizontal: 15.w,
@@ -378,10 +383,10 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                     ),
                   ),
                 ),
+                SizedBox(height: 44.h),
               ],
             ),
           ),
-          SizedBox(height: 25.h),
         ],
       ),
     );

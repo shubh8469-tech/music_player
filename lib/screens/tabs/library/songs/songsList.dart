@@ -393,7 +393,7 @@ class _SongsListState extends State<SongsList> {
                                                 currentSong: songs[index],
                                                 songIndex: index,
                                                 songsList: songs,
-                                                maxHeight: 0.87.sh,
+                                                maxHeight: 0.85.sh,
                                                 onSongDeleted: () {
                                                   // Ensure the global songs list is refreshed after deletion
                                                   // (Folder/album/artist screens handle their own local lists)

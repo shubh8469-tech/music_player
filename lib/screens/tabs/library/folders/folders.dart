@@ -254,7 +254,7 @@ class _FolderListScreenState extends State<FolderListScreen> {
     final menuItems = _buildFolderMenuItems(folder);
 
     return Container(
-      constraints: BoxConstraints(maxHeight: 0.63.sh),
+      constraints: BoxConstraints(maxHeight: 0.62.sh),
       padding: EdgeInsets.only(top: 10.h, bottom: bottomPadding),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -264,56 +264,61 @@ class _FolderListScreenState extends State<FolderListScreen> {
           Flexible(
             child: Column(
               children: [
-                // Folder info
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 12.h,
-                  ),
-                  child: MusicListTile(
-                    margin: 7.w,
-                    height: 66.h,
-                    borderRadius: 10.r,
-                    backgroundColor: AppColors.musicTileBackgroundColor,
-                    cardHeight: 50.h,
-                    cardWidth: 50.w,
-                    cardRadius: 7.r,
-                    noLogoGradientColor: [
-                      AppColors.mildYellow.withValues(alpha: 0.21),
-                      AppColors.mildYellow,
-                    ],
-                    cardIconAsset: Assets.svgDirectory,
-                    cardIconSize: 32.r,
-                    isSvgCardIcon: true,
-                    title: folder.name,
-                    subtitle: '${folder.songCount} Songs',
-                    trailingIconAsset: Assets.svgIcShare,
-                    trailingIconHeight: 25.h,
-                    trailingIconWidth: 25.w,
-                    trailingMargin: 2.w,
-                    onTap: () {
-                      showSnackBar(
-                        context,
-                        () {},
-                        message: 'Share folder feature coming soon',
-                        alertBannerLocation: AlertBannerLocation.bottom,
-                      );
-                    },
-                    onPlayTap: () {
-                      showSnackBar(
-                        context,
-                        () {},
-                        message: 'Play folder feature coming soon',
-                        alertBannerLocation: AlertBannerLocation.bottom,
-                      );
-                    },
-                  ),
-                ),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: menuItems.length,
+                    itemCount: menuItems.length + 1,
+                    padding: EdgeInsets.zero,
                     itemBuilder: (context, index) {
-                      final menuItem = menuItems[index];
+
+                      if(index == 0){
+                        // Folder info
+                        return Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 12.h,
+                          ),
+                          child: MusicListTile(
+                            margin: 7.w,
+                            height: 66.h,
+                            borderRadius: 10.r,
+                            backgroundColor: AppColors.musicTileBackgroundColor,
+                            cardHeight: 50.h,
+                            cardWidth: 50.w,
+                            cardRadius: 7.r,
+                            noLogoGradientColor: [
+                              AppColors.mildYellow.withValues(alpha: 0.21),
+                              AppColors.mildYellow,
+                            ],
+                            cardIconAsset: Assets.svgDirectory,
+                            cardIconSize: 32.r,
+                            isSvgCardIcon: true,
+                            title: folder.name,
+                            subtitle: '${folder.songCount} Songs',
+                            trailingIconAsset: Assets.svgIcShare,
+                            trailingIconHeight: 25.h,
+                            trailingIconWidth: 25.w,
+                            trailingMargin: 2.w,
+                            onTap: () {
+                              showSnackBar(
+                                context,
+                                    () {},
+                                message: 'Share folder feature coming soon',
+                                alertBannerLocation: AlertBannerLocation.bottom,
+                              );
+                            },
+                            onPlayTap: () {
+                              showSnackBar(
+                                context,
+                                    () {},
+                                message: 'Play folder feature coming soon',
+                                alertBannerLocation: AlertBannerLocation.bottom,
+                              );
+                            },
+                          ),
+                        );
+                      }
+
+                      final menuItem = menuItems[index - 1];
                       return Column(
                         children: [
                           ListTile(
@@ -338,7 +343,7 @@ class _FolderListScreenState extends State<FolderListScreen> {
                               _handleFolderMenuAction(menuItem.title, folder);
                             },
                           ),
-                          if (index == 3) ...[
+                          if (index - 1 == 3) ...[
                             Padding(
                               padding: EdgeInsets.symmetric(
                                 horizontal: 15.w,
@@ -382,10 +387,10 @@ class _FolderListScreenState extends State<FolderListScreen> {
                     ),
                   ),
                 ),
+                SizedBox(height: 44.h),
               ],
             ),
           ),
-          SizedBox(height: 25.h),
         ],
       ),
     );
@@ -682,7 +687,12 @@ class _FolderListScreenState extends State<FolderListScreen> {
 
     try {
       final updateHiddenStatus = locator<UpdateFolderHiddenStatus>();
+      final repo = locator<FolderRepository>();
+      final songs = await repo.getSongsForFolder(folder.id!);
       await updateHiddenStatus(folder.id!, hide);
+      for(final song in songs){
+        await musicService.removeDeletedSongFromQueue(song.id!);
+      }
       if (!mounted) return;
       context.read<FolderBloc>().add(const FolderEvent.fetchAllFolders());
       context.read<SongsBloc>().add(const SongsEvent.getAllSongs());

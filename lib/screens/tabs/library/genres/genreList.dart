@@ -244,7 +244,7 @@ class _GenreListScreenState extends State<GenreListScreen> {
     final genreArtworkPath = hasArtwork ? genre.artworkPath! : '';
 
     return Container(
-      constraints: BoxConstraints(maxHeight: 0.63.sh),
+      constraints: BoxConstraints(maxHeight: 0.67.sh),
       padding: EdgeInsets.only(top: 10.h, bottom: bottomPadding),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -254,58 +254,63 @@ class _GenreListScreenState extends State<GenreListScreen> {
           Flexible(
             child: Column(
               children: [
-                // Genre info
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 12.h,
-                  ),
-                  child: MusicListTile(
-                    margin: 7.w,
-                    height: 66.h,
-                    borderRadius: 10.r,
-                    backgroundColor: AppColors.musicTileBackgroundColor,
-                    cardHeight: 50.h,
-                    cardWidth: 50.w,
-                    cardRadius: 100.r,
-                    cardIconAsset: genreArtworkPath,
-                    cardContent: hasArtwork
-                        ? null
-                        : buildGenreInitialAvatar(
-                            genre.name,
-                            24.sp,
-                          ),
-                    cardIconSize: 32.r,
-                    isSvgColorNeeded: false,
-                    title: genre.name,
-                    subtitle: '${genre.songCount} Songs',
-                    trailingIconAsset: Assets.svgIcShare,
-                    trailingIconHeight: 25.h,
-                    trailingIconWidth: 25.w,
-                    trailingMargin: 2.w,
-                    onTap: () {
-                      showSnackBar(
-                        context,
-                        () {},
-                        message: 'Share genre feature coming soon',
-                        alertBannerLocation: AlertBannerLocation.bottom,
-                      );
-                    },
-                    onPlayTap: () {
-                      showSnackBar(
-                        context,
-                        () {},
-                        message: 'Play genre feature coming soon',
-                        alertBannerLocation: AlertBannerLocation.bottom,
-                      );
-                    },
-                  ),
-                ),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: genreMenuItems.length,
+                    itemCount: genreMenuItems.length + 1,
+                    padding: EdgeInsets.zero,
                     itemBuilder: (context, index) {
-                      final menuItem = genreMenuItems[index];
+
+                      if(index == 0){
+                        // Genre info
+                        return Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 12.h,
+                          ),
+                          child: MusicListTile(
+                            margin: 7.w,
+                            height: 66.h,
+                            borderRadius: 10.r,
+                            backgroundColor: AppColors.musicTileBackgroundColor,
+                            cardHeight: 50.h,
+                            cardWidth: 50.w,
+                            cardRadius: 100.r,
+                            cardIconAsset: genreArtworkPath,
+                            cardContent: hasArtwork
+                                ? null
+                                : buildGenreInitialAvatar(
+                              genre.name,
+                              24.sp,
+                            ),
+                            cardIconSize: 32.r,
+                            isSvgColorNeeded: false,
+                            title: genre.name,
+                            subtitle: '${genre.songCount} Songs',
+                            trailingIconAsset: Assets.svgIcShare,
+                            trailingIconHeight: 25.h,
+                            trailingIconWidth: 25.w,
+                            trailingMargin: 2.w,
+                            onTap: () {
+                              showSnackBar(
+                                context,
+                                    () {},
+                                message: 'Share genre feature coming soon',
+                                alertBannerLocation: AlertBannerLocation.bottom,
+                              );
+                            },
+                            onPlayTap: () {
+                              showSnackBar(
+                                context,
+                                    () {},
+                                message: 'Play genre feature coming soon',
+                                alertBannerLocation: AlertBannerLocation.bottom,
+                              );
+                            },
+                          ),
+                        );
+                      }
+
+                      final menuItem = genreMenuItems[index - 1];
                       final isChangeCoverItem =
                           menuItem.title == S.of(context).hideFolder;
                       final displayTitle = isChangeCoverItem
@@ -338,7 +343,7 @@ class _GenreListScreenState extends State<GenreListScreen> {
                               _handleGenreMenuAction(displayTitle, genre);
                             },
                           ),
-                          if (index == 3) ...[
+                          if (index - 1 == 3) ...[
                             Padding(
                               padding: EdgeInsets.symmetric(
                                 horizontal: 15.w,
@@ -382,10 +387,10 @@ class _GenreListScreenState extends State<GenreListScreen> {
                     ),
                   ),
                 ),
+                SizedBox(height: 44.h),
               ],
             ),
           ),
-          SizedBox(height: 25.h),
         ],
       ),
     );
