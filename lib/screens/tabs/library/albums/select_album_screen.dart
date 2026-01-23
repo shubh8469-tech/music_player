@@ -258,12 +258,21 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
       // Check if there are existing songs in the queue
       if (musicService.songs.isEmpty) {
         // No songs in queue - add all selected songs and start playing
+
+        context.pop();
+        showSnackBar(
+          context,
+              () {},
+          message: "${allSongsFromAlbums.length} songs added to play next",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+
         await musicService.setPlaylist(allSongsFromAlbums, startIndex: 0);
         await musicService.play();
       } else {
 
         final updateCount = await musicService.playNextMultipleSongs(allSongsFromAlbums);
-        if(updateCount < 1){
+        if(updateCount < 1) {
           showSnackBar(
             context,
                 () {},
@@ -394,6 +403,8 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
         }
       }
 
+      context.pop();
+
       // Create a copy of the existing songs list
       // final newSongsList = List<SongsModel>.from(musicService.songs);
       //
@@ -489,14 +500,11 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
       }
 
       // Set the combined playlist and start playing
-      await musicService.setPlaylist(allSongsFromAlbums, startIndex: 0);
-      await musicService.play();
-
       showSnackBar(
         context,
-        () {},
+            () {},
         message:
-            "Playing ${allSongsFromAlbums.length} songs from ${selectedAlbums.length} albums",
+        "Playing ${allSongsFromAlbums.length} songs from ${selectedAlbums.length} albums",
         alertBannerLocation: AlertBannerLocation.bottom,
       );
 
@@ -504,6 +512,10 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
       if (mounted) {
         context.pop();
       }
+
+      await musicService.setPlaylist(allSongsFromAlbums, startIndex: 0);
+      await musicService.play();
+
     } catch (e) {
       showSnackBar(
         context,

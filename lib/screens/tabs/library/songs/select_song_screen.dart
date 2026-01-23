@@ -142,10 +142,10 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
     try {
       // Set playlist with selected songs and start playing
       showSnackBar(context, () {}, message: "Playing ${selectedSongs.length} songs", alertBannerLocation: AlertBannerLocation.bottom);
+      context.pop();
       await musicService.setPlaylist(selectedSongs, startIndex: 0);
       await musicService.play();
       // Navigate back or stay, depending on your preference
-      context.pop();
     } catch (e) {
       log('Error playing selected songs: $e');
       if (mounted) {
@@ -305,9 +305,6 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
       // Check if there are existing songs in the queue
       if (musicService.songs.isEmpty) {
         // No songs in queue - add all selected songs and start playing
-        log('can pop first ${Navigator.canPop(context)}');
-        await musicService.setPlaylist(selectedSongs, startIndex: 0, autoPlay: true);
-        log('can pop ${Navigator.canPop(context)}');
         if(mounted) {
           showSnackBar(context, () {}, message: "${selectedSongs.length} songs added to play next", alertBannerLocation: AlertBannerLocation.bottom);
         }
@@ -315,6 +312,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
         if (Navigator.canPop(context)) {
           Navigator.pop(context, true);
         }
+        await musicService.setPlaylist(selectedSongs, startIndex: 0, autoPlay: true);
         // await musicService.play();
       } else {
         final updateCount = await musicService.playNextMultipleSongs(selectedSongs);
@@ -458,12 +456,13 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
 
     bool anyHidden = false;
 
+
     for (final song in selectedSongs) {
       if (song.id == null) {
       } else {
         try {
           context.read<SongsBloc>().add(SongsEvent.hideSong(song.id!));
-          await musicService.removeDeletedSongFromQueue(song.id!);
+          // await musicService.removeDeletedSongFromQueue(song.id!);
           anyHidden = true;
         } catch (e) {
           showSnackBar(context, () {}, message: 'Failed to hide song: $e', backgroundColor: Colors.red, alertBannerLocation: AlertBannerLocation.bottom);
@@ -471,10 +470,13 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
       }
     }
 
+
     setState(() {
       selectedSongIds.removeWhere((id) => selectedSongs.any((song) => song.id == id));
       updateSelectAllState(widget.playlistSongs ?? context.read<SongsBloc>().state.maybeWhen(loaded: (songs) => songs, orElse: () => <SongsModel>[]));
     });
+
+    await musicService.removeDeletedSongsFromQueue(selectedSongs.map((song) => song.id!).toSet());
 
     if (mounted) {
       showSnackBar(context, () {}, message: '${selectedSongs.length} songs hidden', alertBannerLocation: AlertBannerLocation.bottom);

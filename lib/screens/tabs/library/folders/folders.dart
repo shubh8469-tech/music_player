@@ -690,9 +690,7 @@ class _FolderListScreenState extends State<FolderListScreen> {
       final repo = locator<FolderRepository>();
       final songs = await repo.getSongsForFolder(folder.id!);
       await updateHiddenStatus(folder.id!, hide);
-      for(final song in songs){
-        await musicService.removeDeletedSongFromQueue(song.id!);
-      }
+      await musicService.removeDeletedSongsFromQueue(songs.map((song) => song.id!).toSet());
       if (!mounted) return;
       context.read<FolderBloc>().add(const FolderEvent.fetchAllFolders());
       context.read<SongsBloc>().add(const SongsEvent.getAllSongs());

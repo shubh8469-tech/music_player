@@ -256,6 +256,14 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
       // Check if there are existing songs in the queue
       if (musicService.songs.isEmpty) {
         // No songs in queue - add all selected songs and start playing
+        context.pop();
+        showSnackBar(
+          context,
+              () {},
+          message: "${allSongsFromArtists.length} songs added to play next",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+
         await musicService.setPlaylist(allSongsFromArtists, startIndex: 0);
         await musicService.play();
       } else {
@@ -304,13 +312,6 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
       }
 
       if (mounted) {
-        // showSnackBar(
-        //   context,
-        //   () {},
-        //   message:
-        //       "${allSongsFromArtists.length} songs from ${selectedArtists.length} artists added to play next",
-        //   alertBannerLocation: AlertBannerLocation.bottom,
-        // );
         context.pop();
       }
     } catch (e) {
@@ -392,6 +393,8 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
           );
         }
       }
+
+      context.pop();
 
       // Create a copy of the existing songs list
       // final newSongsList = List<SongsModel>.from(musicService.songs);
@@ -488,15 +491,11 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
         return;
       }
 
-      // Set the combined playlist and start playing
-      await musicService.setPlaylist(allSongsFromArtists, startIndex: 0);
-      await musicService.play();
-
       showSnackBar(
         context,
-        () {},
+            () {},
         message:
-            "Playing ${allSongsFromArtists.length} songs from ${selectedArtists.length} artists",
+        "Playing ${allSongsFromArtists.length} songs from ${selectedArtists.length} artists",
         alertBannerLocation: AlertBannerLocation.bottom,
       );
 
@@ -504,6 +503,11 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
       if (mounted) {
         context.pop();
       }
+
+      // Set the combined playlist and start playing
+      await musicService.setPlaylist(allSongsFromArtists, startIndex: 0);
+      await musicService.play();
+
     } catch (e) {
       showSnackBar(
         context,

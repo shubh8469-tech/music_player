@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:music_app/commonWidgets/textWidget.dart';
+import 'package:music_app/commonWidgets/MusicListTile.dart';
 import 'package:music_app/features/folders/bloc/folder_bloc.dart';
 import 'package:music_app/core/di/injection.dart';
 import 'package:music_app/features/folders/data/dataSource/folder_local_data_source.dart';
@@ -415,81 +416,41 @@ class _HiddenSongTile extends StatelessWidget {
   final bool isHidden;
   final VoidCallback onToggle;
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: AppColors.musicTileBackgroundColor,
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Row(
-        children: [
-          Container(
-            height: 52.w,
-            width: 52.w,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12.r),
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.primaryOrange.withValues(alpha: 0.2),
-                  AppColors.primaryOrange,
-                ],
-              ),
-            ),
-            child: Center(
-              child: SvgPicture.asset(
-                Assets.svgMusicIcon,
-                height: 28.w,
-                width: 28.w,
-              ),
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Texts(
-                  song.title,
-                  fontSize: 16.sp,
-                  fontWeight: AppFontWeights.semiBold,
-                  fontFamily: AppFonts.inter,
-                  color: AppColors.textColor,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 4.h),
-                Texts(
-                  _buildSubtitle(song),
-                  fontSize: 12.sp,
-                  fontWeight: AppFontWeights.regular,
-                  fontFamily: AppFonts.inter,
-                  color: AppColors.textColor.withValues(alpha: 0.6),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            onPressed: onToggle,
-            icon: Icon(isHidden ? Icons.visibility : Icons.visibility_off),
-            color: isHidden
-                ? AppColors.primaryOrange
-                : AppColors.textColor.withValues(alpha: 0.6),
-          ),
-        ],
-      ),
-    );
-  }
-
   String _buildSubtitle(SongsModel song) {
     final artist = song.artist.isNotEmpty ? song.artist : 'Unknown Artist';
     final folder = song.folder?.isNotEmpty == true ? song.folder! : 'Unknown';
     return '$artist - $folder';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: MusicListTile(
+        margin: 8.h,
+        height: 66.h,
+        borderRadius: 12.r,
+        backgroundColor: AppColors.musicTileBackgroundColor,
+        cardHeight: 50.h,
+        cardWidth: 50.w,
+        cardRadius: 7.r,
+        cardIconAsset: song.artwork_path ?? Assets.svgMusicIcon,
+        cardIconSize: 32.r,
+        isSvgCardIcon: (song.artwork_path ?? '').contains('.svg') || song.artwork_path == null,
+        title: song.title,
+        subtitle: _buildSubtitle(song),
+        trailingIconAsset: Assets.svgMenuIcon,
+        trailingIconHeight: 19.5.h,
+        trailingIconWidth: 3.w,
+        trailingMargin: 10.w,
+        isLeading: true,
+        leadingIconAsset: Assets.svgIcHide,
+        leadingIconHeight: 20.h,
+        leadingIconWidth: 20.w,
+        leadingMargin: 10.w,
+        onInfoTap: onToggle,
+      ),
+    );
   }
 }
 

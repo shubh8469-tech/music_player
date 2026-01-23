@@ -150,20 +150,21 @@ class _SelectGenreScreenState extends State<SelectGenreScreen> {
         return;
       }
 
-      await musicService.setPlaylist(allSongsFromGenres, startIndex: 0);
-      await musicService.play();
-
       showSnackBar(
         context,
-        () {},
+            () {},
         message:
-            "Playing ${allSongsFromGenres.length} songs from ${selectedGenres.length} genres",
+        "Playing ${allSongsFromGenres.length} songs from ${selectedGenres.length} genres",
         alertBannerLocation: AlertBannerLocation.bottom,
       );
 
       if (mounted) {
         context.pop();
       }
+
+      await musicService.setPlaylist(allSongsFromGenres, startIndex: 0);
+      await musicService.play();
+
     } catch (e) {
       showSnackBar(
         context,
@@ -379,6 +380,15 @@ class _SelectGenreScreenState extends State<SelectGenreScreen> {
 
       // Check if there are existing songs in the queue
       if (musicService.songs.isEmpty) {
+
+        context.pop();
+        showSnackBar(
+          context,
+              () {},
+          message: "${allSongsFromGenres.length} songs added to play next",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+
         await musicService.setPlaylist(allSongsFromGenres, startIndex: 0);
         await musicService.play();
       } else {
@@ -490,6 +500,8 @@ class _SelectGenreScreenState extends State<SelectGenreScreen> {
           );
         }
       }
+
+      context.pop();
 
       // Create a copy of the existing songs list
       // final newSongsList = List<SongsModel>.from(musicService.songs);

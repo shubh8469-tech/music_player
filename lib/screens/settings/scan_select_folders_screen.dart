@@ -302,9 +302,7 @@ class _FolderBadge extends StatelessWidget {
   const _FolderBadge({required this.label, required this.isSelected});
 
   final String label;
-  final bool isSelected;
-
-  @override
+  final bool isSelected;  @override
   Widget build(BuildContext context) {
     return Container(
       width: 32.w,

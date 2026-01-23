@@ -1,14 +1,20 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
-
+import 'dart:typed_data';
 import '../../commonWidgets/textWidget.dart';
 import '../../core/di/injection.dart';
+import '../../features/albums/bloc/album_bloc.dart';
+import '../../features/artists/bloc/artist_bloc.dart';
+import '../../features/folders/bloc/folder_bloc.dart';
+import '../../features/genres/bloc/genre_bloc.dart';
+import '../../features/songs/bloc/songs_bloc.dart';
 import '../../features/songs/data/dataSource/song_local_data_source.dart';
 import '../../features/songs/data/models/song_model.dart';
 import '../../features/songs/domain/usecases/add_song.dart';
@@ -24,6 +30,10 @@ import '../../features/albums/domain/usecases/add_song_to_album.dart';
 import '../../features/folders/domain/repositories/folder_repository.dart';
 import '../../features/artists/domain/repositories/artist_repository.dart';
 import '../../features/albums/domain/repositories/album_repository.dart';
+import '../../features/genres/domain/entities/genre.dart';
+import '../../features/genres/domain/repositories/genre_repository.dart';
+import '../../features/genres/domain/usecases/add_genre.dart';
+import '../../features/genres/domain/usecases/add_song_to_genre.dart';
 import '../../generated/assets.dart';
 import '../../themes/color.dart';
 import '../../themes/font.dart';
@@ -110,9 +120,12 @@ class _SettingsPageState extends State<SettingsPage> {
       final AddSongToArtist addSongToArtistUseCase = locator();
       final AddAlbum addAlbumUseCase = locator();
       final AddSongToAlbum addSongToAlbumUseCase = locator();
+      final AddGenre addGenreUseCase = locator();
+      final AddSongToGenre addSongToGenreUseCase = locator();
       final FolderRepository folderRepository = locator();
       final ArtistRepository artistRepository = locator();
       final AlbumRepository albumRepository = locator();
+      final GenreRepository genreRepository = locator();
 
       // Get songs from device and database
       List<SongModel> deviceSongs = await _audioQuery.querySongs();
@@ -146,6 +159,7 @@ class _SettingsPageState extends State<SettingsPage> {
       Map<String, int> folderIds = {};
       Map<String, int> artistIds = {};
       Map<String, int> albumIds = {};
+      Map<String, int> genreIds = {};
       final Set<int> touchedAlbumIds = {};
 
       for (final song in deviceSongs) {
@@ -197,6 +211,15 @@ class _SettingsPageState extends State<SettingsPage> {
           log('Failed to extract year: $e');
         }
 
+        final Uint8List? artworkBytes = await _fetchBestArtwork(song);
+        String? artworkPath;
+
+        if (artworkBytes != null && artworkBytes.isNotEmpty) {
+          final file = File(p.join(artworkDir.path, '${song.id}.jpg'));
+          await file.writeAsBytes(artworkBytes);
+          artworkPath = file.path;
+        }
+
         final model = SongsModel(
           id: song.id,
           title: song.title.trim(),
@@ -207,7 +230,7 @@ class _SettingsPageState extends State<SettingsPage> {
           duration: song.duration ?? 0,
           filePath: path,
           folder: folderName,
-          artwork_path: null,
+          artwork_path: artworkPath,
         );
 
         await addSongUseCase(model);
@@ -230,7 +253,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 name: folderName,
                 path: folderPath,
                 songCount: 0,
-                artworkPath: null,
+                artworkPath: artworkPath,
                 createdTime: DateTime.now(),
                 updatedTime: DateTime.now(),
               );
@@ -258,7 +281,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 name: artistName,
                 songCount: 0,
                 albumCount: 0,
-                artworkPath: null,
+                artworkPath: artworkPath,
                 createdTime: DateTime.now(),
                 updatedTime: DateTime.now(),
               );
@@ -282,7 +305,7 @@ class _SettingsPageState extends State<SettingsPage> {
               artist: 'Various Artists',
               songCount: 0,
               year: songYear,
-              artworkPath: null,
+              artworkPath: artworkPath,
               createdTime: DateTime.now(),
               updatedTime: DateTime.now(),
             );
@@ -291,6 +314,33 @@ class _SettingsPageState extends State<SettingsPage> {
           }
           touchedAlbumIds.add(albumId);
           await addSongToAlbumUseCase(albumId, song.id);
+        }
+
+        final genreName = (song.genre ?? 'Unknown Genre').trim();
+        if (genreName.isNotEmpty) {
+          int genreId;
+          if (genreIds.containsKey(genreName)) {
+            genreId = genreIds[genreName]!;
+          } else {
+            final existingGenre = await genreRepository.getGenreByName(
+              genreName,
+            );
+            if (existingGenre != null) {
+              genreId = existingGenre.id!;
+            } else {
+              final genre = Genre(
+                id: null,
+                name: genreName,
+                songCount: 0,
+                artworkPath: artworkPath,
+                createdTime: DateTime.now(),
+                updatedTime: DateTime.now(),
+              );
+              genreId = await addGenreUseCase(genre);
+            }
+            genreIds[genreName] = genreId;
+          }
+          await addSongToGenreUseCase(genreId, song.id);
         }
       }
 
@@ -324,6 +374,12 @@ class _SettingsPageState extends State<SettingsPage> {
         message: "Library refreshed: $addedCount added, $removedCount removed",
         alertBannerLocation: AlertBannerLocation.bottom,
       );
+
+      context.read<SongsBloc>().add(const SongsEvent.getAllSongs());
+      context.read<AlbumBloc>().add(const AlbumEvent.fetchAllAlbums());
+      context.read<FolderBloc>().add(const FolderEvent.fetchAllFolders());
+      context.read<ArtistBloc>().add(const ArtistEvent.fetchAllArtists());
+      context.read<GenreBloc>().add(const GenreEvent.fetchAllGenres());
     } catch (e) {
       log('Error refreshing library: $e');
       showSnackBar(
@@ -340,6 +396,30 @@ class _SettingsPageState extends State<SettingsPage> {
         });
       }
     }
+  }
+
+  Future<Uint8List?> _fetchBestArtwork(SongModel song) async {
+    Future<Uint8List?> tryFetch(int? id, ArtworkType type) async {
+      if (id == null) return null;
+      try {
+        final result = await _audioQuery.queryArtwork(id, type);
+        if (result != null && result.isNotEmpty) {
+          return result;
+        }
+      } catch (e) {
+        log('Failed to fetch $type artwork for ${song.title}: $e');
+      }
+      return null;
+    }
+
+    Uint8List? bytes = await tryFetch(song.id, ArtworkType.AUDIO);
+    if (bytes == null || bytes.isEmpty) {
+      bytes = await tryFetch(song.albumId, ArtworkType.ALBUM);
+    }
+    if (bytes == null || bytes.isEmpty) {
+      bytes = await tryFetch(song.artistId, ArtworkType.ARTIST);
+    }
+    return bytes;
   }
 
   @override

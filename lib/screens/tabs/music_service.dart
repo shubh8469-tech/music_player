@@ -1574,6 +1574,24 @@ class MusicPlayerService {
     await _removeSongFromQueueAtIndex(removeIndex);
   }
 
+  Future<void> removeDeletedSongsFromQueue(Set<int> deletedSongIds) async {
+    if (deletedSongIds.isEmpty) return;
+
+    // Find all indexes to remove
+    final indexesToRemove = <int>[];
+    for (int i = 0; i < songs.length; i++) {
+      if (deletedSongIds.contains(songs[i].id)) {
+        indexesToRemove.add(i);
+      }
+    }
+
+    if (indexesToRemove.isEmpty) {
+      print('ℹ️ No deleted songs found in queue');
+      return;
+    }
+
+    await _removeMultipleSongsFromQueueAtIndexes(indexesToRemove);
+  }
 
   Future<void> _removeSongFromQueueAtIndex(int removeIndex) async {
     if (removeIndex < 0 || removeIndex >= songs.length) return;
@@ -1638,6 +1656,85 @@ class MusicPlayerService {
       }
     }
   }
+
+  Future<void> _removeMultipleSongsFromQueueAtIndexes(List<int> removeIndexes,) async {
+    if (removeIndexes.isEmpty) return;
+
+    print('🗑 Removing multiple songs from queue: $removeIndexes');
+
+    // 🔥 CRITICAL: sort descending
+    removeIndexes.sort((a, b) => b.compareTo(a));
+
+    final player = _androidPlayer;
+    final source = player?.audioSource;
+
+    final int? currentIndexBefore = player?.currentIndex;
+    final Duration currentPosition = player?.position ?? Duration.zero;
+    final bool wasPlaying = player?.playing ?? false;
+
+    // ===== Update internal queue FIRST =====
+    final mutableSongs = List<SongsModel>.from(songs);
+    for (final index in removeIndexes) {
+      if (index >= 0 && index < mutableSongs.length) {
+        mutableSongs.removeAt(index);
+      }
+    }
+
+    songs = mutableSongs;
+    _songsChangedController.add(songs);
+
+    // ====================== ANDROID ======================
+    if (Platform.isAndroid &&
+        player != null &&
+        source is ConcatenatingAudioSource) {
+      try {
+        // Remove from audio source (descending order)
+        for (final index in removeIndexes) {
+          if (index >= 0 && index < source.length) {
+            await source.removeAt(index);
+          }
+        }
+
+        if (currentIndexBefore != null) {
+          // Count how many removed BEFORE current index
+          final removedBefore =
+              removeIndexes.where((i) => i < currentIndexBefore).length;
+
+          final isCurrentRemoved =
+          removeIndexes.contains(currentIndexBefore);
+
+          // 🧠 Case 1: current song still exists
+          if (!isCurrentRemoved) {
+            await player.seek(
+              currentPosition,
+              index: currentIndexBefore - removedBefore,
+            );
+          }
+          // 🧠 Case 2: current song WAS deleted
+          else if (mutableSongs.isNotEmpty) {
+            final newIndex = (currentIndexBefore - removedBefore)
+                .clamp(0, mutableSongs.length - 1);
+
+            await player.seek(Duration.zero, index: newIndex);
+            if (wasPlaying) await player.play();
+          }
+        }
+
+        print('✅ Android: Multiple deleted songs removed seamlessly');
+      } catch (e) {
+        print('❌ Android multi-remove error: $e');
+        await updateSongsInQueue(songs);
+      }
+    }
+
+    // ======================== iOS ========================
+    else if (Platform.isIOS) {
+      if (!isPlaying && currentIndex < 0) {
+        await updateSongsInQueue(songs);
+      }
+    }
+  }
+
 
 }
 
