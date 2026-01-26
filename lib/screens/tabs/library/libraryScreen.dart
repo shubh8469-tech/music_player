@@ -74,8 +74,11 @@ class _LibraryScreenState extends State<LibraryScreen>
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           TabBar(
+            labelPadding: EdgeInsets.only(left: 10.w, right: 20.w),
             controller: _tabController,
             labelColor: AppColors.textColor,
             unselectedLabelColor: AppColors.textColor,
@@ -91,11 +94,11 @@ class _LibraryScreenState extends State<LibraryScreen>
             ),
             isScrollable: true,
             padding: EdgeInsets.zero,
-            tabAlignment: TabAlignment.start,
+            tabAlignment: TabAlignment.center,
             dividerColor: Colors.transparent,
             indicator: UnderlineTabIndicator(
-              borderSide: BorderSide(width: 3.0.w, color: Colors.orange),
-              insets: EdgeInsets.symmetric(horizontal: -8.w),
+              borderSide: BorderSide(width: 2.0.w, color: Colors.orange),
+              insets: EdgeInsets.only(left: -15.w, right: -19.w),
             ),
             tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
           ),

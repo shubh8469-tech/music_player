@@ -80,8 +80,8 @@ class _PlayListScreenState extends State<PlayListScreen> {
       backgroundColor: AppColors.white,
       body: Padding(
         padding: EdgeInsets.only(
-          left: 20.w,
-          right: 20.w,
+          left: 15.w,
+          right: 15.w,
           top: 30.h,
           bottom: 1.h,
         ),
@@ -89,58 +89,76 @@ class _PlayListScreenState extends State<PlayListScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  InkWell(
-                    onTap: () {
-                      context.push('/dashboard/select-playlist');
-                    },
-                    child: Row(
-                      children: [
-                        SvgPicture.asset(Assets.svgSongsCount),
-                        SizedBox(width: 10.w),
-                        BlocBuilder<PlaylistBloc, PlaylistState>(
-                          builder: (context, state) {
-                            int total = 0;
-                            state.maybeWhen(
-                              loaded: (playlists, systemPlaylistSongs) =>
-                                  total = playlists.length,
-                              orElse: () {},
-                            );
-                            return Texts(
-                              '$total Playlists',
-                              fontSize: 14.sp,
-                              fontWeight: AppFontWeights.regular,
-                              color: AppColors.textColor,
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  Spacer(),
-                  GestureDetector(
-                    onTap: () {
-                      CreatePlaylistBottomSheet.show(context);
-                    },
-                    child: Container(
-                      height: 24.h,
-                      width: 24.w,
-                      decoration: BoxDecoration(
-                        color: AppColors.mediumDarkGrey.withAlpha(100),
-                        borderRadius: BorderRadius.circular(4.r),
+              Padding(
+                padding: EdgeInsets.only(right: 10.w),
+                child: Row(
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        context.push('/dashboard/select-playlist');
+                      },
+                      child: Row(
+                        children: [
+                          SvgPicture.asset(Assets.svgSongsCount),
+                          SizedBox(width: 10.w),
+                          BlocBuilder<PlaylistBloc, PlaylistState>(
+                            builder: (context, state) {
+                              int total = 0;
+                              state.maybeWhen(
+                                loaded: (playlists, systemPlaylistSongs) =>
+                                    total = playlists.length,
+                                orElse: () {},
+                              );
+                              return Texts(
+                                '$total Playlists',
+                                fontSize: 14.sp,
+                                fontWeight: AppFontWeights.regular,
+                                color: AppColors.textColor,
+                              );
+                            },
+                          ),
+                        ],
                       ),
-                      child: Icon(Icons.add),
                     ),
-                  ),
-                  SizedBox(width: 15.w),
-                  GestureDetector(
-                    onTap: () {
-                      shortMenu();
-                    },
-                    child: SvgPicture.asset(Assets.svgMenuIcon, height: 25),
-                  ),
-                ],
+                    Spacer(),
+                    GestureDetector(
+                      onTap: () {
+                        CreatePlaylistBottomSheet.show(context);
+                      },
+                      child: Container(
+                        height: 24.h,
+                        width: 24.w,
+                        decoration: BoxDecoration(
+                          color: AppColors.mediumDarkGrey.withAlpha(100),
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: SvgPicture.asset(Assets.svgIcPlus, height: 18.h),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 6.w),
+                    SizedBox(
+                      height: 38.h, // Increase height so padding doesn't zero it out
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.h), // Leave some room for the line
+                        child: VerticalDivider(
+                          color: AppColors.mediumDarkGrey.withOpacity(0.5),
+                          width: 1.w,      // Total space the widget occupies
+                          thickness: 1.2.w,   // The actual thickness of the line
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 15.w),
+                    GestureDetector(
+                      onTap: () {
+                        shortMenu();
+                      },
+                      child: SvgPicture.asset(Assets.svgMenuIcon, height: 18.h),
+                    ),
+                  ],
+                ),
               ),
               SizedBox(height: 33.h),
               BlocBuilder<PlaylistBloc, PlaylistState>(
@@ -173,7 +191,7 @@ class _PlayListScreenState extends State<PlayListScreen> {
                             borderRadius: 10.r,
                             backgroundColor: AppColors.musicTileBackgroundColor,
                             cardHeight: 50.h,
-                            cardWidth: 50.w,
+                            cardWidth: 50.h,
                             cardRadius: 7.r,
                             cardIconAsset: icon,
                             cardIconSize: 32.r,
@@ -278,7 +296,7 @@ class _PlayListScreenState extends State<PlayListScreen> {
                             borderRadius: 10.r,
                             backgroundColor: AppColors.musicTileBackgroundColor,
                             cardHeight: 50.h,
-                            cardWidth: 50.w,
+                            cardWidth: 50.h,
                             cardRadius: 7.r,
                             cardIconAsset: coverAsset,
                             cardIconSize: 32.r,
@@ -407,7 +425,10 @@ class _PlayListScreenState extends State<PlayListScreen> {
                         spacing: 15,
                         children: [
                           InkWell(
-                            onTap: () {},
+                            onTap: () {
+                              Navigator.pop(context);
+                              _showComingSoon('Back Up Playlist');
+                            },
                             child: Texts(
                               'Back Up Playlist',
                               fontSize: 15.sp,
@@ -416,7 +437,10 @@ class _PlayListScreenState extends State<PlayListScreen> {
                             ),
                           ),
                           InkWell(
-                            onTap: () {},
+                            onTap: () {
+                              Navigator.pop(context);
+                              _showComingSoon('Restore Playlist');
+                            },
                             child: Texts(
                               'Restore Playlist',
                               fontSize: 15.sp,
@@ -425,7 +449,10 @@ class _PlayListScreenState extends State<PlayListScreen> {
                             ),
                           ),
                           InkWell(
-                            onTap: () {},
+                            onTap: () {
+                              Navigator.pop(context);
+                              _showComingSoon('Import Playlist');
+                            },
                             child: Texts(
                               'Import Playlist',
                               fontSize: 15.sp,
@@ -433,15 +460,15 @@ class _PlayListScreenState extends State<PlayListScreen> {
                               fontFamily: AppFonts.inter,
                             ),
                           ),
-                          InkWell(
-                            onTap: () {},
-                            child: Texts(
-                              'Manage',
-                              fontSize: 15.sp,
-                              fontWeight: AppFontWeights.regular,
-                              fontFamily: AppFonts.inter,
-                            ),
-                          ),
+                          // InkWell(
+                          //   onTap: () {},
+                          //   child: Texts(
+                          //     'Manage',
+                          //     fontSize: 15.sp,
+                          //     fontWeight: AppFontWeights.regular,
+                          //     fontFamily: AppFonts.inter,
+                          //   ),
+                          // ),
                         ],
                       ),
                     ),
@@ -452,6 +479,17 @@ class _PlayListScreenState extends State<PlayListScreen> {
           ],
         );
       },
+    );
+  }
+
+  void _showComingSoon(String featureName) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$featureName feature coming soon'),
+        backgroundColor: AppColors.primaryOrange,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 }

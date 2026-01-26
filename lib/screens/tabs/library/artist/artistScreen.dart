@@ -56,8 +56,8 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
       backgroundColor: AppColors.white,
       body: Padding(
         padding: EdgeInsets.only(
-          left: 20.w,
-          right: 20.w,
+          left: 15.w,
+          right: 15.w,
           top: 30.h,
           bottom: 1.h,
         ),
@@ -174,7 +174,7 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                                 backgroundColor:
                                     AppColors.musicTileBackgroundColor,
                                 cardHeight: 50.h,
-                                cardWidth: 50.w,
+                                cardWidth: 50.h,
                                 cardRadius: 100.r, 
                                 cardIconAsset: artistArtworkPath,
                                 noLogoGradientColor: [
@@ -274,7 +274,7 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                             borderRadius: 10.r,
                             backgroundColor: AppColors.musicTileBackgroundColor,
                             cardHeight: 50.h,
-                            cardWidth: 50.w,
+                            cardWidth: 50.h,
                             cardRadius: 100.r,
                             cardIconAsset: artistArtworkPath,
                             cardIconSize: 32.r,

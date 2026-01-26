@@ -19,6 +19,7 @@ class Assets {
   static const String manropeManropeMedium = 'assets/fonts/manrope/Manrope-Medium.ttf';
   static const String manropeManropeRegular = 'assets/fonts/manrope/Manrope-Regular.ttf';
   static const String manropeManropeSemiBold = 'assets/fonts/manrope/Manrope-SemiBold.ttf';
+  static const String musicAppGitAssetsSilence = 'assets/silence.mp3';
   static const String pngBand = 'assets/png/band.png';
   static const String pngBand2 = 'assets/png/band2.png';
   static const String pngFolder = 'assets/png/folder.png';

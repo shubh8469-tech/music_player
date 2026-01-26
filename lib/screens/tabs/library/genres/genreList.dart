@@ -58,8 +58,8 @@ class _GenreListScreenState extends State<GenreListScreen> {
       backgroundColor: AppColors.white,
       body: Padding(
         padding: EdgeInsets.only(
-          left: 20.w,
-          right: 20.w,
+          left: 15.w,
+          right: 15.w,
           top: 30.h,
           bottom: 1.h,
         ),
@@ -161,8 +161,8 @@ class _GenreListScreenState extends State<GenreListScreen> {
                       }
                       return Column(
                         children: genres.map((genre) {
-                          final hasArtwork =
-                              genre.artworkPath?.isNotEmpty ?? false;
+                          final hasArtwork = false;
+                              // genre.artworkPath?.isNotEmpty ?? false;
                           final genreArtworkPath =
                               hasArtwork ? genre.artworkPath! : '';
                           return MusicListTile(
@@ -171,8 +171,8 @@ class _GenreListScreenState extends State<GenreListScreen> {
                             borderRadius: 10.r,
                             backgroundColor: AppColors.musicTileBackgroundColor,
                             cardHeight: 50.h,
-                            cardWidth: 50.w,
-                            cardRadius: 100.r,
+                            cardWidth: 50.h,
+                            cardRadius: 7.r,
                             cardIconAsset: genreArtworkPath,
                             cardContent: hasArtwork
                                 ? null
@@ -273,7 +273,7 @@ class _GenreListScreenState extends State<GenreListScreen> {
                             borderRadius: 10.r,
                             backgroundColor: AppColors.musicTileBackgroundColor,
                             cardHeight: 50.h,
-                            cardWidth: 50.w,
+                            cardWidth: 50.h,
                             cardRadius: 100.r,
                             cardIconAsset: genreArtworkPath,
                             cardContent: hasArtwork

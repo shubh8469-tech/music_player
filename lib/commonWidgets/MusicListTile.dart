@@ -12,7 +12,7 @@ class MusicListTile extends StatelessWidget {
   final double borderRadius;
   final Color backgroundColor;
 
-  final double padding;
+  // final double padding;
   final double spacing;
 
   // Left Gradient Icon
@@ -74,7 +74,7 @@ class MusicListTile extends StatelessWidget {
     required this.height,
     required this.borderRadius,
     required this.backgroundColor,
-    this.padding = 10,
+    // this.padding = 10,
     this.spacing = 15,
 
     // Card
@@ -141,7 +141,7 @@ class MusicListTile extends StatelessWidget {
         height: height,
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(borderRadius), color: backgroundColor),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: padding.w),
+          padding: EdgeInsets.symmetric(horizontal: 8.w),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [

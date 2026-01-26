@@ -70,8 +70,8 @@ class _FolderListScreenState extends State<FolderListScreen> {
         backgroundColor: AppColors.white,
         body: Padding(
           padding: EdgeInsets.only(
-            left: 20.w,
-            right: 20.w,
+            left: 15.w,
+            right: 15.w,
             top: 30.h,
             bottom: 1.h,
           ),
@@ -190,7 +190,7 @@ class _FolderListScreenState extends State<FolderListScreen> {
                               backgroundColor:
                                   AppColors.musicTileBackgroundColor,
                               cardHeight: 50.h,
-                              cardWidth: 50.w,
+                              cardWidth: 50.h,
                               cardRadius: 7.r,
                               cardIconAsset: Assets.svgDirectory,
                               cardIconSize: 32.r,
@@ -283,7 +283,7 @@ class _FolderListScreenState extends State<FolderListScreen> {
                             borderRadius: 10.r,
                             backgroundColor: AppColors.musicTileBackgroundColor,
                             cardHeight: 50.h,
-                            cardWidth: 50.w,
+                            cardWidth: 50.h,
                             cardRadius: 7.r,
                             noLogoGradientColor: [
                               AppColors.mildYellow.withValues(alpha: 0.21),

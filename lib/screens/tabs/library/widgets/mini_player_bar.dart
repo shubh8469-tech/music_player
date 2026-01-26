@@ -121,11 +121,11 @@ class MiniPlayerBar extends StatelessWidget {
                                         if (hasArtwork)
                                           Container(
                                             height: 50.h,
-                                            width: 50.w,
+                                            width: 50.h,
                                             margin: EdgeInsets.all(10.w),
                                             decoration: BoxDecoration(
                                               borderRadius: BorderRadius.circular(
-                                                10.r,
+                                                7.r,
                                               ),
                                               image: DecorationImage(
                                                 image: FileImage(

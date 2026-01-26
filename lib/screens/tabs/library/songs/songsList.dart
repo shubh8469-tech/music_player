@@ -106,7 +106,7 @@ class _SongsListState extends State<SongsList> {
               if (songs.isEmpty) {
                 return Center(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 32.w),
+                    padding: EdgeInsets.symmetric(horizontal: 14.w),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -148,7 +148,7 @@ class _SongsListState extends State<SongsList> {
                 children: [
                   Expanded(
                     child: Padding(
-                      padding: EdgeInsets.only(left: 20.w, right: 20.w, top: 30.h, bottom: 1.h),
+                      padding: EdgeInsets.only(left: 15.w, right: 15.w, top: 30.h, bottom: 1.h),
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
@@ -161,17 +161,33 @@ class _SongsListState extends State<SongsList> {
                                       print('🔀 Shuffle button tapped');
                                       print('Current state - playing: ${musicService.isPlaying}, currentIndex: ${musicService.currentIndex}');
 
+                                      if (songs.isEmpty) return;
+
                                       // Stop any current playback
-                                      await musicService.stop();
+                                      // await musicService.stop();
 
-                                      // if (musicService.currentIndex < 0) {
-                                      //   await musicService.setPlaylist(songs, autoPlay: true, startIndex: 0);
-                                      // } else {
-                                      // ✅ Use setShufflePlaylist which handles shuffle setup
-                                      await musicService.setShufflePlaylist(songs, autoPlay: true);
-
-                                      log("✅ Shuffle Play started successfully");
-                                      // }
+                                      if (musicService.currentIndex < 0) {
+                                        log(
+                                          'shuffle:- Current index is invalid, resetting to 0',
+                                        );
+                                        await musicService.setPlaylist(songs, autoPlay: true, startIndex: 0);
+                                        await musicService.play();
+                                      } else {
+                                        log('shuffle:- Setting shuffle playlist');
+                                        await musicService.setShufflePlaylist(
+                                          songs,
+                                          autoPlay: true,
+                                        );
+                                        await musicService
+                                            .ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
+                                        await musicService
+                                            .player
+                                            .currentIndexStream
+                                            .firstWhere(
+                                              (idx) => idx != null && idx != 0,
+                                        );
+                                        await musicService.play();
+                                      }
 
                                       if (mounted) {
                                         setState(() {
@@ -328,7 +344,7 @@ class _SongsListState extends State<SongsList> {
                                   //   ],
                                   // ),
                                 ),
-                                SizedBox(width: 10.w),
+                                SizedBox(width: 5.w),
                               ],
                             ),
                             SizedBox(height: 15.h),
@@ -354,7 +370,7 @@ class _SongsListState extends State<SongsList> {
                                           borderRadius: 10.r,
                                           backgroundColor: AppColors.musicTileBackgroundColor,
                                           cardHeight: 50.h,
-                                          cardWidth: 50.w,
+                                          cardWidth: 50.h,
                                           cardRadius: 7.r,
                                           cardIconAsset: songs[index].artwork_path ?? Assets.svgMusicIcon,
                                           cardIconSize: 32.r,

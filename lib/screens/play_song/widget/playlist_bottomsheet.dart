@@ -119,7 +119,7 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
                                   backgroundColor:
                                       AppColors.musicTileBackgroundColor,
                                   cardHeight: 50.h,
-                                  cardWidth: 50.w,
+                                  cardWidth: 50.h,
                                   cardRadius: 7.r,
                                   noLogoGradientColor: [
                                     AppColors.mildOrange.withValues(

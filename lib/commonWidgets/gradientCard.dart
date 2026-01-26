@@ -56,6 +56,8 @@ class GradientCard extends StatelessWidget {
                 child: Image.file(
                   File(iconAsset),
                   fit: BoxFit.cover,
+                  height: height,
+                  width: width,
                 ),
               ));
 

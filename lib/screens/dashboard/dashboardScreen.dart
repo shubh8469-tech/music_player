@@ -61,12 +61,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (!mounted) return;
       // context.read<PlaylistBloc>().add(const PlaylistEvent.fetchAllPlaylists());
       final now = DateTime.now();
-      if (_lastRefreshTime == null ||
-          now.difference(_lastRefreshTime!).inSeconds > 1) {
+      if (_lastRefreshTime == null || now.difference(_lastRefreshTime!).inSeconds > 1) {
         _lastRefreshTime = now;
-        context.read<PlaylistBloc>().add(
-          const PlaylistEvent.refreshPlaylists(),
-        );
+        context.read<PlaylistBloc>().add(const PlaylistEvent.refreshPlaylists());
       }
     });
   }
@@ -121,16 +118,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      drawer: MusicDrawer(
-        onAction: _handleDrawerAction,
-      ),
+      drawer: MusicDrawer(onAction: _handleDrawerAction),
       appBar: currentIndex != 1
           ? AppBar(
+              actionsPadding: EdgeInsets.symmetric(horizontal: 20.w),
               backgroundColor: AppColors.primaryOrange,
               leadingWidth: 45.w,
               toolbarHeight: 58.h,
               leading: Padding(
-                padding: EdgeInsets.only(left: 22.w),
+                padding: EdgeInsets.only(left: 10.w),
                 child: IconButton(
                   padding: EdgeInsets.zero,
                   onPressed: () {
@@ -140,13 +136,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _scaffoldKey.currentState?.openDrawer();
                     }
                   },
-                  icon: SvgPicture.asset(
-                    Assets.svgDrawer,
-                    colorFilter: const ColorFilter.mode(
-                      AppColors.white,
-                      BlendMode.srcIn,
-                    ),
-                  ),
+                  icon: SvgPicture.asset(Assets.svgDrawer, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
                 ),
               ),
               actions: [
@@ -164,26 +154,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       );
                     },
-                    icon: SvgPicture.asset(
-                      Assets.svgThemeBrush,
-                      height: 26.h,
-                      width: 26.w,
-                    ),
+                    icon: SvgPicture.asset(Assets.svgThemeBrush, height: 26.h, width: 26.w),
                   ),
                 ),
-                IconButton(
-                  onPressed: () {
+                GestureDetector(
+                  // padding: EdgeInsets.zero,
+                  onTap: () {
                     context.push('/dashboard/settings');
                   },
-                  icon: SvgPicture.asset(
-                    Assets.svgSetting,
-                    height: 26.h,
-                    width: 26.w,
-                    colorFilter: const ColorFilter.mode(
-                      AppColors.white,
-                      BlendMode.srcIn,
-                    ),
-                  ),
+                  child: SvgPicture.asset(Assets.svgSetting, height: 26.h, width: 26.w, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
                 ),
                 if (Platform.isIOS)
                   IconButton(
@@ -207,9 +186,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Positioned.fill(
                 child: Padding(
-                  padding: EdgeInsets.only(
-                    bottom: showMiniPlayer ? 74.h : 0,
-                  ), // Space for MiniPlayerBar (which includes system nav bar padding)
+                  padding: EdgeInsets.only(bottom: showMiniPlayer ? 74.h : 0), // Space for MiniPlayerBar (which includes system nav bar padding)
                   child: screens[currentIndex],
                 ),
               ),
@@ -223,16 +200,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: BottomNavigationBar(
           selectedItemColor: AppColors.primaryOrange,
           unselectedItemColor: AppColors.black,
-          selectedLabelStyle: TextStyle(
-            fontSize: 12.sp,
-            fontFamily: AppFonts.inter,
-            fontWeight: AppFontWeights.regular,
-          ),
-          unselectedLabelStyle: TextStyle(
-            fontSize: 12.sp,
-            fontFamily: AppFonts.inter,
-            fontWeight: AppFontWeights.regular,
-          ),
+          selectedLabelStyle: TextStyle(fontSize: 12.sp, fontFamily: AppFonts.inter, fontWeight: AppFontWeights.regular),
+          unselectedLabelStyle: TextStyle(fontSize: 12.sp, fontFamily: AppFonts.inter, fontWeight: AppFontWeights.regular),
           backgroundColor: AppColors.white,
           currentIndex: currentIndex,
           onTap: (index) {
@@ -242,37 +211,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
           },
           items: [
             BottomNavigationBarItem(
-              icon: SvgPicture.asset(
-                Assets.svgHome,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.black,
-                  BlendMode.srcIn,
-                ),
-              ),
+              icon: SvgPicture.asset(Assets.svgHome, colorFilter: const ColorFilter.mode(AppColors.black, BlendMode.srcIn)),
               label: 'Home',
               activeIcon: SvgPicture.asset(Assets.svgHome),
             ),
             BottomNavigationBarItem(
               icon: SvgPicture.asset(Assets.svgSearch),
               label: 'Search',
-              activeIcon: SvgPicture.asset(
-                Assets.svgSearch,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.primaryOrange,
-                  BlendMode.srcIn,
-                ),
-              ),
+              activeIcon: SvgPicture.asset(Assets.svgSearch, colorFilter: const ColorFilter.mode(AppColors.primaryOrange, BlendMode.srcIn)),
             ),
             BottomNavigationBarItem(
               icon: SvgPicture.asset(Assets.svgMusicLibrary),
               label: 'Library',
-              activeIcon: SvgPicture.asset(
-                Assets.svgMusicLibrary,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.primaryOrange,
-                  BlendMode.srcIn,
-                ),
-              ),
+              activeIcon: SvgPicture.asset(Assets.svgMusicLibrary, colorFilter: const ColorFilter.mode(AppColors.primaryOrange, BlendMode.srcIn)),
             ),
           ],
         ),

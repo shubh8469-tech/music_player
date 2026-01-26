@@ -61,6 +61,26 @@ class _SyncProgressState extends State<SyncProgress>
   // Track scan start time
   DateTime? _scanStartTime;
 
+  /// Check if a file path represents a video file
+  bool _isVideoFile(String path) {
+    final lowerPath = path.toLowerCase();
+    final videoExtensions = [
+      '.mp4',
+      '.avi',
+      '.mkv',
+      '.mov',
+      '.wmv',
+      '.flv',
+      '.webm',
+      '.m4v',
+      '.3gp',
+      '.ts',
+      '.mpg',
+      '.mpeg',
+    ];
+    return videoExtensions.any((ext) => lowerPath.endsWith(ext));
+  }
+
   Future<Uint8List?> _fetchBestArtwork(SongModel song) async {
     Future<Uint8List?> tryFetch(int? id, ArtworkType type) async {
       if (id == null) return null;
@@ -202,6 +222,12 @@ class _SyncProgressState extends State<SyncProgress>
 
       for (final song in songs) {
         final String path = song.data;
+
+        // Skip video files (MP4, AVI, etc.) that may have been incorrectly indexed as audio
+        if (_isVideoFile(path)) {
+          log('Skipping video file: $path');
+          continue;
+        }
 
         final artworkBytes = await _fetchBestArtwork(song);
 

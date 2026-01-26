@@ -257,7 +257,7 @@ class _SelectGenreScreenState extends State<SelectGenreScreen> {
             borderRadius: 10.r,
             backgroundColor: AppColors.musicTileBackgroundColor,
             cardHeight: 50.h,
-            cardWidth: 50.w,
+            cardWidth: 50.h,
             cardRadius: 100.r,
             cardIconAsset: genreArtworkPath,
             cardIconSize: 32.r,

@@ -226,7 +226,7 @@ class _GenreDetailScreenState extends State<GenreDetailScreen> {
           borderRadius: 10.r,
           backgroundColor: AppColors.musicTileBackgroundColor,
           cardHeight: 50.h,
-          cardWidth: 50.w,
+          cardWidth: 50.h,
           cardRadius: 7.r,
           cardIconAsset: song.artwork_path ?? Assets.svgMusicIcon,
           noLogoGradientColor: [

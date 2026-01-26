@@ -115,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
 
                         return GradientCard(
-                          height: 104.h,
+                          height: 104.w,
                           width: 104.w,
                           colors: [
                             colors[index].withValues(alpha: 0.21),
@@ -146,54 +146,57 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   SizedBox(height: 40.h),
-                  Row(
-                    children: [
-                      Texts(
-                        'Recently Played',
-                        fontSize: 18.sp,
-                        fontWeight: AppFontWeights.medium,
-                        fontFamily: AppFonts.inter,
-                      ),
-                      Spacer(),
-                      GestureDetector(
-                        onTap: () {
-                          // Find the recently_played system playlist
-                          state.maybeWhen(
-                            loaded: (playlists, systemPlaylistSongs) {
-                              final recentlyPlayedPlaylist = playlists
-                                  .where((p) => p.isSystem == true)
-                                  .firstWhere(
-                                    (p) => p.systemKey == 'recently_played',
-                                    orElse: () => playlists
-                                        .where((p) => p.isSystem == true)
-                                        .first,
-                                  );
-
-                              context.push(
-                                '/dashboard/playlist-detail',
-                                extra: {
-                                  'playlist': recentlyPlayedPlaylist,
-                                  'assetIcon': Assets.svgRecentlyPlayed,
-                                  'colors': [
-                                    AppColors.mildYellow.withValues(
-                                      alpha: 0.21,
-                                    ),
-                                    AppColors.mildYellow,
-                                  ],
-                                },
-                              );
-                            },
-                            orElse: () {},
-                          );
-                        },
-                        child: Texts(
-                          'See All',
-                          fontSize: 14.sp,
-                          fontWeight: AppFontWeights.regular,
+                  Padding(
+                    padding: EdgeInsets.only(left: 2.w, right: 6.w),
+                    child: Row(
+                      children: [
+                        Texts(
+                          'Recently Played',
+                          fontSize: 18.sp,
+                          fontWeight: AppFontWeights.medium,
                           fontFamily: AppFonts.inter,
                         ),
-                      ),
-                    ],
+                        Spacer(),
+                        GestureDetector(
+                          onTap: () {
+                            // Find the recently_played system playlist
+                            state.maybeWhen(
+                              loaded: (playlists, systemPlaylistSongs) {
+                                final recentlyPlayedPlaylist = playlists
+                                    .where((p) => p.isSystem == true)
+                                    .firstWhere(
+                                      (p) => p.systemKey == 'recently_played',
+                                      orElse: () => playlists
+                                          .where((p) => p.isSystem == true)
+                                          .first,
+                                    );
+
+                                context.push(
+                                  '/dashboard/playlist-detail',
+                                  extra: {
+                                    'playlist': recentlyPlayedPlaylist,
+                                    'assetIcon': Assets.svgRecentlyPlayed,
+                                    'colors': [
+                                      AppColors.mildYellow.withValues(
+                                        alpha: 0.21,
+                                      ),
+                                      AppColors.mildYellow,
+                                    ],
+                                  },
+                                );
+                              },
+                              orElse: () {},
+                            );
+                          },
+                          child: Texts(
+                            'See All',
+                            fontSize: 14.sp,
+                            fontWeight: AppFontWeights.regular,
+                            fontFamily: AppFonts.inter,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   SizedBox(height: 5.h),
                   state.when(
@@ -237,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     backgroundColor:
                                         AppColors.musicTileBackgroundColor,
                                     cardHeight: 50.h,
-                                    cardWidth: 50.w,
+                                    cardWidth: 50.h,
                                     cardRadius: 7.r,
                                     cardIconAsset:
                                         song.artwork_path ??
@@ -300,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     error: (message) => Text('Error: $message'),
                   ),
-                  SizedBox(height: 38.h),
+                  SizedBox(height: 50.h),
                   Row(
                     children: [
                       Texts(
@@ -383,7 +386,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: 10.r,
                             backgroundColor: AppColors.musicTileBackgroundColor,
                             cardHeight: 50.h,
-                            cardWidth: 50.w,
+                            cardWidth: 50.h,
                             cardRadius: 7.r,
                             cardIconAsset: coverAsset,
                             cardIconSize: 32.r,

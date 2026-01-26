@@ -1,18 +1,18 @@
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:crop_your_image/crop_your_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image/image.dart' as img;
 
 import '../../themes/color.dart';
 import '../../themes/font.dart';
 import '../../commonWidgets/textWidget.dart';
+import '../../utills/snack_bar.dart';
 
 class ImageCropScreen extends StatefulWidget {
-  const ImageCropScreen({
-    super.key,
-    required this.imageBytes,
-  });
+  const ImageCropScreen({super.key, required this.imageBytes});
 
   final Uint8List imageBytes;
 
@@ -39,41 +39,34 @@ class _ImageCropScreenState extends State<ImageCropScreen> {
             child: Row(
               children: [
                 IconButton(
-                  icon: Icon(
-                    Icons.close,
-                    color: Colors.white,
-                    size: 24.r,
-                  ),
+                  icon: Icon(Icons.close, color: Colors.white, size: 24.r),
                   onPressed: () {
                     Navigator.pop(context);
                   },
                 ),
                 SizedBox(width: 6.w),
                 Expanded(
-                  child: Texts(
-                    'Edit image',
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    fontFamily: AppFonts.inter,
-                  ),
+                  child: Texts('Edit image', fontSize: 18.sp, fontWeight: FontWeight.w600, color: Colors.white, fontFamily: AppFonts.inter),
                 ),
                 TextButton(
                   onPressed: _isCropping
                       ? null
                       : () {
-                          setState(() {
-                            _isCropping = true;
-                          });
-                          _cropController.crop();
+                          try {
+                            setState(() {
+                              _isCropping = true;
+                            });
+                            Future.delayed(Duration(seconds: 1)).then((_){
+                              _cropController.crop();
+                            });
+                          } catch (e) {
+                            setState(() {
+                              _isCropping = false;
+                            });
+                            showSnackBar(context, () {}, message: 'Failed to update cover: $e', backgroundColor: Colors.red, alertBannerLocation: AlertBannerLocation.bottom);
+                          }
                         },
-                  child: Texts(
-                    'SAVE',
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primaryOrange,
-                    fontFamily: AppFonts.inter,
-                  ),
+                  child: Texts('SAVET', fontSize: 16.sp, fontWeight: FontWeight.w600, color: AppColors.primaryOrange, fontFamily: AppFonts.inter),
                 ),
               ],
             ),
@@ -94,20 +87,51 @@ class _ImageCropScreenState extends State<ImageCropScreen> {
                 return Container(
                   width: size,
                   height: size,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryOrange,
-                    borderRadius: BorderRadius.circular(size / 2),
-                  ),
+                  decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(size / 2)),
                 );
               },
-              onCropped: (croppedBytes) {
+              onCropped: (result) async {
                 if (!mounted) {
                   return;
                 }
-                setState(() {
-                  _isCropping = false;
-                });
-                Navigator.pop(context, croppedBytes);
+                // Handle CropResult from crop_your_image 2.0.0+
+                // The result is a CropResult sealed class that can be CropSuccess or CropFailure
+                switch (result) {
+                  case CropSuccess(:final croppedImage):
+                    try {
+                      // Compress the image before returning
+                      final compressedImage = await _optimizeImage(croppedImage);
+                      if (!mounted) return;
+                      final navigatorContext = context;
+                      Navigator.pop(navigatorContext, compressedImage);
+                    } catch (e) {
+                      if (!mounted) return;
+                      log('Error compressing image: $e');
+                      // Return original if compression fails
+                      final navigatorContext = context;
+                      Navigator.pop(navigatorContext, croppedImage);
+                    } finally {
+                      if (mounted) {
+                        setState(() {
+                          _isCropping = false;
+                        });
+                      }
+                    }
+                  case CropFailure(:final cause):
+                    if (!mounted) return;
+                    setState(() {
+                      _isCropping = false;
+                    });
+                    log('Crop failed: $cause');
+                    final snackBarContext = context;
+                    showSnackBar(
+                      snackBarContext,
+                      () {},
+                      message: 'Failed to crop image: $cause',
+                      backgroundColor: Colors.red,
+                      alertBannerLocation: AlertBannerLocation.bottom,
+                    );
+                }
               },
             ),
           ),
@@ -115,14 +139,47 @@ class _ImageCropScreenState extends State<ImageCropScreen> {
             Positioned.fill(
               child: Container(
                 color: Colors.black.withOpacity(0.4),
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
+                child: const Center(child: CircularProgressIndicator()),
               ),
             ),
         ],
       ),
     );
   }
-}
 
+  /// Optimizes and compresses the image to reduce file size
+  /// - Resizes to max 720px (maintaining aspect ratio)
+  /// - Converts to JPEG with 85% quality
+  Future<Uint8List> _optimizeImage(Uint8List bytes) async {
+    final decoded = img.decodeImage(bytes);
+    if (decoded == null) {
+      throw Exception('Unsupported image format');
+    }
+
+    const maxDimension = 720;
+    img.Image processed = decoded;
+    final largestSide = decoded.width > decoded.height ? decoded.width : decoded.height;
+
+    // Resize if image is larger than max dimension
+    if (largestSide > maxDimension) {
+      if (decoded.width >= decoded.height) {
+        processed = img.copyResize(
+          decoded,
+          width: maxDimension,
+          height: (decoded.height * maxDimension / decoded.width).round(),
+        );
+      } else {
+        processed = img.copyResize(
+          decoded,
+          height: maxDimension,
+          width: (decoded.width * maxDimension / decoded.height).round(),
+        );
+      }
+    }
+
+    // Encode as JPEG with 85% quality for good balance between size and quality
+    final optimizedBytes = img.encodeJpg(processed, quality: 85);
+
+    return Uint8List.fromList(optimizedBytes);
+  }
+}

@@ -621,7 +621,7 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
             borderRadius: 10.r,
             backgroundColor: AppColors.musicTileBackgroundColor,
             cardHeight: 50.h,
-            cardWidth: 50.w,
+            cardWidth: 50.h,
             cardRadius: 7.r,
             cardIconAsset: Assets.svgDirectory,
             cardIconSize: 32.r,
