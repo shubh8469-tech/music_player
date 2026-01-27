@@ -73,7 +73,19 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                     child: Row(
                       children: [
                         SvgPicture.asset(Assets.svgSongsCount),
-                        SizedBox(width: 10.w),
+                        SizedBox(width: 8.w),
+                        SizedBox(
+                          height: 38.h, // Increase height so padding doesn't zero it out
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8.h), // Leave some room for the line
+                            child: VerticalDivider(
+                              color: AppColors.mediumDarkGrey.withOpacity(0.5),
+                              width: 1.w,      // Total space the widget occupies
+                              thickness: 1.2.w,   // The actual thickness of the line
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
                         BlocBuilder<ArtistBloc, ArtistState>(
                           builder: (context, state) {
                             return state.maybeWhen(
@@ -239,155 +251,173 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
     final bottomPadding = viewInsets > 0
         ? viewInsets + 16.h
         : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
-
+    final localization = S.of(context);
     final artistArtworkPath = (artist.artworkPath?.isNotEmpty ?? false)
         ? artist.artworkPath!
         : Assets.svgMusicIcon;
 
-    return Container(
-      constraints: BoxConstraints(maxHeight: 0.67.sh),
-      padding: EdgeInsets.only(top: 10.h, bottom: bottomPadding),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(Assets.svgIcLineBottom),
-          SizedBox(height: 10.h),
-          Flexible(
-            child: Column(
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(top: 10.h, bottom: 20.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(Assets.svgIcLineBottom),
+            SizedBox(height: 10.h),
+            Column(
               children: [
-                // Artist info
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: artistMenuItems.length + 1,
-                    padding: EdgeInsets.zero,
-                    itemBuilder: (context, index) {
-
-                      if(index == 0){
-                        return Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16.w,
-                            vertical: 12.h,
-                          ),
-                          child: MusicListTile(
-                            margin: 7.w,
-                            height: 66.h,
-                            borderRadius: 10.r,
-                            backgroundColor: AppColors.musicTileBackgroundColor,
-                            cardHeight: 50.h,
-                            cardWidth: 50.h,
-                            cardRadius: 100.r,
-                            cardIconAsset: artistArtworkPath,
-                            cardIconSize: 32.r,
-                            isSvgColorNeeded: false,
-                            title: artist.name,
-                            subtitle:
-                            '${artist.albumCount} Album${artist.albumCount != 1 ? 's' : ''} - ${artist.songCount} Songs',
-                            trailingIconAsset: Assets.svgIcShare,
-                            trailingIconHeight: 25.h,
-                            trailingIconWidth: 25.w,
-                            trailingMargin: 2.w,
-                            onTap: () {
-                              showSnackBar(
-                                context,
-                                    () {},
-                                message: 'Share artist feature coming soon',
-                                alertBannerLocation: AlertBannerLocation.bottom,
-                              );
-                            },
-                            onPlayTap: () {
-                              showSnackBar(
-                                context,
-                                    () {},
-                                message: 'Play artist feature coming soon',
-                                alertBannerLocation: AlertBannerLocation.bottom,
-                              );
-                            },
-                          ),
-                        );
-                      }
-
-                      final menuItem = artistMenuItems[index - 1];
-                      final isChangeCoverItem =
-                          menuItem.title == S.of(context).hideFolder;
-                      final displayTitle = isChangeCoverItem
-                          ? S.of(context).changeCover
-                          : menuItem.title;
-                      final displayIcon = isChangeCoverItem
-                          ? Assets.svgIcCover
-                          : menuItem.icon;
-                      return Column(
-                        children: [
-                          ListTile(
-                            dense: true,
-                            visualDensity: VisualDensity(
-                              horizontal: 0.w,
-                              vertical: 0.h,
-                            ),
-                            leading: SvgPicture.asset(
-                              displayIcon,
-                              height: 24,
-                              width: 24,
-                            ),
-                            title: Texts(
-                              displayTitle,
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w400,
-                              fontFamily: AppFonts.inter,
-                            ),
-                            onTap: () {
-                              Navigator.pop(context);
-                              _handleArtistMenuAction(displayTitle, artist);
-                            },
-                          ),
-                          if (index - 1 == 3) ...[
-                            Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 15.w,
-                                vertical: 10.h,
-                              ),
-                              child: Divider(
-                                height: 1,
-                                thickness: 1,
-                                color: AppColors.black.withValues(alpha: .1),
-                              ),
-                            ),
-                          ],
-                        ],
+                // Artist header (similar to playlist/folder header)
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
+                  child: MusicListTile(
+                    margin: 7.w,
+                    height: 66.h,
+                    borderRadius: 10.r,
+                    backgroundColor: AppColors.musicTileBackgroundColor,
+                    cardHeight: 50.h,
+                    cardWidth: 50.h,
+                    cardRadius: 100.r,
+                    cardIconAsset: artistArtworkPath,
+                    cardIconSize: 32.r,
+                    isSvgColorNeeded: false,
+                    title: artist.name,
+                    subtitle:
+                        '${artist.albumCount} Album${artist.albumCount != 1 ? 's' : ''} - ${artist.songCount} Songs',
+                    trailingIconAsset: Assets.svgIcShare,
+                    trailingIconHeight: 25.h,
+                    trailingIconWidth: 25.w,
+                    trailingMargin: 2.w,
+                    onTap: () {
+                      showSnackBar(
+                        context,
+                        () {},
+                        message: 'Share artist feature coming soon',
+                        alertBannerLocation: AlertBannerLocation.bottom,
+                      );
+                    },
+                    onPlayTap: () {
+                      showSnackBar(
+                        context,
+                        () {},
+                        message: 'Play artist feature coming soon',
+                        alertBannerLocation: AlertBannerLocation.bottom,
                       );
                     },
                   ),
                 ),
-                GestureDetector(
+
+                // Menu items (flat list)
+                _buildMenuItem(
+                  icon: Assets.svgPlayBlackBorder,
+                  title: localization.play,
                   onTap: () {
-                    Navigator.of(context).pop();
+                    Navigator.pop(context);
+                    _handleArtistMenuAction(localization.play, artist);
                   },
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.black.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(80.r),
-                      border: Border.all(
-                        color: AppColors.black.withValues(alpha: 0.10),
-                        width: 1,
-                      ),
-                    ),
-                    margin: EdgeInsets.symmetric(horizontal: 15.w),
-                    height: 50.w,
-                    child: Texts(
-                      S.of(context).cancel,
-                      fontSize: 14.sp,
-                      align: TextAlign.center,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textColor,
-                      fontFamily: AppFonts.medium,
-                    ),
-                  ),
                 ),
-                SizedBox(height: 44.h),
+                _buildMenuItem(
+                  icon: Assets.svgIcMenuPlaynext,
+                  title: localization.playNext,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleArtistMenuAction(localization.playNext, artist);
+                  },
+                ),
+                _buildMenuItem(
+                  icon: Assets.svgIcMenuQueue,
+                  title: localization.addToQueue,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleArtistMenuAction(localization.addToQueue, artist);
+                  },
+                ),
+                _buildMenuItem(
+                  icon: Assets.svgIcMenuPlaylist,
+                  title: localization.addToPlaylist,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleArtistMenuAction(localization.addToPlaylist, artist);
+                  },
+                ),
+                _buildDivider(),
+                _buildMenuItem(
+                  icon: Assets.svgIcCover,
+                  title: localization.changeCover,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleArtistMenuAction(localization.changeCover, artist);
+                  },
+                ),
+                _buildMenuItem(
+                  icon: Assets.svgIcEdit,
+                  title: localization.editTags,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleArtistMenuAction(localization.editTags, artist);
+                  },
+                ),
               ],
             ),
-          ),
-        ],
+            // Cancel button
+            GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.black.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(80.r),
+                  border: Border.all(
+                    color: AppColors.black.withValues(alpha: 0.10),
+                    width: 1,
+                  ),
+                ),
+                margin: EdgeInsets.only(top: 8.h, left: 15.w, right: 15.w),
+                height: 50.w,
+                child: Texts(
+                  S.of(context).cancel,
+                  fontSize: 14.sp,
+                  align: TextAlign.center,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textColor,
+                  fontFamily: AppFonts.medium,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuItem({
+    required String icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      dense: true,
+      visualDensity: VisualDensity(horizontal: 0.w, vertical: 0.h),
+      leading: SvgPicture.asset(icon, height: 24, width: 24),
+      title: Texts(
+        title,
+        fontSize: 16.sp,
+        fontWeight: FontWeight.w400,
+        fontFamily: AppFonts.inter,
+      ),
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildDivider() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+      child: Divider(
+        height: 1,
+        thickness: 1,
+        color: AppColors.black.withValues(alpha: .1),
       ),
     );
   }

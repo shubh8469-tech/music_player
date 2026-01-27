@@ -16,7 +16,6 @@ import '../../../../features/songs/bloc/songs_bloc.dart';
 import '../../../../features/songs/data/models/song_model.dart';
 import '../../../../generated/assets.dart';
 import '../../../../l10n/l10n.dart';
-import '../../../../model/song_menu_model.dart';
 import '../../../../themes/font.dart';
 import '../../../../utills/globals.dart';
 import '../../../../utills/snack_bar.dart';
@@ -86,7 +85,19 @@ class _FolderListScreenState extends State<FolderListScreen> {
                       },
                       child: SvgPicture.asset(Assets.svgSongsCount),
                     ),
-                    SizedBox(width: 10.w),
+                    SizedBox(width: 8.w),
+                    SizedBox(
+                      height: 38.h, // Increase height so padding doesn't zero it out
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.h), // Leave some room for the line
+                        child: VerticalDivider(
+                          color: AppColors.mediumDarkGrey.withOpacity(0.5),
+                          width: 1.w,      // Total space the widget occupies
+                          thickness: 1.2.w,   // The actual thickness of the line
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
                     BlocBuilder<FolderBloc, FolderState>(
                       builder: (context, state) {
                         return state.maybeWhen(
@@ -251,178 +262,170 @@ class _FolderListScreenState extends State<FolderListScreen> {
     final bottomPadding = viewInsets > 0
         ? viewInsets + 16.h
         : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
-    final menuItems = _buildFolderMenuItems(folder);
-
-    return Container(
-      constraints: BoxConstraints(maxHeight: 0.62.sh),
-      padding: EdgeInsets.only(top: 10.h, bottom: bottomPadding),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(Assets.svgIcLineBottom),
-          SizedBox(height: 10.h),
-          Flexible(
-            child: Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: menuItems.length + 1,
-                    padding: EdgeInsets.zero,
-                    itemBuilder: (context, index) {
-
-                      if(index == 0){
-                        // Folder info
-                        return Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16.w,
-                            vertical: 12.h,
-                          ),
-                          child: MusicListTile(
-                            margin: 7.w,
-                            height: 66.h,
-                            borderRadius: 10.r,
-                            backgroundColor: AppColors.musicTileBackgroundColor,
-                            cardHeight: 50.h,
-                            cardWidth: 50.h,
-                            cardRadius: 7.r,
-                            noLogoGradientColor: [
-                              AppColors.mildYellow.withValues(alpha: 0.21),
-                              AppColors.mildYellow,
-                            ],
-                            cardIconAsset: Assets.svgDirectory,
-                            cardIconSize: 32.r,
-                            isSvgCardIcon: true,
-                            title: folder.name,
-                            subtitle: '${folder.songCount} Songs',
-                            trailingIconAsset: Assets.svgIcShare,
-                            trailingIconHeight: 25.h,
-                            trailingIconWidth: 25.w,
-                            trailingMargin: 2.w,
-                            onTap: () {
-                              showSnackBar(
-                                context,
-                                    () {},
-                                message: 'Share folder feature coming soon',
-                                alertBannerLocation: AlertBannerLocation.bottom,
-                              );
-                            },
-                            onPlayTap: () {
-                              showSnackBar(
-                                context,
-                                    () {},
-                                message: 'Play folder feature coming soon',
-                                alertBannerLocation: AlertBannerLocation.bottom,
-                              );
-                            },
-                          ),
-                        );
-                      }
-
-                      final menuItem = menuItems[index - 1];
-                      return Column(
-                        children: [
-                          ListTile(
-                            dense: true,
-                            visualDensity: VisualDensity(
-                              horizontal: 0.w,
-                              vertical: 0.h,
-                            ),
-                            leading: SvgPicture.asset(
-                              menuItem.icon,
-                              height: 24,
-                              width: 24,
-                            ),
-                            title: Texts(
-                              menuItem.title,
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w400,
-                              fontFamily: AppFonts.inter,
-                            ),
-                            onTap: () {
-                              Navigator.pop(context);
-                              _handleFolderMenuAction(menuItem.title, folder);
-                            },
-                          ),
-                          if (index - 1 == 3) ...[
-                            Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 15.w,
-                                vertical: 10.h,
-                              ),
-                              child: Divider(
-                                height: 1,
-                                thickness: 1,
-                                color: AppColors.black.withValues(alpha: .1),
-                              ),
-                            ),
-                          ],
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.black.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(80.r),
-                      border: Border.all(
-                        color: AppColors.black.withValues(alpha: 0.10),
-                        width: 1,
-                      ),
-                    ),
-                    margin: EdgeInsets.symmetric(horizontal: 15.w),
-                    height: 50.w,
-                    child: Texts(
-                      S.of(context).cancel,
-                      fontSize: 14.sp,
-                      align: TextAlign.center,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textColor,
-                      fontFamily: AppFonts.medium,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 44.h),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  List<SongMenuItem> _buildFolderMenuItems(domain.Folder folder) {
     final localization = S.of(context);
     final hideTitle =
         folder.isHidden ? localization.unhideFolder : localization.hideFolder;
 
-    return [
-      SongMenuItem(
-        icon: Assets.svgPlayBlackBorder,
-        title: localization.play,
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(top: 10.h, bottom: 20.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(Assets.svgIcLineBottom),
+            SizedBox(height: 10.h),
+            Column(
+              children: [
+                // Folder header (similar to playlist header)
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
+                  child: MusicListTile(
+                    margin: 7.w,
+                    height: 66.h,
+                    borderRadius: 10.r,
+                    backgroundColor: AppColors.musicTileBackgroundColor,
+                    cardHeight: 50.h,
+                    cardWidth: 50.h,
+                    cardRadius: 7.r,
+                    noLogoGradientColor: [
+                      AppColors.mildYellow.withValues(alpha: 0.21),
+                      AppColors.mildYellow,
+                    ],
+                    cardIconAsset: Assets.svgDirectory,
+                    cardIconSize: 32.r,
+                    isSvgCardIcon: true,
+                    isSvgColorNeeded: false,
+                    title: folder.name,
+                    subtitle: '${folder.songCount} Songs',
+                    trailingIconAsset: Assets.svgIcShare,
+                    trailingIconHeight: 25.h,
+                    trailingIconWidth: 25.w,
+                    trailingMargin: 2.w,
+                    onTap: () {
+                      showSnackBar(
+                        context,
+                        () {},
+                        message: 'Share folder feature coming soon',
+                        alertBannerLocation: AlertBannerLocation.bottom,
+                      );
+                    },
+                    onPlayTap: () {
+                      showSnackBar(
+                        context,
+                        () {},
+                        message: 'Play folder feature coming soon',
+                        alertBannerLocation: AlertBannerLocation.bottom,
+                      );
+                    },
+                  ),
+                ),
+
+                // Menu items (modeled after PlaylistMenuScreen)
+                _buildMenuItem(
+                  icon: Assets.svgPlayBlackBorder,
+                  title: localization.play,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleFolderMenuAction(localization.play, folder);
+                  },
+                ),
+                _buildMenuItem(
+                  icon: Assets.svgIcMenuPlaynext,
+                  title: localization.playNext,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleFolderMenuAction(localization.playNext, folder);
+                  },
+                ),
+                _buildMenuItem(
+                  icon: Assets.svgIcMenuQueue,
+                  title: localization.addToQueue,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleFolderMenuAction(localization.addToQueue, folder);
+                  },
+                ),
+                _buildMenuItem(
+                  icon: Assets.svgIcMenuPlaylist,
+                  title: localization.addToPlaylist,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleFolderMenuAction(localization.addToPlaylist, folder);
+                  },
+                ),
+                _buildDivider(),
+                _buildMenuItem(
+                  icon: Assets.svgIcHide,
+                  title: hideTitle,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleFolderMenuAction(hideTitle, folder);
+                  },
+                ),
+              ],
+            ),
+            // Cancel button (same style as playlist menu)
+            GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.black.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(80.r),
+                  border: Border.all(
+                    color: AppColors.black.withValues(alpha: 0.10),
+                    width: 1,
+                  ),
+                ),
+                margin: EdgeInsets.only(top: 8.h, left: 15.w, right: 15.w),
+                height: 50.w,
+                child: Texts(
+                  S.of(context).cancel,
+                  fontSize: 14.sp,
+                  align: TextAlign.center,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textColor,
+                  fontFamily: AppFonts.medium,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-      SongMenuItem(
-        icon: Assets.svgIcMenuPlaynext,
-        title: localization.playNext,
+    );
+  }
+
+  Widget _buildMenuItem({
+    required String icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      dense: true,
+      visualDensity: VisualDensity(horizontal: 0.w, vertical: 0.h),
+      leading: SvgPicture.asset(icon, height: 24, width: 24),
+      title: Texts(
+        title,
+        fontSize: 16.sp,
+        fontWeight: FontWeight.w400,
+        fontFamily: AppFonts.inter,
       ),
-      SongMenuItem(
-        icon: Assets.svgIcMenuQueue,
-        title: localization.addToQueue,
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildDivider() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+      child: Divider(
+        height: 1,
+        thickness: 1,
+        color: AppColors.black.withValues(alpha: .1),
       ),
-      SongMenuItem(
-        icon: Assets.svgIcMenuPlaylist,
-        title: localization.addToPlaylist,
-      ),
-      SongMenuItem(
-        icon: Assets.svgIcHide,
-        title: hideTitle,
-      ),
-    ];
+    );
   }
 
   void _handleFolderMenuAction(String menuTitle, domain.Folder folder) {
@@ -436,8 +439,8 @@ class _FolderListScreenState extends State<FolderListScreen> {
       _addFolderToPlaylist(folder);
     } else if (menuTitle == S.of(context).hideFolder ||
         menuTitle == S.of(context).unhideFolder) {
-      final hide = menuTitle == S.of(context).hideFolder;
-      _updateFolderHiddenStatus(folder, hide);
+      _hideFolder(folder);
+      // _updateFolderHiddenStatus(folder, hide);
     } else if (menuTitle == S.of(context).deleteFolder) {
       _deleteFolder(folder);
     }
@@ -682,7 +685,8 @@ class _FolderListScreenState extends State<FolderListScreen> {
   Future<void> _updateFolderHiddenStatus(
     domain.Folder folder,
     bool hide,
-  ) async {
+  )
+  async {
     if (folder.id == null) return;
 
     try {
@@ -702,6 +706,7 @@ class _FolderListScreenState extends State<FolderListScreen> {
             : '"${folder.name}" is visible again',
         alertBannerLocation: AlertBannerLocation.bottom,
       );
+      context.pop();
     } catch (e) {
       if (!mounted) return;
       showSnackBar(
@@ -725,6 +730,19 @@ class _FolderListScreenState extends State<FolderListScreen> {
       ),
       isScrollControlled: true,
       builder: (_) => _buildDeleteConfirmationDialog(folder),
+    );
+  }
+
+  void _hideFolder(domain.Folder folder) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
+      ),
+      isScrollControlled: true,
+      builder: (_) => _buildHideConfirmationDialog(folder),
     );
   }
 
@@ -832,6 +850,117 @@ class _FolderListScreenState extends State<FolderListScreen> {
           ),
           SizedBox(height: 16.h),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHideConfirmationDialog(domain.Folder folder) {
+    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+    final bottomPadding = viewInsets > 0
+        ? viewInsets + 16.h
+        : (viewPadding > 0 ? viewPadding : 16.h);
+
+    return SafeArea(
+      child: Container(
+        padding: EdgeInsets.only(
+          left: 16.w,
+          right: 16.w,
+          top: 10.h,
+          bottom: 20.h,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 30.h),
+            Texts(
+              'Hide the folder',
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w500,
+              fontFamily: AppFonts.inter,
+              color: AppColors.textColor,
+            ),
+            SizedBox(height: 30.h),
+            Texts(
+              'Are you sure you want to hide this folder?',
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w400,
+              fontFamily: AppFonts.inter,
+              color: AppColors.textColor,
+              align: TextAlign.center,
+            ),
+            SizedBox(height: 25.h),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      height: 48.h,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Center(
+                        child: Texts(
+                          S.of(context).cancel,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: AppFonts.inter,
+                          color: AppColors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _updateFolderHiddenStatus(folder, true),
+                    // onTap: () {
+                    //   context.read<FolderBloc>().add(
+                    //     FolderEvent.deleteFolder(folder.id!),
+                    //   );
+                    //   Navigator.pop(context);
+                    //   showSnackBar(
+                    //     context,
+                    //     () {},
+                    //     message: "Folder deleted successfully!",
+                    //     alertBannerLocation: AlertBannerLocation.bottom,
+                    //   );
+                    // },
+                    child: Container(
+                      height: 48.h,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryOrange,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Center(
+                        child: Texts(
+                          S.of(context).delete,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: AppFonts.inter,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // SizedBox(height: 40.h),
+          ],
+        ),
       ),
     );
   }

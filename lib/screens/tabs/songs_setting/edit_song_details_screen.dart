@@ -236,7 +236,7 @@ class _EditSongDetailsScreenState extends State<EditSongDetailsScreen> {
                         _buildTitleField(),
                         _buildAlbumField(),
                         _buildArtistField(),
-                        _buildTrackField(),
+                        // _buildTrackField(),
                       ],
                     ),
                   ),

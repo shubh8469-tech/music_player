@@ -71,125 +71,126 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
         ? viewInsets + 16.h
         : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
 
-    return Container(
-      // color: Colors.red,
-      // constraints: BoxConstraints(maxHeight: 0.74.sh),
-      padding: EdgeInsets.only(top: 10.h, bottom: bottomPadding),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(Assets.svgIcLineBottom),
-          SizedBox(height: 10.h),
-          Column(
-            children: [
-              // Playlist Header
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-                child: MusicListTile(
-                  margin: 7.w,
-                  height: 66.h,
-                  borderRadius: 10.r,
-                  backgroundColor: AppColors.musicTileBackgroundColor,
-                  cardHeight: 50.h,
-                  cardWidth: 50.h,
-                  cardRadius: 7.r,
-                  noLogoGradientColor: widget.playlistGradientColors,
-                  cardIconAsset: headerIcon,
-                  cardIconSize: 32.r,
-                  isSvgCardIcon: isSvgHeader,
-                  isSvgColorNeeded: isSvgHeader,
-                  title: widget.playlist.name,
-                  subtitle: '${widget.playlist.songCount} Songs',
-                  trailingIconAsset: Assets.svgIcShare,
-                  trailingIconHeight: 25.h,
-                  trailingIconWidth: 25.w,
-                  trailingMargin: 2.w,
-                  onTap: () {
-                    showSnackBar(
-                      context,
-                          () {},
-                      message: 'Share playlist feature coming soon',
-                      alertBannerLocation: AlertBannerLocation.bottom,
-                    );
-                  },
-                  onPlayTap: () {
-                    showSnackBar(
-                      context,
-                          () {},
-                      message: 'Play playlist feature coming soon',
-                      alertBannerLocation: AlertBannerLocation.bottom,
-                    );
-                  },
+    return SafeArea(
+      child: Padding(
+        // constraints: BoxConstraints(maxHeight: 0.74.sh),
+        padding: EdgeInsets.only(top: 10.h, bottom: 20.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(Assets.svgIcLineBottom),
+            SizedBox(height: 10.h),
+            Column(
+              children: [
+                // Playlist Header
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  child: MusicListTile(
+                    margin: 7.w,
+                    height: 66.h,
+                    borderRadius: 10.r,
+                    backgroundColor: AppColors.musicTileBackgroundColor,
+                    cardHeight: 50.h,
+                    cardWidth: 50.h,
+                    cardRadius: 7.r,
+                    noLogoGradientColor: widget.playlistGradientColors,
+                    cardIconAsset: headerIcon,
+                    cardIconSize: 32.r,
+                    isSvgCardIcon: isSvgHeader,
+                    isSvgColorNeeded: isSvgHeader,
+                    title: widget.playlist.name,
+                    subtitle: '${widget.playlist.songCount} Songs',
+                    trailingIconAsset: Assets.svgIcShare,
+                    trailingIconHeight: 25.h,
+                    trailingIconWidth: 25.w,
+                    trailingMargin: 2.w,
+                    onTap: () {
+                      showSnackBar(
+                        context,
+                            () {},
+                        message: 'Share playlist feature coming soon',
+                        alertBannerLocation: AlertBannerLocation.bottom,
+                      );
+                    },
+                    onPlayTap: () {
+                      showSnackBar(
+                        context,
+                            () {},
+                        message: 'Play playlist feature coming soon',
+                        alertBannerLocation: AlertBannerLocation.bottom,
+                      );
+                    },
+                  ),
                 ),
-              ),
 
-              _buildMenuItem(
-                icon: Assets.svgPlayBlackBorder,
-                title: S.of(context).play,
-                onTap: _handlePlay,
-              ),
-              _buildMenuItem(
-                icon: Assets.svgIcMenuPlaynext,
-                title: S.of(context).playNext,
-                onTap: _handlePlayNext,
-              ),
-              _buildMenuItem(
-                icon: Assets.svgIcMenuQueue,
-                title: S.of(context).addToQueue,
-                onTap: _handleAddToQueue,
-              ),
-              _buildMenuItem(
-                icon: Assets.svgIcMenuPlaylist,
-                title: S.of(context).addToPlaylist,
-                onTap: _handleAddToPlaylist,
-              ),
-              if(!widget.isSystemPlaylist)...[
-                _buildDivider(),
                 _buildMenuItem(
-                  icon: Assets.svgIcEdit,
-                  title: S.of(context).rename,
-                  onTap: _handleRename,
+                  icon: Assets.svgPlayBlackBorder,
+                  title: S.of(context).play,
+                  onTap: _handlePlay,
                 ),
                 _buildMenuItem(
-                  icon: Assets.svgIcCover,
-                  title: S.of(context).changeCover,
-                  onTap: _handleChangeCover,
+                  icon: Assets.svgIcMenuPlaynext,
+                  title: S.of(context).playNext,
+                  onTap: _handlePlayNext,
                 ),
-                _buildDivider(),
                 _buildMenuItem(
-                  icon: Assets.svgIcDelete,
-                  title: S.of(context).deletePlaylist,
-                  onTap: _handleDeletePlaylist,
+                  icon: Assets.svgIcMenuQueue,
+                  title: S.of(context).addToQueue,
+                  onTap: _handleAddToQueue,
                 ),
+                _buildMenuItem(
+                  icon: Assets.svgIcMenuPlaylist,
+                  title: S.of(context).addToPlaylist,
+                  onTap: _handleAddToPlaylist,
+                ),
+                if(!widget.isSystemPlaylist)...[
+                  _buildDivider(),
+                  _buildMenuItem(
+                    icon: Assets.svgIcEdit,
+                    title: S.of(context).rename,
+                    onTap: _handleRename,
+                  ),
+                  _buildMenuItem(
+                    icon: Assets.svgIcCover,
+                    title: S.of(context).changeCover,
+                    onTap: _handleChangeCover,
+                  ),
+                  _buildDivider(),
+                  _buildMenuItem(
+                    icon: Assets.svgIcDelete,
+                    title: S.of(context).deletePlaylist,
+                    onTap: _handleDeletePlaylist,
+                  ),
+                ],
               ],
-            ],
-          ),
-          // Cancel Button
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: Container(
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.black.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(80.r),
-                border: Border.all(
+            ),
+            // Cancel Button
+            GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
                   color: AppColors.black.withValues(alpha: 0.10),
-                  width: 1,
+                  borderRadius: BorderRadius.circular(80.r),
+                  border: Border.all(
+                    color: AppColors.black.withValues(alpha: 0.10),
+                    width: 1,
+                  ),
                 ),
-              ),
-              margin: EdgeInsets.symmetric(horizontal: 15.w, vertical: 8.h),
-              height: 50.w,
-              child: Texts(
-                S.of(context).cancel,
-                fontSize: 14.sp,
-                align: TextAlign.center,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textColor,
-                fontFamily: AppFonts.medium,
+                margin: EdgeInsets.only( top: 8.h, left: 15.w, right: 15.w),
+                height: 50.w,
+                child: Texts(
+                  S.of(context).cancel,
+                  fontSize: 14.sp,
+                  align: TextAlign.center,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textColor,
+                  fontFamily: AppFonts.medium,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

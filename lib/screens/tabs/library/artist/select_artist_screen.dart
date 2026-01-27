@@ -256,7 +256,7 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
       // Check if there are existing songs in the queue
       if (musicService.songs.isEmpty) {
         // No songs in queue - add all selected songs and start playing
-        context.pop();
+        // context.pop();
         showSnackBar(
           context,
               () {},
@@ -311,9 +311,9 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
         // );
       }
 
-      if (mounted) {
-        context.pop();
-      }
+      // if (mounted) {
+      //   context.pop();
+      // }
     } catch (e) {
       if (mounted) {
         showSnackBar(
@@ -394,7 +394,7 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
         }
       }
 
-      context.pop();
+      // context.pop();
 
       // Create a copy of the existing songs list
       // final newSongsList = List<SongsModel>.from(musicService.songs);
@@ -500,9 +500,9 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
       );
 
       // Navigate back
-      if (mounted) {
-        context.pop();
-      }
+      // if (mounted) {
+      //   context.pop();
+      // }
 
       // Set the combined playlist and start playing
       await musicService.setPlaylist(allSongsFromArtists, startIndex: 0);

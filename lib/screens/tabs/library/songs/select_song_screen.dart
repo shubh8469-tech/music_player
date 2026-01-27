@@ -142,7 +142,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
     try {
       // Set playlist with selected songs and start playing
       showSnackBar(context, () {}, message: "Playing ${selectedSongs.length} songs", alertBannerLocation: AlertBannerLocation.bottom);
-      context.pop();
+      // context.pop();
       await musicService.setPlaylist(selectedSongs, startIndex: 0);
       await musicService.play();
       // Navigate back or stay, depending on your preference
@@ -309,9 +309,9 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
           showSnackBar(context, () {}, message: "${selectedSongs.length} songs added to play next", alertBannerLocation: AlertBannerLocation.bottom);
         }
 
-        if (Navigator.canPop(context)) {
-          Navigator.pop(context, true);
-        }
+        // if (Navigator.canPop(context)) {
+        //   Navigator.pop(context, true);
+        // }
         await musicService.setPlaylist(selectedSongs, startIndex: 0, autoPlay: true);
         // await musicService.play();
       } else {
@@ -323,39 +323,9 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
           showSnackBar(context, () {}, message: "$updateCount songs added to play next", alertBannerLocation: AlertBannerLocation.bottom);
         }
 
-        if (Navigator.canPop(context)) {
-          Navigator.pop(context, true);
-        }
-
-        // // Songs exist in queue - insert selected songs after current playing song
-        // final currentIndex = musicService.currentIndex;
-        // final insertIndex = currentIndex + 1;
-        //
-        // // Create a new list with selected songs inserted at the right position
-        // final newSongsList = List<SongsModel>.from(musicService.songs);
-        //
-        // // Filter out songs that are already in the list to avoid duplicates
-        // final songsToAdd = selectedSongs.where((song) {
-        //   return !newSongsList.any(
-        //     (existingSong) => existingSong.id == song.id,
-        //   );
-        // }).toList();
-        //
-        // // Insert songs at the position after current playing song
-        // newSongsList.insertAll(insertIndex, songsToAdd);
-        //
-        // // Update the playlist, keeping the current song playing
-        // await musicService.setPlaylist(
-        //   newSongsList,
-        //   startIndex: currentIndex >= 0 ? currentIndex : 0,
-        //   autoPlay: false,
-        // );
-        // showSnackBar(
-        //   context,
-        //   () {},
-        //   message: "${selectedSongs.length} songs added to play next",
-        //   alertBannerLocation: AlertBannerLocation.bottom,
-        // );
+        // if (Navigator.canPop(context)) {
+        //   Navigator.pop(context, true);
+        // }
       }
 
       // if (mounted) {
@@ -391,58 +361,10 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
       }
     }
 
-    if (Navigator.canPop(context)) {
-      Navigator.pop(context, true);
-    }
-
-    // try {
-    //   // Create a copy of the existing songs list
-    //   final newSongsList = List<SongsModel>.from(musicService.songs);
-    //
-    //   // Add each selected song to the queue if it's not already there
-    //   int addedCount = 0;
-    //   for (final song in selectedSongs) {
-    //     final existingIndex = newSongsList.indexWhere(
-    //       (existingSong) => existingSong.id == song.id,
-    //     );
-    //
-    //     if (existingIndex == -1) {
-    //       newSongsList.add(song);
-    //       addedCount++;
-    //     }
-    //   }
-    //
-    //   // Update the playlist with the new songs list
-    //   await musicService.setPlaylist(newSongsList);
-    //
-    //   if (mounted) {
-    //     if (addedCount < 1) {
-    //       showSnackBar(
-    //         context,
-    //         () {},
-    //         message: "Songs already added to queue",
-    //         alertBannerLocation: AlertBannerLocation.bottom,
-    //       );
-    //     } else {
-    //       showSnackBar(
-    //         context,
-    //         () {},
-    //         message: "$addedCount songs added to queue",
-    //         alertBannerLocation: AlertBannerLocation.bottom,
-    //       );
-    //     }
-    //   }
-    // } catch (e) {
-    //   log('Error adding songs to queue: $e');
-    //   if (mounted) {
-    //     showSnackBar(
-    //       context,
-    //       () {},
-    //       message: "Error adding songs to queue",
-    //       alertBannerLocation: AlertBannerLocation.bottom,
-    //     );
-    //   }
+    // if (Navigator.canPop(context)) {
+    //   Navigator.pop(context, true);
     // }
+
   }
 
   // Hide selected songs
@@ -482,9 +404,9 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
       showSnackBar(context, () {}, message: '${selectedSongs.length} songs hidden', alertBannerLocation: AlertBannerLocation.bottom);
     }
 
-    if (anyHidden && Navigator.canPop(context)) {
-      Navigator.pop(context, true);
-    }
+    // if (anyHidden && Navigator.canPop(context)) {
+    //   Navigator.pop(context, true);
+    // }
   }
 
   // Custom remove from playlist confirmation dialog

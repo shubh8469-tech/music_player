@@ -34,7 +34,6 @@ import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
 import 'package:music_app/utills/globals.dart';
 import 'package:music_app/utills/snack_bar.dart';
-import 'package:music_app/model/song_menu_model.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -896,24 +895,25 @@ class _FolderActionSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
-    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
-    final bottomPadding = viewInsets > 0 ? viewInsets + 16.h : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
-    final menuItems = _buildFolderMenuItems(context);
+    final localization = S.of(context);
+    final hideTitle =
+        folder.isHidden ? localization.unhideFolder : localization.hideFolder;
 
-    return Container(
-      constraints: BoxConstraints(maxHeight: 0.63.sh),
-      padding: EdgeInsets.only(top: 10.h, bottom: bottomPadding),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(Assets.svgIcLineBottom),
-          SizedBox(height: 10.h),
-          Flexible(
-            child: Column(
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(top: 10.h, bottom: 20.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(Assets.svgIcLineBottom),
+            SizedBox(height: 10.h),
+            Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
                   child: MusicListTile(
                     margin: 7.w,
                     height: 66.h,
@@ -922,7 +922,10 @@ class _FolderActionSheet extends StatelessWidget {
                     cardHeight: 50.h,
                     cardWidth: 50.h,
                     cardRadius: 7.r,
-                    noLogoGradientColor: [AppColors.mildYellow.withValues(alpha: 0.21), AppColors.mildYellow],
+                    noLogoGradientColor: [
+                      AppColors.mildYellow.withValues(alpha: 0.21),
+                      AppColors.mildYellow,
+                    ],
                     cardIconAsset: Assets.svgDirectory,
                     cardIconSize: 32.r,
                     isSvgCardIcon: true,
@@ -933,98 +936,120 @@ class _FolderActionSheet extends StatelessWidget {
                     trailingIconWidth: 25.w,
                     trailingMargin: 2.w,
                     onTap: () {
-                      showSnackBar(context, () {}, message: 'Share folder feature coming soon', alertBannerLocation: AlertBannerLocation.bottom);
+                      showSnackBar(
+                        context,
+                        () {},
+                        message: 'Share folder feature coming soon',
+                        alertBannerLocation: AlertBannerLocation.bottom,
+                      );
                     },
                     onPlayTap: () {
-                      showSnackBar(context, () {}, message: 'Play folder feature coming soon', alertBannerLocation: AlertBannerLocation.bottom);
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: menuItems.length,
-                    itemBuilder: (context, index) {
-                      final menuItem = menuItems[index];
-                      return Column(
-                        children: [
-                          ListTile(
-                            dense: true,
-                            visualDensity: VisualDensity(horizontal: 0.w, vertical: 0.h),
-                            leading: SvgPicture.asset(menuItem.icon, height: 24, width: 24),
-                            title: Texts(menuItem.title, fontSize: 16.sp, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
-                            onTap: () {
-                              Navigator.pop(context);
-                              _handleFolderMenuAction(context, menuItem.title);
-                            },
-                          ),
-                          if (index == menuItems.length - 2)
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
-                              child: Divider(height: 1, thickness: 1, color: AppColors.black.withValues(alpha: .1)),
-                            ),
-                        ],
+                      showSnackBar(
+                        context,
+                        () {},
+                        message: 'Play folder feature coming soon',
+                        alertBannerLocation: AlertBannerLocation.bottom,
                       );
                     },
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.black.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(80.r),
-                      border: Border.all(color: AppColors.black.withValues(alpha: 0.10), width: 1),
-                    ),
-                    margin: EdgeInsets.symmetric(horizontal: 15.w),
-                    height: 50.w,
-                    child: Texts(
-                      S.of(context).cancel,
-                      fontSize: 14.sp,
-                      align: TextAlign.center,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textColor,
-                      fontFamily: AppFonts.medium,
-                    ),
-                  ),
+
+                _buildMenuItem(
+                  context,
+                  icon: Assets.svgPlayBlackBorder,
+                  title: localization.play,
+                  onTap: () => _playFolder(context),
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Assets.svgIcMenuPlaynext,
+                  title: localization.playNext,
+                  onTap: () => _playNextFolder(context),
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Assets.svgIcMenuQueue,
+                  title: localization.addToQueue,
+                  onTap: () => _addFolderToQueue(context),
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Assets.svgIcMenuPlaylist,
+                  title: localization.addToPlaylist,
+                  onTap: () => _addFolderToPlaylist(context),
+                ),
+                _buildDivider(),
+                _buildMenuItem(
+                  context,
+                  icon: Assets.svgIcHide,
+                  title: hideTitle,
+                  onTap: () =>
+                      _toggleFolderHidden(context, !folder.isHidden),
                 ),
               ],
             ),
-          ),
-          SizedBox(height: 25.h),
-        ],
+            GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.black.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(80.r),
+                  border: Border.all(
+                    color: AppColors.black.withValues(alpha: 0.10),
+                    width: 1,
+                  ),
+                ),
+                margin: EdgeInsets.only(top: 8.h, left: 15.w, right: 15.w),
+                height: 50.w,
+                child: Texts(
+                  S.of(context).cancel,
+                  fontSize: 14.sp,
+                  align: TextAlign.center,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textColor,
+                  fontFamily: AppFonts.medium,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  void _handleFolderMenuAction(BuildContext context, String menuTitle) {
-    if (menuTitle == S.of(context).play) {
-      _playFolder(context);
-    } else if (menuTitle == S.of(context).playNext) {
-      _playNextFolder(context);
-    } else if (menuTitle == S.of(context).addToQueue) {
-      _addFolderToQueue(context);
-    } else if (menuTitle == S.of(context).addToPlaylist) {
-      _addFolderToPlaylist(context);
-    } else if (menuTitle == S.of(context).hideFolder || menuTitle == S.of(context).unhideFolder) {
-      final hide = menuTitle == S.of(context).hideFolder;
-      _toggleFolderHidden(context, hide);
-    }
+  Widget _buildMenuItem(
+    BuildContext context, {
+    required String icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      dense: true,
+      visualDensity: VisualDensity(horizontal: 0.w, vertical: 0.h),
+      leading: SvgPicture.asset(icon, height: 24, width: 24),
+      title: Texts(
+        title,
+        fontSize: 16.sp,
+        fontWeight: FontWeight.w400,
+        fontFamily: AppFonts.inter,
+      ),
+      onTap: () {
+        Navigator.pop(context);
+        onTap();
+      },
+    );
   }
 
-  List<SongMenuItem> _buildFolderMenuItems(BuildContext context) {
-    final localization = S.of(context);
-    final hideTitle = folder.isHidden ? localization.unhideFolder : localization.hideFolder;
-
-    return [
-      SongMenuItem(icon: Assets.svgPlayBlackBorder, title: localization.play),
-      SongMenuItem(icon: Assets.svgIcMenuPlaynext, title: localization.playNext),
-      SongMenuItem(icon: Assets.svgIcMenuQueue, title: localization.addToQueue),
-      SongMenuItem(icon: Assets.svgIcMenuPlaylist, title: localization.addToPlaylist),
-      SongMenuItem(icon: Assets.svgIcHide, title: hideTitle),
-    ];
+  Widget _buildDivider() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+      child: Divider(
+        height: 1,
+        thickness: 1,
+        color: AppColors.black.withValues(alpha: .1),
+      ),
+    );
   }
 
   Future<void> _playFolder(BuildContext context) async {
@@ -1206,25 +1231,24 @@ class _AlbumActionSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
-    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
-    final bottomPadding = viewInsets > 0 ? viewInsets + 16.h : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
-
+    final localization = S.of(context);
     final albumArtworkPath = (album.artworkPath?.isNotEmpty ?? false) ? album.artworkPath! : Assets.svgAlbum;
 
-    return Container(
-      constraints: BoxConstraints(maxHeight: 0.63.sh),
-      padding: EdgeInsets.only(top: 10.h, bottom: bottomPadding),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(Assets.svgIcLineBottom),
-          SizedBox(height: 10.h),
-          Flexible(
-            child: Column(
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(top: 10.h, bottom: 20.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(Assets.svgIcLineBottom),
+            SizedBox(height: 10.h),
+            Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
                   child: MusicListTile(
                     margin: 7.w,
                     height: 66.h,
@@ -1233,7 +1257,10 @@ class _AlbumActionSheet extends StatelessWidget {
                     cardHeight: 50.h,
                     cardWidth: 50.h,
                     cardRadius: 7.r,
-                    noLogoGradientColor: [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange],
+                    noLogoGradientColor: [
+                      AppColors.mildOrange.withValues(alpha: 0.21),
+                      AppColors.mildOrange,
+                    ],
                     cardIconAsset: albumArtworkPath,
                     cardIconSize: 32.r,
                     isSvgCardIcon: true,
@@ -1244,82 +1271,101 @@ class _AlbumActionSheet extends StatelessWidget {
                     trailingIconWidth: 25.w,
                     trailingMargin: 2.w,
                     onTap: () {
-                      showSnackBar(context, () {}, message: 'Share album feature coming soon', alertBannerLocation: AlertBannerLocation.bottom);
+                      showSnackBar(
+                        context,
+                        () {},
+                        message: 'Share album feature coming soon',
+                        alertBannerLocation: AlertBannerLocation.bottom,
+                      );
                     },
                     onPlayTap: () {
-                      showSnackBar(context, () {}, message: 'Play album feature coming soon', alertBannerLocation: AlertBannerLocation.bottom);
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: albumMenuItems.length,
-                    itemBuilder: (context, index) {
-                      final menuItem = albumMenuItems[index];
-                      return Column(
-                        children: [
-                          ListTile(
-                            dense: true,
-                            visualDensity: VisualDensity(horizontal: 0.w, vertical: 0.h),
-                            leading: SvgPicture.asset(menuItem.icon, height: 24, width: 24),
-                            title: Texts(menuItem.title, fontSize: 16.sp, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
-                            onTap: () {
-                              Navigator.pop(context);
-                              _handleAlbumMenuAction(context, menuItem.title);
-                            },
-                          ),
-                          if (index == 3)
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
-                              child: Divider(height: 1, thickness: 1, color: AppColors.black.withValues(alpha: .1)),
-                            ),
-                        ],
+                      showSnackBar(
+                        context,
+                        () {},
+                        message: 'Play album feature coming soon',
+                        alertBannerLocation: AlertBannerLocation.bottom,
                       );
                     },
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.black.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(80.r),
-                      border: Border.all(color: AppColors.black.withValues(alpha: 0.10), width: 1),
-                    ),
-                    margin: EdgeInsets.symmetric(horizontal: 15.w),
-                    height: 50.w,
-                    child: Texts(
-                      S.of(context).cancel,
-                      fontSize: 14.sp,
-                      align: TextAlign.center,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textColor,
-                      fontFamily: AppFonts.medium,
-                    ),
-                  ),
+
+                _buildMenuItem(
+                  context,
+                  icon: Assets.svgPlayBlackBorder,
+                  title: localization.play,
+                  onTap: () => _playAlbum(context),
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Assets.svgIcMenuPlaynext,
+                  title: localization.playNext,
+                  onTap: () => _playNextAlbum(context),
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Assets.svgIcMenuQueue,
+                  title: localization.addToQueue,
+                  onTap: () => _addAlbumToQueue(context),
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Assets.svgIcMenuPlaylist,
+                  title: localization.addToPlaylist,
+                  onTap: () => _addAlbumToPlaylist(context),
                 ),
               ],
             ),
-          ),
-          SizedBox(height: 25.h),
-        ],
+            GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.black.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(80.r),
+                  border: Border.all(
+                    color: AppColors.black.withValues(alpha: 0.10),
+                    width: 1,
+                  ),
+                ),
+                margin: EdgeInsets.only(top: 8.h, left: 15.w, right: 15.w),
+                height: 50.w,
+                child: Texts(
+                  S.of(context).cancel,
+                  fontSize: 14.sp,
+                  align: TextAlign.center,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textColor,
+                  fontFamily: AppFonts.medium,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  void _handleAlbumMenuAction(BuildContext context, String menuTitle) {
-    if (menuTitle == S.of(context).play) {
-      _playAlbum(context);
-    } else if (menuTitle == S.of(context).playNext) {
-      _playNextAlbum(context);
-    } else if (menuTitle == S.of(context).addToQueue) {
-      _addAlbumToQueue(context);
-    } else if (menuTitle == S.of(context).addToPlaylist) {
-      _addAlbumToPlaylist(context);
-    }
+  Widget _buildMenuItem(
+    BuildContext context, {
+    required String icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      dense: true,
+      visualDensity: VisualDensity(horizontal: 0.w, vertical: 0.h),
+      leading: SvgPicture.asset(icon, height: 24, width: 24),
+      title: Texts(
+        title,
+        fontSize: 16.sp,
+        fontWeight: FontWeight.w400,
+        fontFamily: AppFonts.inter,
+      ),
+      onTap: () {
+        Navigator.pop(context);
+        onTap();
+      },
+    );
   }
 
   Future<void> _playAlbum(BuildContext context) async {
@@ -1482,25 +1528,24 @@ class _ArtistActionSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
-    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
-    final bottomPadding = viewInsets > 0 ? viewInsets + 16.h : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
-
+    final localization = S.of(context);
     final artistArtworkPath = (artist.artworkPath?.isNotEmpty ?? false) ? artist.artworkPath! : Assets.svgMusicIcon;
 
-    return Container(
-      constraints: BoxConstraints(maxHeight: 0.63.sh),
-      padding: EdgeInsets.only(top: 10.h, bottom: bottomPadding),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(Assets.svgIcLineBottom),
-          SizedBox(height: 10.h),
-          Flexible(
-            child: Column(
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(top: 10.h, bottom: 20.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(Assets.svgIcLineBottom),
+            SizedBox(height: 10.h),
+            Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
                   child: MusicListTile(
                     margin: 7.w,
                     height: 66.h,
@@ -1514,88 +1559,108 @@ class _ArtistActionSheet extends StatelessWidget {
                     isSvgCardIcon: true,
                     isSvgColorNeeded: false,
                     title: artist.name,
-                    subtitle: '${artist.albumCount} Album${artist.albumCount != 1 ? 's' : ''} - ${artist.songCount} Songs',
+                    subtitle:
+                        '${artist.albumCount} Album${artist.albumCount != 1 ? 's' : ''} - ${artist.songCount} Songs',
                     trailingIconAsset: Assets.svgIcShare,
                     trailingIconHeight: 25.h,
                     trailingIconWidth: 25.w,
                     trailingMargin: 2.w,
                     onTap: () {
-                      showSnackBar(context, () {}, message: 'Share artist feature coming soon', alertBannerLocation: AlertBannerLocation.bottom);
+                      showSnackBar(
+                        context,
+                        () {},
+                        message: 'Share artist feature coming soon',
+                        alertBannerLocation: AlertBannerLocation.bottom,
+                      );
                     },
                     onPlayTap: () {
-                      showSnackBar(context, () {}, message: 'Play artist feature coming soon', alertBannerLocation: AlertBannerLocation.bottom);
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: artistMenuItems.length,
-                    itemBuilder: (context, index) {
-                      final menuItem = artistMenuItems[index];
-                      return Column(
-                        children: [
-                          ListTile(
-                            dense: true,
-                            visualDensity: VisualDensity(horizontal: 0.w, vertical: 0.h),
-                            leading: SvgPicture.asset(menuItem.icon, height: 24, width: 24),
-                            title: Texts(menuItem.title, fontSize: 16.sp, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
-                            onTap: () {
-                              Navigator.pop(context);
-                              _handleArtistMenuAction(context, menuItem.title);
-                            },
-                          ),
-                          if (index == 3)
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
-                              child: Divider(height: 1, thickness: 1, color: AppColors.black.withValues(alpha: .1)),
-                            ),
-                        ],
+                      showSnackBar(
+                        context,
+                        () {},
+                        message: 'Play artist feature coming soon',
+                        alertBannerLocation: AlertBannerLocation.bottom,
                       );
                     },
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.black.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(80.r),
-                      border: Border.all(color: AppColors.black.withValues(alpha: 0.10), width: 1),
-                    ),
-                    margin: EdgeInsets.symmetric(horizontal: 15.w),
-                    height: 50.w,
-                    child: Texts(
-                      S.of(context).cancel,
-                      fontSize: 14.sp,
-                      align: TextAlign.center,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textColor,
-                      fontFamily: AppFonts.medium,
-                    ),
-                  ),
+
+                _buildMenuItem(
+                  context,
+                  icon: Assets.svgPlayBlackBorder,
+                  title: localization.play,
+                  onTap: () => _playArtist(context),
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Assets.svgIcMenuPlaynext,
+                  title: localization.playNext,
+                  onTap: () => _playNextArtist(context),
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Assets.svgIcMenuQueue,
+                  title: localization.addToQueue,
+                  onTap: () => _addArtistToQueue(context),
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Assets.svgIcMenuPlaylist,
+                  title: localization.addToPlaylist,
+                  onTap: () => _addArtistToPlaylist(context),
                 ),
               ],
             ),
-          ),
-          SizedBox(height: 25.h),
-        ],
+            GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.black.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(80.r),
+                  border: Border.all(
+                    color: AppColors.black.withValues(alpha: 0.10),
+                    width: 1,
+                  ),
+                ),
+                margin: EdgeInsets.only(top: 8.h, left: 15.w, right: 15.w),
+                height: 50.w,
+                child: Texts(
+                  S.of(context).cancel,
+                  fontSize: 14.sp,
+                  align: TextAlign.center,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textColor,
+                  fontFamily: AppFonts.medium,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  void _handleArtistMenuAction(BuildContext context, String menuTitle) {
-    if (menuTitle == S.of(context).play) {
-      _playArtist(context);
-    } else if (menuTitle == S.of(context).playNext) {
-      _playNextArtist(context);
-    } else if (menuTitle == S.of(context).addToQueue) {
-      _addArtistToQueue(context);
-    } else if (menuTitle == S.of(context).addToPlaylist) {
-      _addArtistToPlaylist(context);
-    }
+  Widget _buildMenuItem(
+    BuildContext context, {
+    required String icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      dense: true,
+      visualDensity: VisualDensity(horizontal: 0.w, vertical: 0.h),
+      leading: SvgPicture.asset(icon, height: 24, width: 24),
+      title: Texts(
+        title,
+        fontSize: 16.sp,
+        fontWeight: FontWeight.w400,
+        fontFamily: AppFonts.inter,
+      ),
+      onTap: () {
+        Navigator.pop(context);
+        onTap();
+      },
+    );
   }
 
   Future<void> _playArtist(BuildContext context) async {

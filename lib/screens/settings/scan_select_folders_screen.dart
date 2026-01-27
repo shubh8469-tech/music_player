@@ -299,9 +299,7 @@ class _ScanSelectFoldersScreenState extends State<ScanSelectFoldersScreen> {
 }
 
 class _FolderBadge extends StatelessWidget {
-  const _FolderBadge({required this.label, required this.isSelected});
-
-  final String label;
+  const _FolderBadge({required this.label, required this.isSelected});  final String label;
   final bool isSelected;  @override
   Widget build(BuildContext context) {
     return Container(

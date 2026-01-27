@@ -259,7 +259,7 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
       // Check if there are existing songs in the queue
       if (musicService.songs.isEmpty) {
         // No songs in queue - add all selected songs and start playing
-        context.pop();
+        // context.pop();
         showSnackBar(
           context,
               () {},
@@ -321,7 +321,7 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
         //       "${allSongsFromFolders.length} songs from ${selectedFolders.length} folders added to play next",
         //   alertBannerLocation: AlertBannerLocation.bottom,
         // );
-        context.pop();
+        // context.pop();
       }
     } catch (e) {
       if (mounted) {
@@ -403,7 +403,7 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
         }
       }
 
-      context.pop();
+      // context.pop();
 
       // // Create a copy of the existing songs list
       // final newSongsList = List<SongsModel>.from(musicService.songs);
@@ -500,7 +500,7 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
       }
 
       // Set the combined playlist and start playing
-      context.pop();
+      // context.pop();
       showSnackBar(
         context,
             () {},

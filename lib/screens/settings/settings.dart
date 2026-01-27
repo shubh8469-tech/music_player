@@ -472,124 +472,126 @@ class _SettingsPageState extends State<SettingsPage> {
           color: AppColors.white,
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
-          child: Column(
-            children: [
-              _optionTile(
-                asset: Assets.svgPremium,
-                title: "Go Premium ✨",
-                onTap: _showComingSoonSnack,
-              ),
-              _optionTile(
-                asset: Assets.svgScan,
-                title: "Scan Music",
-                subtitle: "Scan and add music from device",
-                onTap: () {
-                  context.push('/dashboard/scan-music');
-                },
-              ),
-              _optionTile(
-                asset: Assets.svgScan,
-                title: "Refresh library",
-                subtitle: _isRefreshing
-                    ? "Refreshing..."
-                    : "Sync with device music",
-                trailing: _isRefreshing
-                    ? SizedBox(
-                        width: 20.w,
-                        height: 20.h,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.primaryOrange,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+            child: Column(
+              children: [
+                _optionTile(
+                  asset: Assets.svgPremium,
+                  title: "Go Premium ✨",
+                  onTap: _showComingSoonSnack,
+                ),
+                _optionTile(
+                  asset: Assets.svgScan,
+                  title: "Scan Music",
+                  subtitle: "Scan and add music from device",
+                  onTap: () {
+                    context.push('/dashboard/scan-music');
+                  },
+                ),
+                _optionTile(
+                  asset: Assets.svgScan,
+                  title: "Refresh library",
+                  subtitle: _isRefreshing
+                      ? "Refreshing..."
+                      : "Sync with device music",
+                  trailing: _isRefreshing
+                      ? SizedBox(
+                          width: 20.w,
+                          height: 20.h,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.primaryOrange,
+                            ),
                           ),
-                        ),
-                      )
-                    : null,
-                onTap: _isRefreshing ? null : _refreshLibrary,
-              ),
-              _optionTile(
-                asset: Assets.svgHidden,
-                title: "Hidden music",
-                onTap: () {
-                  context.push('/dashboard/hidden-music');
-                },
-              ),
-              _optionTile(
-                asset: Assets.svgBackup,
-                title: "Backup & restore",
-                subtitle: "Last backup: 2025-08-25 13:52:14",
-                onTap: () {
-                  context.push('/dashboard/backup-restore');
-                },
-              ),
-              _sectionDivider(),
-              _optionTile(
-                asset: Assets.svgBulb,
-                title: "Keep screen on",
-                subtitle: "Stay on while on the player screen",
-                trailing: _buildSwitch(
-                  value: keepScreenOn,
-                  onChanged: (value) {
-                    // setState(() => keepScreenOn = value);
-                    _showComingSoonSnack();
+                        )
+                      : null,
+                  onTap: _isRefreshing ? null : _refreshLibrary,
+                ),
+                _optionTile(
+                  asset: Assets.svgHidden,
+                  title: "Hidden music",
+                  onTap: () {
+                    context.push('/dashboard/hidden-music');
                   },
                 ),
-              ),
-              _optionTile(
-                asset: Assets.svgLock,
-                title: "Lock screen playing",
-                subtitle: "Show now playing when lock screen",
-                trailing: _buildSwitch(
-                  value: lockScreenPlaying,
-                  onChanged: (value) {
-                    // setState(() => lockScreenPlaying = value);
-                    _showComingSoonSnack();
+                _optionTile(
+                  asset: Assets.svgBackup,
+                  title: "Backup & restore",
+                  subtitle: "Last backup: 2025-08-25 13:52:14",
+                  onTap: () {
+                    context.push('/dashboard/backup-restore');
                   },
                 ),
-              ),
-              _optionTile(
-                asset: Assets.svgPauseHead,
-                title: "Pause on detach",
-                subtitle: "Pause playback when headphone is detached",
-                trailing: _buildSwitch(
-                  value: pauseOnDetach,
-                  onChanged: (value) {
-                    // setState(() => pauseOnDetach = value);
-                    _showComingSoonSnack();
-                  },
+                _sectionDivider(),
+                _optionTile(
+                  asset: Assets.svgBulb,
+                  title: "Keep screen on",
+                  subtitle: "Stay on while on the player screen",
+                  trailing: _buildSwitch(
+                    value: keepScreenOn,
+                    onChanged: (value) {
+                      // setState(() => keepScreenOn = value);
+                      _showComingSoonSnack();
+                    },
+                  ),
                 ),
-              ),
-              _sectionDivider(),
-              _optionTile(
-                asset: Assets.svgFaq,
-                title: "FAQs",
-                onTap: _showComingSoonSnack,
-              ),
-              _optionTile(
-                asset: Assets.svgFeedback,
-                title: "Feedback",
-                onTap: _showComingSoonSnack,
-              ),
-              _optionTile(
-                asset: Assets.svgPrivacy,
-                title: "Privacy Policy",
-                onTap: _showComingSoonSnack,
-              ),
-              _optionTile(
-                asset: Assets.svgTermsDoc,
-                title: "Terms of use",
-                onTap: _showComingSoonSnack,
-              ),
-              _optionTile(
-                asset: Assets.svgVersion,
-                title: "Version",
-                subtitle: "3.8.1.541",
-                onTap: _showComingSoonSnack,
-              ),
-            ],
+                _optionTile(
+                  asset: Assets.svgLock,
+                  title: "Lock screen playing",
+                  subtitle: "Show now playing when lock screen",
+                  trailing: _buildSwitch(
+                    value: lockScreenPlaying,
+                    onChanged: (value) {
+                      // setState(() => lockScreenPlaying = value);
+                      _showComingSoonSnack();
+                    },
+                  ),
+                ),
+                _optionTile(
+                  asset: Assets.svgPauseHead,
+                  title: "Pause on detach",
+                  subtitle: "Pause playback when headphone is detached",
+                  trailing: _buildSwitch(
+                    value: pauseOnDetach,
+                    onChanged: (value) {
+                      // setState(() => pauseOnDetach = value);
+                      _showComingSoonSnack();
+                    },
+                  ),
+                ),
+                _sectionDivider(),
+                _optionTile(
+                  asset: Assets.svgFaq,
+                  title: "FAQs",
+                  onTap: _showComingSoonSnack,
+                ),
+                _optionTile(
+                  asset: Assets.svgFeedback,
+                  title: "Feedback",
+                  onTap: _showComingSoonSnack,
+                ),
+                _optionTile(
+                  asset: Assets.svgPrivacy,
+                  title: "Privacy Policy",
+                  onTap: _showComingSoonSnack,
+                ),
+                _optionTile(
+                  asset: Assets.svgTermsDoc,
+                  title: "Terms of use",
+                  onTap: _showComingSoonSnack,
+                ),
+                _optionTile(
+                  asset: Assets.svgVersion,
+                  title: "Version",
+                  subtitle: "3.8.1.541",
+                  onTap: _showComingSoonSnack,
+                ),
+              ],
+            ),
           ),
         ),
       ),

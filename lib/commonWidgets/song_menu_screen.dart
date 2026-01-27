@@ -1039,30 +1039,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     );
                                     return;
                                   }
-
-                                  try {
-                                    context.read<SongsBloc>().add(SongsEvent.hideSong(widget.currentSong!.id!));
-
-                                    await musicService.removeDeletedSongFromQueue(widget.currentSong!.id!);
-
-                                    if (mounted) {
-                                      showSnackBar(context, () {}, message: '"${widget.currentSong!.title}" hidden', alertBannerLocation: AlertBannerLocation.bottom);
-                                    }
-
-                                    widget.onSongDeleted?.call();
-                                  } catch (e) {
-                                    showSnackBar(
-                                      context,
-                                      () {},
-                                      message: 'Failed to hide song: $e',
-                                      backgroundColor: Colors.red,
-                                      alertBannerLocation: AlertBannerLocation.bottom,
-                                    );
-                                  } finally {
-                                    if (Navigator.canPop(context)) {
-                                      Navigator.pop(context);
-                                    }
-                                  }
+                                  _hideSong(musicService);
                                 }
                               },
                             ),
@@ -1796,6 +1773,155 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
         showSnackBar(context, () {}, message: 'Error setting ringtone: $e', backgroundColor: Colors.red, alertBannerLocation: AlertBannerLocation.bottom);
       }
     }
+  }
+
+  void _hideSong(MusicPlayerService musicService) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
+      ),
+      isScrollControlled: true,
+      builder: (_) => _buildHideConfirmationDialog(musicService),
+    );
+  }
+
+  Widget _buildHideConfirmationDialog(MusicPlayerService musicService) {
+    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+    final bottomPadding = viewInsets > 0
+        ? viewInsets + 16.h
+        : (viewPadding > 0 ? viewPadding : 16.h);
+
+    return SafeArea(
+      child: Container(
+        padding: EdgeInsets.only(
+          left: 16.w,
+          right: 16.w,
+          top: 10.h,
+          bottom: 20.h,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 30.h),
+            Texts(
+              'Hide the Song',
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w500,
+              fontFamily: AppFonts.inter,
+              color: AppColors.textColor,
+            ),
+            SizedBox(height: 30.h),
+            Texts(
+              'Are you sure you want to hide this song?',
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w400,
+              fontFamily: AppFonts.inter,
+              color: AppColors.textColor,
+              align: TextAlign.center,
+            ),
+            SizedBox(height: 25.h),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      height: 48.h,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Center(
+                        child: Texts(
+                          S.of(context).cancel,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: AppFonts.inter,
+                          color: AppColors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      try {
+                        context.read<SongsBloc>().add(SongsEvent.hideSong(widget.currentSong!.id!));
+
+                        await musicService.removeDeletedSongFromQueue(widget.currentSong!.id!);
+
+                        if (mounted) {
+                          showSnackBar(context, () {}, message: '"${widget.currentSong!.title}" hidden', alertBannerLocation: AlertBannerLocation.bottom);
+                        }
+
+                        widget.onSongDeleted?.call();
+                      } catch (e) {
+                        showSnackBar(
+                          context,
+                              () {},
+                          message: 'Failed to hide song: $e',
+                          backgroundColor: Colors.red,
+                          alertBannerLocation: AlertBannerLocation.bottom,
+                        );
+                      } finally {
+                        if (Navigator.canPop(context)) {
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                        }
+                      }
+                    },
+                    // onTap: () {
+                    //   context.read<FolderBloc>().add(
+                    //     FolderEvent.deleteFolder(folder.id!),
+                    //   );
+                    //   Navigator.pop(context);
+                    //   showSnackBar(
+                    //     context,
+                    //     () {},
+                    //     message: "Folder deleted successfully!",
+                    //     alertBannerLocation: AlertBannerLocation.bottom,
+                    //   );
+                    // },
+                    child: Container(
+                      height: 48.h,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryOrange,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Center(
+                        child: Texts(
+                          S.of(context).delete,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: AppFonts.inter,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // SizedBox(height: 40.h),
+          ],
+        ),
+      ),
+    );
   }
 }
 

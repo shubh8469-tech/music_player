@@ -259,7 +259,7 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
       if (musicService.songs.isEmpty) {
         // No songs in queue - add all selected songs and start playing
 
-        context.pop();
+        // context.pop();
         showSnackBar(
           context,
               () {},
@@ -321,7 +321,7 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
         //       "${allSongsFromAlbums.length} songs from ${selectedAlbums.length} albums added to play next",
         //   alertBannerLocation: AlertBannerLocation.bottom,
         // );
-        context.pop();
+        // context.pop();
       }
     } catch (e) {
       if (mounted) {
@@ -403,7 +403,7 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
         }
       }
 
-      context.pop();
+      // context.pop();
 
       // Create a copy of the existing songs list
       // final newSongsList = List<SongsModel>.from(musicService.songs);
@@ -509,9 +509,9 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
       );
 
       // Navigate back
-      if (mounted) {
-        context.pop();
-      }
+      // if (mounted) {
+      //   context.pop();
+      // }
 
       await musicService.setPlaylist(allSongsFromAlbums, startIndex: 0);
       await musicService.play();

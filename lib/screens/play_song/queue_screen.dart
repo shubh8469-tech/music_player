@@ -684,6 +684,18 @@ class _QueueScreenState extends State<QueueScreen> {
                           children: [
                             SvgPicture.asset(Assets.svgSongsCount),
                             SizedBox(width: 8.w),
+                            SizedBox(
+                              height: 38.h, // Increase height so padding doesn't zero it out
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8.h), // Leave some room for the line
+                                child: VerticalDivider(
+                                  color: AppColors.mediumDarkGrey.withOpacity(0.5),
+                                  width: 1.w,      // Total space the widget occupies
+                                  thickness: 1.2.w,   // The actual thickness of the line
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
                             if (queueSongs.isNotEmpty && musicService.currentIndex >= 0) ...[
                               Texts(
                                 "${musicService.currentIndex + 1}/${queueSongs.length}",
