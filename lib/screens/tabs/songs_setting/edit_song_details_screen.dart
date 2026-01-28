@@ -185,6 +185,7 @@ class _EditSongDetailsScreenState extends State<EditSongDetailsScreen> {
             setState(() {
               _isSaving = false;
             });
+            _showSnack('Song updated successfully');
             Navigator.pop(context, true);
           },
           error: (message) {

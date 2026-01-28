@@ -243,7 +243,7 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                                           ],
                                         ),
                                       ),
-                                      SizedBox(width: 5.w),
+                                      // Spacer(width: 5.w),
                                       InkWell(
                                         onTap: () {
                                           showModalBottomSheet(
@@ -260,16 +260,12 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                                                 _buildAlbumMenu(context, album),
                                           );
                                         },
-                                        child: SizedBox(
-                                          width: 30.w,
-                                          height: 30.h,
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(4.0),
-                                            child: SvgPicture.asset(
-                                              Assets.svgMenuIcon,
-                                              height: 21.5.h,
-                                              width: 21.5.w,
-                                            ),
+                                        child: Padding(
+                                          padding:  EdgeInsets.symmetric(vertical:  4.r, horizontal: 2.r),
+                                          child: SvgPicture.asset(
+                                            Assets.svgMenuIcon,
+                                            height: 21.5.h,
+                                            width: 21.5.w,
                                           ),
                                         ),
                                       ),

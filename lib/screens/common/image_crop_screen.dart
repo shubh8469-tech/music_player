@@ -66,7 +66,7 @@ class _ImageCropScreenState extends State<ImageCropScreen> {
                             showSnackBar(context, () {}, message: 'Failed to update cover: $e', backgroundColor: Colors.red, alertBannerLocation: AlertBannerLocation.bottom);
                           }
                         },
-                  child: Texts('SAVET', fontSize: 16.sp, fontWeight: FontWeight.w600, color: AppColors.primaryOrange, fontFamily: AppFonts.inter),
+                  child: Texts('SAVE', fontSize: 16.sp, fontWeight: FontWeight.w600, color: AppColors.primaryOrange, fontFamily: AppFonts.inter),
                 ),
               ],
             ),

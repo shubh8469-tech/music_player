@@ -95,9 +95,11 @@ class _CreatePlaylistBottomSheetState extends State<CreatePlaylistBottomSheet> {
         state.maybeWhen(
           loaded: (playlists, systemPlaylistSongs) {
             // Find the playlist with the matching name (should be the most recent one)
-            newPlaylist = playlists
-                .where((p) => p.name == playlistName && p.isSystem != true)
-                .lastOrNull;
+
+              newPlaylist = playlists
+                  .where((p) => p.name == playlistName && p.isSystem != true)
+                  .firstOrNull;
+
           },
           orElse: () {},
         );
