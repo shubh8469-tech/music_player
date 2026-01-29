@@ -327,7 +327,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 5.h),
+                  SizedBox(height: 8.h),
                   state.when(
                     initial: () => Center(child: CircularProgressIndicator()),
                     loading: () => Center(child: CircularProgressIndicator()),
@@ -342,29 +342,32 @@ class _HomeScreenState extends State<HomeScreen> {
                           onTap: () {
                             CreatePlaylistBottomSheet.show(context);
                           },
-                          child: Row(
-                            children: [
-                              Container(
-                                height: 66.h,
-                                width: 66.w,
-                                decoration: BoxDecoration(
-                                  color: AppColors.musicTileBackgroundColor,
-                                  borderRadius: BorderRadius.circular(10.r),
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 27.h),
+                            child: Row(
+                              children: [
+                                Container(
+                                  height: 66.h,
+                                  width: 66.w,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.mildOrange.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(10.r),
+                                  ),
+                                  child: Icon(
+                                    Icons.add,
+                                    size: 32.r,
+                                    color: Colors.black,
+                                  ),
                                 ),
-                                child: Icon(
-                                  Icons.add,
-                                  size: 32.r,
-                                  color: Colors.black,
+                                SizedBox(width: 12.w),
+                                Texts(
+                                  'Create new playlist',
+                                  fontSize: 16.sp,
+                                  fontWeight: AppFontWeights.medium,
+                                  fontFamily: AppFonts.inter,
                                 ),
-                              ),
-                              SizedBox(width: 12.w),
-                              Texts(
-                                'Create new playlist',
-                                fontSize: 16.sp,
-                                fontWeight: AppFontWeights.medium,
-                                fontFamily: AppFonts.inter,
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       }

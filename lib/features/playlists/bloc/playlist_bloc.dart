@@ -17,13 +17,27 @@ class PlaylistBloc extends Bloc<PlaylistEvent, PlaylistState> {
   int? get favoritesPlaylistId => _favoritesPlaylistId;
 
   PlaylistBloc(this.repository) : super(const PlaylistState.initial()) {
+
     on<_AddPlaylist>((event, emit) async {
       try {
         log('Adding playlist: ${event.name}');
         emit(const PlaylistState.loading());
         repository.addPlaylist(event.name);
         final playlists = await repository.fetchAllPlaylists();
-        emit(PlaylistState.loaded(playlists));
+        // emit(PlaylistState.loaded(playlists));
+
+        final songs = await repository.getSongsForSystemPlaylist(
+          'recently_played',
+        );
+        final systemPlaylistSongs = <String, List<SongsModel>>{
+          'recently_played': songs,
+        };
+        emit(
+          PlaylistState.loaded(
+            playlists,
+            systemPlaylistSongs: systemPlaylistSongs,
+          ),
+        );
       } catch (e) {
         emit(PlaylistState.error(e.toString()));
       }
@@ -125,8 +139,22 @@ class PlaylistBloc extends Bloc<PlaylistEvent, PlaylistState> {
           event.playlistId,
           event.songIds,
         );
-        final songs = await repository.fetchAllPlaylists();
-        emit(PlaylistState.loaded(songs));
+        final playlists = await repository.fetchAllPlaylists();
+
+        final songs = await repository.getSongsForSystemPlaylist(
+          'recently_played',
+        );
+        final systemPlaylistSongs = <String, List<SongsModel>>{
+          'recently_played': songs,
+        };
+        emit(
+          PlaylistState.loaded(
+            playlists,
+            systemPlaylistSongs: systemPlaylistSongs,
+          ),
+        );
+
+        // emit(PlaylistState.loaded(playlists));
       } catch (e) {
         emit(PlaylistState.error(e.toString()));
       }

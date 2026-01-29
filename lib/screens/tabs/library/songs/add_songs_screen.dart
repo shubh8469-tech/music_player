@@ -202,7 +202,7 @@ class _AddSongsScreenState extends State<AddSongsScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Add Songs ${widget.playlist.id}',
+          'Add Songs',
           style: TextStyle(
             color: AppColors.white,
             fontSize: 18,
