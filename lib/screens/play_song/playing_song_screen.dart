@@ -300,7 +300,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
               padding: EdgeInsets.symmetric(horizontal: 17.w),
               child: songPropertiesWidget(),
             ),
-            SizedBox(height: 10.h),
+            SizedBox(height: 26.h),
             songProgressBarWidget(),
             SizedBox(height: 70.h),
           ],
@@ -311,7 +311,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
 
   Widget songTitlePlaylistWidget(SongsModel? currentSong) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Expanded(
@@ -324,10 +324,9 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
                 color: AppColors.black,
                 fontWeight: FontWeight.w500,
                 fontFamily: AppFonts.inter,
-                maxLines: 2,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              SizedBox(height: 4.h),
               Texts(
                 currentSong?.artist.isNotEmpty == true ? currentSong!.artist : 'Unknown Artist',
                 fontSize: 14.sp,
@@ -335,7 +334,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
                 fontWeight: FontWeight.w400,
                 fontFamily: AppFonts.inter,
                 overflow: TextOverflow.ellipsis,
-                maxLines: 2,
+                maxLines: 1,
               ),
             ],
           ),

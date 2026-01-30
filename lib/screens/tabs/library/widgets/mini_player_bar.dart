@@ -23,9 +23,8 @@ class MiniPlayerBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<SongsModel>>(
-        stream: musicService.songsChanged,
-        initialData: musicService.songs,
-
+      stream: musicService.songsChanged,
+      initialData: musicService.songs,
 
       builder: (context, songsSnapshot) {
         final songs = songsSnapshot.data ?? [];
@@ -42,9 +41,9 @@ class MiniPlayerBar extends StatelessWidget {
             final isPlaying = playingSnap.data ?? false;
             final hasAny = musicService.songs.isNotEmpty;
             if (!hasAny && !isPlaying) return const SizedBox.shrink();
-        
+
             log('in hereeeee again $hasAny $isPlaying');
-        
+
             return GestureDetector(
               onTap: () {
                 context.push(
@@ -70,11 +69,13 @@ class MiniPlayerBar extends StatelessWidget {
                       stream: musicService.player.positionStream,
                       builder: (context, snapshot) {
                         final position = snapshot.data ?? Duration.zero;
-                        final total = musicService.player.duration ?? Duration.zero;
-        
+                        final total =
+                            musicService.player.duration ?? Duration.zero;
+
                         double progress = 0.0;
                         if (total.inMilliseconds > 0) {
-                          progress = position.inMilliseconds / total.inMilliseconds;
+                          progress =
+                              position.inMilliseconds / total.inMilliseconds;
                         }
                         return LinearProgressIndicator(
                           value: progress.clamp(0.0, 1.0),
@@ -107,14 +108,31 @@ class MiniPlayerBar extends StatelessWidget {
                                   builder: (context, playingSnap) {
                                     final isPlaying = playingSnap.data ?? false;
                                     final index = indexSnap.data ?? 0;
-        
-                                    final safeIndex = (index >= 0 && index < musicService.songs.length) ? index : 0;
-                                    final currentSong = musicService.songs.isNotEmpty ? musicService.songs[safeIndex] : null;
-        
+                                    final songsList = musicService.songs;
+                                    final safeIndex =
+                                        (index >= 0 && index < songsList.length)
+                                        ? index
+                                        : 0;
+                                    // Use currentSongId (respects reorder cache) so mini bar shows correct song during reorder
+                                    final currentSongId =
+                                        musicService.currentSongId;
+                                    SongsModel? currentSong;
+                                    if (songsList.isNotEmpty) {
+                                      if (currentSongId != null) {
+                                        for (final s in songsList) {
+                                          if (s.id == currentSongId) {
+                                            currentSong = s;
+                                            break;
+                                          }
+                                        }
+                                      }
+                                      currentSong ??= songsList[safeIndex];
+                                    }
+
                                     final hasArtwork =
                                         currentSong?.artwork_path != null &&
-                                            currentSong!.artwork_path!.isNotEmpty;
-        
+                                        currentSong!.artwork_path!.isNotEmpty;
+
                                     return Stack(
                                       children: [
                                         // Show artwork if available, otherwise show default gradient card
@@ -124,12 +142,13 @@ class MiniPlayerBar extends StatelessWidget {
                                             width: 50.h,
                                             margin: EdgeInsets.all(10.w),
                                             decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(
-                                                7.r,
-                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(7.r),
                                               image: DecorationImage(
                                                 image: FileImage(
-                                                  File(currentSong.artwork_path!),
+                                                  File(
+                                                    currentSong.artwork_path!,
+                                                  ),
                                                 ),
                                                 fit: BoxFit.cover,
                                               ),
@@ -164,10 +183,11 @@ class MiniPlayerBar extends StatelessWidget {
                                             width: 50.w,
                                             margin: EdgeInsets.all(10.w),
                                             child: Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 8.0,
-                                                vertical: 5,
-                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8.0,
+                                                    vertical: 5,
+                                                  ),
                                               child: Image.asset(
                                                 Assets.pngSongPlaying,
                                                 fit: BoxFit.cover,
@@ -190,13 +210,33 @@ class MiniPlayerBar extends StatelessWidget {
                               initialData: musicService.currentIndex,
                               builder: (context, snapshot) {
                                 final index = snapshot.data ?? 0;
-                                final safeIndex = (index >= 0 && index < musicService.songs.length) ? index : 0;
-        
-                                // Get the song at the valid index
-                                final song = musicService.songs.isNotEmpty ? musicService.songs[safeIndex] : null;
-                                final songName = song?.title.split('/').last ?? ''; // Fallback to empty string if no song
-                                final artistName = song?.artist ?? ''; // Fallback to empty string if no artist
-        
+                                final songsList = musicService.songs;
+                                final safeIndex =
+                                    (index >= 0 && index < songsList.length)
+                                    ? index
+                                    : 0;
+                                // Use currentSongId (respects reorder cache) so mini bar shows correct song during reorder
+                                final currentSongId =
+                                    musicService.currentSongId;
+                                SongsModel? song;
+                                if (songsList.isNotEmpty) {
+                                  if (currentSongId != null) {
+                                    for (final s in songsList) {
+                                      if (s.id == currentSongId) {
+                                        song = s;
+                                        break;
+                                      }
+                                    }
+                                  }
+                                  song ??= songsList[safeIndex];
+                                }
+                                final songName =
+                                    song?.title.split('/').last ??
+                                    ''; // Fallback to empty string if no song
+                                final artistName =
+                                    song?.artist ??
+                                    ''; // Fallback to empty string if no artist
+
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -292,7 +332,7 @@ class MiniPlayerBar extends StatelessWidget {
             );
           },
         );
-      }
+      },
     );
   }
 }

@@ -9,6 +9,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:music_app/themes/color.dart';
 import '../../../generated/assets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../themes/font.dart';
 import '../../../utills/snack_bar.dart';
 import '../../tabs/music_service.dart';
 
@@ -95,156 +96,172 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     return Column(
       children: [
         // Slider
-        Slider(
-          min: 0.0,
-          max: maxValue,
-          value: currentValue,
-          activeColor: AppColors.black,
-          onChangeStart: (value) {
-            // User started dragging - prevent position updates from stream
-            setState(() {
-              _isSeeking = true;
-            });
-          },
-          onChanged: (value) {
-            setState(() {
-              _position = Duration(milliseconds: value.round());
-            });
-          },
-          onChangeEnd: (value) async {
-            final position = Duration(milliseconds: value.round());
-            try {
-              await _musicService.seek(position);
-
-              // Add delay to ensure iOS catches up (for iOS)
-              if (Platform.isIOS) {
-                await Future.delayed(const Duration(milliseconds: 100));
-              }
-
-              // Update position state after seeking
-              final isPlaying = await _musicService.isPlaying;
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            // This is where you edit the circle size
+            thumbShape: RoundSliderThumbShape(enabledThumbRadius: 5.0),
+            overlayShape: RoundSliderOverlayShape(overlayRadius: 20.0),
+            activeTrackColor: Colors.red,
+            inactiveTrackColor: Colors.red.withAlpha(50),
+            thumbColor: Colors.redAccent,
+          ),
+          child: Slider(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            min: 0.0,
+            max: maxValue,
+            value: currentValue,
+            activeColor: AppColors.black,
+            onChangeStart: (value) {
+              // User started dragging - prevent position updates from stream
               setState(() {
-                _isPlaying = isPlaying;
-                _position = position;
+                _isSeeking = true;
               });
-            } catch (e) {
-              print('Error seeking: $e');
-            }
-          },
+            },
+            onChanged: (value) {
+              setState(() {
+                _position = Duration(milliseconds: value.round());
+              });
+            },
+            onChangeEnd: (value) async {
+              final position = Duration(milliseconds: value.round());
+              try {
+                await _musicService.seek(position);
+
+                // Add delay to ensure iOS catches up (for iOS)
+                if (Platform.isIOS) {
+                  await Future.delayed(const Duration(milliseconds: 100));
+                }
+
+                // Update position state after seeking
+                final isPlaying = await _musicService.isPlaying;
+                setState(() {
+                  _isPlaying = isPlaying;
+                  _position = position;
+                });
+              } catch (e) {
+                print('Error seeking: $e');
+              }
+            },
+          ),
         ),
+
+        SizedBox(height: 10.h,),
 
         // Time Labels
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 18.w),
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 _formatTime(_position),
-                style: TextStyle(color: Colors.black, fontSize: 14.sp),
+                style: TextStyle(color: AppColors.textColor, fontSize: 12.sp, fontWeight: AppFontWeights.regular),
               ),
               Text(
                 _formatTime(_duration),
-                style: TextStyle(color: Colors.black, fontSize: 14.sp),
+                style: TextStyle(color: AppColors.textColor, fontSize: 12.sp, fontWeight: AppFontWeights.regular),
               ),
             ],
           ),
         ),
 
-        SizedBox(height: 10.h),
+        SizedBox(height: 16.h),
 
         // Controls
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            GestureDetector(
-              onTap: () async {
-                await _musicService.toggleShuffle();
-                showSnackBar(context, () {}, message: "Shuffle ${_musicService.isShuffleEnabled ? "On" : "Off"}", alertBannerLocation: AlertBannerLocation.bottom);
-              },
-              child: SvgPicture.asset(_musicService.isShuffleEnabled ? Assets.svgIcSuffle : Assets.svgShuffleOff, width: 28.w, height: 28.h),
-            ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              GestureDetector(
+                onTap: () async {
+                  await _musicService.toggleShuffle();
+                  showSnackBar(context, () {}, message: "Shuffle ${_musicService.isShuffleEnabled ? "On" : "Off"}", alertBannerLocation: AlertBannerLocation.bottom);
+                },
+                child: SvgPicture.asset(_musicService.isShuffleEnabled ? Assets.svgIcSuffle : Assets.svgShuffleOff, width: 28.w, height: 28.h),
+              ),
 
-            GestureDetector(
-              onTap: () {
-                _musicService.previous();
-              },
-              child: SvgPicture.asset(Assets.svgIcPrev, width: 28.w, height: 28.h),
-            ),
+              GestureDetector(
+                onTap: () {
+                  _musicService.previous();
+                },
+                child: SvgPicture.asset(Assets.svgIcPrev, width: 28.w, height: 28.h),
+              ),
 
-            // Play/Pause Button with shadow
-            GestureDetector(
-              onTap: () async {
-                try {
-                  if (_isPlaying) {
-                    await _musicService.pause();
-                    // UI updates via stream listener, no need to setState here
-                  } else {
-                    await _musicService.play();
-                    // UI updates via stream listener, no need to setState here
+              // Play/Pause Button with shadow
+              GestureDetector(
+                onTap: () async {
+                  try {
+                    if (_isPlaying) {
+                      await _musicService.pause();
+                      // UI updates via stream listener, no need to setState here
+                    } else {
+                      await _musicService.play();
+                      // UI updates via stream listener, no need to setState here
+                    }
+                  } catch (e) {
+                    print('Error toggling play/pause: $e');
                   }
-                } catch (e) {
-                  print('Error toggling play/pause: $e');
-                }
-              },
-              child: Container(
-                width: 65.w,
-                height: 65.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: AppColors.textColor.withValues(alpha: 0.2), blurRadius: 12.r, spreadRadius: 1.r, offset: Offset(0, 2.h))],
+                },
+                child: Container(
+                  width: 65.w,
+                  height: 65.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [BoxShadow(color: AppColors.textColor.withValues(alpha: 0.2), blurRadius: 12.r, spreadRadius: 1.r, offset: Offset(0, 2.h))],
+                  ),
+                  alignment: Alignment.center,
+                  child: SvgPicture.asset(_isPlaying ? Assets.svgIcPause : Assets.svgIcPlay, height: 60.h, width: 60.w),
                 ),
-                alignment: Alignment.center,
-                child: SvgPicture.asset(_isPlaying ? Assets.svgIcPause : Assets.svgIcPlay, height: 60.h, width: 60.w),
               ),
-            ),
 
-            GestureDetector(
-              onTap: () async {
-                try {
-                  await _musicService.next();
-                } catch (e) {
-                  print('Error going to next track: $e');
-                }
-              },
-              child: SvgPicture.asset(Assets.svgIcNext, width: 28.w, height: 28.h),
-            ),
-
-            GestureDetector(
-              onTap: () async {
-                try {
-                  await _musicService.toggleRepeat();
-                  setState(() {
-                    // This triggers a rebuild to show the updated loop mode icon
-                  });
-                  if (mounted) {
-                    showSnackBar(
-                      context,
-                      () {},
-                      message: _musicService.loopMode == LoopMode.off
-                          ? "Repeat off"
-                          : _musicService.loopMode == LoopMode.all
-                          ? "Loop all"
-                          : "Repeat current",
-                      alertBannerLocation: AlertBannerLocation.bottom,
-                    );
+              GestureDetector(
+                onTap: () async {
+                  try {
+                    await _musicService.next();
+                  } catch (e) {
+                    print('Error going to next track: $e');
                   }
-                } catch (e) {
-                  print('Error toggling repeat: $e');
-                }
-              },
-              child: SvgPicture.asset(
-                _musicService.loopMode == LoopMode.off
-                    ? Assets.svgRepeatOff
-                    : _musicService.loopMode == LoopMode.all
-                    ? Assets.svgRepeatOn
-                    : Assets.svgRepeatOnce,
-                width: 28.w,
-                height: 28.h,
+                },
+                child: SvgPicture.asset(Assets.svgIcNext, width: 28.w, height: 28.h),
               ),
-            ),
-          ],
+
+              GestureDetector(
+                onTap: () async {
+                  try {
+                    await _musicService.toggleRepeat();
+                    setState(() {
+                      // This triggers a rebuild to show the updated loop mode icon
+                    });
+                    if (mounted) {
+                      showSnackBar(
+                        context,
+                        () {},
+                        message: _musicService.loopMode == LoopMode.off
+                            ? "Repeat off"
+                            : _musicService.loopMode == LoopMode.all
+                            ? "Loop all"
+                            : "Repeat current",
+                        alertBannerLocation: AlertBannerLocation.bottom,
+                      );
+                    }
+                  } catch (e) {
+                    print('Error toggling repeat: $e');
+                  }
+                },
+                child: SvgPicture.asset(
+                  _musicService.loopMode == LoopMode.off
+                      ? Assets.svgRepeatOff
+                      : _musicService.loopMode == LoopMode.all
+                      ? Assets.svgRepeatOn
+                      : Assets.svgRepeatOnce,
+                  width: 28.w,
+                  height: 28.h,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );

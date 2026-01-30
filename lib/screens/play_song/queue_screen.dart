@@ -44,7 +44,7 @@ class _QueueScreenState extends State<QueueScreen> {
   Timer? _updateDebounceTimer;
   bool _isReordering = false;
   bool _isClosing = false;
-
+  bool _isDragging = false;
 
   @override
   void initState() {
@@ -57,7 +57,9 @@ class _QueueScreenState extends State<QueueScreen> {
     // Sync shuffle state with music service
     isShuffleEnabled = musicService.isShuffleEnabled;
     _syncRepeatMode();
-    print('🎵 QueueScreen initialized - Shuffle: $isShuffleEnabled, Repeat: $repeatMode');
+    print(
+      '🎵 QueueScreen initialized - Shuffle: $isShuffleEnabled, Repeat: $repeatMode',
+    );
 
     // Listen to current index changes to update UI
     _indexSubscription = musicService.currentIndexStream.listen((index) {
@@ -67,13 +69,15 @@ class _QueueScreenState extends State<QueueScreen> {
     });
 
     // Listen to shuffle state changes
-    _shuffleSubscription = musicService.isPlayingStream.map((_) => musicService.isShuffleEnabled).listen((shuffleEnabled) {
-      if (mounted) {
-        setState(() {
-          isShuffleEnabled = shuffleEnabled;
+    _shuffleSubscription = musicService.isPlayingStream
+        .map((_) => musicService.isShuffleEnabled)
+        .listen((shuffleEnabled) {
+          if (mounted) {
+            setState(() {
+              isShuffleEnabled = shuffleEnabled;
+            });
+          }
         });
-      }
-    });
 
     // Listen to songs list changes - this will automatically update when actions are performed in select_song_screen
     _songsSubscription = musicService.songsChanged.listen((newSongs) {
@@ -220,41 +224,40 @@ class _QueueScreenState extends State<QueueScreen> {
       queueSongs.removeAt(index);
     });
 
-
     if (queueSongs.isEmpty) {
       try {
-      await musicService.stopAndClearQueue();
-      // Wait a bit for state to settle
-      if (mounted) {
-        showSnackBar(
+        await musicService.stopAndClearQueue();
+        // Wait a bit for state to settle
+        if (mounted) {
+          showSnackBar(
             context,
-                () {},
+            () {},
             message: 'Queue cleared',
-            alertBannerLocation: AlertBannerLocation.bottom
-        );
-      }
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        }
 
-      await Future.delayed(Duration(milliseconds: 200));
-      if (mounted) {
-        print('  🔙 Popping screen now');
+        await Future.delayed(Duration(milliseconds: 200));
+        if (mounted) {
+          print('  🔙 Popping screen now');
 
-        // Use Future.microtask to ensure pop happens after this frame
-        Future.microtask(() {
-          if (mounted && context.mounted) {
-            if (context.canPop()) {
-              print('  ✅ Pop with context.pop()');
-              context.pop();
-            } else if (Navigator.canPop(context)) {
-              print('  ✅ Pop with Navigator.pop()');
-              Navigator.pop(context);
+          // Use Future.microtask to ensure pop happens after this frame
+          Future.microtask(() {
+            if (mounted && context.mounted) {
+              if (context.canPop()) {
+                print('  ✅ Pop with context.pop()');
+                context.pop();
+              } else if (Navigator.canPop(context)) {
+                print('  ✅ Pop with Navigator.pop()');
+                Navigator.pop(context);
+              } else {
+                print('  ❌ Cannot pop - no route to pop');
+              }
             } else {
-              print('  ❌ Cannot pop - no route to pop');
+              print('  ❌ Context not mounted');
             }
-          } else {
-            print('  ❌ Context not mounted');
-          }
-        });
-      }
+          });
+        }
       } catch (e) {
         print('  ❌ Error in empty queue handling: $e');
       }
@@ -270,26 +273,28 @@ class _QueueScreenState extends State<QueueScreen> {
         await musicService.player.stop();
         // Set new playlist and play
         await musicService.setPlaylist(
-            queueSongs,
-            startIndex: nextIndex,
-            autoPlay: true
+          queueSongs,
+          startIndex: nextIndex,
+          autoPlay: true,
         );
       } else if (index < currentPlayingIndex) {
-
         final newCurrentIndex = currentPlayingIndex - 1;
         if (Platform.isAndroid) {
           final source = musicService.player.audioSource;
-          if (source is ConcatenatingAudioSource && !musicService.isShuffleEnabled) {
+          if (source is ConcatenatingAudioSource &&
+              !musicService.isShuffleEnabled) {
             print('  Android: Using ConcatenatingAudioSource.removeAt()');
 
             await source.removeAt(index);
 
             musicService.updateSongsList(queueSongs);
-
           } else {
             // Fallback: rebuild
             print('  Android: Fallback to rebuild');
-            await musicService.updateSongsInQueueWithIndex(queueSongs, newCurrentIndex);
+            await musicService.updateSongsInQueueWithIndex(
+              queueSongs,
+              newCurrentIndex,
+            );
 
             if (wasPlaying) {
               await musicService.seek(currentPosition, index: newCurrentIndex);
@@ -302,24 +307,27 @@ class _QueueScreenState extends State<QueueScreen> {
           musicService.updateSongsList(queueSongs);
         }
       } else {
-        print('  Removed song AFTER current, keeping index: $currentPlayingIndex');
+        print(
+          '  Removed song AFTER current, keeping index: $currentPlayingIndex',
+        );
 
         if (Platform.isAndroid) {
           // Android: Use ConcatenatingAudioSource.removeAt() for seamless removal
           final source = musicService.player.audioSource;
-          if (source is ConcatenatingAudioSource && !musicService.isShuffleEnabled) {
+          if (source is ConcatenatingAudioSource &&
+              !musicService.isShuffleEnabled) {
             print('  Android: Using ConcatenatingAudioSource.removeAt()');
             await source.removeAt(index);
             musicService.updateSongsList(queueSongs);
-
           } else {
-            await musicService.updateSongsInQueueWithIndex(queueSongs, currentPlayingIndex);
+            await musicService.updateSongsInQueueWithIndex(
+              queueSongs,
+              currentPlayingIndex,
+            );
           }
-
         } else if (Platform.isIOS) {
           print('  iOS: Updating internal list only');
           musicService.updateSongsList(queueSongs);
-
         }
       }
       // showSnackBar(context, () {}, message: 'Removed "${removedSong.title}"', alertBannerLocation: AlertBannerLocation.bottom);
@@ -345,22 +353,34 @@ class _QueueScreenState extends State<QueueScreen> {
     // Mark that we're reordering to prevent external updates
     _isReordering = true;
 
+    // Set cache before setState so first rebuild sees correct currentSongId
+    musicService.prepareReorderForCurrentSong(oldIndex, newIndex);
+
     setState(() {
-      final SongsModel item = queueSongs.removeAt(oldIndex);
-      queueSongs.insert(newIndex, item);
+      final tempQueue = List<SongsModel>.from(queueSongs);
+      final SongsModel item = tempQueue.removeAt(oldIndex);
+      tempQueue.insert(newIndex, item);
+      queueSongs = tempQueue;
     });
 
     // Cancel any pending updates
     _updateDebounceTimer?.cancel();
 
     // Use the INSTANT reorder method (Android uses move(), iOS defers update)
-    _updateDebounceTimer = Timer(Duration(milliseconds: 100), () async {
-      try {
-        await musicService.reorderSongInQueue(oldIndex, newIndex);
-      } finally {
-        _isReordering = false;
-      }
-    });
+    // _updateDebounceTimer = Timer(Duration(milliseconds: 10), () async {
+    try {
+      // final isPlaying = musicService.isPlaying;
+      // if(isPlaying){
+      //   musicService.pause();
+      // }
+      await musicService.swapReorderSongInQueue(oldIndex, newIndex);
+      // if(isPlaying){
+      //   musicService.play();
+      // }
+    } finally {
+      _isReordering = false;
+    }
+    // });
   }
 
   Future<void> _toggleShuffle() async {
@@ -378,14 +398,23 @@ class _QueueScreenState extends State<QueueScreen> {
         isShuffleEnabled = musicService.isShuffleEnabled;
       });
 
-      showSnackBar(context, () {}, message: isShuffleEnabled ? 'Shuffle enabled' : 'Shuffle disabled', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: isShuffleEnabled ? 'Shuffle enabled' : 'Shuffle disabled',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
 
       // Reload queue to reflect any order changes
       _loadQueueSongs();
 
       print('✅ Shuffle toggled to: $isShuffleEnabled');
-      print('   Android: ${Platform.isAndroid ? "setShuffleModeEnabled + shuffle()" : "N/A"}');
-      print('   iOS: ${Platform.isIOS ? "setShuffleModeEnabled via method channel" : "N/A"}');
+      print(
+        '   Android: ${Platform.isAndroid ? "setShuffleModeEnabled + shuffle()" : "N/A"}',
+      );
+      print(
+        '   iOS: ${Platform.isIOS ? "setShuffleModeEnabled via method channel" : "N/A"}',
+      );
     } catch (e) {
       print('❌ Error toggling shuffle: $e');
       // _showSnackBar('Failed to toggle shuffle', Assets.svgIcSuffle);
@@ -447,7 +476,6 @@ class _QueueScreenState extends State<QueueScreen> {
     print('📱 Platform: ${Platform.isAndroid ? "Android" : "iOS"}');
 
     try {
-
       await musicService.toggleRepeat();
 
       _syncRepeatMode();
@@ -466,13 +494,20 @@ class _QueueScreenState extends State<QueueScreen> {
         iconAsset = Assets.svgRepeatOn;
       }
 
-      showSnackBar(context, () {}, message: message, alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: message,
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
 
       print('✅ Repeat toggled to: $repeatMode');
       if (Platform.isAndroid) {
         print('   Android: Using LoopMode.$repeatMode enum via just_audio');
       } else if (Platform.isIOS) {
-        print('   iOS: Converted to string \'$repeatMode\' and sent via method channel');
+        print(
+          '   iOS: Converted to string \'$repeatMode\' and sent via method channel',
+        );
         print('   iOS Native: AVQueuePlayer receives \'$repeatMode\' string');
       }
     } catch (e) {
@@ -481,7 +516,6 @@ class _QueueScreenState extends State<QueueScreen> {
   }
 
   Future<void> _clearQueue() async {
-
     // ✅ Close the dialog FIRST
     if (mounted && context.mounted && Navigator.canPop(context)) {
       Navigator.pop(context); // Close the confirmation dialog
@@ -531,7 +565,9 @@ class _QueueScreenState extends State<QueueScreen> {
       context: context,
       backgroundColor: Colors.white,
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
+      ),
       isScrollControlled: true,
       builder: (_) => _buildClearQueueConfirmationDialog(),
     );
@@ -541,10 +577,17 @@ class _QueueScreenState extends State<QueueScreen> {
     // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
     final viewInsets = MediaQuery.of(context).viewInsets.bottom;
     final viewPadding = MediaQuery.of(context).viewPadding.bottom;
-    final bottomPadding = viewInsets > 0 ? viewInsets + 16.h : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+    final bottomPadding = viewInsets > 0
+        ? viewInsets + 16.h
+        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
 
     return Container(
-      padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 10.h, bottom: bottomPadding),
+      padding: EdgeInsets.only(
+        left: 16.w,
+        right: 16.w,
+        top: 10.h,
+        bottom: bottomPadding,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -552,12 +595,21 @@ class _QueueScreenState extends State<QueueScreen> {
           Container(
             width: 40.w,
             height: 4.h,
-            decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2.r)),
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2.r),
+            ),
           ),
           SizedBox(height: 30.h),
 
           // Title
-          Texts('Clear the queue', fontSize: 18.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter, color: AppColors.textColor),
+          Texts(
+            'Clear the queue',
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w500,
+            fontFamily: AppFonts.inter,
+            color: AppColors.textColor,
+          ),
           SizedBox(height: 30.h),
 
           // Message
@@ -580,9 +632,18 @@ class _QueueScreenState extends State<QueueScreen> {
                   onTap: () => Navigator.pop(context),
                   child: Container(
                     height: 48.h,
-                    decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(8.r)),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
                     child: Center(
-                      child: Texts(S.of(context).cancel, fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter, color: AppColors.black),
+                      child: Texts(
+                        S.of(context).cancel,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: AppFonts.inter,
+                        color: AppColors.black,
+                      ),
                     ),
                   ),
                 ),
@@ -598,9 +659,18 @@ class _QueueScreenState extends State<QueueScreen> {
                   },
                   child: Container(
                     height: 48.h,
-                    decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(8.r)),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryOrange,
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
                     child: Center(
-                      child: Texts('Clear', fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter, color: AppColors.white),
+                      child: Texts(
+                        'Clear',
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: AppFonts.inter,
+                        color: AppColors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -634,7 +704,9 @@ class _QueueScreenState extends State<QueueScreen> {
           loaded: (songs) {
             // Remove any songs from queue that are no longer in the library
             final currentSongIds = songs.map((s) => s.id).toSet();
-            final filteredQueue = queueSongs.where((song) => currentSongIds.contains(song.id)).toList();
+            final filteredQueue = queueSongs
+                .where((song) => currentSongIds.contains(song.id))
+                .toList();
 
             if (filteredQueue.length != queueSongs.length) {
               setState(() {
@@ -658,14 +730,32 @@ class _QueueScreenState extends State<QueueScreen> {
           backgroundColor: AppColors.primaryOrange,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: AppColors.white, size: 20),
+            icon: const Icon(
+              Icons.arrow_back_ios,
+              color: AppColors.white,
+              size: 20,
+            ),
             onPressed: () => context.pop(),
           ),
-          title: Texts("Playing Queue", fontSize: 18.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.white),
+          title: Texts(
+            "Playing Queue",
+            fontSize: 18.sp,
+            fontWeight: AppFontWeights.medium,
+            fontFamily: AppFonts.inter,
+            color: AppColors.white,
+          ),
           actions: [
             IconButton(
               onPressed: _showClearQueueDialog,
-              icon: SvgPicture.asset(Assets.svgIcDelete, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn), height: 26.h, width: 26.w),
+              icon: SvgPicture.asset(
+                Assets.svgIcDelete,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.white,
+                  BlendMode.srcIn,
+                ),
+                height: 26.h,
+                width: 26.w,
+              ),
             ),
           ],
         ),
@@ -675,7 +765,10 @@ class _QueueScreenState extends State<QueueScreen> {
               children: [
                 // Queue Controls
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
                   child: Row(
                     children: [
                       GestureDetector(
@@ -685,18 +778,25 @@ class _QueueScreenState extends State<QueueScreen> {
                             SvgPicture.asset(Assets.svgSongsCount),
                             SizedBox(width: 8.w),
                             SizedBox(
-                              height: 38.h, // Increase height so padding doesn't zero it out
+                              height: 38
+                                  .h, // Increase height so padding doesn't zero it out
                               child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: 8.h), // Leave some room for the line
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 8.h,
+                                ), // Leave some room for the line
                                 child: VerticalDivider(
-                                  color: AppColors.mediumDarkGrey.withOpacity(0.5),
-                                  width: 1.w,      // Total space the widget occupies
-                                  thickness: 1.2.w,   // The actual thickness of the line
+                                  color: AppColors.mediumDarkGrey.withOpacity(
+                                    0.5,
+                                  ),
+                                  width: 1.w, // Total space the widget occupies
+                                  thickness:
+                                      1.2.w, // The actual thickness of the line
                                 ),
                               ),
                             ),
                             SizedBox(width: 8.w),
-                            if (queueSongs.isNotEmpty && musicService.currentIndex >= 0) ...[
+                            if (queueSongs.isNotEmpty &&
+                                musicService.currentIndex >= 0) ...[
                               Texts(
                                 "${musicService.currentIndex + 1}/${queueSongs.length}",
                                 fontSize: 14.sp,
@@ -715,12 +815,19 @@ class _QueueScreenState extends State<QueueScreen> {
                             onTap: _toggleShuffle,
                             child: Container(
                               padding: EdgeInsets.all(8.w),
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(20.r)),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20.r),
+                              ),
                               child: SvgPicture.asset(
                                 Assets.svgIcSuffle,
                                 width: 20.w,
                                 height: 20.h,
-                                colorFilter: ColorFilter.mode(!isShuffleEnabled ? AppColors.mediumDarkGrey : AppColors.textColor, BlendMode.srcIn),
+                                colorFilter: ColorFilter.mode(
+                                  !isShuffleEnabled
+                                      ? AppColors.mediumDarkGrey
+                                      : AppColors.textColor,
+                                  BlendMode.srcIn,
+                                ),
                               ),
                             ),
                           ),
@@ -729,12 +836,23 @@ class _QueueScreenState extends State<QueueScreen> {
                             onTap: _toggleRepeat,
                             child: Container(
                               padding: EdgeInsets.all(8.w),
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(20.r)),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20.r),
+                              ),
                               child: SvgPicture.asset(
-                                repeatMode == 'one' ? Assets.svgRepeatOnce : repeatMode == 'off' ? Assets.svgRepeatOff : Assets.svgIcRepeat,
+                                repeatMode == 'one'
+                                    ? Assets.svgRepeatOnce
+                                    : repeatMode == 'off'
+                                    ? Assets.svgRepeatOff
+                                    : Assets.svgIcRepeat,
                                 width: 20.w,
                                 height: 20.h,
-                                colorFilter: ColorFilter.mode(isRepeatEnabled ? AppColors.white : AppColors.textColor, BlendMode.srcIn),
+                                colorFilter: ColorFilter.mode(
+                                  isRepeatEnabled
+                                      ? AppColors.white
+                                      : AppColors.textColor,
+                                  BlendMode.srcIn,
+                                ),
                               ),
                             ),
                           ),
@@ -755,17 +873,47 @@ class _QueueScreenState extends State<QueueScreen> {
                       // // final showMiniPlayer = hasAny;
 
                       return ReorderableListView.builder(
+                        proxyDecorator:
+                            (
+                              Widget child,
+                              int index,
+                              Animation<double> animation,
+                            ) {
+                              return AnimatedBuilder(
+                                animation: animation,
+                                builder: (BuildContext context, Widget? child) {
+                                  return Material(
+                                    elevation: 6,
+                                    shadowColor: Colors.black.withValues(
+                                      alpha: 0.4,
+                                    ),
+                                    color: Colors
+                                        .transparent, // Keeps your orange background visible
+                                    borderRadius: BorderRadius.circular(
+                                      10.r,
+                                    ), // Match your tile radius
+                                    child: child,
+                                  );
+                                },
+                                child: child,
+                              );
+                            },
                         padding: EdgeInsets.only(
                           left: 16.w,
                           right: 16.w,
                           // bottom: showMiniPlayer ? 74.h : 10.h, // Space for MiniPlayerBar (which includes system nav bar padding)
-                          bottom: bottomPadding, // Space for MiniPlayerBar (which includes system nav bar padding)
+                          bottom:
+                              bottomPadding, // Space for MiniPlayerBar (which includes system nav bar padding)
                         ),
                         itemCount: queueSongs.length,
                         onReorder: _reorderSongs,
                         itemBuilder: (context, index) {
                           final song = queueSongs[index];
-                          final isCurrentlyPlaying = musicService.currentIndex == index;
+                          final isCurrentlyPlaying =
+                              musicService.currentSongId == song.id;
+                          final isPlaying =
+                              musicService.currentSongId == song.id &&
+                              musicService.isPlaying;
 
                           return Container(
                             key: ValueKey(song.id),
@@ -773,12 +921,16 @@ class _QueueScreenState extends State<QueueScreen> {
                               margin: 7.w,
                               height: 66.h,
                               borderRadius: 10.r,
-                              backgroundColor: AppColors.musicTileBackgroundColor,
+                              backgroundColor:
+                                  AppColors.musicTileBackgroundColor,
                               cardHeight: 50.h,
                               cardWidth: 50.h,
                               cardRadius: 7.r,
-                              cardIconAsset: song.artwork_path ?? Assets.svgMusicIcon,
-                              isSvgCardIcon: (song.artwork_path ?? '').contains('.svg') || song.artwork_path == null,
+                              cardIconAsset:
+                                  song.artwork_path ?? Assets.svgMusicIcon,
+                              isSvgCardIcon:
+                                  (song.artwork_path ?? '').contains('.svg') ||
+                                  song.artwork_path == null,
                               cardIconSize: 32.r,
                               title: song.title,
                               subtitle: song.artist,
@@ -788,10 +940,12 @@ class _QueueScreenState extends State<QueueScreen> {
                               trailingMargin: 10.w,
                               songLength: formatDuration(song.duration),
                               songLengthRequired: true,
+                              isPlaying: isPlaying,
                               isGifLoad: isCurrentlyPlaying,
                               titleSize: isCurrentlyPlaying ? 16 : 14,
-                              titleWeight: isCurrentlyPlaying ? FontWeight.w600 : FontWeight.w500,
-                              // Queue-specific icons
+                              titleWeight: isCurrentlyPlaying
+                                  ? FontWeight.w600
+                                  : FontWeight.w500,
                               showDraggableIcon: true,
                               draggableIconAsset: Assets.svgDraggable,
                               draggableIconSize: 5,
@@ -800,10 +954,23 @@ class _QueueScreenState extends State<QueueScreen> {
                               cancelIconSize: 24.r,
                               onCancelTap: () => _removeSongAtIndex(index),
                               onTap: () async {
-                                if (musicService.songs.isNotEmpty && musicService.songs[musicService.currentIndex].id == song.id && musicService.isPlaying) {
-                                  context.push('/dashboard/playing', extra: PlayingSongArgs(songs: musicService.songs));
+                                if (musicService.songs.isNotEmpty &&
+                                    musicService
+                                            .songs[musicService.currentIndex]
+                                            .id ==
+                                        song.id &&
+                                    musicService.isPlaying) {
+                                  context.push(
+                                    '/dashboard/playing',
+                                    extra: PlayingSongArgs(
+                                      songs: musicService.songs,
+                                    ),
+                                  );
                                 } else {
-                                  musicService.setPlaylist(queueSongs, startIndex: index);
+                                  musicService.setPlaylist(
+                                    queueSongs,
+                                    startIndex: index,
+                                  );
                                 }
                               },
                               onPlayTap: () async {
@@ -811,7 +978,11 @@ class _QueueScreenState extends State<QueueScreen> {
                                   context: context,
                                   backgroundColor: Colors.white,
                                   elevation: 0,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(40.r),
+                                    ),
+                                  ),
                                   isScrollControlled: true,
                                   builder: (_) => SongMenuScreen(
                                     songMenuList: songMenuItems,
@@ -841,7 +1012,12 @@ class _QueueScreenState extends State<QueueScreen> {
                 ),
               ],
             ),
-            Positioned(left: 0, right: 0, bottom: 0, child: SafeArea(top: false, child: MiniPlayerBar())),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SafeArea(top: false, child: MiniPlayerBar()),
+            ),
             //   Positioned(left: 0, right: 0, bottom: 0, child: MiniPlayerBar()),
           ],
         ),

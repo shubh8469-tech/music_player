@@ -53,7 +53,7 @@ class MusicDrawer extends StatelessWidget {
                         height: 50.r,
                       ),
                     ),
-                    SizedBox(width: 12.w),
+                    SizedBox(width: 24.w),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -67,14 +67,14 @@ class MusicDrawer extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 4.h),
-                        Text(
-                          'Side menu',
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            fontFamily: AppFonts.inter,
-                            color: AppColors.textColor.withOpacity(0.6),
-                          ),
-                        ),
+                        // Text(
+                        //   'Side menu',
+                        //   style: TextStyle(
+                        //     fontSize: 12.sp,
+                        //     fontFamily: AppFonts.inter,
+                        //     color: AppColors.textColor.withOpacity(0.6),
+                        //   ),
+                        // ),
                       ],
                     ),
                   ],
