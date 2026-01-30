@@ -41,6 +41,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
   FocusNode searchFocusNode = FocusNode();
   bool isSelectedAll = false;
   Set<int> selectedSongIds = {}; // Store selected song IDs
+  Set<int> searchSelectedIds = {}; // Store selected song IDs
   String searchQuery = '';
   final musicService = MusicPlayerService();
 
@@ -74,6 +75,8 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
 
   // Filter songs based on search query
   List<SongsModel> _filterSongs(List<SongsModel> allSongs) {
+    log('Filtering songs with query: $searchQuery');
+
     if (searchQuery.isEmpty) return allSongs;
 
     return allSongs.where((song) {
@@ -81,6 +84,10 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
           song.artist.toLowerCase().contains(searchQuery.toLowerCase()) ||
           song.album.toLowerCase().contains(searchQuery.toLowerCase());
     }).toList();
+  }
+
+  int selectedSongsCount(List<SongsModel> filteredSongs) {
+    return filteredSongs.where((song) => selectedSongIds.contains(song.id)).length;
   }
 
   // Get selected count
@@ -305,7 +312,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
       // Check if there are existing songs in the queue
       if (musicService.songs.isEmpty) {
         // No songs in queue - add all selected songs and start playing
-        if(mounted) {
+        if (mounted) {
           showSnackBar(context, () {}, message: "${selectedSongs.length} songs added to play next", alertBannerLocation: AlertBannerLocation.bottom);
         }
 
@@ -364,7 +371,6 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
     // if (Navigator.canPop(context)) {
     //   Navigator.pop(context, true);
     // }
-
   }
 
   // Hide selected songs
@@ -378,7 +384,6 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
 
     bool anyHidden = false;
 
-
     for (final song in selectedSongs) {
       if (song.id == null) {
       } else {
@@ -391,7 +396,6 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
         }
       }
     }
-
 
     setState(() {
       selectedSongIds.removeWhere((id) => selectedSongs.any((song) => song.id == id));
@@ -802,7 +806,8 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
               children: [
                 Expanded(
                   child: Texts(
-                    selectedCount != 0 ? "$selectedCount ${S.of(context).selected}" : "",
+                    "${selectedSongsCount(filteredSongs) != 0 ? "${selectedSongsCount(filteredSongs)} ${S.of(context).selected}" : ''} ",
+                    // selectedCount != 0 ? "$selectedCount ${S.of(context).selected}" : "",
                     fontSize: 14.sp,
                     fontFamily: AppFonts.inter,
                     fontWeight: FontWeight.w400,
@@ -881,6 +886,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
                     child: Text(message, style: const TextStyle(color: Colors.red, fontSize: 16)),
                   ),
                   loaded: (allSongs) {
+                    log('loaded again: ${allSongs.length} songs');
                     final filteredSongs = _filterSongs(allSongs);
 
                     // Update select all state based on current filtered results
