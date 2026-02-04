@@ -488,18 +488,22 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
           },
           child: SvgPicture.asset(Assets.svgIEquilizerc, width: 23.w, height: 23.h),
         ),*/
-        GestureDetector(
-          onTap: _toggleFavorite,
-          child: SvgPicture.asset(
-            isFavorite ? Assets.svgFavOn : Assets.svgFav,
-            width: 23.w,
-            height: 23.h,
-            colorFilter: ColorFilter.mode(
-              isFavorite ? AppColors.primaryOrange : AppColors.black,
-              BlendMode.srcIn,
+         GestureDetector(
+            onTap: _toggleFavorite,
+            child: Container(
+              width: 23.w, height: 23.h,
+              padding: EdgeInsets.all(0.r),
+              child: SvgPicture.asset(
+                isFavorite ? Assets.svgFavOn : Assets.svgFav,
+                width: 21.w, height: 21.h,
+                colorFilter: ColorFilter.mode(
+                  isFavorite ? AppColors.primaryOrange : AppColors.black,
+                  BlendMode.srcIn,
+                ),
+              ),
             ),
           ),
-        ),
+
       ],
     );
   }

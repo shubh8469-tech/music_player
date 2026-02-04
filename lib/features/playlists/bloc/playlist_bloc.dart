@@ -129,13 +129,19 @@ class PlaylistBloc extends Bloc<PlaylistEvent, PlaylistState> {
 
     on<_AddSongToPlaylist>((event, emit) async {
       try {
+        final songs = await repository.getSongsForSystemPlaylist(
+          'recently_played',
+        );
+        final systemPlaylistSongs = <String, List<SongsModel>>{
+          'recently_played': songs,
+        };
         await repository.addSongToPlaylist(
           event.playlistId,
           event.songId,
           event.position,
         );
-        final songs = await repository.fetchAllPlaylists();
-        emit(PlaylistState.loaded(songs));
+        final playlists = await repository.fetchAllPlaylists();
+        emit(PlaylistState.loaded(playlists, systemPlaylistSongs: systemPlaylistSongs));
       } catch (e) {
         emit(PlaylistState.error(e.toString()));
       }
@@ -173,9 +179,15 @@ class PlaylistBloc extends Bloc<PlaylistEvent, PlaylistState> {
 
     on<_RemoveSongFromPlaylist>((event, emit) async {
       try {
+        final songs = await repository.getSongsForSystemPlaylist(
+          'recently_played',
+        );
+        final systemPlaylistSongs = <String, List<SongsModel>>{
+          'recently_played': songs,
+        };
         await repository.removeSongFromPlaylist(event.playlistId, event.songId);
-        final songs = await repository.fetchAllPlaylists();
-        emit(PlaylistState.loaded(songs));
+        final playlists = await repository.fetchAllPlaylists();
+        emit(PlaylistState.loaded(playlists, systemPlaylistSongs: systemPlaylistSongs));
       } catch (e) {
         emit(PlaylistState.error(e.toString()));
       }

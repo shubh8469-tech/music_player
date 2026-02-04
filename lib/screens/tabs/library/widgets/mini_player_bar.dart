@@ -89,122 +89,125 @@ class MiniPlayerBar extends StatelessWidget {
                     ),
                     Padding(
                       padding: EdgeInsets.only(
-                        left: 15.w,
-                        right: 15.w,
+                        left: 13.w,
+                        right: 13.w,
                         top: 10.h,
                         bottom: 10.h + MediaQuery.of(context).padding.bottom,
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Flexible(
-                            child: StreamBuilder<int?>(
-                              stream: musicService.currentIndexStream,
-                              initialData: musicService.currentIndex,
-                              builder: (context, indexSnap) {
-                                return StreamBuilder<bool>(
-                                  stream: musicService.isPlayingStream,
-                                  initialData: musicService.isPlaying,
-                                  builder: (context, playingSnap) {
-                                    final isPlaying = playingSnap.data ?? false;
-                                    final index = indexSnap.data ?? 0;
-                                    final songsList = musicService.songs;
-                                    final safeIndex =
-                                        (index >= 0 && index < songsList.length)
-                                        ? index
-                                        : 0;
-                                    // Use currentSongId (respects reorder cache) so mini bar shows correct song during reorder
-                                    final currentSongId =
-                                        musicService.currentSongId;
-                                    SongsModel? currentSong;
-                                    if (songsList.isNotEmpty) {
-                                      if (currentSongId != null) {
-                                        for (final s in songsList) {
-                                          if (s.id == currentSongId) {
-                                            currentSong = s;
-                                            break;
-                                          }
+                          StreamBuilder<int?>(
+                            stream: musicService.currentIndexStream,
+                            initialData: musicService.currentIndex,
+                            builder: (context, indexSnap) {
+                              return StreamBuilder<bool>(
+                                stream: musicService.isPlayingStream,
+                                initialData: musicService.isPlaying,
+                                builder: (context, playingSnap) {
+                                  final isPlaying = playingSnap.data ?? false;
+                                  final index = indexSnap.data ?? 0;
+                                  final songsList = musicService.songs;
+                                  final safeIndex =
+                                      (index >= 0 && index < songsList.length)
+                                      ? index
+                                      : 0;
+                                  // Use currentSongId (respects reorder cache) so mini bar shows correct song during reorder
+                                  final currentSongId =
+                                      musicService.currentSongId;
+                                  SongsModel? currentSong;
+                                  if (songsList.isNotEmpty) {
+                                    if (currentSongId != null) {
+                                      for (final s in songsList) {
+                                        if (s.id == currentSongId) {
+                                          currentSong = s;
+                                          break;
                                         }
                                       }
-                                      currentSong ??= songsList[safeIndex];
                                     }
+                                    currentSong ??= songsList[safeIndex];
+                                  }
 
-                                    final hasArtwork =
-                                        currentSong?.artwork_path != null &&
-                                        currentSong!.artwork_path!.isNotEmpty;
+                                  final hasArtwork =
+                                      currentSong?.artwork_path != null &&
+                                      currentSong!.artwork_path!.isNotEmpty;
 
-                                    return Stack(
-                                      children: [
-                                        // Show artwork if available, otherwise show default gradient card
-                                        if (hasArtwork)
-                                          Container(
-                                            height: 50.h,
-                                            width: 50.h,
-                                            margin: EdgeInsets.all(10.w),
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(7.r),
-                                              image: DecorationImage(
-                                                image: FileImage(
-                                                  File(
-                                                    currentSong.artwork_path!,
-                                                  ),
+                                  return Stack(
+                                    children: [
+                                      // Show artwork if available, otherwise show default gradient card
+                                      if (hasArtwork)
+                                        Container(
+                                          height: 50.h,
+                                          width: 50.h,
+                                          margin: EdgeInsets.all(10.w),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(7.r),
+                                            image: DecorationImage(
+                                              image: FileImage(
+                                                File(
+                                                  currentSong.artwork_path!,
                                                 ),
-                                                fit: BoxFit.cover,
                                               ),
-                                            ),
-                                          )
-                                        else
-                                          Container(
-                                            margin: EdgeInsets.all(10.w),
-                                            child: GradientCard(
-                                              height: 50.h,
-                                              width: 50.w,
-                                              borderRadius: 10.r,
-                                              iconAsset: Assets.svgMusicIcon,
-                                              iconSize: 40.r,
-                                              isSvg: true,
-                                              margin: 10.w,
-                                              colors: [
-                                                AppColors.mildOrange.withValues(
-                                                  alpha: 0.21,
-                                                ),
-                                                AppColors.mildOrange,
-                                              ],
+                                              fit: BoxFit.cover,
                                             ),
                                           ),
-                                        // Show playing animation overlay when playing
-                                        if (playingSnap.data ?? false)
-                                          Container(
+                                        )
+                                      else
+                                        Container(
+                                          margin: EdgeInsets.all(10.w),
+                                          child: GradientCard(
+                                            height: 50.h,
+                                            width: 50.w,
+                                            borderRadius: 10.r,
+                                            iconAsset: Assets.svgMusicIcon,
+                                            iconSize: 40.r,
+                                            isSvg: true,
+                                            margin: 10.w,
+                                            colors: [
+                                              AppColors.mildOrange.withValues(
+                                                alpha: 0.21,
+                                              ),
+                                              AppColors.mildOrange,
+                                            ],
+                                          ),
+                                        ),
+                                      // Show playing animation overlay when playing
+                                      if (playingSnap.data ?? false)
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(7.r),
                                             color: AppColors.white.withValues(
                                               alpha: .4,
                                             ),
-                                            height: 50.h,
-                                            width: 50.w,
-                                            margin: EdgeInsets.all(10.w),
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 8.0,
-                                                    vertical: 5,
-                                                  ),
-                                              child: Image.asset(
-                                                Assets.pngSongPlaying,
-                                                fit: BoxFit.cover,
-                                                height: 55,
-                                                width: 55,
-                                              ),
+                                          ),
+                                          height: 50.h,
+                                          width: 50.w,
+                                          margin: EdgeInsets.only(top: 10.w, bottom: 10.w, left: 9.w),
+                                          child: Padding(
+                                            padding:
+                                            EdgeInsets.symmetric(
+                                                  horizontal: 8.0.w,
+                                                  vertical: 5.h,
+                                                ),
+                                            child: Image.asset(
+                                              Assets.pngSongPlaying,
+                                              fit: BoxFit.contain,
+                                              height: 50.h,
+                                              width: 50.w,
                                             ),
                                           ),
-                                      ],
-                                    );
-                                  },
-                                );
-                              },
-                            ),
+                                        ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
                           ),
                           SizedBox(width: 5.w),
-                          Expanded(
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.31,//130.w,
                             child: StreamBuilder<int?>(
                               stream: musicService.currentIndexStream,
                               initialData: musicService.currentIndex,
@@ -261,67 +264,70 @@ class MiniPlayerBar extends StatelessWidget {
                             ),
                           ),
                           SizedBox(width: 12.w),
-                          Row(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  QueueNavigationHelper.navigateToQueueScreen(
-                                    context,
-                                  );
-                                },
-                                child: SvgPicture.asset(
-                                  Assets.svgIcQueue,
-                                  width: 24.w,
-                                  height: 24.h,
-                                ),
-                              ),
-                              SizedBox(width: 20.w),
-                              GestureDetector(
-                                onTap: () {
-                                  musicService.next();
-                                },
-                                child: SvgPicture.asset(
-                                  Assets.svgIcPlayingnext,
-                                  width: 24.w,
-                                  height: 24.h,
-                                ),
-                              ),
-                              SizedBox(width: 20.w),
-                              StreamBuilder<bool>(
-                                stream: musicService.isPlayingStream,
-                                initialData: musicService.isPlaying,
-                                builder: (context, snapshot) {
-                                  final isPlaying = snapshot.data ?? false;
-                                  if (isPlaying) {
-                                    return GestureDetector(
-                                      onTap: () => musicService.pause(),
-                                      child: SvgPicture.asset(
-                                        Assets.svgNewPause,
-                                        height: 19.h,
-                                        width: 19.w,
-                                        colorFilter: const ColorFilter.mode(
-                                          AppColors.primaryOrange,
-                                          BlendMode.srcIn,
-                                        ),
-                                      ),
+                          Expanded(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    QueueNavigationHelper.navigateToQueueScreen(
+                                      context,
                                     );
-                                  } else {
-                                    return GestureDetector(
-                                      onTap: () => musicService.play(),
-                                      child: SvgPicture.asset(
-                                        Assets.svgPlay,
-                                        height: 20.h,
-                                        width: 20.w,
-                                        colorFilter: const ColorFilter.mode(
-                                          AppColors.primaryOrange,
-                                          BlendMode.srcIn,
+                                  },
+                                  child: SvgPicture.asset(
+                                    Assets.svgIcQueue,
+                                    width: 24.w,
+                                    height: 24.h,
+                                  ),
+                                ),
+                                // SizedBox(width: 20.w),
+                                GestureDetector(
+                                  onTap: () {
+                                    musicService.next();
+                                  },
+                                  child: SvgPicture.asset(
+                                    Assets.svgIcPlayingnext,
+                                    width: 24.w,
+                                    height: 24.h,
+                                  ),
+                                ),
+                                // SizedBox(width: 20.w),
+                                StreamBuilder<bool>(
+                                  stream: musicService.isPlayingStream,
+                                  initialData: musicService.isPlaying,
+                                  builder: (context, snapshot) {
+                                    final isPlaying = snapshot.data ?? false;
+                                    if (isPlaying) {
+                                      return GestureDetector(
+                                        onTap: () => musicService.pause(),
+                                        child: SvgPicture.asset(
+                                          Assets.svgNewPause,
+                                          height: 19.h,
+                                          width: 19.w,
+                                          colorFilter: const ColorFilter.mode(
+                                            AppColors.primaryOrange,
+                                            BlendMode.srcIn,
+                                          ),
                                         ),
-                                      ),
-                                    );
-                                  }
-                                },
-                              ),
-                            ],
+                                      );
+                                    } else {
+                                      return GestureDetector(
+                                        onTap: () => musicService.play(),
+                                        child: SvgPicture.asset(
+                                          Assets.svgPlay,
+                                          height: 19.h,
+                                          width: 19.w,
+                                          colorFilter: const ColorFilter.mode(
+                                            AppColors.primaryOrange,
+                                            BlendMode.srcIn,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
