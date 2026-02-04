@@ -192,7 +192,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
         }
       });
       return Scaffold(
-        backgroundColor: Colors.transparent, // Changed from Colors.black
+        backgroundColor: AppColors.white, // Changed from Colors.black
         body: SizedBox.shrink(), // Empty instead of loading indicator
       );
       // Return loading indicator while popping
@@ -209,6 +209,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
     print("currentSong?.artwork_path---->${currentSong?.artwork_path}");
 
     return Scaffold(
+      backgroundColor: AppColors.white,
       appBar: AppBar(
         backgroundColor: AppColors.primaryOrange,
         leadingWidth: 45.w,

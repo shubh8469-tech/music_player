@@ -562,7 +562,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
                   onTap: () => Navigator.pop(context),
                   child: Container(
                     height: 48.h,
-                    decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(8.r)),
+                    decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(50.r)),
                     child: Center(
                       child: Texts(S.of(context).cancel, fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter, color: AppColors.black),
                     ),
@@ -619,7 +619,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
                   },
                   child: Container(
                     height: 48.h,
-                    decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(8.r)),
+                    decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(50.r)),
                     child: Center(
                       child: Texts(S.of(context).delete, fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter, color: AppColors.white),
                     ),
@@ -678,7 +678,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
                   onTap: () => Navigator.pop(context),
                   child: Container(
                     height: 48.h,
-                    decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(8.r)),
+                    decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(50.r)),
                     child: Center(
                       child: Texts(S.of(context).cancel, fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter, color: AppColors.black),
                     ),
@@ -734,7 +734,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
                   },
                   child: Container(
                     height: 48.h,
-                    decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(8.r)),
+                    decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(50.r)),
                     child: Center(
                       child: Texts(S.of(context).delete, fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter, color: AppColors.white),
                     ),

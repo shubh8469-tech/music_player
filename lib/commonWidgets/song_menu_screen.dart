@@ -3241,7 +3241,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                       height: 48.h,
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(8.r),
+                        borderRadius: BorderRadius.circular(50.r),
                       ),
                       child: Center(
                         child: Texts(
@@ -3266,7 +3266,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                       height: 48.h,
                       decoration: BoxDecoration(
                         color: AppColors.primaryOrange,
-                        borderRadius: BorderRadius.circular(8.r),
+                        borderRadius: BorderRadius.circular(50.r),
                       ),
                       child: Center(
                         child: Texts(
@@ -3349,7 +3349,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                       height: 48.h,
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(8.r),
+                        borderRadius: BorderRadius.circular(50.r),
                       ),
                       child: Center(
                         child: Texts(
@@ -3386,7 +3386,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                       height: 48.h,
                       decoration: BoxDecoration(
                         color: AppColors.primaryOrange,
-                        borderRadius: BorderRadius.circular(8.r),
+                        borderRadius: BorderRadius.circular(50.r),
                       ),
                       child: Center(
                         child: Texts(
@@ -3949,7 +3949,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                       height: 48.h,
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(8.r),
+                        borderRadius: BorderRadius.circular(50.r),
                       ),
                       child: Center(
                         child: Texts(
@@ -4017,7 +4017,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                       height: 48.h,
                       decoration: BoxDecoration(
                         color: AppColors.primaryOrange,
-                        borderRadius: BorderRadius.circular(8.r),
+                        borderRadius: BorderRadius.circular(50.r),
                       ),
                       child: Center(
                         child: Texts(

@@ -340,7 +340,7 @@ abstract class S {
   /// No description provided for @areYouSureDeleteSong.
   ///
   /// In en, this message translates to:
-  /// **'Are you sure you want to delete these 2 songs?'**
+  /// **'Are you sure you want to delete these songs?'**
   String get areYouSureDeleteSong;
 
   /// No description provided for @rename.

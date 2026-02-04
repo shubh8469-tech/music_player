@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:image/image.dart';
 import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:music_app/themes/color.dart';
@@ -99,10 +100,10 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             // This is where you edit the circle size
-            thumbShape: RoundSliderThumbShape(enabledThumbRadius: 5.0),
-            overlayShape: RoundSliderOverlayShape(overlayRadius: 20.0),
-            activeTrackColor: Colors.red,
-            inactiveTrackColor: Colors.red.withAlpha(50),
+            thumbShape: RoundSliderThumbShape(enabledThumbRadius: 7.5.r),
+            overlayShape: RoundSliderOverlayShape(overlayRadius: 20.r),
+            activeTrackColor: AppColors.white,
+            inactiveTrackColor: AppColors.greyBorder.withValues(alpha: 0.15),
             thumbColor: Colors.redAccent,
           ),
           child: Slider(

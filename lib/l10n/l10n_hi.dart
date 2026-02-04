@@ -130,7 +130,7 @@ class SHi extends S {
 
   @override
   String get areYouSureDeleteSong =>
-      'Are you sure you want to delete these 2 songs?';
+      'Are you sure you want to delete these songs?';
 
   @override
   String get rename => 'नाम बदलें';
