@@ -18,7 +18,7 @@ import '../../../../themes/color.dart';
 import '../../../../utills/snack_bar.dart';
 import '../../music_service.dart';
 import 'package:go_router/go_router.dart';
-import '../../../play_song/widget/playlist_bottomsheet.dart';
+import '../../../../commonWidgets/common_modal_bottom_sheet.dart';
 
 class SelectArtistScreen extends StatefulWidget {
   const SelectArtistScreen({super.key});
@@ -126,16 +126,26 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
       return;
     }
 
-    showModalBottomSheet(
+    final artistCount = selectedArtists.length;
+    showCommonConfirmationBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
-      ),
-      isScrollControlled: true,
-      builder: (_) =>
-          _buildDeleteConfirmationDialog(selectedArtists.length, selectedArtists),
+      title: 'Delete Artists',
+      message:
+          'Are you sure you want to delete ${artistCount == 1 ? 'this artist' : 'these $artistCount artists'}?',
+      onConfirm: (sheetContext) async {
+        Navigator.pop(sheetContext);
+        setState(() {
+          selectedArtistIds.clear();
+          isSelectedAll = false;
+        });
+        showSnackBar(
+          context,
+          () {},
+          message:
+              "$artistCount ${artistCount == 1 ? 'artist' : 'artists'} deleted successfully!",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      },
     );
   }
 
@@ -259,7 +269,7 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
         // context.pop();
         showSnackBar(
           context,
-              () {},
+          () {},
           message: "${allSongsFromArtists.length} songs added to play next",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
@@ -267,20 +277,20 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
         await musicService.setPlaylist(allSongsFromArtists, startIndex: 0);
         await musicService.play();
       } else {
-
-        final updateCount = await musicService.playNextMultipleSongs(allSongsFromArtists);
-        if(updateCount < 1){
+        final updateCount = await musicService.playNextMultipleSongs(
+          allSongsFromArtists,
+        );
+        if (updateCount < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }
-        else{
+        } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$updateCount songs added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
@@ -374,20 +384,22 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
         return;
       }
 
-      final addedSong = await musicService.addMultipleSongsToQueue(allSongsFromArtists);
+      final addedSong = await musicService.addMultipleSongsToQueue(
+        allSongsFromArtists,
+      );
 
       if (mounted) {
         if (addedSong < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$addedSong songs added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
@@ -493,9 +505,9 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
 
       showSnackBar(
         context,
-            () {},
+        () {},
         message:
-        "Playing ${allSongsFromArtists.length} songs from ${selectedArtists.length} artists",
+            "Playing ${allSongsFromArtists.length} songs from ${selectedArtists.length} artists",
         alertBannerLocation: AlertBannerLocation.bottom,
       );
 
@@ -507,7 +519,6 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
       // Set the combined playlist and start playing
       await musicService.setPlaylist(allSongsFromArtists, startIndex: 0);
       await musicService.play();
-
     } catch (e) {
       showSnackBar(
         context,
@@ -562,15 +573,9 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
 
       // Show playlist bottom sheet with all songs from selected artists
       if (mounted) {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
-          ),
-          isScrollControlled: true,
-          builder: (_) => PlaylistBottomSheet(songsList: allSongsFromArtists),
+        showCommonAddToPlaylistBottomSheet(
+          context,
+          songsList: allSongsFromArtists,
         );
       }
     } catch (e) {
@@ -610,8 +615,9 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
       ...artists.map((artist) {
         final isSelected = selectedArtistIds.contains(artist.id);
         final hasArtwork = artist.artworkPath?.isNotEmpty ?? false;
-        final artistArtworkPath =
-            hasArtwork ? artist.artworkPath! : Assets.svgMusicIcon;
+        final artistArtworkPath = hasArtwork
+            ? artist.artworkPath!
+            : Assets.svgMusicIcon;
 
         return Padding(
           padding: EdgeInsets.symmetric(horizontal: 15.w),
@@ -642,133 +648,6 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
         );
       }).toList(),
     ];
-  }
-
-  // Custom delete confirmation dialog matching the design
-  Widget _buildDeleteConfirmationDialog(
-    int artistCount,
-    List<Artist> deletableArtists,
-  ) {
-    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
-    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
-    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
-    final bottomPadding = viewInsets > 0
-        ? viewInsets + 16.h
-        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
-
-    return Container(
-      padding: EdgeInsets.only(
-        left: 16.w,
-        right: 16.w,
-        top: 10.h,
-        bottom: bottomPadding,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Top handle bar
-          Container(
-            width: 40.w,
-            height: 4.h,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2.r),
-            ),
-          ),
-          SizedBox(height: 30.h),
-
-          // Title
-          Texts(
-            'Delete Artists',
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w500,
-            fontFamily: AppFonts.inter,
-            color: AppColors.textColor,
-          ),
-          SizedBox(height: 30.h),
-
-          // Message
-          Texts(
-            'Are you sure you want to delete ${artistCount == 1 ? 'this artist' : 'these $artistCount artists'}?',
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w400,
-            fontFamily: AppFonts.inter,
-            color: AppColors.textColor,
-            align: TextAlign.center,
-          ),
-          SizedBox(height: 25.h),
-
-          // Action buttons
-          Row(
-            children: [
-              // Cancel button
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    height: 48.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Center(
-                      child: Texts(
-                        S.of(context).cancel,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: AppFonts.inter,
-                        color: AppColors.black,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 12.w),
-
-              // Delete button
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    // Note: You'll need to add a delete artist event to ArtistBloc
-                    // For now, this is a placeholder
-                    Navigator.pop(context);
-                    setState(() {
-                      selectedArtistIds.clear();
-                      isSelectedAll = false;
-                    });
-
-                    showSnackBar(
-                      context,
-                      () {},
-                      message:
-                          "$artistCount ${artistCount == 1 ? 'artist' : 'artists'} deleted successfully!",
-                      alertBannerLocation: AlertBannerLocation.bottom,
-                    );
-                  },
-                  child: Container(
-                    height: 48.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryOrange,
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Center(
-                      child: Texts(
-                        S.of(context).delete,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: AppFonts.inter,
-                        color: AppColors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-        ],
-      ),
-    );
   }
 
   @override
@@ -994,4 +873,3 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
     );
   }
 }
-

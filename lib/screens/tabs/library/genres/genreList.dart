@@ -29,7 +29,7 @@ import '../../../../utills/snack_bar.dart';
 import '../../../../commonWidgets/edit_tag_bottom_sheet.dart';
 import '../../music_service.dart';
 import '../../../common/image_crop_screen.dart';
-import '../../../play_song/widget/playlist_bottomsheet.dart';
+import '../../../../commonWidgets/common_modal_bottom_sheet.dart';
 import 'sort_by_bottomsheet.dart';
 
 class GenreListScreen extends StatefulWidget {
@@ -76,13 +76,17 @@ class _GenreListScreenState extends State<GenreListScreen> {
                         SvgPicture.asset(Assets.svgSongsCount),
                         SizedBox(width: 8.w),
                         SizedBox(
-                          height: 38.h, // Increase height so padding doesn't zero it out
+                          height: 38
+                              .h, // Increase height so padding doesn't zero it out
                           child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8.h), // Leave some room for the line
+                            padding: EdgeInsets.symmetric(
+                              vertical: 8.h,
+                            ), // Leave some room for the line
                             child: VerticalDivider(
                               color: AppColors.mediumDarkGrey.withOpacity(0.5),
-                              width: 1.w,      // Total space the widget occupies
-                              thickness: 1.2.w,   // The actual thickness of the line
+                              width: 1.w, // Total space the widget occupies
+                              thickness:
+                                  1.2.w, // The actual thickness of the line
                             ),
                           ),
                         ),
@@ -130,7 +134,8 @@ class _GenreListScreenState extends State<GenreListScreen> {
                               setState(() {
                                 selectedIndex = index;
                                 selectedOrder = order;
-                                selectedGenreSort = genreSortByItems[index].title;
+                                selectedGenreSort =
+                                    genreSortByItems[index].title;
                               });
                               // Trigger Bloc sort event
                               context.read<GenreBloc>().add(
@@ -156,7 +161,8 @@ class _GenreListScreenState extends State<GenreListScreen> {
                 builder: (context, state) {
                   return state.when(
                     initial: () => const SizedBox(),
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     loaded: (genres, _) {
                       if (genres.isEmpty) {
                         return Center(
@@ -174,8 +180,9 @@ class _GenreListScreenState extends State<GenreListScreen> {
                         children: genres.map((genre) {
                           final hasArtwork =
                               genre.artworkPath?.isNotEmpty ?? false;
-                          final genreArtworkPath =
-                              hasArtwork ? genre.artworkPath! : '';
+                          final genreArtworkPath = hasArtwork
+                              ? genre.artworkPath!
+                              : '';
                           return MusicListTile(
                             margin: 7.w,
                             height: 66.h,
@@ -187,10 +194,7 @@ class _GenreListScreenState extends State<GenreListScreen> {
                             cardIconAsset: genreArtworkPath,
                             cardContent: hasArtwork
                                 ? null
-                                : buildGenreInitialAvatar(
-                                    genre.name,
-                                    20.sp,
-                                  ),
+                                : buildGenreInitialAvatar(genre.name, 20.sp),
                             noLogoGradientColor: [
                               AppColors.primaryOrange.withValues(alpha: 0.21),
                               AppColors.primaryOrange,
@@ -282,10 +286,7 @@ class _GenreListScreenState extends State<GenreListScreen> {
                     cardIconAsset: genreArtworkPath,
                     cardContent: hasArtwork
                         ? null
-                        : buildGenreInitialAvatar(
-                            genre.name,
-                            24.sp,
-                          ),
+                        : buildGenreInitialAvatar(genre.name, 24.sp),
                     cardIconSize: 32.r,
                     isSvgColorNeeded: false,
                     title: genre.name,
@@ -455,8 +456,8 @@ class _GenreListScreenState extends State<GenreListScreen> {
           onSave: (newName) {
             if (genre.id != null && newName.trim().isNotEmpty) {
               context.read<GenreBloc>().add(
-                    GenreEvent.updateGenreName(genre.id!, newName),
-                  );
+                GenreEvent.updateGenreName(genre.id!, newName),
+              );
               showSnackBar(
                 context,
                 () {},
@@ -529,7 +530,9 @@ class _GenreListScreenState extends State<GenreListScreen> {
         await musicService.setPlaylist(genreSongs, startIndex: 0);
         await musicService.play();
       } else {
-        final updateCount = await musicService.playNextMultipleSongs(genreSongs);
+        final updateCount = await musicService.playNextMultipleSongs(
+          genreSongs,
+        );
         // final currentIndex = musicService.currentIndex;
         // final insertIndex = currentIndex + 1;
         // final newSongsList = List<SongsModel>.from(musicService.songs);
@@ -548,18 +551,17 @@ class _GenreListScreenState extends State<GenreListScreen> {
         //   autoPlay: false,
         // );
 
-        if(updateCount < 1){
+        if (updateCount < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }
-        else{
+        } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$updateCount songs added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
@@ -599,14 +601,14 @@ class _GenreListScreenState extends State<GenreListScreen> {
         if (addedSong < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$addedSong songs added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
@@ -678,18 +680,10 @@ class _GenreListScreenState extends State<GenreListScreen> {
       }
 
       if (mounted) {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
-          ),
-          isScrollControlled: true,
-          builder: (_) => BlocProvider.value(
-            value: playlistBloc,
-            child: PlaylistBottomSheet(songsList: genreSongs),
-          ),
+        showCommonAddToPlaylistBottomSheet(
+          context,
+          songsList: genreSongs,
+          playlistBloc: playlistBloc,
         );
       }
     } catch (e) {
@@ -744,10 +738,7 @@ class _GenreListScreenState extends State<GenreListScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(32.r),
             ),
-            padding: EdgeInsets.symmetric(
-              horizontal: 20.w,
-              vertical: 24.h,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -800,7 +791,10 @@ class _GenreListScreenState extends State<GenreListScreen> {
                     color: AppColors.textColor,
                   ),
                   onTap: () {
-                    Navigator.pop(sheetContext, _ChangeCoverAction.localGallery);
+                    Navigator.pop(
+                      sheetContext,
+                      _ChangeCoverAction.localGallery,
+                    );
                   },
                 ),
                 Divider(
@@ -911,16 +905,12 @@ class _GenreListScreenState extends State<GenreListScreen> {
       if (croppedBytes == null) return;
 
       final optimizedBytes = await _optimizeGenreCoverImage(croppedBytes);
-      final savedFile =
-          await _persistGenreCoverFile(genre.id!, optimizedBytes);
+      final savedFile = await _persistGenreCoverFile(genre.id!, optimizedBytes);
 
       await _cleanupGenreCover(genre.artworkPath);
       context.read<GenreBloc>().add(
-            GenreEvent.updateGenreCover(
-              genre.id!,
-              savedFile.path,
-            ),
-          );
+        GenreEvent.updateGenreCover(genre.id!, savedFile.path),
+      );
 
       if (!mounted) return;
 
@@ -951,8 +941,9 @@ class _GenreListScreenState extends State<GenreListScreen> {
 
     const maxDimension = 720;
     img.Image processed = decoded;
-    final largestSide =
-        decoded.width > decoded.height ? decoded.width : decoded.height;
+    final largestSide = decoded.width > decoded.height
+        ? decoded.width
+        : decoded.height;
 
     if (largestSide > maxDimension) {
       if (decoded.width >= decoded.height) {
@@ -970,19 +961,14 @@ class _GenreListScreenState extends State<GenreListScreen> {
       }
     }
 
-    final optimizedBytes = img.encodeJpg(
-      processed,
-      quality: 85,
-    );
+    final optimizedBytes = img.encodeJpg(processed, quality: 85);
 
     return Uint8List.fromList(optimizedBytes);
   }
 
   Future<File> _persistGenreCoverFile(int genreId, Uint8List bytes) async {
     final documentsDir = await getApplicationDocumentsDirectory();
-    final coversDir = Directory(
-      p.join(documentsDir.path, 'covers', 'genres'),
-    );
+    final coversDir = Directory(p.join(documentsDir.path, 'covers', 'genres'));
 
     if (!await coversDir.exists()) {
       await coversDir.create(recursive: true);
@@ -1017,8 +1003,4 @@ class _GenreListScreenState extends State<GenreListScreen> {
   }
 }
 
-enum _ChangeCoverAction {
-  localGallery,
-  searchOnline,
-}
-
+enum _ChangeCoverAction { localGallery, searchOnline }

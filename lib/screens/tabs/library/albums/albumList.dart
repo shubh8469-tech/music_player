@@ -28,7 +28,7 @@ import '../../../../utills/globals.dart';
 import '../../../../utills/snack_bar.dart';
 import '../../music_service.dart';
 import '../../../common/image_crop_screen.dart';
-import '../../../play_song/widget/playlist_bottomsheet.dart';
+import '../../../../commonWidgets/common_modal_bottom_sheet.dart';
 import 'edit_album_tags_screen.dart';
 import 'sort_by_bottomsheet.dart';
 
@@ -75,13 +75,17 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                       SvgPicture.asset(Assets.svgSongsCount),
                       SizedBox(width: 8.w),
                       SizedBox(
-                        height: 38.h, // Increase height so padding doesn't zero it out
+                        height: 38
+                            .h, // Increase height so padding doesn't zero it out
                         child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8.h), // Leave some room for the line
+                          padding: EdgeInsets.symmetric(
+                            vertical: 8.h,
+                          ), // Leave some room for the line
                           child: VerticalDivider(
                             color: AppColors.mediumDarkGrey.withOpacity(0.5),
-                            width: 1.w,      // Total space the widget occupies
-                            thickness: 1.2.w,   // The actual thickness of the line
+                            width: 1.w, // Total space the widget occupies
+                            thickness:
+                                1.2.w, // The actual thickness of the line
                           ),
                         ),
                       ),
@@ -181,8 +185,8 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                           final album = albums[index];
                           final albumArtworkPath =
                               (album.artworkPath?.isNotEmpty ?? false)
-                                  ? album.artworkPath!
-                                  : Assets.svgAlbum;
+                              ? album.artworkPath!
+                              : Assets.svgAlbum;
                           return GestureDetector(
                             onTap: () {
                               context.push(
@@ -251,9 +255,10 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                                             backgroundColor: Colors.white,
                                             elevation: 0,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.vertical(
-                                                top: Radius.circular(40.r),
-                                              ),
+                                              borderRadius:
+                                                  BorderRadius.vertical(
+                                                    top: Radius.circular(40.r),
+                                                  ),
                                             ),
                                             isScrollControlled: true,
                                             builder: (_) =>
@@ -261,7 +266,10 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                                           );
                                         },
                                         child: Padding(
-                                          padding:  EdgeInsets.symmetric(vertical:  4.r, horizontal: 2.r),
+                                          padding: EdgeInsets.symmetric(
+                                            vertical: 4.r,
+                                            horizontal: 2.r,
+                                          ),
                                           child: SvgPicture.asset(
                                             Assets.svgMenuIcon,
                                             height: 21.5.h,
@@ -562,7 +570,9 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
         await musicService.setPlaylist(albumSongs, startIndex: 0);
         await musicService.play();
       } else {
-        final updateCount = await musicService.playNextMultipleSongs(albumSongs);
+        final updateCount = await musicService.playNextMultipleSongs(
+          albumSongs,
+        );
         // final currentIndex = musicService.currentIndex;
         // final insertIndex = currentIndex + 1;
         // final newSongsList = List<SongsModel>.from(musicService.songs);
@@ -580,24 +590,22 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
         //   startIndex: currentIndex >= 0 ? currentIndex : 0,
         //   autoPlay: false,
         // );
-        if(updateCount < 1){
+        if (updateCount < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }
-        else{
+        } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$updateCount songs added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         }
       }
-
     } catch (e) {
       showSnackBar(
         context,
@@ -632,14 +640,14 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
         if (addedSong < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$addedSong songs added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
@@ -678,7 +686,6 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
       //     alertBannerLocation: AlertBannerLocation.bottom,
       //   );
       // }
-
     } catch (e) {
       showSnackBar(
         context,
@@ -713,18 +720,10 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
       }
 
       if (mounted) {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
-          ),
-          isScrollControlled: true,
-          builder: (_) => BlocProvider.value(
-            value: playlistBloc,
-            child: PlaylistBottomSheet(songsList: albumSongs),
-          ),
+        showCommonAddToPlaylistBottomSheet(
+          context,
+          songsList: albumSongs,
+          playlistBloc: playlistBloc,
         );
       }
     } catch (e) {
@@ -779,10 +778,7 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(32.r),
             ),
-            padding: EdgeInsets.symmetric(
-              horizontal: 20.w,
-              vertical: 24.h,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -835,7 +831,10 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                     color: AppColors.textColor,
                   ),
                   onTap: () {
-                    Navigator.pop(sheetContext, _ChangeCoverAction.localGallery);
+                    Navigator.pop(
+                      sheetContext,
+                      _ChangeCoverAction.localGallery,
+                    );
                   },
                 ),
                 Divider(
@@ -950,11 +949,8 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
 
       await _cleanupAlbumCover(album.artworkPath);
       context.read<AlbumBloc>().add(
-            AlbumEvent.updateAlbumCover(
-              album.id!,
-              savedFile.path,
-            ),
-          );
+        AlbumEvent.updateAlbumCover(album.id!, savedFile.path),
+      );
 
       if (!mounted) return;
 
@@ -985,8 +981,9 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
 
     const maxDimension = 720;
     img.Image processed = decoded;
-    final largestSide =
-        decoded.width > decoded.height ? decoded.width : decoded.height;
+    final largestSide = decoded.width > decoded.height
+        ? decoded.width
+        : decoded.height;
 
     if (largestSide > maxDimension) {
       if (decoded.width >= decoded.height) {
@@ -1004,19 +1001,14 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
       }
     }
 
-    final optimizedBytes = img.encodeJpg(
-      processed,
-      quality: 85,
-    );
+    final optimizedBytes = img.encodeJpg(processed, quality: 85);
 
     return Uint8List.fromList(optimizedBytes);
   }
 
   Future<File> _persistAlbumCoverFile(int albumId, Uint8List bytes) async {
     final documentsDir = await getApplicationDocumentsDirectory();
-    final coversDir = Directory(
-      p.join(documentsDir.path, 'covers', 'albums'),
-    );
+    final coversDir = Directory(p.join(documentsDir.path, 'covers', 'albums'));
 
     if (!await coversDir.exists()) {
       await coversDir.create(recursive: true);
@@ -1051,7 +1043,4 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
   }
 }
 
-enum _ChangeCoverAction {
-  localGallery,
-  searchOnline,
-}
+enum _ChangeCoverAction { localGallery, searchOnline }

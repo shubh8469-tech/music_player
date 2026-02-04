@@ -59,186 +59,193 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
                 .cast<domain.Playlist>()
                 .toList();
 
-            return Container(
-              constraints: BoxConstraints(maxHeight: maxHeight),
-              padding: EdgeInsets.only(
-                left: 16.w,
-                right: 16.w,
-                top: 10.h,
-                bottom: () {
-                  // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
-                  final viewInsets = MediaQuery.of(context).viewInsets.bottom;
-                  final viewPadding = MediaQuery.of(context).viewPadding.bottom;
-                  return viewInsets > 0
-                      ? viewInsets + 16.h
-                      : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
-                }(),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SvgPicture.asset(Assets.svgIcLineBottom),
-                  SizedBox(height: 20.h),
-                  Texts(
-                    'Add to playlist',
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w500,
-                    fontFamily: AppFonts.inter,
-                  ),
-                  SizedBox(height: 16.h),
-
-                  Flexible(
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: [
-                        ListTile(
-                          leading: SvgPicture.asset(Assets.svgIcPlus),
-                          title: Texts(
-                            'Create new playlist',
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: AppFonts.inter,
-                          ),
-                          onTap: () {
-                            // Navigator.of(context).pop();
-                            createNewPlayListWidget();
-                          },
-                        ),
-                        SizedBox(height: 8.h),
-                        Column(
-                          children: List.generate(playlists.length, (index) {
-                            final playlist = playlists[index];
-                            final isSelected = selectedPlaylist == playlist.id;
-
-                            return Column(
-                              children: [
-                                MusicListTile(
-                                  margin: 7.w,
-                                  height: 66.h,
-                                  borderRadius: 10.r,
-                                  backgroundColor:
-                                      AppColors.musicTileBackgroundColor,
-                                  cardHeight: 50.h,
-                                  cardWidth: 50.h,
-                                  cardRadius: 7.r,
-                                  noLogoGradientColor: [
-                                    AppColors.mildOrange.withValues(
-                                      alpha: 0.21,
-                                    ),
-                                    AppColors.primaryOrange,
-                                  ],
-                                  cardIconAsset: Assets.svgMusicIcon,
-                                  cardIconSize: 32.r,
-                                  title: playlist.name,
-                                  subtitle:
-                                      "${playlist.songCount} Songs", // <-- fixed subtitle
-                                  trailingIconAsset: isSelected
-                                      ? Assets.svgIcCheck
-                                      : Assets.svgIcUncheck,
-                                  trailingIconHeight: 20.h,
-                                  trailingIconWidth: 10.w,
-                                  trailingMargin: 2.w,
-                                  onTap: () => setState(() {
-                                    if (selectedPlaylist == playlist.id) {
-                                      selectedPlaylist = 0;
-                                    } else {
-                                      selectedPlaylist = playlist.id!;
-                                    }
-                                  }),
-
-                                  onPlayTap: () => setState(() {
-                                    if (selectedPlaylist == playlist.id) {
-                                      selectedPlaylist = 0;
-                                    } else {
-                                      selectedPlaylist = playlist.id!;
-                                    }
-                                  }),
-                                ),
-
-                                if (index == playlists.length - 1) ...[
-                                  SizedBox(height: 12.h),
-                                  Row(
-                                    children: [
-                                      // Cancel button
-                                      Expanded(
-                                        child: GestureDetector(
-                                          onTap: (){
-                                            Navigator.pop(context);
-                                          },
-                                          child: Container(
-                                            height: 48.h,
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey[200],
-                                              borderRadius: BorderRadius.circular(50.r),
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                'Cancel',
-                                                style: TextStyle(
-                                                  fontSize: 16.sp,
-                                                  fontWeight: FontWeight.w500,
-                                                  fontFamily: AppFonts.inter,
-                                                  color: AppColors.black,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(width: 12.w),
-
-                                      // Create button
-                                      Expanded(
-                                        child: GestureDetector(
-                                          onTap: (){
-                                            if (selectedPlaylist == 0) {
-                                              showSnackBar(
-                                                context,
-                                                    () {},
-                                                message: "Please select a playlist",
-                                                alertBannerLocation: AlertBannerLocation.bottom,
-                                              );
-                                            }
-                                            else{
-                                              addSongToPlaylist(
-                                                playlistId: selectedPlaylist,
-                                                position: playlist.songCount,
-                                              );
-                                              Navigator.pop(context);
-                                            }
-                                          },
-                                          child: Container(
-                                            height: 48.h,
-                                            decoration: BoxDecoration(
-                                              color: AppColors.primaryOrange,
-                                              borderRadius: BorderRadius.circular(50.r),
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                'Add',
-                                                style: TextStyle(
-                                                  fontSize: 16.sp,
-                                                  fontWeight: FontWeight.w500,
-                                                  fontFamily: AppFonts.inter,
-                                                  color: AppColors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 16.h),
-                                ],
-                              ],
-                            );
-                          }),
-                        ),
-                      ],
+            return SafeArea(
+              child: Container(
+                constraints: BoxConstraints(maxHeight: maxHeight),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(50.r)
+                ),
+                padding: EdgeInsets.only(
+                  left: 16.w,
+                  right: 16.w,
+                  top: 10.h,
+                  bottom: 20.h,
+                  // bottom: () {
+                  //   // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
+                  //   final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+                  //   final viewPadding = MediaQuery.of(context).viewPadding.bottom;
+                  //   return viewInsets > 0
+                  //       ? viewInsets + 16.h
+                  //       : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+                  // }(),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SvgPicture.asset(Assets.svgIcLineBottom),
+                    SizedBox(height: 20.h),
+                    Texts(
+                      'Add to playlist',
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: AppFonts.inter,
                     ),
-                  ),
-                ],
+                    SizedBox(height: 16.h),
+              
+                    Flexible(
+                      child: ListView(
+                        shrinkWrap: true,
+                        children: [
+                          ListTile(
+                            leading: SvgPicture.asset(Assets.svgIcPlus),
+                            title: Texts(
+                              'Create new playlist',
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: AppFonts.inter,
+                            ),
+                            onTap: () {
+                              // Navigator.of(context).pop();
+                              createNewPlayListWidget();
+                            },
+                          ),
+                          SizedBox(height: 8.h),
+                          Column(
+                            children: List.generate(playlists.length, (index) {
+                              final playlist = playlists[index];
+                              final isSelected = selectedPlaylist == playlist.id;
+              
+                              return Column(
+                                children: [
+                                  MusicListTile(
+                                    margin: 7.w,
+                                    height: 66.h,
+                                    borderRadius: 10.r,
+                                    backgroundColor:
+                                        AppColors.musicTileBackgroundColor,
+                                    cardHeight: 50.h,
+                                    cardWidth: 50.h,
+                                    cardRadius: 7.r,
+                                    noLogoGradientColor: [
+                                      AppColors.mildOrange.withValues(
+                                        alpha: 0.21,
+                                      ),
+                                      AppColors.primaryOrange,
+                                    ],
+                                    cardIconAsset: Assets.svgMusicIcon,
+                                    cardIconSize: 32.r,
+                                    title: playlist.name,
+                                    subtitle:
+                                        "${playlist.songCount} Songs", // <-- fixed subtitle
+                                    trailingIconAsset: isSelected
+                                        ? Assets.svgIcCheck
+                                        : Assets.svgIcUncheck,
+                                    trailingIconHeight: 20.h,
+                                    trailingIconWidth: 10.w,
+                                    trailingMargin: 2.w,
+                                    onTap: () => setState(() {
+                                      if (selectedPlaylist == playlist.id) {
+                                        selectedPlaylist = 0;
+                                      } else {
+                                        selectedPlaylist = playlist.id!;
+                                      }
+                                    }),
+              
+                                    onPlayTap: () => setState(() {
+                                      if (selectedPlaylist == playlist.id) {
+                                        selectedPlaylist = 0;
+                                      } else {
+                                        selectedPlaylist = playlist.id!;
+                                      }
+                                    }),
+                                  ),
+              
+                                  if (index == playlists.length - 1) ...[
+                                    SizedBox(height: 12.h),
+                                    Row(
+                                      children: [
+                                        // Cancel button
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: (){
+                                              Navigator.pop(context);
+                                            },
+                                            child: Container(
+                                              height: 48.h,
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey[200],
+                                                borderRadius: BorderRadius.circular(50.r),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  'Cancel',
+                                                  style: TextStyle(
+                                                    fontSize: 16.sp,
+                                                    fontWeight: FontWeight.w500,
+                                                    fontFamily: AppFonts.inter,
+                                                    color: AppColors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 12.w),
+              
+                                        // Create button
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: (){
+                                              if (selectedPlaylist == 0) {
+                                                showSnackBar(
+                                                  context,
+                                                      () {},
+                                                  message: "Please select a playlist",
+                                                  alertBannerLocation: AlertBannerLocation.bottom,
+                                                );
+                                              }
+                                              else{
+                                                addSongToPlaylist(
+                                                  playlistId: selectedPlaylist,
+                                                  position: playlist.songCount,
+                                                );
+                                                Navigator.pop(context);
+                                              }
+                                            },
+                                            child: Container(
+                                              height: 48.h,
+                                              decoration: BoxDecoration(
+                                                color: AppColors.primaryOrange,
+                                                borderRadius: BorderRadius.circular(50.r),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  'Add',
+                                                  style: TextStyle(
+                                                    fontSize: 16.sp,
+                                                    fontWeight: FontWeight.w500,
+                                                    fontFamily: AppFonts.inter,
+                                                    color: AppColors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    // SizedBox(height: 16.h),
+                                  ],
+                                ],
+                              );
+                            }),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },

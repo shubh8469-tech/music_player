@@ -27,7 +27,7 @@ import '../../../../utills/globals.dart';
 import '../../../../utills/snack_bar.dart';
 import '../../music_service.dart';
 import '../../../common/image_crop_screen.dart';
-import '../../../play_song/widget/playlist_bottomsheet.dart';
+import '../../../../commonWidgets/common_modal_bottom_sheet.dart';
 import '../../../../commonWidgets/edit_tag_bottom_sheet.dart';
 import 'sort_by_bottomsheet.dart';
 
@@ -75,13 +75,17 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                         SvgPicture.asset(Assets.svgSongsCount),
                         SizedBox(width: 8.w),
                         SizedBox(
-                          height: 38.h, // Increase height so padding doesn't zero it out
+                          height: 38
+                              .h, // Increase height so padding doesn't zero it out
                           child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8.h), // Leave some room for the line
+                            padding: EdgeInsets.symmetric(
+                              vertical: 8.h,
+                            ), // Leave some room for the line
                             child: VerticalDivider(
                               color: AppColors.mediumDarkGrey.withOpacity(0.5),
-                              width: 1.w,      // Total space the widget occupies
-                              thickness: 1.2.w,   // The actual thickness of the line
+                              width: 1.w, // Total space the widget occupies
+                              thickness:
+                                  1.2.w, // The actual thickness of the line
                             ),
                           ),
                         ),
@@ -89,20 +93,18 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                         BlocBuilder<ArtistBloc, ArtistState>(
                           builder: (context, state) {
                             return state.maybeWhen(
-                              loaded:
-                                  (artists, _) => Texts(
-                                    '${artists.length} Artists',
-                                    fontSize: 14.sp,
-                                    fontWeight: AppFontWeights.regular,
-                                    color: AppColors.textColor,
-                                  ),
-                              orElse:
-                                  () => Texts(
-                                    '0 Artists',
-                                    fontSize: 14.sp,
-                                    fontWeight: AppFontWeights.regular,
-                                    color: AppColors.textColor,
-                                  ),
+                              loaded: (artists, _) => Texts(
+                                '${artists.length} Artists',
+                                fontSize: 14.sp,
+                                fontWeight: AppFontWeights.regular,
+                                color: AppColors.textColor,
+                              ),
+                              orElse: () => Texts(
+                                '0 Artists',
+                                fontSize: 14.sp,
+                                fontWeight: AppFontWeights.regular,
+                                color: AppColors.textColor,
+                              ),
                             );
                           },
                         ),
@@ -131,7 +133,8 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                               setState(() {
                                 selectedIndex = index;
                                 selectedOrder = order;
-                                selectedArtistSort = artistSortByItems[index].title;
+                                selectedArtistSort =
+                                    artistSortByItems[index].title;
                               });
                               // Trigger Bloc sort event
                               context.read<ArtistBloc>().add(
@@ -157,8 +160,8 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                 builder: (context, state) {
                   return state.when(
                     initial: () => const SizedBox(),
-                    loading:
-                        () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     loaded: (artists, _) {
                       if (artists.isEmpty) {
                         return Center(
@@ -173,67 +176,64 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                         );
                       }
                       return Column(
-                        children:
-                            artists.map((artist) {
-                              final artistArtworkPath =
-                                  (artist.artworkPath?.isNotEmpty ?? false)
-                                      ? artist.artworkPath!
-                                      : Assets.svgProxyArtist;
-                              return MusicListTile(
-                                margin: 7.w,
-                                height: 66.h,
-                                borderRadius: 10.r,
-                                backgroundColor:
-                                    AppColors.musicTileBackgroundColor,
-                                cardHeight: 50.h,
-                                cardWidth: 50.h,
-                                cardRadius: 100.r, 
-                                cardIconAsset: artistArtworkPath,
-                                noLogoGradientColor: [
-                                  AppColors.black.withValues(alpha: 0.14),
-                                  AppColors.black.withValues(alpha: 0.14),
-                                ],
-                                cardIconSize: 19.r,
-                                title: artist.name,
-                                subtitle:
-                                    '${artist.albumCount} Album${artist.albumCount != 1 ? 's' : ''} - ${artist.songCount} Songs',
-                                trailingIconAsset: Assets.svgMenuIcon,
-                                trailingIconHeight: 19.5.h,
-                                trailingIconWidth: 3.w,
-                                trailingMargin: 10.w,
-                                onTap: () {
-                                  context.push(
-                                    '/dashboard/artist-detail',
-                                    extra: artist,
-                                  );
-                                },
-                                onPlayTap: () {
-                                  showModalBottomSheet(
-                                    context: context,
-                                    backgroundColor: Colors.white,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(40.r),
-                                      ),
-                                    ),
-                                    isScrollControlled: true,
-                                    builder: (_) =>
-                                        _buildArtistMenu(context, artist),
-                                  );
-                                },
+                        children: artists.map((artist) {
+                          final artistArtworkPath =
+                              (artist.artworkPath?.isNotEmpty ?? false)
+                              ? artist.artworkPath!
+                              : Assets.svgProxyArtist;
+                          return MusicListTile(
+                            margin: 7.w,
+                            height: 66.h,
+                            borderRadius: 10.r,
+                            backgroundColor: AppColors.musicTileBackgroundColor,
+                            cardHeight: 50.h,
+                            cardWidth: 50.h,
+                            cardRadius: 100.r,
+                            cardIconAsset: artistArtworkPath,
+                            noLogoGradientColor: [
+                              AppColors.black.withValues(alpha: 0.14),
+                              AppColors.black.withValues(alpha: 0.14),
+                            ],
+                            cardIconSize: 19.r,
+                            title: artist.name,
+                            subtitle:
+                                '${artist.albumCount} Album${artist.albumCount != 1 ? 's' : ''} - ${artist.songCount} Songs',
+                            trailingIconAsset: Assets.svgMenuIcon,
+                            trailingIconHeight: 19.5.h,
+                            trailingIconWidth: 3.w,
+                            trailingMargin: 10.w,
+                            onTap: () {
+                              context.push(
+                                '/dashboard/artist-detail',
+                                extra: artist,
                               );
-                            }).toList(),
+                            },
+                            onPlayTap: () {
+                              showModalBottomSheet(
+                                context: context,
+                                backgroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(40.r),
+                                  ),
+                                ),
+                                isScrollControlled: true,
+                                builder: (_) =>
+                                    _buildArtistMenu(context, artist),
+                              );
+                            },
+                          );
+                        }).toList(),
                       );
                     },
-                    error:
-                        (message) => Center(
-                          child: Texts(
-                            'Error: $message',
-                            fontSize: 14.sp,
-                            color: Colors.red,
-                          ),
-                        ),
+                    error: (message) => Center(
+                      child: Texts(
+                        'Error: $message',
+                        fontSize: 14.sp,
+                        color: Colors.red,
+                      ),
+                    ),
                   );
                 },
               ),
@@ -451,8 +451,8 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
           onSave: (newName) {
             if (artist.id != null && newName.trim().isNotEmpty) {
               context.read<ArtistBloc>().add(
-                    ArtistEvent.updateArtistName(artist.id!, newName),
-                  );
+                ArtistEvent.updateArtistName(artist.id!, newName),
+              );
               showSnackBar(
                 context,
                 () {},
@@ -525,7 +525,9 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
         await musicService.setPlaylist(artistSongs, startIndex: 0);
         await musicService.play();
       } else {
-        final updateCount = await musicService.playNextMultipleSongs(artistSongs);
+        final updateCount = await musicService.playNextMultipleSongs(
+          artistSongs,
+        );
         // final currentIndex = musicService.currentIndex;
         // final insertIndex = currentIndex + 1;
         // final newSongsList = List<SongsModel>.from(musicService.songs);
@@ -543,24 +545,22 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
         //   startIndex: currentIndex >= 0 ? currentIndex : 0,
         //   autoPlay: false,
         // );
-        if(updateCount < 1){
+        if (updateCount < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }
-        else{
+        } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$updateCount songs added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         }
       }
-
     } catch (e) {
       showSnackBar(
         context,
@@ -595,14 +595,14 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
         if (addedSong < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$addedSong songs added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
@@ -675,18 +675,10 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
       }
 
       if (mounted) {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
-          ),
-          isScrollControlled: true,
-          builder: (_) => BlocProvider.value(
-            value: playlistBloc,
-            child: PlaylistBottomSheet(songsList: artistSongs),
-          ),
+        showCommonAddToPlaylistBottomSheet(
+          context,
+          songsList: artistSongs,
+          playlistBloc: playlistBloc,
         );
       }
     } catch (e) {
@@ -741,10 +733,7 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(32.r),
             ),
-            padding: EdgeInsets.symmetric(
-              horizontal: 20.w,
-              vertical: 24.h,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -797,7 +786,10 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                     color: AppColors.textColor,
                   ),
                   onTap: () {
-                    Navigator.pop(sheetContext, _ChangeCoverAction.localGallery);
+                    Navigator.pop(
+                      sheetContext,
+                      _ChangeCoverAction.localGallery,
+                    );
                   },
                 ),
                 Divider(
@@ -908,16 +900,15 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
       if (croppedBytes == null) return;
 
       final optimizedBytes = await _optimizeArtistCoverImage(croppedBytes);
-      final savedFile =
-          await _persistArtistCoverFile(artist.id!, optimizedBytes);
+      final savedFile = await _persistArtistCoverFile(
+        artist.id!,
+        optimizedBytes,
+      );
 
       await _cleanupArtistCover(artist.artworkPath);
       context.read<ArtistBloc>().add(
-            ArtistEvent.updateArtistCover(
-              artist.id!,
-              savedFile.path,
-            ),
-          );
+        ArtistEvent.updateArtistCover(artist.id!, savedFile.path),
+      );
 
       if (!mounted) return;
 
@@ -948,8 +939,9 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
 
     const maxDimension = 720;
     img.Image processed = decoded;
-    final largestSide =
-        decoded.width > decoded.height ? decoded.width : decoded.height;
+    final largestSide = decoded.width > decoded.height
+        ? decoded.width
+        : decoded.height;
 
     if (largestSide > maxDimension) {
       if (decoded.width >= decoded.height) {
@@ -967,19 +959,14 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
       }
     }
 
-    final optimizedBytes = img.encodeJpg(
-      processed,
-      quality: 85,
-    );
+    final optimizedBytes = img.encodeJpg(processed, quality: 85);
 
     return Uint8List.fromList(optimizedBytes);
   }
 
   Future<File> _persistArtistCoverFile(int artistId, Uint8List bytes) async {
     final documentsDir = await getApplicationDocumentsDirectory();
-    final coversDir = Directory(
-      p.join(documentsDir.path, 'covers', 'artists'),
-    );
+    final coversDir = Directory(p.join(documentsDir.path, 'covers', 'artists'));
 
     if (!await coversDir.exists()) {
       await coversDir.create(recursive: true);
@@ -1014,7 +1001,4 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
   }
 }
 
-enum _ChangeCoverAction {
-  localGallery,
-  searchOnline,
-}
+enum _ChangeCoverAction { localGallery, searchOnline }

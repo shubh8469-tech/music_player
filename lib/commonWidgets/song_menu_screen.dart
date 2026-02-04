@@ -30,8 +30,8 @@ import '../generated/assets.dart';
 import '../l10n/l10n.dart';
 import '../model/song_menu_model.dart';
 import '../screens/common/image_crop_screen.dart';
+import 'common_modal_bottom_sheet.dart';
 import '../screens/play_song/widget/playback_speed_bottom_sheet.dart';
-import '../screens/play_song/widget/playlist_bottomsheet.dart';
 import '../screens/tabs/music_service.dart';
 import '../themes/color.dart';
 import '../utills/snack_bar.dart';
@@ -133,17 +133,16 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                           cardWidth: 50.h,
                           cardRadius: 7.r,
                           noLogoGradientColor:
-                          widget.playlistGradientColors ??
+                              widget.playlistGradientColors ??
                               [
                                 AppColors.primaryOrange.withValues(alpha: 0.21),
                                 AppColors.primaryOrange,
                               ],
                           cardIconAsset:
-                          widget.playlistIconAsset ?? Assets.svgMusicIcon,
+                              widget.playlistIconAsset ?? Assets.svgMusicIcon,
                           cardIconSize: 32.r,
-                          isSvgCardIcon: (widget.playlistIconAsset ?? '').contains(
-                            '.svg',
-                          ),
+                          isSvgCardIcon: (widget.playlistIconAsset ?? '')
+                              .contains('.svg'),
                           title: widget.playlist!.name,
                           subtitle: '${widget.playlist!.songCount} Songs',
                           trailingIconAsset: Assets.svgIcShare,
@@ -153,7 +152,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                           onTap: () {
                             showSnackBar(
                               context,
-                                  () {},
+                              () {},
                               message: 'Share playlist feature coming soon',
                               alertBannerLocation: AlertBannerLocation.bottom,
                             );
@@ -161,7 +160,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                           onPlayTap: () {
                             showSnackBar(
                               context,
-                                  () {},
+                              () {},
                               message: 'Play playlist feature coming soon',
                               alertBannerLocation: AlertBannerLocation.bottom,
                             );
@@ -199,7 +198,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                           onTap: () {
                             showSnackBar(
                               context,
-                                  () {},
+                              () {},
                               message: 'Share song feature coming soon',
                               alertBannerLocation: AlertBannerLocation.bottom,
                             );
@@ -207,7 +206,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                           onPlayTap: () {
                             showSnackBar(
                               context,
-                                  () {},
+                              () {},
                               message: 'Play song feature coming soon',
                               alertBannerLocation: AlertBannerLocation.bottom,
                             );
@@ -215,7 +214,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                           onInfoTap: () {
                             showSnackBar(
                               context,
-                                  () {},
+                              () {},
                               message: 'Song info feature coming soon',
                               alertBannerLocation: AlertBannerLocation.bottom,
                             );
@@ -229,26 +228,28 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
                     // Menu items (your existing map)
                     ...widget.songMenuList.map((songItem) {
-                      final showDivider =
-                      dividerAfterTitles.contains(songItem.title);
+                      final showDivider = dividerAfterTitles.contains(
+                        songItem.title,
+                      );
                       return Column(
                         children: [
                           _buildMenuItem(
                             icon: songItem.icon,
                             title: songItem.title,
-                            trailing: songItem.title == S.of(context).keepScreenOn
+                            trailing:
+                                songItem.title == S.of(context).keepScreenOn
                                 ? IconButton(
-                              icon: SvgPicture.asset(
-                                keepScreenOn
-                                    ? Assets.svgIcSwitchOn
-                                    : Assets.svgIcSwitchOff,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  keepScreenOn = !keepScreenOn;
-                                });
-                              },
-                            )
+                                    icon: SvgPicture.asset(
+                                      keepScreenOn
+                                          ? Assets.svgIcSwitchOn
+                                          : Assets.svgIcSwitchOff,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        keepScreenOn = !keepScreenOn;
+                                      });
+                                    },
+                                  )
                                 : null,
                             onTap: () async {
                               final localization = S.of(context);
@@ -263,13 +264,13 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                 Navigator.pop(context);
                                 final selectedSong =
                                     widget.currentSong ??
-                                        ((widget.songsList != null &&
+                                    ((widget.songsList != null &&
                                             widget.songIndex != null &&
                                             widget.songIndex! >= 0 &&
                                             widget.songIndex! <
                                                 widget.songsList!.length)
-                                            ? widget.songsList![widget.songIndex!]
-                                            : null);
+                                        ? widget.songsList![widget.songIndex!]
+                                        : null);
 
                                 if (selectedSong != null) {
                                   context.push(
@@ -279,9 +280,11 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                 } else {
                                   showSnackBar(
                                     context,
-                                        () {},
-                                    message: 'Unable to edit this song right now',
-                                    alertBannerLocation: AlertBannerLocation.bottom,
+                                    () {},
+                                    message:
+                                        'Unable to edit this song right now',
+                                    alertBannerLocation:
+                                        AlertBannerLocation.bottom,
                                   );
                                 }
                                 return;
@@ -300,8 +303,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       );
                                       _songs = await _repo
                                           .getSongsForSystemPlaylist(
-                                        widget.systemKeyOrId ?? '',
-                                      );
+                                            widget.systemKeyOrId ?? '',
+                                          );
                                     } else {
                                       log(
                                         'Playing songs from playlist ${widget.systemKeyOrId}',
@@ -315,10 +318,10 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       if (mounted) {
                                         showSnackBar(
                                           context,
-                                              () {},
+                                          () {},
                                           message: "Playlist contains no songs",
                                           alertBannerLocation:
-                                          AlertBannerLocation.bottom,
+                                              AlertBannerLocation.bottom,
                                         );
                                       }
                                       return;
@@ -334,26 +337,28 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     if (mounted) {
                                       showSnackBar(
                                         context,
-                                            () {},
-                                        message: "Playing ${_songs.length} songs",
+                                        () {},
+                                        message:
+                                            "Playing ${_songs.length} songs",
                                         alertBannerLocation:
-                                        AlertBannerLocation.bottom,
+                                            AlertBannerLocation.bottom,
                                       );
                                     }
                                   } catch (e) {
                                     if (mounted) {
                                       showSnackBar(
                                         context,
-                                            () {},
+                                        () {},
                                         message: "Error playing playlist: $e",
                                         alertBannerLocation:
-                                        AlertBannerLocation.bottom,
+                                            AlertBannerLocation.bottom,
                                       );
                                     }
                                   }
                                 }
                               } else if (songItem.title == localization.speed) {
-                                final rootContext = rootNavigatorKey.currentContext;
+                                final rootContext =
+                                    rootNavigatorKey.currentContext;
                                 Navigator.pop(context);
                                 if (rootContext != null) {
                                   Future.microtask(() {
@@ -362,12 +367,13 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       backgroundColor: AppColors.white,
                                       isScrollControlled: true,
                                       builder: (_) =>
-                                      const PlaybackSpeedBottomSheet(),
+                                          const PlaybackSpeedBottomSheet(),
                                     );
                                   });
                                 }
                                 return;
-                              } else if (songItem.title == S.of(context).playNext) {
+                              } else if (songItem.title ==
+                                  S.of(context).playNext) {
                                 // ✅ NEW: Check if we're in queue context
 
                                 if (widget.from == 'queue') {
@@ -377,15 +383,16 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       widget.songIndex == null) {
                                     showSnackBar(
                                       context,
-                                          () {},
+                                      () {},
                                       message: 'Unable to move song',
                                       alertBannerLocation:
-                                      AlertBannerLocation.bottom,
+                                          AlertBannerLocation.bottom,
                                     );
                                     return;
                                   }
 
-                                  final currentIndex = musicService.currentIndex;
+                                  final currentIndex =
+                                      musicService.currentIndex;
                                   final songIndex = widget.songIndex!;
 
                                   print(
@@ -396,10 +403,10 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                   if (songIndex == currentIndex) {
                                     showSnackBar(
                                       context,
-                                          () {},
+                                      () {},
                                       message: 'Song is already playing',
                                       alertBannerLocation:
-                                      AlertBannerLocation.bottom,
+                                          AlertBannerLocation.bottom,
                                     );
                                     return;
                                   }
@@ -408,10 +415,10 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                   if (songIndex == currentIndex + 1) {
                                     showSnackBar(
                                       context,
-                                          () {},
+                                      () {},
                                       message: 'Song is already next in queue',
                                       alertBannerLocation:
-                                      AlertBannerLocation.bottom,
+                                          AlertBannerLocation.bottom,
                                     );
                                     return;
                                   }
@@ -479,7 +486,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
                                     // ✅ KEY FIX: Adjust insert index if we're moving from before current
                                     final adjustedInsertIndex =
-                                    songIndex < insertIndex
+                                        songIndex < insertIndex
                                         ? insertIndex - 1
                                         : insertIndex;
 
@@ -496,15 +503,15 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     print('✅ Queue updated successfully');
 
                                     if (mounted) {
-                                      final songToMove =
-                                      musicService.songs[adjustedInsertIndex];
+                                      final songToMove = musicService
+                                          .songs[adjustedInsertIndex];
                                       showSnackBar(
                                         context,
-                                            () {},
+                                        () {},
                                         message:
-                                        '${songToMove.title} will play next',
+                                            '${songToMove.title} will play next',
                                         alertBannerLocation:
-                                        AlertBannerLocation.bottom,
+                                            AlertBannerLocation.bottom,
                                       );
                                     }
                                   } catch (e) {
@@ -512,11 +519,11 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     if (mounted) {
                                       showSnackBar(
                                         context,
-                                            () {},
+                                        () {},
                                         message: 'Failed to move song',
                                         backgroundColor: Colors.red,
                                         alertBannerLocation:
-                                        AlertBannerLocation.bottom,
+                                            AlertBannerLocation.bottom,
                                       );
                                     }
                                   }
@@ -637,8 +644,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       );
                                       _songs = await _repo
                                           .getSongsForSystemPlaylist(
-                                        widget.systemKeyOrId ?? '',
-                                      );
+                                            widget.systemKeyOrId ?? '',
+                                          );
                                     } else {
                                       log(
                                         'Playing next songs from playlist ${widget.systemKeyOrId}',
@@ -652,10 +659,10 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       if (mounted) {
                                         showSnackBar(
                                           context,
-                                              () {},
+                                          () {},
                                           message: "Playlist contains no songs",
                                           alertBannerLocation:
-                                          AlertBannerLocation.bottom,
+                                              AlertBannerLocation.bottom,
                                         );
                                       }
                                       return;
@@ -663,7 +670,9 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
                                     // Insert playlist songs after current song
                                     if (musicService.songs.isEmpty) {
-                                      print('📀 Queue empty, starting playlist');
+                                      print(
+                                        '📀 Queue empty, starting playlist',
+                                      );
                                       await musicService.setPlaylist(
                                         _songs,
                                         startIndex: 0,
@@ -675,17 +684,18 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       );
                                       final currentIndex =
                                           musicService.currentIndex;
-                                      final newSongsList = List<SongsModel>.from(
-                                        musicService.songs,
-                                      );
+                                      final newSongsList =
+                                          List<SongsModel>.from(
+                                            musicService.songs,
+                                          );
 
                                       final insertIndex = currentIndex + 1;
 
                                       // Filter out songs already in queue
                                       final songsToAdd = _songs.where((song) {
                                         return !newSongsList.any(
-                                              (existingSong) =>
-                                          existingSong.id == song.id,
+                                          (existingSong) =>
+                                              existingSong.id == song.id,
                                         );
                                       }).toList();
 
@@ -702,9 +712,9 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       // ✅ CRITICAL FIX: Pass the current index to preserve playback
                                       await musicService
                                           .updateSongsInQueueWithIndex(
-                                        newSongsList,
-                                        currentIndex,
-                                      );
+                                            newSongsList,
+                                            currentIndex,
+                                          );
                                     }
 
                                     if (mounted) {
@@ -727,7 +737,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       autoPlay: true,
                                     );
                                   } else {
-                                    final currentIndex = musicService.currentIndex;
+                                    final currentIndex =
+                                        musicService.currentIndex;
                                     final newSongsList = List<SongsModel>.from(
                                       musicService.songs,
                                     );
@@ -738,17 +749,19 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     );
 
                                     // Check if song already exists
-                                    final existingIndex = newSongsList.indexWhere(
-                                          (song) => song.id == widget.currentSong!.id,
-                                    );
+                                    final existingIndex = newSongsList
+                                        .indexWhere(
+                                          (song) =>
+                                              song.id == widget.currentSong!.id,
+                                        );
 
                                     if (existingIndex == currentIndex) {
                                       showSnackBar(
                                         context,
-                                            () {},
+                                        () {},
                                         message: 'Song is already playing',
                                         alertBannerLocation:
-                                        AlertBannerLocation.bottom,
+                                            AlertBannerLocation.bottom,
                                       );
                                       Navigator.pop(context);
                                       return;
@@ -758,10 +771,11 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     if (existingIndex == currentIndex + 1) {
                                       showSnackBar(
                                         context,
-                                            () {},
-                                        message: 'Song is already next in queue',
+                                        () {},
+                                        message:
+                                            'Song is already next in queue',
                                         alertBannerLocation:
-                                        AlertBannerLocation.bottom,
+                                            AlertBannerLocation.bottom,
                                       );
                                       Navigator.pop(context);
                                       return;
@@ -782,7 +796,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
                                       // Adjust insert index if we removed a song before the insert point
                                       final adjustedInsertIndex =
-                                      existingIndex < insertIndex
+                                          existingIndex < insertIndex
                                           ? insertIndex - 1
                                           : insertIndex;
                                       newSongsList.insert(
@@ -807,18 +821,22 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       );
                                       // newSongsList.insert(insertIndex, widget.currentSong!);
                                     } else {
-                                      print('  Song already at correct position');
+                                      print(
+                                        '  Song already at correct position',
+                                      );
                                     }
 
                                     // ✅ CRITICAL FIX: Calculate the correct current index after modifications
                                     final newCurrentIndex =
-                                    existingIndex != -1 &&
-                                        existingIndex < insertIndex
+                                        existingIndex != -1 &&
+                                            existingIndex < insertIndex
                                         ? currentIndex -
-                                        1 // If we moved a song from before current, current stays same
+                                              1 // If we moved a song from before current, current stays same
                                         : currentIndex; // Otherwise current index is unchanged
 
-                                    print('  New current index: $newCurrentIndex');
+                                    print(
+                                      '  New current index: $newCurrentIndex',
+                                    );
 
                                     // Update with explicit current index preservation
                                     // await musicService.reorderSongInQueue(existingIndex, adjustedInsertIndex);
@@ -828,11 +846,11 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                   if (mounted) {
                                     showSnackBar(
                                       context,
-                                          () {},
+                                      () {},
                                       message:
-                                      '${widget.currentSong!.title} will play next',
+                                          '${widget.currentSong!.title} will play next',
                                       alertBannerLocation:
-                                      AlertBannerLocation.bottom,
+                                          AlertBannerLocation.bottom,
                                     );
                                   }
                                   Navigator.pop(context);
@@ -959,9 +977,10 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     log(
                                       'Fetching songs for system playlist ${widget.systemKeyOrId}',
                                     );
-                                    _songs = await _repo.getSongsForSystemPlaylist(
-                                      widget.systemKeyOrId ?? '',
-                                    );
+                                    _songs = await _repo
+                                        .getSongsForSystemPlaylist(
+                                          widget.systemKeyOrId ?? '',
+                                        );
                                   } else {
                                     log(
                                       'Fetching songs for system playlist ${widget.systemKeyOrId}',
@@ -976,9 +995,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                   );
 
                                   for (var song in _songs) {
-                                    final existingIndex = newSongsList.indexWhere(
-                                          (s) => s.id == song.id,
-                                    );
+                                    final existingIndex = newSongsList
+                                        .indexWhere((s) => s.id == song.id);
                                     if (existingIndex == -1) {
                                       newSongsList.add(song);
                                     }
@@ -991,10 +1009,11 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
                                   showSnackBar(
                                     context,
-                                        () {},
+                                    () {},
                                     message:
-                                    "${newSongsList.length} songs added to queue",
-                                    alertBannerLocation: AlertBannerLocation.bottom,
+                                        "${newSongsList.length} songs added to queue",
+                                    alertBannerLocation:
+                                        AlertBannerLocation.bottom,
                                   );
                                 } else {
                                   final newSongsList = List<SongsModel>.from(
@@ -1002,28 +1021,30 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                   );
 
                                   final existingIndex = newSongsList.indexWhere(
-                                        (song) => song.id == widget.currentSong!.id,
+                                    (song) => song.id == widget.currentSong!.id,
                                   );
 
                                   if (existingIndex == -1) {
                                     final status = await musicService
-                                        .addSingleSongToQueue(widget.currentSong!);
+                                        .addSingleSongToQueue(
+                                          widget.currentSong!,
+                                        );
                                     if (status) {
                                       showSnackBar(
                                         context,
-                                            () {},
+                                        () {},
                                         message: "1 songs added to queue",
                                         alertBannerLocation:
-                                        AlertBannerLocation.bottom,
+                                            AlertBannerLocation.bottom,
                                       );
                                     }
                                   } else {
                                     showSnackBar(
                                       context,
-                                          () {},
+                                      () {},
                                       message: "Already added to queue",
                                       alertBannerLocation:
-                                      AlertBannerLocation.bottom,
+                                          AlertBannerLocation.bottom,
                                     );
                                   }
                                 }
@@ -1038,9 +1059,10 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     log(
                                       'Fetching songs for system playlist ${widget.systemKeyOrId}',
                                     );
-                                    _songs = await _repo.getSongsForSystemPlaylist(
-                                      widget.systemKeyOrId ?? '',
-                                    );
+                                    _songs = await _repo
+                                        .getSongsForSystemPlaylist(
+                                          widget.systemKeyOrId ?? '',
+                                        );
                                   } else {
                                     log(
                                       'Fetching songs for system playlist ${widget.systemKeyOrId}',
@@ -1051,15 +1073,15 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                   }
                                   // Show playlist bottom sheet with entire songs list
                                   if (mounted) {
-                                    _showPlaylistBottomSheetWithSongs(
+                                    showCommonAddToPlaylistBottomSheet(
                                       context,
-                                      _songs,
+                                      songsList: _songs,
                                     );
                                   }
                                 } else {
-                                  _showPlaylistBottomSheet(
+                                  showCommonAddToPlaylistBottomSheet(
                                     context,
-                                    widget.currentSong,
+                                    songId: widget.currentSong?.id,
                                   );
                                 }
                               } else if (songItem.title ==
@@ -1074,15 +1096,16 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       widget.songIndex == null) {
                                     showSnackBar(
                                       context,
-                                          () {},
+                                      () {},
                                       message: 'Unable to remove song',
                                       alertBannerLocation:
-                                      AlertBannerLocation.bottom,
+                                          AlertBannerLocation.bottom,
                                     );
                                     return;
                                   }
 
-                                  final currentIndex = musicService.currentIndex;
+                                  final currentIndex =
+                                      musicService.currentIndex;
                                   final removeIndex = widget.songIndex!;
 
                                   print(
@@ -1111,7 +1134,9 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     print('  Queue empty after removal');
                                     try {
                                       await musicService.player.stop();
-                                      await musicService.player.seek(Duration.zero);
+                                      await musicService.player.seek(
+                                        Duration.zero,
+                                      );
                                     } catch (e) {
                                       print('⚠️ Error stopping player: $e');
                                     }
@@ -1119,10 +1144,10 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     if (context.mounted) {
                                       showSnackBar(
                                         context,
-                                            () {},
+                                        () {},
                                         message: 'Queue cleared',
                                         alertBannerLocation:
-                                        AlertBannerLocation.bottom,
+                                            AlertBannerLocation.bottom,
                                       );
                                     }
                                     await Future.delayed(
@@ -1141,10 +1166,12 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       // ✅ Removing CURRENT song - play next song
                                       print('  Removing CURRENT song');
                                       final nextIndex =
-                                      removeIndex < mutableSongs.length
+                                          removeIndex < mutableSongs.length
                                           ? removeIndex
                                           : 0;
-                                      print('  Playing next at index: $nextIndex');
+                                      print(
+                                        '  Playing next at index: $nextIndex',
+                                      );
 
                                       // Stop current playback first to avoid glitches
                                       await musicService.player.stop();
@@ -1158,10 +1185,11 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
 
                                       showSnackBar(
                                         context,
-                                            () {},
-                                        message: 'Removed "${removedSong.title}"',
+                                        () {},
+                                        message:
+                                            'Removed "${removedSong.title}"',
                                         alertBannerLocation:
-                                        AlertBannerLocation.bottom,
+                                            AlertBannerLocation.bottom,
                                       );
                                     } else if (removeIndex < currentIndex) {
                                       // ✅ Removing BEFORE current - adjust index, keep playing
@@ -1175,7 +1203,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                         final source =
                                             musicService.player.audioSource;
                                         // if (source is ConcatenatingAudioSource && !musicService.isShuffleEnabled) {
-                                        if (source is ConcatenatingAudioSource) {
+                                        if (source
+                                            is ConcatenatingAudioSource) {
                                           print(
                                             '  Android: Using seamless removeAt()',
                                           );
@@ -1193,12 +1222,12 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                             '  Android: Rebuilding (shuffle or fallback)',
                                           );
                                           final currentSong =
-                                          musicService.songs[currentIndex];
+                                              musicService.songs[currentIndex];
                                           await musicService
                                               .updateSongsInQueueWithIndex(
-                                            mutableSongs,
-                                            newCurrentIndex,
-                                          );
+                                                mutableSongs,
+                                                newCurrentIndex,
+                                              );
 
                                           if (wasPlaying &&
                                               !musicService.isPlaying) {
@@ -1212,11 +1241,14 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       } else if (Platform.isIOS) {
                                         print('  iOS: Updating list only');
                                         // ✅ iOS: Use dedicated method channel call for seamless removal
-                                        await musicService.removeFromQueueAtIndex(
-                                          removeIndex,
-                                          newCurrentIndex,
+                                        await musicService
+                                            .removeFromQueueAtIndex(
+                                              removeIndex,
+                                              newCurrentIndex,
+                                            );
+                                        musicService.updateSongsList(
+                                          mutableSongs,
                                         );
-                                        musicService.updateSongsList(mutableSongs);
                                       }
 
                                       // showSnackBar(context, () {}, message: 'Removed "${removedSong.title}"', alertBannerLocation: AlertBannerLocation.bottom);
@@ -1227,7 +1259,8 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       if (Platform.isAndroid) {
                                         final source =
                                             musicService.player.audioSource;
-                                        if (source is ConcatenatingAudioSource &&
+                                        if (source
+                                                is ConcatenatingAudioSource &&
                                             !musicService.isShuffleEnabled) {
                                           print(
                                             '  Android: Using seamless removeAt()',
@@ -1244,13 +1277,15 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                           );
                                           await musicService
                                               .updateSongsInQueueWithIndex(
-                                            mutableSongs,
-                                            currentIndex,
-                                          );
+                                                mutableSongs,
+                                                currentIndex,
+                                              );
                                         }
                                       } else if (Platform.isIOS) {
                                         print('  iOS: Updating list only');
-                                        musicService.updateSongsList(mutableSongs);
+                                        musicService.updateSongsList(
+                                          mutableSongs,
+                                        );
                                       }
 
                                       // showSnackBar(context, () {}, message: 'Removed "${removedSong.title}"', alertBannerLocation: AlertBannerLocation.bottom);
@@ -1296,11 +1331,11 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                     if (widget.isSystemPlaylist) {
                                       showSnackBar(
                                         context,
-                                            () {},
+                                        () {},
                                         message:
-                                        'Song cannot be deleted from system playlist',
+                                            'Song cannot be deleted from system playlist',
                                         alertBannerLocation:
-                                        AlertBannerLocation.bottom,
+                                            AlertBannerLocation.bottom,
                                       );
                                     } else {
                                       final playlistBloc = context
@@ -1325,21 +1360,21 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                       // Show success message
                                       showSnackBar(
                                         context,
-                                            () {},
+                                        () {},
                                         message: 'Song removed from playlist',
                                         alertBannerLocation:
-                                        AlertBannerLocation.bottom,
+                                            AlertBannerLocation.bottom,
                                       );
                                     }
                                   } catch (e) {
                                     // Show error message
                                     showSnackBar(
                                       context,
-                                          () {},
+                                      () {},
                                       message: 'Failed to remove playlist: $e',
                                       backgroundColor: Colors.red,
                                       alertBannerLocation:
-                                      AlertBannerLocation.bottom,
+                                          AlertBannerLocation.bottom,
                                     );
                                   }
 
@@ -1353,9 +1388,11 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                 } else {
                                   showSnackBar(
                                     context,
-                                        () {},
-                                    message: 'System playlist cannot be deleted',
-                                    alertBannerLocation: AlertBannerLocation.bottom,
+                                    () {},
+                                    message:
+                                        'System playlist cannot be deleted',
+                                    alertBannerLocation:
+                                        AlertBannerLocation.bottom,
                                   );
                                 }
                               } else if (songItem.title ==
@@ -1372,10 +1409,11 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                 if (!Platform.isAndroid) {
                                   showSnackBar(
                                     context,
-                                        () {},
+                                    () {},
                                     message:
-                                    'Ringtone feature is only available on Android',
-                                    alertBannerLocation: AlertBannerLocation.bottom,
+                                        'Ringtone feature is only available on Android',
+                                    alertBannerLocation:
+                                        AlertBannerLocation.bottom,
                                   );
                                   return;
                                 }
@@ -1383,22 +1421,25 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                 if (widget.currentSong == null) {
                                   showSnackBar(
                                     context,
-                                        () {},
+                                    () {},
                                     message: 'No song selected',
-                                    alertBannerLocation: AlertBannerLocation.bottom,
+                                    alertBannerLocation:
+                                        AlertBannerLocation.bottom,
                                   );
                                   return;
                                 }
 
                                 await _setAsRingtone(context);
-                              } else if (songItem.title == S.of(context).hideSong) {
+                              } else if (songItem.title ==
+                                  S.of(context).hideSong) {
                                 if (widget.currentSong?.id == null) {
                                   showSnackBar(
                                     context,
-                                        () {},
+                                    () {},
                                     message: 'Unable to hide this song',
                                     backgroundColor: Colors.red,
-                                    alertBannerLocation: AlertBannerLocation.bottom,
+                                    alertBannerLocation:
+                                        AlertBannerLocation.bottom,
                                   );
                                   return;
                                 }
@@ -3182,359 +3223,51 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
   }
 
   void _showDeleteFromLibraryBottomSheet(BuildContext context) {
-    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
-    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
-    final bottomPadding = viewInsets > 0
-        ? viewInsets + 16.h
-        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
-
-    showModalBottomSheet(
+    showCommonConfirmationBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
-      ),
-      isScrollControlled: true,
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.only(
-          left: 16.w,
-          right: 16.w,
-          top: 10.h,
-          bottom: bottomPadding,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            SizedBox(height: 30.h),
-            Texts(
-              S.of(context).deleteSong,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w500,
-              fontFamily: AppFonts.inter,
-              color: AppColors.textColor,
-            ),
-            SizedBox(height: 30.h),
-            Texts(
-              'Are you sure you want to delete "${widget.currentSong?.title}"?',
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w400,
-              fontFamily: AppFonts.inter,
-              color: AppColors.textColor,
-              align: TextAlign.center,
-            ),
-            SizedBox(height: 25.h),
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(sheetContext),
-                    child: Container(
-                      height: 48.h,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(50.r),
-                      ),
-                      child: Center(
-                        child: Texts(
-                          S.of(context).cancel,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: AppFonts.inter,
-                          color: AppColors.black,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () async {
-                      Navigator.pop(sheetContext);
-                      await _deleteSongFile(context);
-                    },
-                    child: Container(
-                      height: 48.h,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryOrange,
-                        borderRadius: BorderRadius.circular(50.r),
-                      ),
-                      child: Center(
-                        child: Texts(
-                          S.of(context).delete,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: AppFonts.inter,
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-          ],
-        ),
-      ),
+      title: S.of(context).deleteSong,
+      message:
+          'Are you sure you want to delete "${widget.currentSong?.title}"?',
+      onConfirm: (sheetContext) async {
+        Navigator.pop(sheetContext);
+        await _deleteSongFile(context);
+      },
     );
   }
 
   void _showDeletePlaylistBottomSheet(BuildContext context) {
-    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
-    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
-    final bottomPadding = viewInsets > 0
-        ? viewInsets + 16.h
-        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
-
-    showModalBottomSheet(
+    showCommonConfirmationBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
-      ),
-      isScrollControlled: true,
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.only(
-          left: 16.w,
-          right: 16.w,
-          top: 10.h,
-          bottom: bottomPadding,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            SizedBox(height: 30.h),
-            Texts(
-              S.of(context).deletePlaylist,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w500,
-              fontFamily: AppFonts.inter,
-              color: AppColors.textColor,
-            ),
-            SizedBox(height: 30.h),
-            Texts(
-              'Are you sure you want to delete the playlist?',
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w400,
-              fontFamily: AppFonts.inter,
-              color: AppColors.textColor,
-              align: TextAlign.center,
-            ),
-            SizedBox(height: 25.h),
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(sheetContext),
-                    child: Container(
-                      height: 48.h,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(50.r),
-                      ),
-                      child: Center(
-                        child: Texts(
-                          S.of(context).cancel,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: AppFonts.inter,
-                          color: AppColors.black,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(sheetContext);
-                      final playlistBloc = context.read<PlaylistBloc>();
-                      playlistBloc.add(
-                        PlaylistEvent.deletePlaylist(
-                          int.parse(widget.systemKeyOrId!),
-                        ),
-                      );
-                      showSnackBar(
-                        context,
-                        () {},
-                        message: 'Playlist deleted successfully',
-                        alertBannerLocation: AlertBannerLocation.bottom,
-                      );
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      height: 48.h,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryOrange,
-                        borderRadius: BorderRadius.circular(50.r),
-                      ),
-                      child: Center(
-                        child: Texts(
-                          S.of(context).delete,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: AppFonts.inter,
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-          ],
-        ),
-      ),
+      title: S.of(context).deletePlaylist,
+      message: 'Are you sure you want to delete the playlist?',
+      onConfirm: (sheetContext) async {
+        Navigator.pop(sheetContext);
+        final playlistBloc = context.read<PlaylistBloc>();
+        playlistBloc.add(
+          PlaylistEvent.deletePlaylist(int.parse(widget.systemKeyOrId!)),
+        );
+        showSnackBar(
+          context,
+          () {},
+          message: 'Playlist deleted successfully',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+        Navigator.pop(context);
+      },
     );
   }
 
-  void _showPlaylistBottomSheet(BuildContext context, SongsModel? currentSong) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
-      ),
-      isScrollControlled: true,
-      builder: (_) => PlaylistBottomSheet(songId: currentSong!.id!),
-    );
-  }
-
-  void _showPlaylistBottomSheetWithSongs(
-    BuildContext context,
-    List<SongsModel> songs,
-  ) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
-      ),
-      isScrollControlled: true,
-      builder: (_) => PlaylistBottomSheet(songsList: songs),
-    );
-  }
-
+  /// Shown when deleting a song from folder context. Use when folder_in flow is enabled.
+  // ignore: unused_element
   void _showDeleteFromFolderConfirmation(BuildContext context) {
-    showModalBottomSheet(
+    showCommonConfirmationBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: AppColors.textColor.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-        ),
-        padding: EdgeInsets.all(20.w),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Title
-            Texts(
-              'Delete song?',
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              fontFamily: AppFonts.inter,
-              color: AppColors.white,
-            ),
-            SizedBox(height: 15.h),
-
-            // Message
-            Texts(
-              'Are you sure you want to delete ${widget.currentSong?.title}?',
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
-              fontFamily: AppFonts.inter,
-              color: AppColors.white.withValues(alpha: 0.9),
-              align: TextAlign.center,
-            ),
-            SizedBox(height: 25.h),
-
-            // Action buttons
-            Row(
-              children: [
-                // Cancel button
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      height: 48.h,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade800,
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Center(
-                        child: Texts(
-                          'CANCEL',
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: AppFonts.inter,
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-
-                // Delete button
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () async {
-                      Navigator.pop(context); // Close bottom sheet
-                      await _deleteSongFile(context);
-                    },
-                    child: Container(
-                      height: 48.h,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.primaryOrange,
-                            AppColors.mildOrange,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Center(
-                        child: Texts(
-                          'DELETE',
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: AppFonts.inter,
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 10.h),
-          ],
-        ),
-      ),
+      title: S.of(context).deleteSong,
+      message: 'Are you sure you want to delete ${widget.currentSong?.title}?',
+      onConfirm: (sheetContext) async {
+        Navigator.pop(sheetContext);
+        await _deleteSongFile(context);
+      },
     );
   }
 
@@ -3592,6 +3325,9 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
       }
 
       widget.onSongDeleted?.call();
+      // context.read<PlaylistBloc>().add(
+      //   const PlaylistEvent.fetchSongsForSystemPlaylist('recently_played'),
+      // );
 
       // Close the menu
       Navigator.pop(context);
@@ -3883,160 +3619,45 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
   }
 
   void _hideSong(MusicPlayerService musicService) {
-    showModalBottomSheet(
+    showCommonConfirmationBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
-      ),
-      isScrollControlled: true,
-      builder: (_) => _buildHideConfirmationDialog(musicService),
-    );
-  }
+      title: 'Hide the Song',
+      message: 'Are you sure you want to hide this song?',
+      onConfirm: (sheetContext) async {
+        try {
+          context.read<SongsBloc>().add(
+            SongsEvent.hideSong(widget.currentSong!.id!),
+          );
 
-  Widget _buildHideConfirmationDialog(MusicPlayerService musicService) {
-    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
-    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
-    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
-    final bottomPadding = viewInsets > 0
-        ? viewInsets + 16.h
-        : (viewPadding > 0 ? viewPadding : 16.h);
+          await musicService.removeDeletedSongFromQueue(
+            widget.currentSong!.id!,
+          );
 
-    return SafeArea(
-      child: Container(
-        padding: EdgeInsets.only(
-          left: 16.w,
-          right: 16.w,
-          top: 10.h,
-          bottom: 20.h,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            SizedBox(height: 30.h),
-            Texts(
-              'Hide the Song',
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w500,
-              fontFamily: AppFonts.inter,
-              color: AppColors.textColor,
-            ),
-            SizedBox(height: 30.h),
-            Texts(
-              'Are you sure you want to hide this song?',
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w400,
-              fontFamily: AppFonts.inter,
-              color: AppColors.textColor,
-              align: TextAlign.center,
-            ),
-            SizedBox(height: 25.h),
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      height: 48.h,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(50.r),
-                      ),
-                      child: Center(
-                        child: Texts(
-                          S.of(context).cancel,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: AppFonts.inter,
-                          color: AppColors.black,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () async {
-                      try {
-                        context.read<SongsBloc>().add(
-                          SongsEvent.hideSong(widget.currentSong!.id!),
-                        );
+          if (mounted) {
+            showSnackBar(
+              context,
+              () {},
+              message: '"${widget.currentSong!.title}" hidden',
+              alertBannerLocation: AlertBannerLocation.bottom,
+            );
+          }
 
-                        await musicService.removeDeletedSongFromQueue(
-                          widget.currentSong!.id!,
-                        );
-
-                        if (mounted) {
-                          showSnackBar(
-                            context,
-                            () {},
-                            message: '"${widget.currentSong!.title}" hidden',
-                            alertBannerLocation: AlertBannerLocation.bottom,
-                          );
-                        }
-
-                        widget.onSongDeleted?.call();
-                      } catch (e) {
-                        showSnackBar(
-                          context,
-                          () {},
-                          message: 'Failed to hide song: $e',
-                          backgroundColor: Colors.red,
-                          alertBannerLocation: AlertBannerLocation.bottom,
-                        );
-                      } finally {
-                        if (Navigator.canPop(context)) {
-                          Navigator.pop(context);
-                          Navigator.pop(context);
-                        }
-                      }
-                    },
-                    // onTap: () {
-                    //   context.read<FolderBloc>().add(
-                    //     FolderEvent.deleteFolder(folder.id!),
-                    //   );
-                    //   Navigator.pop(context);
-                    //   showSnackBar(
-                    //     context,
-                    //     () {},
-                    //     message: "Folder deleted successfully!",
-                    //     alertBannerLocation: AlertBannerLocation.bottom,
-                    //   );
-                    // },
-                    child: Container(
-                      height: 48.h,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryOrange,
-                        borderRadius: BorderRadius.circular(50.r),
-                      ),
-                      child: Center(
-                        child: Texts(
-                          S.of(context).delete,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: AppFonts.inter,
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            // SizedBox(height: 40.h),
-          ],
-        ),
-      ),
+          widget.onSongDeleted?.call();
+        } catch (e) {
+          showSnackBar(
+            context,
+            () {},
+            message: 'Failed to hide song: $e',
+            backgroundColor: Colors.red,
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        } finally {
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+            Navigator.pop(context);
+          }
+        }
+      },
     );
   }
 }

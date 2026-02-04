@@ -19,7 +19,7 @@ import '../../../../themes/color.dart';
 import '../../../../utills/snack_bar.dart';
 import '../../music_service.dart';
 import 'package:go_router/go_router.dart';
-import '../../../play_song/widget/playlist_bottomsheet.dart';
+import '../../../../commonWidgets/common_modal_bottom_sheet.dart';
 
 class SelectFolderScreen extends StatefulWidget {
   const SelectFolderScreen({super.key});
@@ -127,18 +127,29 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
       return;
     }
 
-    showModalBottomSheet(
+    final folderCount = selectedFolders.length;
+    showCommonConfirmationBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
-      ),
-      isScrollControlled: true,
-      builder: (_) => _buildDeleteConfirmationDialog(
-        selectedFolders.length,
-        selectedFolders,
-      ),
+      title: 'Delete Folders',
+      message:
+          'Are you sure you want to delete ${folderCount == 1 ? 'this folder' : 'these $folderCount folders'}?',
+      onConfirm: (sheetContext) async {
+        Navigator.pop(sheetContext);
+        for (var folder in selectedFolders) {
+          context.read<FolderBloc>().add(FolderEvent.deleteFolder(folder.id!));
+        }
+        setState(() {
+          selectedFolderIds.clear();
+          isSelectedAll = false;
+        });
+        showSnackBar(
+          context,
+          () {},
+          message:
+              "$folderCount ${folderCount == 1 ? 'folder' : 'folders'} deleted successfully!",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      },
     );
   }
 
@@ -262,27 +273,27 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
         // context.pop();
         showSnackBar(
           context,
-              () {},
+          () {},
           message: "${allSongsFromFolders.length} songs added to play next",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
         await musicService.setPlaylist(allSongsFromFolders, startIndex: 0);
         await musicService.play();
       } else {
-
-        final updateCount = await musicService.playNextMultipleSongs(allSongsFromFolders);
-        if(updateCount < 1){
+        final updateCount = await musicService.playNextMultipleSongs(
+          allSongsFromFolders,
+        );
+        if (updateCount < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }
-        else{
+        } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$updateCount songs added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
@@ -383,20 +394,22 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
         return;
       }
 
-      final addedSong = await musicService.addMultipleSongsToQueue(allSongsFromFolders);
+      final addedSong = await musicService.addMultipleSongsToQueue(
+        allSongsFromFolders,
+      );
 
       if (mounted) {
         if (addedSong < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$addedSong songs added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
@@ -503,14 +516,13 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
       // context.pop();
       showSnackBar(
         context,
-            () {},
+        () {},
         message:
-        "Playing ${allSongsFromFolders.length} songs from ${selectedFolders.length} folders",
+            "Playing ${allSongsFromFolders.length} songs from ${selectedFolders.length} folders",
         alertBannerLocation: AlertBannerLocation.bottom,
       );
       await musicService.setPlaylist(allSongsFromFolders, startIndex: 0);
       await musicService.play();
-
     } catch (e) {
       showSnackBar(
         context,
@@ -565,15 +577,9 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
 
       // Show playlist bottom sheet with all songs from selected folders
       if (mounted) {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
-          ),
-          isScrollControlled: true,
-          builder: (_) => PlaylistBottomSheet(songsList: allSongsFromFolders),
+        showCommonAddToPlaylistBottomSheet(
+          context,
+          songsList: allSongsFromFolders,
         );
       }
     } catch (e) {
@@ -640,138 +646,6 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
         );
       }).toList(),
     ];
-  }
-
-  // Custom delete confirmation dialog matching the design
-  Widget _buildDeleteConfirmationDialog(
-    int folderCount,
-    List<domain.Folder> deletableFolders,
-  ) {
-    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
-    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
-    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
-    final bottomPadding = viewInsets > 0
-        ? viewInsets + 16.h
-        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
-
-    return Container(
-      padding: EdgeInsets.only(
-        left: 16.w,
-        right: 16.w,
-        top: 10.h,
-        bottom: bottomPadding,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Top handle bar
-          Container(
-            width: 40.w,
-            height: 4.h,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2.r),
-            ),
-          ),
-          SizedBox(height: 30.h),
-
-          // Title
-          Texts(
-            'Delete Folders',
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w500,
-            fontFamily: AppFonts.inter,
-            color: AppColors.textColor,
-          ),
-          SizedBox(height: 30.h),
-
-          // Message
-          Texts(
-            'Are you sure you want to delete ${folderCount == 1 ? 'this folder' : 'these $folderCount folders'}?',
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w400,
-            fontFamily: AppFonts.inter,
-            color: AppColors.textColor,
-            align: TextAlign.center,
-          ),
-          SizedBox(height: 25.h),
-
-          // Action buttons
-          Row(
-            children: [
-              // Cancel button
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    height: 48.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Center(
-                      child: Texts(
-                        S.of(context).cancel,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: AppFonts.inter,
-                        color: AppColors.black,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 12.w),
-
-              // Delete button
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    // Delete all deletable folders
-                    for (var folder in deletableFolders) {
-                      context.read<FolderBloc>().add(
-                        FolderEvent.deleteFolder(folder.id!),
-                      );
-                    }
-
-                    Navigator.pop(context);
-                    setState(() {
-                      selectedFolderIds.clear();
-                      isSelectedAll = false;
-                    });
-
-                    showSnackBar(
-                      context,
-                      () {},
-                      message:
-                          "$folderCount ${folderCount == 1 ? 'folder' : 'folders'} deleted successfully!",
-                      alertBannerLocation: AlertBannerLocation.bottom,
-                    );
-                  },
-                  child: Container(
-                    height: 48.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryOrange,
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Center(
-                      child: Texts(
-                        S.of(context).delete,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: AppFonts.inter,
-                        color: AppColors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-        ],
-      ),
-    );
   }
 
   @override

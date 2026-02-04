@@ -17,9 +17,9 @@ import '../../../../generated/assets.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../themes/color.dart';
 import '../../../../utills/snack_bar.dart';
+import '../../../../commonWidgets/common_modal_bottom_sheet.dart';
 import '../../music_service.dart';
 import 'package:go_router/go_router.dart';
-import '../../../play_song/widget/playlist_bottomsheet.dart';
 
 class SelectPlaylistScreen extends StatefulWidget {
   const SelectPlaylistScreen({super.key});
@@ -167,18 +167,31 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
       return;
     }
 
-    showModalBottomSheet(
+    final playlistCount = deletablePlaylists.length;
+    showCommonConfirmationBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
-      ),
-      isScrollControlled: true,
-      builder: (_) => _buildDeleteConfirmationDialog(
-        deletablePlaylists.length,
-        deletablePlaylists,
-      ),
+      title: S.of(context).deletePlaylist,
+      message:
+          'Are you sure you want to delete ${playlistCount == 1 ? 'this playlist' : 'these $playlistCount playlists'}?',
+      onConfirm: (sheetContext) async {
+        Navigator.pop(sheetContext);
+        for (var playlist in deletablePlaylists) {
+          context.read<PlaylistBloc>().add(
+            PlaylistEvent.deletePlaylist(playlist.id!),
+          );
+        }
+        setState(() {
+          selectedPlaylistIds.clear();
+          isSelectedAll = false;
+        });
+        showSnackBar(
+          context,
+          () {},
+          message:
+              "$playlistCount ${playlistCount == 1 ? 'playlist' : 'playlists'} deleted successfully!",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      },
     );
   }
 
@@ -308,26 +321,27 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
         // context.pop();
         showSnackBar(
           context,
-              () {},
+          () {},
           message: "${allSongsFromPlaylists.length} songs added to play next",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
         await musicService.setPlaylist(allSongsFromPlaylists, startIndex: 0);
         await musicService.play();
       } else {
-        final updateCount = await musicService.playNextMultipleSongs(allSongsFromPlaylists);
-        if(updateCount < 1){
+        final updateCount = await musicService.playNextMultipleSongs(
+          allSongsFromPlaylists,
+        );
+        if (updateCount < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }
-        else{
+        } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$updateCount songs added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
@@ -433,20 +447,22 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
         return;
       }
 
-      final addedSong = await musicService.addMultipleSongsToQueue(allSongsFromPlaylists);
+      final addedSong = await musicService.addMultipleSongsToQueue(
+        allSongsFromPlaylists,
+      );
 
       if (mounted) {
         if (addedSong < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$addedSong songs added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
@@ -561,14 +577,13 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
       // context.pop();
       showSnackBar(
         context,
-            () {},
+        () {},
         message:
-        "Playing ${allSongsFromPlaylists.length} songs from ${selectedPlaylists.length} playlists",
+            "Playing ${allSongsFromPlaylists.length} songs from ${selectedPlaylists.length} playlists",
         alertBannerLocation: AlertBannerLocation.bottom,
       );
       await musicService.setPlaylist(allSongsFromPlaylists, startIndex: 0);
       await musicService.play();
-
     } catch (e) {
       showSnackBar(
         context,
@@ -629,15 +644,9 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
 
       // Show playlist bottom sheet with all songs from selected playlists
       if (mounted) {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
-          ),
-          isScrollControlled: true,
-          builder: (_) => PlaylistBottomSheet(songsList: allSongsFromPlaylists),
+        showCommonAddToPlaylistBottomSheet(
+          context,
+          songsList: allSongsFromPlaylists,
         );
       }
     } catch (e) {
@@ -686,8 +695,8 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
         final icon = hasCover
             ? playlist.coverPath!
             : isSystem && playlist.systemKey != null
-                ? (systemIcon[playlist.systemKey] ?? Assets.svgMusicIcon)
-                : Assets.svgMusicIcon;
+            ? (systemIcon[playlist.systemKey] ?? Assets.svgMusicIcon)
+            : Assets.svgMusicIcon;
         final color = !hasCover && isSystem && playlist.systemKey != null
             ? (systemColor[playlist.systemKey] ?? AppColors.mildBlue)
             : null;

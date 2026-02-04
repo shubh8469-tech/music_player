@@ -23,7 +23,7 @@ class CreatePlaylistBottomSheet extends StatefulWidget {
   static void show(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
@@ -150,153 +150,154 @@ class _CreatePlaylistBottomSheetState extends State<CreatePlaylistBottomSheet> {
     final viewInsets = MediaQuery.of(context).viewInsets.bottom;
     final viewPadding = MediaQuery.of(context).viewPadding.bottom;
     final bottomPadding = viewInsets > 0
-        ? viewInsets + 16.h
-        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+        ? viewInsets + 20.h
+        : (viewPadding > 0 ? viewPadding : 20.h);// + 16.h;
 
-    return Container(
-      padding: EdgeInsets.only(
-        left: 16.w,
-        right: 16.w,
-        top: 10.h,
-        bottom: bottomPadding,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Top handle bar
-          Container(
-            width: 40.w,
-            height: 4.h,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2.r),
+    return SafeArea(
+      child: Container(
+        padding: EdgeInsets.only(
+          left: 16.w,
+          right: 16.w,
+          top: 10.h,
+          bottom: bottomPadding//20.h,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Top handle bar
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2.r),
+              ),
             ),
-          ),
 
-          SizedBox(height: 30.h),
+            SizedBox(height: 30.h),
 
-          // Title
-          Text(
-            'Create new playlist',
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              fontFamily: AppFonts.inter,
-              color: AppColors.black,
+            // Title
+            Text(
+              'Create new playlist',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                fontFamily: AppFonts.inter,
+                color: AppColors.black,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
 
-          SizedBox(height: 30.h),
+            SizedBox(height: 30.h),
 
-          // Input field
-          Container(
-            height: 48.h,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: TextField(
-              controller: playlistNameController,
-              focusNode: playlistNameFocusNode,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 16.w,
-                  vertical: 12.h,
+            // Input field
+            Container(
+              height: 48.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: TextField(
+                controller: playlistNameController,
+                focusNode: playlistNameFocusNode,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
+                  hintText: 'Enter Playlist Name',
+                  hintStyle: TextStyle(
+                    fontSize: 16.sp,
+                    fontFamily: AppFonts.inter,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.grey[600],
+                  ),
                 ),
-                hintText: 'Enter Playlist Name',
-                hintStyle: TextStyle(
+                style: TextStyle(
                   fontSize: 16.sp,
                   fontFamily: AppFonts.inter,
                   fontWeight: FontWeight.w400,
-                  color: Colors.grey[600],
+                  color: AppColors.black,
                 ),
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _createPlaylist(),
               ),
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontFamily: AppFonts.inter,
-                fontWeight: FontWeight.w400,
-                color: AppColors.black,
-              ),
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _createPlaylist(),
             ),
-          ),
 
-          SizedBox(height: 30.h),
+            SizedBox(height: 30.h),
 
-          // Action buttons
-          Row(
-            children: [
-              // Cancel button
-              Expanded(
-                child: GestureDetector(
-                  onTap: _cancel,
-                  child: Container(
-                    height: 48.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(50.r),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Cancel',
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: AppFonts.inter,
-                          color: AppColors.black,
+            // Action buttons
+            Row(
+              children: [
+                // Cancel button
+                Expanded(
+                  child: GestureDetector(
+                    onTap: _cancel,
+                    child: Container(
+                      height: 48.h,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(50.r),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: AppFonts.inter,
+                            color: AppColors.black,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              SizedBox(width: 12.w),
+                SizedBox(width: 12.w),
 
-              // Create button
-              Expanded(
-                child: GestureDetector(
-                  onTap: _isCreating ? null : _createPlaylist,
-                  child: Container(
-                    height: 48.h,
-                    decoration: BoxDecoration(
-                      color: _isCreating
-                          ? Colors.grey[400]
-                          : AppColors.primaryOrange,
-                      borderRadius: BorderRadius.circular(50.r),
-                    ),
-                    child: Center(
-                      child: _isCreating
-                          ? SizedBox(
-                              width: 20.w,
-                              height: 20.h,
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.white,
+                // Create button
+                Expanded(
+                  child: GestureDetector(
+                    onTap: _isCreating ? null : _createPlaylist,
+                    child: Container(
+                      height: 48.h,
+                      decoration: BoxDecoration(
+                        color: _isCreating
+                            ? Colors.grey[400]
+                            : AppColors.primaryOrange,
+                        borderRadius: BorderRadius.circular(50.r),
+                      ),
+                      child: Center(
+                        child: _isCreating
+                            ? SizedBox(
+                                width: 20.w,
+                                height: 20.h,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppColors.white,
+                                  ),
+                                ),
+                              )
+                            : Text(
+                                'Create',
+                                style: TextStyle(
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: AppFonts.inter,
+                                  color: AppColors.white,
                                 ),
                               ),
-                            )
-                          : Text(
-                              'Create',
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: AppFonts.inter,
-                                color: AppColors.white,
-                              ),
-                            ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
 
-          SizedBox(height: 16.h),
-        ],
+          ],
+        ),
       ),
     );
   }

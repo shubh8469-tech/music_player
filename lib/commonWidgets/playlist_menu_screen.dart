@@ -21,7 +21,7 @@ import '../features/playlists/domain/repositories/playlist_repository.dart';
 import '../generated/assets.dart';
 import '../l10n/l10n.dart';
 import '../screens/common/image_crop_screen.dart';
-import '../screens/play_song/widget/playlist_bottomsheet.dart';
+import 'common_modal_bottom_sheet.dart';
 import '../screens/tabs/music_service.dart';
 import '../themes/color.dart';
 import '../utills/snack_bar.dart';
@@ -62,8 +62,7 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
   @override
   Widget build(BuildContext context) {
     final hasCustomCover = (_coverPath?.isNotEmpty ?? false);
-    final headerIcon =
-        hasCustomCover ? _coverPath! : widget.playlistIconAsset;
+    final headerIcon = hasCustomCover ? _coverPath! : widget.playlistIconAsset;
     final viewInsets = MediaQuery.of(context).viewInsets.bottom;
     final viewPadding = MediaQuery.of(context).viewPadding.bottom;
     final isSvgHeader = headerIcon.contains('.svg');
@@ -84,7 +83,10 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
               children: [
                 // Playlist Header
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
                   child: MusicListTile(
                     margin: 7.w,
                     height: 66.h,
@@ -107,7 +109,7 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
                     onTap: () {
                       showSnackBar(
                         context,
-                            () {},
+                        () {},
                         message: 'Share playlist feature coming soon',
                         alertBannerLocation: AlertBannerLocation.bottom,
                       );
@@ -115,7 +117,7 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
                     onPlayTap: () {
                       showSnackBar(
                         context,
-                            () {},
+                        () {},
                         message: 'Play playlist feature coming soon',
                         alertBannerLocation: AlertBannerLocation.bottom,
                       );
@@ -143,7 +145,7 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
                   title: S.of(context).addToPlaylist,
                   onTap: _handleAddToPlaylist,
                 ),
-                if(!widget.isSystemPlaylist)...[
+                if (!widget.isSystemPlaylist) ...[
                   _buildDivider(),
                   _buildMenuItem(
                     icon: Assets.svgIcEdit,
@@ -177,7 +179,7 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
                     width: 1,
                   ),
                 ),
-                margin: EdgeInsets.only( top: 8.h, left: 15.w, right: 15.w),
+                margin: EdgeInsets.only(top: 8.h, left: 15.w, right: 15.w),
                 height: 50.w,
                 child: Texts(
                   S.of(context).cancel,
@@ -314,13 +316,12 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
         // No songs playing, start playing the playlist
         await musicService.setPlaylist(_songs, startIndex: 0);
         await musicService.play();
-      }
-      else {
+      } else {
         updateCount = await musicService.playNextMultipleSongs(_songs);
         log('Not Added $updateCount songs to play next');
         showSnackBar(
           context,
-              () {},
+          () {},
           message: "$updateCount songs added to play next",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
@@ -345,20 +346,19 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
         // );
       }
       if (mounted) {
-        if(updateCount < 1){
+        if (updateCount < 1) {
           log('Not Added $updateCount songs to play next');
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }
-        else{
+        } else {
           log('Added $updateCount songs to play next');
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$updateCount songs added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
@@ -399,14 +399,14 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
         if (addedSong < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$addedSong songs added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
@@ -493,18 +493,10 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
 
       // Show playlist bottom sheet with entire songs list
       if (mounted) {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
-          ),
-          isScrollControlled: true,
-          builder: (_) => BlocProvider.value(
-            value: context.read<PlaylistBloc>(),
-            child: PlaylistBottomSheet(songsList: _songs),
-          ),
+        showCommonAddToPlaylistBottomSheet(
+          context,
+          songsList: _songs,
+          playlistBloc: context.read<PlaylistBloc>(),
         );
       }
     } catch (e) {
@@ -596,10 +588,7 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(32.r),
             ),
-            padding: EdgeInsets.symmetric(
-              horizontal: 20.w,
-              vertical: 24.h,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -652,7 +641,10 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
                     color: AppColors.textColor,
                   ),
                   onTap: () {
-                    Navigator.pop(sheetContext, _ChangeCoverAction.localGallery);
+                    Navigator.pop(
+                      sheetContext,
+                      _ChangeCoverAction.localGallery,
+                    );
                   },
                 ),
                 Divider(
@@ -687,7 +679,10 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
                     color: AppColors.textColor,
                   ),
                   onTap: () {
-                    Navigator.pop(sheetContext, _ChangeCoverAction.searchOnline);
+                    Navigator.pop(
+                      sheetContext,
+                      _ChangeCoverAction.searchOnline,
+                    );
                   },
                 ),
                 SizedBox(height: 24.h),
@@ -804,8 +799,9 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
 
     final maxDimension = 720;
     img.Image processed = decoded;
-    final largestSide =
-        decoded.width > decoded.height ? decoded.width : decoded.height;
+    final largestSide = decoded.width > decoded.height
+        ? decoded.width
+        : decoded.height;
 
     if (largestSide > maxDimension) {
       if (decoded.width >= decoded.height) {
@@ -823,10 +819,7 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
       }
     }
 
-    final optimizedBytes = img.encodeJpg(
-      processed,
-      quality: 85,
-    );
+    final optimizedBytes = img.encodeJpg(processed, quality: 85);
 
     return Uint8List.fromList(optimizedBytes);
   }
@@ -843,8 +836,7 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
 
     final playlistId = widget.playlist.id;
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final fileName =
-        'playlist_${playlistId ?? timestamp}_$timestamp.jpg';
+    final fileName = 'playlist_${playlistId ?? timestamp}_$timestamp.jpg';
     final filePath = p.join(coversDir.path, fileName);
     final file = File(filePath);
     await file.writeAsBytes(bytes, flush: true);
@@ -878,12 +870,10 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
     }
 
     context.read<PlaylistBloc>().add(
-          PlaylistEvent.updatePlaylistCover(
-            playlistId,
-            newPath,
-          ),
-        );
+      PlaylistEvent.updatePlaylistCover(playlistId, newPath),
+    );
   }
+
   // Handle Delete Playlist
   void _handleDeletePlaylist() {
     if (widget.isSystemPlaylist) {
@@ -897,133 +887,26 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
       return;
     }
 
-    _showDeletePlaylistBottomSheet();
-  }
-
-  void _showDeletePlaylistBottomSheet() {
-    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
-    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
-    final bottomPadding = viewInsets > 0
-        ? viewInsets + 16.h
-        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
-
-    showModalBottomSheet(
+    showCommonConfirmationBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
-      ),
-      isScrollControlled: true,
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.only(
-          left: 16.w,
-          right: 16.w,
-          top: 10.h,
-          bottom: bottomPadding,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            SizedBox(height: 30.h),
-            Texts(
-              S.of(context).deletePlaylist,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w500,
-              fontFamily: AppFonts.inter,
-              color: AppColors.textColor,
-            ),
-            SizedBox(height: 30.h),
-            Texts(
-              'Are you sure you want to delete "${widget.playlist.name}"?',
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w400,
-              fontFamily: AppFonts.inter,
-              color: AppColors.textColor,
-              align: TextAlign.center,
-            ),
-            SizedBox(height: 25.h),
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(sheetContext),
-                    child: Container(
-                      height: 48.h,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(50.r),
-                      ),
-                      child: Center(
-                        child: Texts(
-                          S.of(context).cancel,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: AppFonts.inter,
-                          color: AppColors.black,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(sheetContext);
-                      Navigator.pop(context);
-
-                      final playlistBloc = context.read<PlaylistBloc>();
-                      playlistBloc.add(
-                        PlaylistEvent.deletePlaylist(
-                          int.parse(widget.systemKeyOrId),
-                        ),
-                      );
-
-                      showSnackBar(
-                        context,
-                        () {},
-                        message: 'Playlist deleted successfully',
-                        alertBannerLocation: AlertBannerLocation.bottom,
-                      );
-                    },
-                    child: Container(
-                      height: 48.h,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryOrange,
-                        borderRadius: BorderRadius.circular(50.r),
-                      ),
-                      child: Center(
-                        child: Texts(
-                          S.of(context).delete,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: AppFonts.inter,
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-          ],
-        ),
-      ),
+      title: S.of(context).deletePlaylist,
+      message: 'Are you sure you want to delete "${widget.playlist.name}"?',
+      onConfirm: (sheetContext) async {
+        Navigator.pop(sheetContext);
+        Navigator.pop(context);
+        final playlistBloc = context.read<PlaylistBloc>();
+        playlistBloc.add(
+          PlaylistEvent.deletePlaylist(int.parse(widget.systemKeyOrId)),
+        );
+        showSnackBar(
+          context,
+          () {},
+          message: 'Playlist deleted successfully',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      },
     );
   }
 }
 
-enum _ChangeCoverAction {
-  localGallery,
-  searchOnline,
-}
+enum _ChangeCoverAction { localGallery, searchOnline }

@@ -18,9 +18,9 @@ import '../../../../generated/assets.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../themes/font.dart';
 import '../../../../utills/globals.dart';
+import '../../../../commonWidgets/common_modal_bottom_sheet.dart';
 import '../../../../utills/snack_bar.dart';
 import '../../music_service.dart';
-import '../../../play_song/widget/playlist_bottomsheet.dart';
 import 'sort_by_bottomsheet.dart';
 
 class FolderListScreen extends StatefulWidget {
@@ -87,13 +87,16 @@ class _FolderListScreenState extends State<FolderListScreen> {
                     ),
                     SizedBox(width: 8.w),
                     SizedBox(
-                      height: 38.h, // Increase height so padding doesn't zero it out
+                      height: 38
+                          .h, // Increase height so padding doesn't zero it out
                       child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8.h), // Leave some room for the line
+                        padding: EdgeInsets.symmetric(
+                          vertical: 8.h,
+                        ), // Leave some room for the line
                         child: VerticalDivider(
                           color: AppColors.mediumDarkGrey.withOpacity(0.5),
-                          width: 1.w,      // Total space the widget occupies
-                          thickness: 1.2.w,   // The actual thickness of the line
+                          width: 1.w, // Total space the widget occupies
+                          thickness: 1.2.w, // The actual thickness of the line
                         ),
                       ),
                     ),
@@ -263,8 +266,9 @@ class _FolderListScreenState extends State<FolderListScreen> {
         ? viewInsets + 16.h
         : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
     final localization = S.of(context);
-    final hideTitle =
-        folder.isHidden ? localization.unhideFolder : localization.hideFolder;
+    final hideTitle = folder.isHidden
+        ? localization.unhideFolder
+        : localization.hideFolder;
 
     return SafeArea(
       child: Padding(
@@ -505,7 +509,9 @@ class _FolderListScreenState extends State<FolderListScreen> {
         await musicService.setPlaylist(folderSongs, startIndex: 0);
         await musicService.play();
       } else {
-        final updateCount = await musicService.playNextMultipleSongs(folderSongs);
+        final updateCount = await musicService.playNextMultipleSongs(
+          folderSongs,
+        );
         // final currentIndex = musicService.currentIndex;
         // final insertIndex = currentIndex + 1;
         // final newSongsList = List<SongsModel>.from(musicService.songs);
@@ -523,21 +529,20 @@ class _FolderListScreenState extends State<FolderListScreen> {
         //   startIndex: currentIndex >= 0 ? currentIndex : 0,
         //   autoPlay: false,
         // );
-          if(updateCount < 1){
-            showSnackBar(
-              context,
-                  () {},
-              message: "Songs already added to play next",
-              alertBannerLocation: AlertBannerLocation.bottom,
-            );
-          }
-          else{
-            showSnackBar(
-              context,
-                  () {},
-              message: "$updateCount songs added to play next",
-              alertBannerLocation: AlertBannerLocation.bottom,
-            );
+        if (updateCount < 1) {
+          showSnackBar(
+            context,
+            () {},
+            message: "Songs already added to play next",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
+        } else {
+          showSnackBar(
+            context,
+            () {},
+            message: "$updateCount songs added to play next",
+            alertBannerLocation: AlertBannerLocation.bottom,
+          );
         }
       }
     } catch (e) {
@@ -574,14 +579,14 @@ class _FolderListScreenState extends State<FolderListScreen> {
         if (addedSong < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$addedSong songs added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
@@ -620,7 +625,6 @@ class _FolderListScreenState extends State<FolderListScreen> {
       //       alertBannerLocation: AlertBannerLocation.bottom,
       //     );
       //   }
-
     } catch (e) {
       showSnackBar(
         context,
@@ -655,18 +659,10 @@ class _FolderListScreenState extends State<FolderListScreen> {
       }
 
       if (mounted) {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
-          ),
-          isScrollControlled: true,
-          builder: (_) => BlocProvider.value(
-            value: playlistBloc,
-            child: PlaylistBottomSheet(songsList: folderSongs),
-          ),
+        showCommonAddToPlaylistBottomSheet(
+          context,
+          songsList: folderSongs,
+          playlistBloc: playlistBloc,
         );
       }
     } catch (e) {
@@ -685,8 +681,7 @@ class _FolderListScreenState extends State<FolderListScreen> {
   Future<void> _updateFolderHiddenStatus(
     domain.Folder folder,
     bool hide,
-  )
-  async {
+  ) async {
     if (folder.id == null) return;
 
     try {
@@ -694,7 +689,9 @@ class _FolderListScreenState extends State<FolderListScreen> {
       final repo = locator<FolderRepository>();
       final songs = await repo.getSongsForFolder(folder.id!);
       await updateHiddenStatus(folder.id!, hide);
-      await musicService.removeDeletedSongsFromQueue(songs.map((song) => song.id!).toSet());
+      await musicService.removeDeletedSongsFromQueue(
+        songs.map((song) => song.id!).toSet(),
+      );
       if (!mounted) return;
       context.read<FolderBloc>().add(const FolderEvent.fetchAllFolders());
       context.read<SongsBloc>().add(const SongsEvent.getAllSongs());
@@ -721,247 +718,32 @@ class _FolderListScreenState extends State<FolderListScreen> {
 
   // Delete folder
   void _deleteFolder(domain.Folder folder) {
-    showModalBottomSheet(
+    showCommonConfirmationBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
-      ),
-      isScrollControlled: true,
-      builder: (_) => _buildDeleteConfirmationDialog(folder),
+      title: 'Delete Folder',
+      message: 'Are you sure you want to delete "${folder.name}"?',
+      onConfirm: (sheetContext) async {
+        Navigator.pop(sheetContext);
+        context.read<FolderBloc>().add(FolderEvent.deleteFolder(folder.id!));
+        showSnackBar(
+          context,
+          () {},
+          message: "Folder deleted successfully!",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      },
     );
   }
 
   void _hideFolder(domain.Folder folder) {
-    showModalBottomSheet(
+    showCommonConfirmationBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
-      ),
-      isScrollControlled: true,
-      builder: (_) => _buildHideConfirmationDialog(folder),
-    );
-  }
-
-  Widget _buildDeleteConfirmationDialog(domain.Folder folder) {
-    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
-    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
-    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
-    final bottomPadding = viewInsets > 0
-        ? viewInsets + 16.h
-        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
-
-    return Container(
-      padding: EdgeInsets.only(
-        left: 16.w,
-        right: 16.w,
-        top: 10.h,
-        bottom: bottomPadding,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 40.w,
-            height: 4.h,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2.r),
-            ),
-          ),
-          SizedBox(height: 30.h),
-          Texts(
-            'Delete Folder',
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w500,
-            fontFamily: AppFonts.inter,
-            color: AppColors.textColor,
-          ),
-          SizedBox(height: 30.h),
-          Texts(
-            'Are you sure you want to delete "${folder.name}"?',
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w400,
-            fontFamily: AppFonts.inter,
-            color: AppColors.textColor,
-            align: TextAlign.center,
-          ),
-          SizedBox(height: 25.h),
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    height: 48.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(50.r),
-                    ),
-                    child: Center(
-                      child: Texts(
-                        S.of(context).cancel,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: AppFonts.inter,
-                        color: AppColors.black,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    context.read<FolderBloc>().add(
-                      FolderEvent.deleteFolder(folder.id!),
-                    );
-                    Navigator.pop(context);
-                    showSnackBar(
-                      context,
-                      () {},
-                      message: "Folder deleted successfully!",
-                      alertBannerLocation: AlertBannerLocation.bottom,
-                    );
-                  },
-                  child: Container(
-                    height: 48.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryOrange,
-                      borderRadius: BorderRadius.circular(50.r),
-                    ),
-                    child: Center(
-                      child: Texts(
-                        S.of(context).delete,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: AppFonts.inter,
-                        color: AppColors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHideConfirmationDialog(domain.Folder folder) {
-    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
-    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
-    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
-    final bottomPadding = viewInsets > 0
-        ? viewInsets + 16.h
-        : (viewPadding > 0 ? viewPadding : 16.h);
-
-    return SafeArea(
-      child: Container(
-        padding: EdgeInsets.only(
-          left: 16.w,
-          right: 16.w,
-          top: 10.h,
-          bottom: 20.h,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            SizedBox(height: 30.h),
-            Texts(
-              'Hide the folder',
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w500,
-              fontFamily: AppFonts.inter,
-              color: AppColors.textColor,
-            ),
-            SizedBox(height: 30.h),
-            Texts(
-              'Are you sure you want to hide this folder?',
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w400,
-              fontFamily: AppFonts.inter,
-              color: AppColors.textColor,
-              align: TextAlign.center,
-            ),
-            SizedBox(height: 25.h),
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      height: 48.h,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(50.r),
-                      ),
-                      child: Center(
-                        child: Texts(
-                          S.of(context).cancel,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: AppFonts.inter,
-                          color: AppColors.black,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _updateFolderHiddenStatus(folder, true),
-                    // onTap: () {
-                    //   context.read<FolderBloc>().add(
-                    //     FolderEvent.deleteFolder(folder.id!),
-                    //   );
-                    //   Navigator.pop(context);
-                    //   showSnackBar(
-                    //     context,
-                    //     () {},
-                    //     message: "Folder deleted successfully!",
-                    //     alertBannerLocation: AlertBannerLocation.bottom,
-                    //   );
-                    // },
-                    child: Container(
-                      height: 48.h,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryOrange,
-                        borderRadius: BorderRadius.circular(50.r),
-                      ),
-                      child: Center(
-                        child: Texts(
-                          S.of(context).delete,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: AppFonts.inter,
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            // SizedBox(height: 40.h),
-          ],
-        ),
-      ),
+      title: 'Hide the folder',
+      message: 'Are you sure you want to hide this folder?',
+      onConfirm: (sheetContext) async {
+        Navigator.pop(sheetContext);
+        await _updateFolderHiddenStatus(folder, true);
+      },
     );
   }
 }

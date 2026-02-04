@@ -36,148 +36,129 @@ class _CreateNewPlaylistBottomSheetState
     final viewInsets = MediaQuery.of(context).viewInsets.bottom;
     final viewPadding = MediaQuery.of(context).viewPadding.bottom;
     final bottomPadding = viewInsets > 0
-        ? viewInsets + 16.h
-        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
+        ? viewInsets + 20.h
+        : (viewPadding > 0 ? viewPadding : 20.h);
 
-    return Container(
-      constraints: BoxConstraints(minHeight: minHeight),
-      padding: EdgeInsets.only(
-        left: 16.w,
-        right: 16.w,
-        top: 10.h,
-        bottom: bottomPadding,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(Assets.svgIcLineBottom),
-          SizedBox(height: 30.h),
-          Texts(
-            'Create new playlist',
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w500,
-            fontFamily: AppFonts.inter,
-          ),
-          SizedBox(height: 30.h),
-          Flexible(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: 15.0.h, top: 10.h),
-              child: TextFieldWidget(
-                controller: playlistNameController,
-                fillColor: AppColors.textColor.withValues(alpha: .2),
-                wantListeners: true,
-                cursorColor: AppColors.textColor,
-                textStyleColor: AppColors.textColor,
-                textInputAction: TextInputAction.done,
-                hintText: "Enter Playlist Name",
-                hintStyle: TextStyle(
-                  fontSize: 13.sp,
-                  fontFamily: AppFonts.inter,
-                  fontWeight: FontWeight.w400,
+    return SafeArea(
+      child: Container(
+        // constraints: BoxConstraints(minHeight: minHeight),
+        padding: EdgeInsets.only(
+          left: 16.w,
+          right: 16.w,
+          top: 10.h,
+          bottom: bottomPadding,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(Assets.svgIcLineBottom),
+            SizedBox(height: 30.h),
+            Texts(
+              'Create new playlist',
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w500,
+              fontFamily: AppFonts.inter,
+            ),
+            SizedBox(height: 30.h),
+            Flexible(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: 15.0.h, top: 10.h),
+                child: TextFieldWidget(
+                  controller: playlistNameController,
+                  fillColor: AppColors.textColor.withValues(alpha: .2),
+                  wantListeners: true,
+                  cursorColor: AppColors.textColor,
+                  textStyleColor: AppColors.textColor,
+                  textInputAction: TextInputAction.done,
+                  hintText: "Enter Playlist Name",
+                  hintStyle: TextStyle(
+                    fontSize: 13.sp,
+                    fontFamily: AppFonts.inter,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  focusNode: playlistNameFocusNode,
+                  hasFocus: playlistNameFocusNode.hasFocus,
+                  onFieldSubmitted: (value) {
+                    FocusScope.of(context).unfocus();
+                  },
                 ),
-                focusNode: playlistNameFocusNode,
-                hasFocus: playlistNameFocusNode.hasFocus,
-                onFieldSubmitted: (value) {
-                  FocusScope.of(context).unfocus();
-                },
               ),
             ),
-          ),
-          SizedBox(height: 25.h),
+            SizedBox(height: 25.h),
 
-          Row(
-            children: [
-              // Cancel button
-              Expanded(
-                child: GestureDetector(
-                  onTap: (){
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                    height: 48.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(50.r),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Cancel',
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: AppFonts.inter,
-                          color: AppColors.black,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 12.w),
-
-              // Create button
-              Expanded(
-                child: GestureDetector(
-                  onTap: (){
-                    if (playlistNameController.text.isEmpty) {
-                      showSnackBar(
-                        context,
-                            () {},
-                        message: "Please enter a playlist name",
-                        alertBannerLocation: AlertBannerLocation.bottom,
-                      );
-                    }
-                    else{
-                      context.read<PlaylistBloc>().add(
-                        PlaylistEvent.addPlaylist(playlistNameController.text),
-                      );
+            Row(
+              children: [
+                // Cancel button
+                Expanded(
+                  child: GestureDetector(
+                    onTap: (){
                       Navigator.pop(context);
-                    }
-                  },
-                  child: Container(
-                    height: 48.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryOrange,
-                      borderRadius: BorderRadius.circular(50.r),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Create',
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: AppFonts.inter,
-                          color: AppColors.white,
+                    },
+                    child: Container(
+                      height: 48.h,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(50.r),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: AppFonts.inter,
+                            color: AppColors.black,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
+                SizedBox(width: 12.w),
 
-          // BottomButtonTwo(
-          //   leftBtnTitle: S.of(context).cancel,
-          //   rightBtnTitle: "Create",
-          //   lefBtnTap: () {},
-          //   rightBtnTap: () {
-          //     if (playlistNameController.text.isEmpty) {
-          //       showSnackBar(
-          //         context,
-          //             () {},
-          //         message: "Please enter a playlist name",
-          //         alertBannerLocation: AlertBannerLocation.bottom,
-          //       );
-          //     }
-          //     else{
-          //       context.read<PlaylistBloc>().add(
-          //         PlaylistEvent.addPlaylist(playlistNameController.text),
-          //       );
-          //     }
-          //   },
-          // ),
-        ],
+                // Create button
+                Expanded(
+                  child: GestureDetector(
+                    onTap: (){
+                      if (playlistNameController.text.isEmpty) {
+                        showSnackBar(
+                          context,
+                              () {},
+                          message: "Please enter a playlist name",
+                          alertBannerLocation: AlertBannerLocation.bottom,
+                        );
+                      }
+                      else{
+                        context.read<PlaylistBloc>().add(
+                          PlaylistEvent.addPlaylist(playlistNameController.text),
+                        );
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: Container(
+                      height: 48.h,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryOrange,
+                        borderRadius: BorderRadius.circular(50.r),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Create',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: AppFonts.inter,
+                            color: AppColors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

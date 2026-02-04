@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -119,6 +120,7 @@ Future<void> main() async {
                 locator<SongLocalDataSource>(),
                 locator<PlaylistRepository>(),
                 onLibraryRefresh: () {
+                  log('Library refresh triggered from SongsBloc');
                   context.read<PlaylistBloc>().add(
                         const PlaylistEvent.fetchAllPlaylists(),
                       );

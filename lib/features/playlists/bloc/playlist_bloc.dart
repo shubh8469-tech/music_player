@@ -48,7 +48,18 @@ class PlaylistBloc extends Bloc<PlaylistEvent, PlaylistState> {
         log('Fetching all playlists inside bloc');
         emit(const PlaylistState.loading());
         final playlists = await repository.fetchAllPlaylists();
-        emit(PlaylistState.loaded(playlists));
+
+        final songs = await repository.getSongsForSystemPlaylist(
+          'recently_played',
+        );
+        final systemPlaylistSongs = <String, List<SongsModel>>{
+          'recently_played': songs,
+        };
+
+        playlists.forEach((element) {
+          log('Playlist: ${element.name} (length: ${element.songCount})');
+        },);
+        emit(PlaylistState.loaded(playlists, systemPlaylistSongs: systemPlaylistSongs));
       } catch (e) {
         emit(PlaylistState.error(e.toString()));
       }

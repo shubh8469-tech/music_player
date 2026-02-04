@@ -18,7 +18,7 @@ import '../../../../themes/color.dart';
 import '../../../../utills/snack_bar.dart';
 import '../../music_service.dart';
 import 'package:go_router/go_router.dart';
-import '../../../play_song/widget/playlist_bottomsheet.dart';
+import '../../../../commonWidgets/common_modal_bottom_sheet.dart';
 
 class SelectAlbumScreen extends StatefulWidget {
   const SelectAlbumScreen({super.key});
@@ -128,16 +128,26 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
       return;
     }
 
-    showModalBottomSheet(
+    final albumCount = selectedAlbums.length;
+    showCommonConfirmationBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
-      ),
-      isScrollControlled: true,
-      builder: (_) =>
-          _buildDeleteConfirmationDialog(selectedAlbums.length, selectedAlbums),
+      title: 'Delete Albums',
+      message:
+          'Are you sure you want to delete ${albumCount == 1 ? 'this album' : 'these $albumCount albums'}?',
+      onConfirm: (sheetContext) async {
+        Navigator.pop(sheetContext);
+        setState(() {
+          selectedAlbumIds.clear();
+          isSelectedAll = false;
+        });
+        showSnackBar(
+          context,
+          () {},
+          message:
+              "$albumCount ${albumCount == 1 ? 'album' : 'albums'} deleted successfully!",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      },
     );
   }
 
@@ -262,7 +272,7 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
         // context.pop();
         showSnackBar(
           context,
-              () {},
+          () {},
           message: "${allSongsFromAlbums.length} songs added to play next",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
@@ -270,20 +280,20 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
         await musicService.setPlaylist(allSongsFromAlbums, startIndex: 0);
         await musicService.play();
       } else {
-
-        final updateCount = await musicService.playNextMultipleSongs(allSongsFromAlbums);
-        if(updateCount < 1) {
+        final updateCount = await musicService.playNextMultipleSongs(
+          allSongsFromAlbums,
+        );
+        if (updateCount < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }
-        else{
+        } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$updateCount songs added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
@@ -383,20 +393,22 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
         return;
       }
 
-      final addedSong = await musicService.addMultipleSongsToQueue(allSongsFromAlbums);
+      final addedSong = await musicService.addMultipleSongsToQueue(
+        allSongsFromAlbums,
+      );
 
       if (mounted) {
         if (addedSong < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$addedSong songs added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
@@ -502,9 +514,9 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
       // Set the combined playlist and start playing
       showSnackBar(
         context,
-            () {},
+        () {},
         message:
-        "Playing ${allSongsFromAlbums.length} songs from ${selectedAlbums.length} albums",
+            "Playing ${allSongsFromAlbums.length} songs from ${selectedAlbums.length} albums",
         alertBannerLocation: AlertBannerLocation.bottom,
       );
 
@@ -515,7 +527,6 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
 
       await musicService.setPlaylist(allSongsFromAlbums, startIndex: 0);
       await musicService.play();
-
     } catch (e) {
       showSnackBar(
         context,
@@ -570,15 +581,9 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
 
       // Show playlist bottom sheet with all songs from selected albums
       if (mounted) {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
-          ),
-          isScrollControlled: true,
-          builder: (_) => PlaylistBottomSheet(songsList: allSongsFromAlbums),
+        showCommonAddToPlaylistBottomSheet(
+          context,
+          songsList: allSongsFromAlbums,
         );
       }
     } catch (e) {
@@ -618,8 +623,9 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
       ...albums.map((album) {
         final isSelected = selectedAlbumIds.contains(album.id);
         final hasArtwork = album.artworkPath?.isNotEmpty ?? false;
-        final albumArtworkPath =
-            hasArtwork ? album.artworkPath! : Assets.svgAlbum;
+        final albumArtworkPath = hasArtwork
+            ? album.artworkPath!
+            : Assets.svgAlbum;
 
         return Padding(
           padding: EdgeInsets.symmetric(horizontal: 15.w),
@@ -650,133 +656,6 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
         );
       }).toList(),
     ];
-  }
-
-  // Custom delete confirmation dialog matching the design
-  Widget _buildDeleteConfirmationDialog(
-    int albumCount,
-    List<Album> deletableAlbums,
-  ) {
-    // Handle keyboard visibility and safe area (especially for Samsung One UI 7.0)
-    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
-    final viewPadding = MediaQuery.of(context).viewPadding.bottom;
-    final bottomPadding = viewInsets > 0
-        ? viewInsets + 16.h
-        : (viewPadding > 0 ? viewPadding : 16.h) + 16.h;
-
-    return Container(
-      padding: EdgeInsets.only(
-        left: 16.w,
-        right: 16.w,
-        top: 10.h,
-        bottom: bottomPadding,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Top handle bar
-          Container(
-            width: 40.w,
-            height: 4.h,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2.r),
-            ),
-          ),
-          SizedBox(height: 30.h),
-
-          // Title
-          Texts(
-            'Delete Albums',
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w500,
-            fontFamily: AppFonts.inter,
-            color: AppColors.textColor,
-          ),
-          SizedBox(height: 30.h),
-
-          // Message
-          Texts(
-            'Are you sure you want to delete ${albumCount == 1 ? 'this album' : 'these $albumCount albums'}?',
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w400,
-            fontFamily: AppFonts.inter,
-            color: AppColors.textColor,
-            align: TextAlign.center,
-          ),
-          SizedBox(height: 25.h),
-
-          // Action buttons
-          Row(
-            children: [
-              // Cancel button
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    height: 48.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Center(
-                      child: Texts(
-                        S.of(context).cancel,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: AppFonts.inter,
-                        color: AppColors.black,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 12.w),
-
-              // Delete button
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    // Note: You'll need to add a delete album event to AlbumBloc
-                    // For now, this is a placeholder
-                    Navigator.pop(context);
-                    setState(() {
-                      selectedAlbumIds.clear();
-                      isSelectedAll = false;
-                    });
-
-                    showSnackBar(
-                      context,
-                      () {},
-                      message:
-                          "$albumCount ${albumCount == 1 ? 'album' : 'albums'} deleted successfully!",
-                      alertBannerLocation: AlertBannerLocation.bottom,
-                    );
-                  },
-                  child: Container(
-                    height: 48.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryOrange,
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Center(
-                      child: Texts(
-                        S.of(context).delete,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: AppFonts.inter,
-                        color: AppColors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-        ],
-      ),
-    );
   }
 
   @override

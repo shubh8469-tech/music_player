@@ -60,10 +60,12 @@ class SongsBloc extends Bloc<SongsEvent, SongsState> {
         await localDataSource.refreshRelatedEntityCounts();
 
         // Trigger library refresh to update counts
-        onLibraryRefresh?.call();
 
         final songs = await localDataSource.getAllSongs();
         emit(SongsState.loaded(songs));
+
+        onLibraryRefresh?.call();
+
       } catch (e) {
         emit(SongsState.error(e.toString()));
       }

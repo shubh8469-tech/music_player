@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:music_app/commonWidgets/common_modal_bottom_sheet.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:music_app/commonWidgets/textWidget.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
@@ -8,7 +9,6 @@ import 'package:music_app/generated/assets.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
 import 'package:music_app/screens/tabs/music_service.dart';
-import 'package:music_app/utills/snack_bar.dart';
 
 class SelectQueueScreen extends StatefulWidget {
   const SelectQueueScreen({super.key});
@@ -122,49 +122,31 @@ class _SelectQueueScreenState extends State<SelectQueueScreen> {
   void _addToPlaylist() {
     if (selectedSongs.isEmpty) return;
 
-    // Show playlist selection bottom sheet
-    // This would typically show a list of playlists to add to
-    showSnackBar(
-      context,
-      () {},
-      message: 'Add to playlist functionality would be implemented here',
-      backgroundColor: AppColors.primaryOrange,
-      alertBannerLocation: AlertBannerLocation.bottom,
-    );
+    final selectedSongList = selectedSongs
+        .map((index) => _filteredSongs[index])
+        .toList();
+    showCommonAddToPlaylistBottomSheet(context, songsList: selectedSongList);
   }
 
   void _deleteSelected() {
     if (selectedSongs.isEmpty) return;
 
-    showDialog(
+    showCommonConfirmationBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Delete Songs'),
-        content: Text(
+      title: 'Delete Songs',
+      message:
           'Are you sure you want to delete ${selectedSongs.length} song(s)?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              // Implement delete functionality
-              setState(() {
-                final indicesToRemove = selectedSongs.toList()
-                  ..sort((a, b) => b.compareTo(a));
-                for (int index in indicesToRemove) {
-                  allSongs.removeAt(index);
-                }
-                selectedSongs.clear();
-              });
-              Navigator.of(context).pop();
-            },
-            child: Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+      onConfirm: (sheetContext) async {
+        Navigator.pop(sheetContext);
+        setState(() {
+          final indicesToRemove = selectedSongs.toList()
+            ..sort((a, b) => b.compareTo(a));
+          for (int index in indicesToRemove) {
+            allSongs.removeAt(index);
+          }
+          selectedSongs.clear();
+        });
+      },
     );
   }
 
@@ -430,8 +412,14 @@ class _SelectQueueScreenState extends State<SelectQueueScreen> {
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(6.r),
                       child: (song.artwork_path!.endsWith('.svg'))
-                          ? SvgPicture.asset(song.artwork_path!, fit: BoxFit.cover)
-                          : Image.file(File(song.artwork_path!), fit: BoxFit.cover),
+                          ? SvgPicture.asset(
+                              song.artwork_path!,
+                              fit: BoxFit.cover,
+                            )
+                          : Image.file(
+                              File(song.artwork_path!),
+                              fit: BoxFit.cover,
+                            ),
                     )
                   : SvgPicture.asset(
                       Assets.svgMusicIcon,

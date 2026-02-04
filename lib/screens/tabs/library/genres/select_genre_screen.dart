@@ -19,7 +19,7 @@ import '../../../../themes/color.dart';
 import '../../../../utills/snack_bar.dart';
 import '../../music_service.dart';
 import 'package:go_router/go_router.dart';
-import '../../../play_song/widget/playlist_bottomsheet.dart';
+import '../../../../commonWidgets/common_modal_bottom_sheet.dart';
 
 class SelectGenreScreen extends StatefulWidget {
   const SelectGenreScreen({super.key});
@@ -109,11 +109,13 @@ class _SelectGenreScreenState extends State<SelectGenreScreen> {
     final List<SongsModel> songs = [];
 
     for (final genre in genres) {
-      final genreSongs =
-          (await repo.getSongsForGenre(genre.id!)).cast<SongsModel>();
+      final genreSongs = (await repo.getSongsForGenre(
+        genre.id!,
+      )).cast<SongsModel>();
       for (final song in genreSongs) {
-        final alreadyAdded =
-            songs.any((existingSong) => existingSong.id == song.id);
+        final alreadyAdded = songs.any(
+          (existingSong) => existingSong.id == song.id,
+        );
         if (!alreadyAdded) {
           songs.add(song);
         }
@@ -152,9 +154,9 @@ class _SelectGenreScreenState extends State<SelectGenreScreen> {
 
       showSnackBar(
         context,
-            () {},
+        () {},
         message:
-        "Playing ${allSongsFromGenres.length} songs from ${selectedGenres.length} genres",
+            "Playing ${allSongsFromGenres.length} songs from ${selectedGenres.length} genres",
         alertBannerLocation: AlertBannerLocation.bottom,
       );
 
@@ -164,7 +166,6 @@ class _SelectGenreScreenState extends State<SelectGenreScreen> {
 
       await musicService.setPlaylist(allSongsFromGenres, startIndex: 0);
       await musicService.play();
-
     } catch (e) {
       showSnackBar(
         context,
@@ -202,15 +203,9 @@ class _SelectGenreScreenState extends State<SelectGenreScreen> {
       }
 
       if (mounted) {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
-          ),
-          isScrollControlled: true,
-          builder: (_) => PlaylistBottomSheet(songsList: allSongsFromGenres),
+        showCommonAddToPlaylistBottomSheet(
+          context,
+          songsList: allSongsFromGenres,
         );
       }
     } catch (e) {
@@ -246,8 +241,9 @@ class _SelectGenreScreenState extends State<SelectGenreScreen> {
       ...genres.map((genre) {
         final isSelected = selectedGenreIds.contains(genre.id);
         final hasArtwork = genre.artworkPath?.isNotEmpty ?? false;
-        final genreArtworkPath =
-            hasArtwork ? genre.artworkPath! : Assets.svgMusicIcon;
+        final genreArtworkPath = hasArtwork
+            ? genre.artworkPath!
+            : Assets.svgMusicIcon;
 
         return Padding(
           padding: EdgeInsets.symmetric(horizontal: 15.w),
@@ -265,10 +261,7 @@ class _SelectGenreScreenState extends State<SelectGenreScreen> {
             isSvgColorNeeded: false,
             cardContent: hasArtwork
                 ? null
-                : buildGenreInitialAvatar(
-              genre.name,
-              20.sp,
-            ),
+                : buildGenreInitialAvatar(genre.name, 20.sp),
             title: genre.name,
             subtitle: '${genre.songCount} Songs',
             trailingIconAsset: isSelected
@@ -287,7 +280,7 @@ class _SelectGenreScreenState extends State<SelectGenreScreen> {
 
   void _showPopupMenu(BuildContext context) {
     final RenderBox overlay =
-    Overlay.of(context).context.findRenderObject() as RenderBox;
+        Overlay.of(context).context.findRenderObject() as RenderBox;
 
     // Position the menu in the top right corner below the app bar
     final RelativeRect position = RelativeRect.fromLTRB(
@@ -380,11 +373,10 @@ class _SelectGenreScreenState extends State<SelectGenreScreen> {
 
       // Check if there are existing songs in the queue
       if (musicService.songs.isEmpty) {
-
         // context.pop();
         showSnackBar(
           context,
-              () {},
+          () {},
           message: "${allSongsFromGenres.length} songs added to play next",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
@@ -392,20 +384,20 @@ class _SelectGenreScreenState extends State<SelectGenreScreen> {
         await musicService.setPlaylist(allSongsFromGenres, startIndex: 0);
         await musicService.play();
       } else {
-
-        final updateCount = await musicService.playNextMultipleSongs(allSongsFromGenres);
-        if(updateCount < 1){
+        final updateCount = await musicService.playNextMultipleSongs(
+          allSongsFromGenres,
+        );
+        if (updateCount < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }
-        else{
+        } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$updateCount songs added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
@@ -481,20 +473,22 @@ class _SelectGenreScreenState extends State<SelectGenreScreen> {
         return;
       }
 
-      final addedSong = await musicService.addMultipleSongsToQueue(allSongsFromGenres);
+      final addedSong = await musicService.addMultipleSongsToQueue(
+        allSongsFromGenres,
+      );
 
       if (mounted) {
         if (addedSong < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$addedSong songs added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
@@ -763,4 +757,3 @@ class _SelectGenreScreenState extends State<SelectGenreScreen> {
     );
   }
 }
-

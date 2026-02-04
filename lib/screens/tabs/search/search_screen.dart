@@ -21,14 +21,15 @@ import 'package:music_app/features/folders/domain/entities/folder.dart';
 import 'package:music_app/features/folders/domain/repositories/folder_repository.dart';
 import 'package:music_app/features/folders/domain/usecases/update_folder_hidden_status.dart';
 import 'package:music_app/features/playlists/bloc/playlist_bloc.dart';
-import 'package:music_app/features/playlists/domain/entities/playlist.dart' as domain;
+import 'package:music_app/features/playlists/domain/entities/playlist.dart'
+    as domain;
 import 'package:music_app/features/songs/bloc/songs_bloc.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/generated/assets.dart';
 import 'package:music_app/l10n/l10n.dart';
 import 'package:music_app/screens/play_song/playing_song_screen.dart';
 import 'package:music_app/screens/tabs/music_service.dart';
-import 'package:music_app/screens/play_song/widget/playlist_bottomsheet.dart';
+import 'package:music_app/commonWidgets/common_modal_bottom_sheet.dart';
 import 'package:music_app/screens/tabs/library/playlists/rename_playlist_bottom_sheet.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
@@ -42,11 +43,19 @@ class SearchScreen extends StatefulWidget {
   State<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderStateMixin {
+class _SearchScreenState extends State<SearchScreen>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   final TextEditingController _queryController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  final List<String> _tabs = const ['ALL', 'SONGS', 'PLAYLISTS', 'FOLDERS', 'ALBUMS', 'ARTISTS'];
+  final List<String> _tabs = const [
+    'ALL',
+    'SONGS',
+    'PLAYLISTS',
+    'FOLDERS',
+    'ALBUMS',
+    'ARTISTS',
+  ];
 
   String _query = '';
 
@@ -66,7 +75,10 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
 
   void _ensureSongsLoaded() {
     final bloc = context.read<SongsBloc>();
-    final hasData = bloc.state.maybeWhen(loaded: (_) => true, orElse: () => false);
+    final hasData = bloc.state.maybeWhen(
+      loaded: (_) => true,
+      orElse: () => false,
+    );
     if (!hasData) {
       bloc.add(const SongsEvent.getAllSongs());
     }
@@ -74,7 +86,10 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
 
   void _ensurePlaylistsLoaded() {
     final bloc = context.read<PlaylistBloc>();
-    final hasData = bloc.state.maybeWhen(loaded: (_, __) => true, orElse: () => false);
+    final hasData = bloc.state.maybeWhen(
+      loaded: (_, __) => true,
+      orElse: () => false,
+    );
     if (!hasData) {
       bloc.add(const PlaylistEvent.fetchAllPlaylists());
     }
@@ -82,7 +97,10 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
 
   void _ensureFoldersLoaded() {
     final bloc = context.read<FolderBloc>();
-    final hasData = bloc.state.maybeWhen(loaded: (_, __) => true, orElse: () => false);
+    final hasData = bloc.state.maybeWhen(
+      loaded: (_, __) => true,
+      orElse: () => false,
+    );
     if (!hasData) {
       bloc.add(const FolderEvent.fetchAllFolders());
     }
@@ -90,7 +108,10 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
 
   void _ensureAlbumsLoaded() {
     final bloc = context.read<AlbumBloc>();
-    final hasData = bloc.state.maybeWhen(loaded: (_, __) => true, orElse: () => false);
+    final hasData = bloc.state.maybeWhen(
+      loaded: (_, __) => true,
+      orElse: () => false,
+    );
     if (!hasData) {
       bloc.add(const AlbumEvent.fetchAllAlbums());
     }
@@ -98,7 +119,10 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
 
   void _ensureArtistsLoaded() {
     final bloc = context.read<ArtistBloc>();
-    final hasData = bloc.state.maybeWhen(loaded: (_, __) => true, orElse: () => false);
+    final hasData = bloc.state.maybeWhen(
+      loaded: (_, __) => true,
+      orElse: () => false,
+    );
     if (!hasData) {
       bloc.add(const ArtistEvent.fetchAllArtists());
     }
@@ -156,11 +180,24 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
                 labelColor: AppColors.textColor,
-                labelStyle: TextStyle(fontSize: 15.sp, fontWeight: AppFontWeights.medium, color: AppColors.black, fontFamily: AppFonts.inter),
-                unselectedLabelStyle: TextStyle(fontSize: 15.sp, fontWeight: AppFontWeights.medium, color: AppColors.black, fontFamily: AppFonts.inter),
+                labelStyle: TextStyle(
+                  fontSize: 15.sp,
+                  fontWeight: AppFontWeights.medium,
+                  color: AppColors.black,
+                  fontFamily: AppFonts.inter,
+                ),
+                unselectedLabelStyle: TextStyle(
+                  fontSize: 15.sp,
+                  fontWeight: AppFontWeights.medium,
+                  color: AppColors.black,
+                  fontFamily: AppFonts.inter,
+                ),
 
                 indicator: UnderlineTabIndicator(
-                  borderSide: BorderSide(width: 3.0.w, color: AppColors.primaryOrange),
+                  borderSide: BorderSide(
+                    width: 3.0.w,
+                    color: AppColors.primaryOrange,
+                  ),
                   insets: EdgeInsets.symmetric(horizontal: -8.w),
                 ),
                 dividerColor: Colors.transparent,
@@ -206,7 +243,11 @@ class _SearchHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final searchFillColor = Color.lerp(AppColors.primaryOrange, Colors.white, 0.15)!;
+    final searchFillColor = Color.lerp(
+      AppColors.primaryOrange,
+      Colors.white,
+      0.15,
+    )!;
 
     return Container(
       color: AppColors.primaryOrange,
@@ -233,7 +274,10 @@ class _SearchHeader extends StatelessWidget {
               Expanded(
                 child: Container(
                   height: 55.h,
-                  decoration: BoxDecoration(color: searchFillColor, borderRadius: BorderRadius.circular(28.r)),
+                  decoration: BoxDecoration(
+                    color: searchFillColor,
+                    borderRadius: BorderRadius.circular(28.r),
+                  ),
                   child: Row(
                     children: [
                       SizedBox(width: 16.w),
@@ -245,12 +289,20 @@ class _SearchHeader extends StatelessWidget {
                           focusNode: focusNode,
                           onChanged: onChanged,
                           cursorColor: Colors.white,
-                          style: TextStyle(color: Colors.white, fontSize: 16.sp, fontFamily: AppFonts.inter),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16.sp,
+                            fontFamily: AppFonts.inter,
+                          ),
                           textInputAction: TextInputAction.search,
                           decoration: InputDecoration(
                             isDense: true,
                             hintText: 'Search In Library',
-                            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 16.sp, fontFamily: AppFonts.inter),
+                            hintStyle: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontSize: 16.sp,
+                              fontFamily: AppFonts.inter,
+                            ),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.zero,
                           ),
@@ -260,7 +312,11 @@ class _SearchHeader extends StatelessWidget {
                         IconButton(
                           onPressed: onClearTap,
                           splashRadius: 18.r,
-                          icon: Icon(Icons.close, color: Colors.white, size: 18.r),
+                          icon: Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 18.r,
+                          ),
                         )
                       else
                         SizedBox(width: 16.w),
@@ -328,10 +384,22 @@ class _SectionHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Texts(title, fontSize: 18.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.textColor),
+        Texts(
+          title,
+          fontSize: 18.sp,
+          fontWeight: AppFontWeights.medium,
+          fontFamily: AppFonts.inter,
+          color: AppColors.textColor,
+        ),
         GestureDetector(
           onTap: onViewAll,
-          child: Texts('View All', fontSize: 14.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.primaryOrange),
+          child: Texts(
+            'View All',
+            fontSize: 14.sp,
+            fontWeight: AppFontWeights.medium,
+            fontFamily: AppFonts.inter,
+            color: AppColors.primaryOrange,
+          ),
         ),
       ],
     );
@@ -356,18 +424,32 @@ class _SongsSection extends StatelessWidget {
           error: (message) => _ErrorMessage(message: message),
           loaded: (songs) {
             final filtered = _filterSongs(songs, query);
-            final visibleSongs = limit != null ? filtered.take(limit!).toList() : filtered;
+            final visibleSongs = limit != null
+                ? filtered.take(limit!).toList()
+                : filtered;
 
             if (visibleSongs.isEmpty) {
-              return _EmptyMessage(message: query.isEmpty ? 'No songs available' : 'No songs match your search');
+              return _EmptyMessage(
+                message: query.isEmpty
+                    ? 'No songs available'
+                    : 'No songs match your search',
+              );
             }
 
             return Column(
               children: List.generate(visibleSongs.length, (index) {
                 final song = visibleSongs[index];
-                final artworkPath = (song.artwork_path?.isNotEmpty ?? false) ? song.artwork_path! : Assets.svgMusicIcon;
+                final artworkPath = (song.artwork_path?.isNotEmpty ?? false)
+                    ? song.artwork_path!
+                    : Assets.svgMusicIcon;
                 final isSvg = artworkPath.contains('.svg');
-                final cardColors = artworkPath.contains('.svg') || artworkPath.isEmpty ? [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange] : null;
+                final cardColors =
+                    artworkPath.contains('.svg') || artworkPath.isEmpty
+                    ? [
+                        AppColors.mildOrange.withValues(alpha: 0.21),
+                        AppColors.mildOrange,
+                      ]
+                    : null;
                 final currentIndex = filtered.indexOf(song);
 
                 return MusicListTile(
@@ -392,16 +474,26 @@ class _SongsSection extends StatelessWidget {
                   trailingIconWidth: 3.w,
                   trailingMargin: 10.w,
                   onTap: () async {
-                    await musicService.setPlaylist(filtered, startIndex: currentIndex >= 0 ? currentIndex : index);
+                    await musicService.setPlaylist(
+                      filtered,
+                      startIndex: currentIndex >= 0 ? currentIndex : index,
+                    );
                     if (!context.mounted) return;
-                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: filtered));
+                    context.push(
+                      '/dashboard/playing',
+                      extra: PlayingSongArgs(songs: filtered),
+                    );
                   },
                   onPlayTap: () {
                     showModalBottomSheet(
                       context: context,
                       backgroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(40.r),
+                        ),
+                      ),
                       isScrollControlled: true,
                       builder: (_) => SongMenuScreen(
                         songMenuList: songMenuItems,
@@ -457,10 +549,19 @@ class _PlaylistsSection extends StatelessWidget {
           error: (message) => _ErrorMessage(message: message),
           loaded: (playlists, __) {
             final filtered = _filterPlaylists(playlists, query);
-            final visible = limit != null ? filtered.where((element) => element.systemKey == null).take(limit!).toList() : filtered;
+            final visible = limit != null
+                ? filtered
+                      .where((element) => element.systemKey == null)
+                      .take(limit!)
+                      .toList()
+                : filtered;
 
             if (visible.isEmpty) {
-              return _EmptyMessage(message: query.isEmpty ? 'No playlists available' : 'No playlists match your search');
+              return _EmptyMessage(
+                message: query.isEmpty
+                    ? 'No playlists available'
+                    : 'No playlists match your search',
+              );
             }
 
             return Column(
@@ -468,10 +569,19 @@ class _PlaylistsSection extends StatelessWidget {
                 final isSystem = playlist.isSystem == true;
                 final systemKey = playlist.systemKey ?? '';
                 final hasCover = (playlist.coverPath?.isNotEmpty ?? false);
-                final userCoverAsset = hasCover ? playlist.coverPath! : Assets.svgMusicIcon;
-                final iconAsset = isSystem ? _systemPlaylistIcons[systemKey] ?? Assets.svgMusicIcon : userCoverAsset;
-                final baseColor = isSystem ? _systemPlaylistColors[systemKey] ?? AppColors.mildBlue : AppColors.primaryOrange;
-                final gradientColors = [baseColor.withValues(alpha: 0.21), baseColor];
+                final userCoverAsset = hasCover
+                    ? playlist.coverPath!
+                    : Assets.svgMusicIcon;
+                final iconAsset = isSystem
+                    ? _systemPlaylistIcons[systemKey] ?? Assets.svgMusicIcon
+                    : userCoverAsset;
+                final baseColor = isSystem
+                    ? _systemPlaylistColors[systemKey] ?? AppColors.mildBlue
+                    : AppColors.primaryOrange;
+                final gradientColors = [
+                  baseColor.withValues(alpha: 0.21),
+                  baseColor,
+                ];
                 final iconIsSvg = iconAsset.contains('.svg');
                 return MusicListTile(
                   margin: 7.w,
@@ -493,14 +603,25 @@ class _PlaylistsSection extends StatelessWidget {
                   trailingIconWidth: 3.w,
                   trailingMargin: 10.w,
                   onTap: () {
-                    context.push('/dashboard/playlist-detail', extra: {'playlist': playlist, 'assetIcon': iconAsset, 'colors': gradientColors});
+                    context.push(
+                      '/dashboard/playlist-detail',
+                      extra: {
+                        'playlist': playlist,
+                        'assetIcon': iconAsset,
+                        'colors': gradientColors,
+                      },
+                    );
                   },
                   onPlayTap: () {
                     showModalBottomSheet(
                       context: context,
                       backgroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(40.r),
+                        ),
+                      ),
                       isScrollControlled: true,
                       builder: (_) => BlocProvider.value(
                         value: context.read<PlaylistBloc>(),
@@ -509,24 +630,39 @@ class _PlaylistsSection extends StatelessWidget {
                           playlistIconAsset: iconAsset,
                           playlistGradientColors: gradientColors,
                           isSystemPlaylist: isSystem,
-                          systemKeyOrId: isSystem ? systemKey : playlist.id?.toString() ?? '',
+                          systemKeyOrId: isSystem
+                              ? systemKey
+                              : playlist.id?.toString() ?? '',
                           onRename: isSystem
                               ? null
                               : () async {
-                                  final result = await showModalBottomSheet<String>(
-                                    context: context,
-                                    backgroundColor: Colors.white,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
-                                    isScrollControlled: true,
-                                    builder: (_) => BlocProvider.value(
-                                      value: context.read<PlaylistBloc>(),
-                                      child: RenamePlaylistBottomSheet(playlist: playlist),
-                                    ),
-                                  );
+                                  final result =
+                                      await showModalBottomSheet<String>(
+                                        context: context,
+                                        backgroundColor: Colors.white,
+                                        elevation: 0,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(40.r),
+                                          ),
+                                        ),
+                                        isScrollControlled: true,
+                                        builder: (_) => BlocProvider.value(
+                                          value: context.read<PlaylistBloc>(),
+                                          child: RenamePlaylistBottomSheet(
+                                            playlist: playlist,
+                                          ),
+                                        ),
+                                      );
                                   if (!context.mounted) return;
                                   if (result != null && result.isNotEmpty) {
-                                    showSnackBar(context, () {}, message: 'Playlist renamed successfully', alertBannerLocation: AlertBannerLocation.bottom);
+                                    showSnackBar(
+                                      context,
+                                      () {},
+                                      message: 'Playlist renamed successfully',
+                                      alertBannerLocation:
+                                          AlertBannerLocation.bottom,
+                                    );
                                   }
                                 },
                         ),
@@ -560,17 +696,30 @@ class _FoldersSection extends StatelessWidget {
           error: (message) => _ErrorMessage(message: message),
           loaded: (folders, folderSongs) {
             final filtered = _filterFolders(folders, query);
-            final visible = limit != null ? filtered.take(limit!).toList() : filtered;
+            final visible = limit != null
+                ? filtered.take(limit!).toList()
+                : filtered;
 
             if (visible.isEmpty) {
-              return _EmptyMessage(message: query.isEmpty ? 'No folders available' : 'No folders match your search');
+              return _EmptyMessage(
+                message: query.isEmpty
+                    ? 'No folders available'
+                    : 'No folders match your search',
+              );
             }
 
             return Column(
               children: visible.map((folder) {
-                final iconAsset = (folder.artworkPath?.isNotEmpty ?? false) ? folder.artworkPath! : Assets.svgDirectory;
+                final iconAsset = (folder.artworkPath?.isNotEmpty ?? false)
+                    ? folder.artworkPath!
+                    : Assets.svgDirectory;
                 final isSvg = iconAsset.contains('.svg');
-                final colors = iconAsset.contains('.svg') ? [AppColors.mildYellow.withValues(alpha: 0.21), AppColors.mildYellow] : null;
+                final colors = iconAsset.contains('.svg')
+                    ? [
+                        AppColors.mildYellow.withValues(alpha: 0.21),
+                        AppColors.mildYellow,
+                      ]
+                    : null;
                 return MusicListTile(
                   margin: 7.w,
                   height: 66.h,
@@ -622,18 +771,34 @@ class _AlbumsSection extends StatelessWidget {
           error: (message) => _ErrorMessage(message: message),
           loaded: (albums, albumSongs) {
             final filtered = _filterAlbums(albums, query);
-            final visible = limit != null ? filtered.take(limit!).toList() : filtered;
+            final visible = limit != null
+                ? filtered.take(limit!).toList()
+                : filtered;
 
             if (visible.isEmpty) {
-              return _EmptyMessage(message: query.isEmpty ? 'No albums available' : 'No albums match your search');
+              return _EmptyMessage(
+                message: query.isEmpty
+                    ? 'No albums available'
+                    : 'No albums match your search',
+              );
             }
 
             return Column(
               children: visible.map((album) {
-                final iconAsset = (album.artworkPath?.isNotEmpty ?? false) ? album.artworkPath! : Assets.svgAlbum;
+                final iconAsset = (album.artworkPath?.isNotEmpty ?? false)
+                    ? album.artworkPath!
+                    : Assets.svgAlbum;
                 final isSvg = iconAsset.contains('.svg');
-                final colors = iconAsset.contains('.svg') ? [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange] : null;
-                final subtitle = [if ((album.artist ?? '').isNotEmpty) album.artist, '${album.songCount} songs'].whereType<String>().join(' • ');
+                final colors = iconAsset.contains('.svg')
+                    ? [
+                        AppColors.mildOrange.withValues(alpha: 0.21),
+                        AppColors.mildOrange,
+                      ]
+                    : null;
+                final subtitle = [
+                  if ((album.artist ?? '').isNotEmpty) album.artist,
+                  '${album.songCount} songs',
+                ].whereType<String>().join(' • ');
 
                 return MusicListTile(
                   margin: 7.w,
@@ -686,17 +851,30 @@ class _ArtistsSection extends StatelessWidget {
           error: (message) => _ErrorMessage(message: message),
           loaded: (artists, artistSongs) {
             final filtered = _filterArtists(artists, query);
-            final visible = limit != null ? filtered.take(limit!).toList() : filtered;
+            final visible = limit != null
+                ? filtered.take(limit!).toList()
+                : filtered;
 
             if (visible.isEmpty) {
-              return _EmptyMessage(message: query.isEmpty ? 'No artists available' : 'No artists match your search');
+              return _EmptyMessage(
+                message: query.isEmpty
+                    ? 'No artists available'
+                    : 'No artists match your search',
+              );
             }
 
             return Column(
               children: visible.map((artist) {
-                final iconAsset = (artist.artworkPath?.isNotEmpty ?? false) ? artist.artworkPath! : Assets.svgProxyArtist;
+                final iconAsset = (artist.artworkPath?.isNotEmpty ?? false)
+                    ? artist.artworkPath!
+                    : Assets.svgProxyArtist;
                 final isSvg = iconAsset.contains('.svg');
-                final colors = iconAsset.contains('.svg') ? [AppColors.black.withValues(alpha: 0.14), AppColors.black.withValues(alpha: 0.14)] : null;
+                final colors = iconAsset.contains('.svg')
+                    ? [
+                        AppColors.black.withValues(alpha: 0.14),
+                        AppColors.black.withValues(alpha: 0.14),
+                      ]
+                    : null;
 
                 return MusicListTile(
                   margin: 7.w,
@@ -712,7 +890,8 @@ class _ArtistsSection extends StatelessWidget {
                   isSvgCardIcon: isSvg,
                   isSvgColorNeeded: true,
                   title: artist.name,
-                  subtitle: '${artist.albumCount} albums • ${artist.songCount} songs',
+                  subtitle:
+                      '${artist.albumCount} albums • ${artist.songCount} songs',
                   trailingIconAsset: Assets.svgMenuIcon,
                   trailingIconHeight: 19.5.h,
                   trailingIconWidth: 3.w,
@@ -819,7 +998,13 @@ class _EmptyMessage extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 12.h),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Texts(message, fontSize: 14.sp, fontWeight: AppFontWeights.regular, color: AppColors.mediumDarkGrey, fontFamily: AppFonts.inter),
+        child: Texts(
+          message,
+          fontSize: 14.sp,
+          fontWeight: AppFontWeights.regular,
+          color: AppColors.mediumDarkGrey,
+          fontFamily: AppFonts.inter,
+        ),
       ),
     );
   }
@@ -836,7 +1021,13 @@ class _ErrorMessage extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 12.h),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Texts('Error: $message', fontSize: 14.sp, fontWeight: AppFontWeights.regular, color: Colors.red, fontFamily: AppFonts.inter),
+        child: Texts(
+          'Error: $message',
+          fontSize: 14.sp,
+          fontWeight: AppFontWeights.regular,
+          color: Colors.red,
+          fontFamily: AppFonts.inter,
+        ),
       ),
     );
   }
@@ -846,32 +1037,53 @@ List<SongsModel> _filterSongs(List<SongsModel> songs, String query) {
   if (query.isEmpty) return songs;
   return songs.where((song) {
     final normalized = query.toLowerCase();
-    return song.title.toLowerCase().contains(normalized) || song.artist.toLowerCase().contains(normalized) || song.album.toLowerCase().contains(normalized);
+    return song.title.toLowerCase().contains(normalized) ||
+        song.artist.toLowerCase().contains(normalized) ||
+        song.album.toLowerCase().contains(normalized);
   }).toList();
 }
 
-List<domain.Playlist> _filterPlaylists(List<domain.Playlist> playlists, String query) {
+List<domain.Playlist> _filterPlaylists(
+  List<domain.Playlist> playlists,
+  String query,
+) {
   if (query.isEmpty) return playlists;
   final normalized = query.toLowerCase();
-  return playlists.where((playlist) => playlist.name.toLowerCase().contains(normalized)).toList();
+  return playlists
+      .where((playlist) => playlist.name.toLowerCase().contains(normalized))
+      .toList();
 }
 
 List<Folder> _filterFolders(List<Folder> folders, String query) {
   if (query.isEmpty) return folders;
   final normalized = query.toLowerCase();
-  return folders.where((folder) => folder.name.toLowerCase().contains(normalized) || folder.path.toLowerCase().contains(normalized)).toList();
+  return folders
+      .where(
+        (folder) =>
+            folder.name.toLowerCase().contains(normalized) ||
+            folder.path.toLowerCase().contains(normalized),
+      )
+      .toList();
 }
 
 List<Album> _filterAlbums(List<Album> albums, String query) {
   if (query.isEmpty) return albums;
   final normalized = query.toLowerCase();
-  return albums.where((album) => album.name.toLowerCase().contains(normalized) || (album.artist ?? '').toLowerCase().contains(normalized)).toList();
+  return albums
+      .where(
+        (album) =>
+            album.name.toLowerCase().contains(normalized) ||
+            (album.artist ?? '').toLowerCase().contains(normalized),
+      )
+      .toList();
 }
 
 List<Artist> _filterArtists(List<Artist> artists, String query) {
   if (query.isEmpty) return artists;
   final normalized = query.toLowerCase();
-  return artists.where((artist) => artist.name.toLowerCase().contains(normalized)).toList();
+  return artists
+      .where((artist) => artist.name.toLowerCase().contains(normalized))
+      .toList();
 }
 
 void _showFolderMenuSheet(BuildContext context, Folder folder) {
@@ -879,7 +1091,9 @@ void _showFolderMenuSheet(BuildContext context, Folder folder) {
     context: context,
     backgroundColor: Colors.white,
     elevation: 0,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
+    ),
     isScrollControlled: true,
     builder: (_) => _FolderActionSheet(folder: folder),
   );
@@ -891,13 +1105,15 @@ class _FolderActionSheet extends StatelessWidget {
   final Folder folder;
   final MusicPlayerService musicService = MusicPlayerService();
   final FolderRepository _repo = locator<FolderRepository>();
-  final UpdateFolderHiddenStatus _updateFolderHiddenStatus = locator<UpdateFolderHiddenStatus>();
+  final UpdateFolderHiddenStatus _updateFolderHiddenStatus =
+      locator<UpdateFolderHiddenStatus>();
 
   @override
   Widget build(BuildContext context) {
     final localization = S.of(context);
-    final hideTitle =
-        folder.isHidden ? localization.unhideFolder : localization.hideFolder;
+    final hideTitle = folder.isHidden
+        ? localization.unhideFolder
+        : localization.hideFolder;
 
     return SafeArea(
       child: Padding(
@@ -984,7 +1200,7 @@ class _FolderActionSheet extends StatelessWidget {
                   icon: Assets.svgIcHide,
                   title: hideTitle,
                   onTap: () =>
-                      _toggleFolderHidden(context, !folder.isHidden),
+                      _showHideFolderConfirmation(context, !folder.isHidden),
                 ),
               ],
             ),
@@ -1054,36 +1270,70 @@ class _FolderActionSheet extends StatelessWidget {
 
   Future<void> _playFolder(BuildContext context) async {
     if (folder.id == null) {
-      showSnackBar(context, () {}, message: 'Folder contains no songs', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Folder contains no songs',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
       return;
     }
     try {
-      final folderSongs = (await _repo.getSongsForFolder(folder.id!)).cast<SongsModel>();
+      final folderSongs = (await _repo.getSongsForFolder(
+        folder.id!,
+      )).cast<SongsModel>();
 
       if (folderSongs.isEmpty) {
-        showSnackBar(context, () {}, message: 'Folder contains no songs', alertBannerLocation: AlertBannerLocation.bottom);
+        showSnackBar(
+          context,
+          () {},
+          message: 'Folder contains no songs',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
         return;
       }
 
       await musicService.setPlaylist(folderSongs, startIndex: 0);
       await musicService.play();
 
-      showSnackBar(context, () {}, message: 'Playing ${folderSongs.length} songs from ${folder.name}', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Playing ${folderSongs.length} songs from ${folder.name}',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
     } catch (e) {
-      showSnackBar(context, () {}, message: 'Error playing folder: $e', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Error playing folder: $e',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
     }
   }
 
   Future<void> _playNextFolder(BuildContext context) async {
     if (folder.id == null) {
-      showSnackBar(context, () {}, message: 'Folder contains no songs', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Folder contains no songs',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
       return;
     }
     try {
-      final folderSongs = (await _repo.getSongsForFolder(folder.id!)).cast<SongsModel>();
+      final folderSongs = (await _repo.getSongsForFolder(
+        folder.id!,
+      )).cast<SongsModel>();
 
       if (folderSongs.isEmpty) {
-        showSnackBar(context, () {}, message: 'Folder contains no songs', alertBannerLocation: AlertBannerLocation.bottom);
+        showSnackBar(
+          context,
+          () {},
+          message: 'Folder contains no songs',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
         return;
       }
 
@@ -1102,94 +1352,145 @@ class _FolderActionSheet extends StatelessWidget {
         // newSongsList.insertAll(insertIndex, songsToAdd);
         //
         // await musicService.setPlaylist(newSongsList, startIndex: currentIndex >= 0 ? currentIndex : 0, autoPlay: false);
-        final updateCount = await musicService.playNextMultipleSongs(folderSongs);
+        final updateCount = await musicService.playNextMultipleSongs(
+          folderSongs,
+        );
 
-        if(updateCount < 1){
+        if (updateCount < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to play next",
-            alertBannerLocation: AlertBannerLocation.bottom,
-          );
-        }
-        else{
-          showSnackBar(
-            context,
-                () {},
-            message: "$updateCount songs added to play next",
-            alertBannerLocation: AlertBannerLocation.bottom,
-          );
-        }
-      }
-
-    } catch (e) {
-      showSnackBar(context, () {}, message: 'Error adding folder to play next', alertBannerLocation: AlertBannerLocation.bottom);
-    }
-  }
-
-  Future<void> _addFolderToQueue(BuildContext context) async {
-    if (folder.id == null) {
-      showSnackBar(context, () {}, message: 'Folder contains no songs', alertBannerLocation: AlertBannerLocation.bottom);
-      return;
-    }
-    try {
-      final folderSongs = (await _repo.getSongsForFolder(folder.id!)).cast<SongsModel>();
-
-      if (folderSongs.isEmpty) {
-        showSnackBar(context, () {}, message: 'Folder contains no songs', alertBannerLocation: AlertBannerLocation.bottom);
-        return;
-      }
-
-      final addedSong = await musicService.addMultipleSongsToQueue(folderSongs);
-
-        if (addedSong < 1) {
-          showSnackBar(
-            context,
-                () {},
-            message: "Songs already added to queue",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         } else {
           showSnackBar(
             context,
-                () {},
-            message: "$addedSong songs added to queue",
+            () {},
+            message: "$updateCount songs added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         }
+      }
     } catch (e) {
-      showSnackBar(context, () {}, message: 'Error adding folder to queue', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Error adding folder to play next',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    }
+  }
+
+  Future<void> _addFolderToQueue(BuildContext context) async {
+    if (folder.id == null) {
+      showSnackBar(
+        context,
+        () {},
+        message: 'Folder contains no songs',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+      return;
+    }
+    try {
+      final folderSongs = (await _repo.getSongsForFolder(
+        folder.id!,
+      )).cast<SongsModel>();
+
+      if (folderSongs.isEmpty) {
+        showSnackBar(
+          context,
+          () {},
+          message: 'Folder contains no songs',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+        return;
+      }
+
+      final addedSong = await musicService.addMultipleSongsToQueue(folderSongs);
+
+      if (addedSong < 1) {
+        showSnackBar(
+          context,
+          () {},
+          message: "Songs already added to queue",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      } else {
+        showSnackBar(
+          context,
+          () {},
+          message: "$addedSong songs added to queue",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      }
+    } catch (e) {
+      showSnackBar(
+        context,
+        () {},
+        message: 'Error adding folder to queue',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
     }
   }
 
   Future<void> _addFolderToPlaylist(BuildContext context) async {
     if (folder.id == null) {
-      showSnackBar(context, () {}, message: 'Folder contains no songs', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Folder contains no songs',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
       return;
     }
     try {
       final playlistBloc = context.read<PlaylistBloc>();
-      final folderSongs = (await _repo.getSongsForFolder(folder.id!)).cast<SongsModel>();
+      final folderSongs = (await _repo.getSongsForFolder(
+        folder.id!,
+      )).cast<SongsModel>();
 
       if (folderSongs.isEmpty) {
-        showSnackBar(context, () {}, message: 'Folder contains no songs', alertBannerLocation: AlertBannerLocation.bottom);
+        showSnackBar(
+          context,
+          () {},
+          message: 'Folder contains no songs',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
         return;
       }
 
-      showModalBottomSheet(
-        context: context,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
-        isScrollControlled: true,
-        builder: (_) => BlocProvider.value(
-          value: playlistBloc,
-          child: PlaylistBottomSheet(songsList: folderSongs),
-        ),
+      showCommonAddToPlaylistBottomSheet(
+        context,
+        songsList: folderSongs,
+        playlistBloc: playlistBloc,
       );
     } catch (e) {
-      showSnackBar(context, () {}, message: 'Error fetching songs from folder: $e', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Error fetching songs from folder: $e',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
     }
+  }
+
+  void _showHideFolderConfirmation(BuildContext context, bool hide) {
+    final localization = S.of(context);
+    showCommonConfirmationBottomSheet(
+      context: context,
+      title: hide ? localization.hideFolder : localization.unhideFolder,
+      message: hide
+          ? 'Are you sure you want to hide this folder?'
+          : 'Are you sure you want to unhide this folder?',
+      confirmButtonText: hide
+          ? localization.hideFolder
+          : localization.unhideFolder,
+      onConfirm: (sheetContext) async {
+        Navigator.pop(sheetContext);
+        await _toggleFolderHidden(context, hide);
+      },
+    );
   }
 
   Future<void> _toggleFolderHidden(BuildContext context, bool hide) async {
@@ -1202,11 +1503,19 @@ class _FolderActionSheet extends StatelessWidget {
       showSnackBar(
         context,
         () {},
-        message: hide ? '"${folder.name}" hidden successfully' : '"${folder.name}" is visible again',
+        message: hide
+            ? '"${folder.name}" hidden successfully'
+            : '"${folder.name}" is visible again',
         alertBannerLocation: AlertBannerLocation.bottom,
       );
     } catch (e) {
-      showSnackBar(context, () {}, message: 'Failed to update folder: $e', backgroundColor: Colors.red, alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Failed to update folder: $e',
+        backgroundColor: Colors.red,
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
     }
   }
 }
@@ -1216,7 +1525,9 @@ void _showAlbumMenuSheet(BuildContext context, Album album) {
     context: context,
     backgroundColor: Colors.white,
     elevation: 0,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
+    ),
     isScrollControlled: true,
     builder: (_) => _AlbumActionSheet(album: album),
   );
@@ -1232,7 +1543,9 @@ class _AlbumActionSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localization = S.of(context);
-    final albumArtworkPath = (album.artworkPath?.isNotEmpty ?? false) ? album.artworkPath! : Assets.svgAlbum;
+    final albumArtworkPath = (album.artworkPath?.isNotEmpty ?? false)
+        ? album.artworkPath!
+        : Assets.svgAlbum;
 
     return SafeArea(
       child: Padding(
@@ -1370,36 +1683,70 @@ class _AlbumActionSheet extends StatelessWidget {
 
   Future<void> _playAlbum(BuildContext context) async {
     if (album.id == null) {
-      showSnackBar(context, () {}, message: 'Album contains no songs', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Album contains no songs',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
       return;
     }
     try {
-      final albumSongs = (await _repo.getSongsForAlbum(album.id!)).cast<SongsModel>();
+      final albumSongs = (await _repo.getSongsForAlbum(
+        album.id!,
+      )).cast<SongsModel>();
 
       if (albumSongs.isEmpty) {
-        showSnackBar(context, () {}, message: 'Album contains no songs', alertBannerLocation: AlertBannerLocation.bottom);
+        showSnackBar(
+          context,
+          () {},
+          message: 'Album contains no songs',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
         return;
       }
 
       await musicService.setPlaylist(albumSongs, startIndex: 0);
       await musicService.play();
 
-      showSnackBar(context, () {}, message: 'Playing ${albumSongs.length} songs from ${album.name}', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Playing ${albumSongs.length} songs from ${album.name}',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
     } catch (e) {
-      showSnackBar(context, () {}, message: 'Error playing album: $e', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Error playing album: $e',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
     }
   }
 
   Future<void> _playNextAlbum(BuildContext context) async {
     if (album.id == null) {
-      showSnackBar(context, () {}, message: 'Album contains no songs', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Album contains no songs',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
       return;
     }
     try {
-      final albumSongs = (await _repo.getSongsForAlbum(album.id!)).cast<SongsModel>();
+      final albumSongs = (await _repo.getSongsForAlbum(
+        album.id!,
+      )).cast<SongsModel>();
 
       if (albumSongs.isEmpty) {
-        showSnackBar(context, () {}, message: 'Album contains no songs', alertBannerLocation: AlertBannerLocation.bottom);
+        showSnackBar(
+          context,
+          () {},
+          message: 'Album contains no songs',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
         return;
       }
 
@@ -1418,92 +1765,126 @@ class _AlbumActionSheet extends StatelessWidget {
         // newSongsList.insertAll(insertIndex, songsToAdd);
         //
         // await musicService.setPlaylist(newSongsList, startIndex: currentIndex >= 0 ? currentIndex : 0, autoPlay: false);
-        final updateCount = await musicService.playNextMultipleSongs(albumSongs);
+        final updateCount = await musicService.playNextMultipleSongs(
+          albumSongs,
+        );
 
-        if(updateCount < 1){
+        if (updateCount < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }
-        else{
+        } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$updateCount songs added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         }
       }
     } catch (e) {
-      showSnackBar(context, () {}, message: 'Error adding album to play next', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Error adding album to play next',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
     }
   }
 
   Future<void> _addAlbumToQueue(BuildContext context) async {
     if (album.id == null) {
-      showSnackBar(context, () {}, message: 'Album contains no songs', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Album contains no songs',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
       return;
     }
     try {
-      final albumSongs = (await _repo.getSongsForAlbum(album.id!)).cast<SongsModel>();
+      final albumSongs = (await _repo.getSongsForAlbum(
+        album.id!,
+      )).cast<SongsModel>();
 
       if (albumSongs.isEmpty) {
-        showSnackBar(context, () {}, message: 'Album contains no songs', alertBannerLocation: AlertBannerLocation.bottom);
+        showSnackBar(
+          context,
+          () {},
+          message: 'Album contains no songs',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
         return;
       }
 
       final addedSong = await musicService.addMultipleSongsToQueue(albumSongs);
 
-        if (addedSong < 1) {
-          showSnackBar(
-            context,
-                () {},
-            message: "Songs already added to queue",
-            alertBannerLocation: AlertBannerLocation.bottom,
-          );
-        } else {
-          showSnackBar(
-            context,
-                () {},
-            message: "$addedSong songs added to queue",
-            alertBannerLocation: AlertBannerLocation.bottom,
-          );
+      if (addedSong < 1) {
+        showSnackBar(
+          context,
+          () {},
+          message: "Songs already added to queue",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      } else {
+        showSnackBar(
+          context,
+          () {},
+          message: "$addedSong songs added to queue",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
       }
     } catch (e) {
-      showSnackBar(context, () {}, message: 'Error adding album to queue', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Error adding album to queue',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
     }
   }
 
   Future<void> _addAlbumToPlaylist(BuildContext context) async {
     if (album.id == null) {
-      showSnackBar(context, () {}, message: 'Album contains no songs', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Album contains no songs',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
       return;
     }
     try {
       final playlistBloc = context.read<PlaylistBloc>();
-      final albumSongs = (await _repo.getSongsForAlbum(album.id!)).cast<SongsModel>();
+      final albumSongs = (await _repo.getSongsForAlbum(
+        album.id!,
+      )).cast<SongsModel>();
 
       if (albumSongs.isEmpty) {
-        showSnackBar(context, () {}, message: 'Album contains no songs', alertBannerLocation: AlertBannerLocation.bottom);
+        showSnackBar(
+          context,
+          () {},
+          message: 'Album contains no songs',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
         return;
       }
 
-      showModalBottomSheet(
-        context: context,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
-        isScrollControlled: true,
-        builder: (_) => BlocProvider.value(
-          value: playlistBloc,
-          child: PlaylistBottomSheet(songsList: albumSongs),
-        ),
+      showCommonAddToPlaylistBottomSheet(
+        context,
+        songsList: albumSongs,
+        playlistBloc: playlistBloc,
       );
     } catch (e) {
-      showSnackBar(context, () {}, message: 'Error fetching songs from album: $e', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Error fetching songs from album: $e',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
     }
   }
 }
@@ -1513,7 +1894,9 @@ void _showArtistMenuSheet(BuildContext context, Artist artist) {
     context: context,
     backgroundColor: Colors.white,
     elevation: 0,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
+    ),
     isScrollControlled: true,
     builder: (_) => _ArtistActionSheet(artist: artist),
   );
@@ -1529,7 +1912,9 @@ class _ArtistActionSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localization = S.of(context);
-    final artistArtworkPath = (artist.artworkPath?.isNotEmpty ?? false) ? artist.artworkPath! : Assets.svgMusicIcon;
+    final artistArtworkPath = (artist.artworkPath?.isNotEmpty ?? false)
+        ? artist.artworkPath!
+        : Assets.svgMusicIcon;
 
     return SafeArea(
       child: Padding(
@@ -1665,36 +2050,70 @@ class _ArtistActionSheet extends StatelessWidget {
 
   Future<void> _playArtist(BuildContext context) async {
     if (artist.id == null) {
-      showSnackBar(context, () {}, message: 'Artist has no songs', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Artist has no songs',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
       return;
     }
     try {
-      final artistSongs = (await _repo.getSongsForArtist(artist.id!)).cast<SongsModel>();
+      final artistSongs = (await _repo.getSongsForArtist(
+        artist.id!,
+      )).cast<SongsModel>();
 
       if (artistSongs.isEmpty) {
-        showSnackBar(context, () {}, message: 'Artist has no songs', alertBannerLocation: AlertBannerLocation.bottom);
+        showSnackBar(
+          context,
+          () {},
+          message: 'Artist has no songs',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
         return;
       }
 
       await musicService.setPlaylist(artistSongs, startIndex: 0);
       await musicService.play();
 
-      showSnackBar(context, () {}, message: 'Playing ${artistSongs.length} songs from ${artist.name}', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Playing ${artistSongs.length} songs from ${artist.name}',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
     } catch (e) {
-      showSnackBar(context, () {}, message: 'Error playing artist: $e', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Error playing artist: $e',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
     }
   }
 
   Future<void> _playNextArtist(BuildContext context) async {
     if (artist.id == null) {
-      showSnackBar(context, () {}, message: 'Artist has no songs', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Artist has no songs',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
       return;
     }
     try {
-      final artistSongs = (await _repo.getSongsForArtist(artist.id!)).cast<SongsModel>();
+      final artistSongs = (await _repo.getSongsForArtist(
+        artist.id!,
+      )).cast<SongsModel>();
 
       if (artistSongs.isEmpty) {
-        showSnackBar(context, () {}, message: 'Artist has no songs', alertBannerLocation: AlertBannerLocation.bottom);
+        showSnackBar(
+          context,
+          () {},
+          message: 'Artist has no songs',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
         return;
       }
 
@@ -1714,94 +2133,134 @@ class _ArtistActionSheet extends StatelessWidget {
         //
         // await musicService.setPlaylist(newSongsList, startIndex: currentIndex >= 0 ? currentIndex : 0, autoPlay: false);
 
-        final updateCount = await musicService.playNextMultipleSongs(artistSongs);
+        final updateCount = await musicService.playNextMultipleSongs(
+          artistSongs,
+        );
 
-        if(updateCount < 1){
+        if (updateCount < 1) {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "Songs already added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
-        }
-        else{
+        } else {
           showSnackBar(
             context,
-                () {},
+            () {},
             message: "$updateCount songs added to play next",
             alertBannerLocation: AlertBannerLocation.bottom,
           );
         }
       }
 
-      showSnackBar(context, () {}, message: '${artistSongs.length} songs from ${artist.name} added to play next', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message:
+            '${artistSongs.length} songs from ${artist.name} added to play next',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
     } catch (e) {
-      showSnackBar(context, () {}, message: 'Error adding artist to play next', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Error adding artist to play next',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
     }
   }
 
   Future<void> _addArtistToQueue(BuildContext context) async {
     if (artist.id == null) {
-      showSnackBar(context, () {}, message: 'Artist has no songs', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Artist has no songs',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
       return;
     }
     try {
-      final artistSongs = (await _repo.getSongsForArtist(artist.id!)).cast<SongsModel>();
+      final artistSongs = (await _repo.getSongsForArtist(
+        artist.id!,
+      )).cast<SongsModel>();
 
       if (artistSongs.isEmpty) {
-        showSnackBar(context, () {}, message: 'Artist has no songs', alertBannerLocation: AlertBannerLocation.bottom);
+        showSnackBar(
+          context,
+          () {},
+          message: 'Artist has no songs',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
         return;
       }
 
       final addedSong = await musicService.addMultipleSongsToQueue(artistSongs);
 
-        if (addedSong < 1) {
-          showSnackBar(
-            context,
-                () {},
-            message: "Songs already added to queue",
-            alertBannerLocation: AlertBannerLocation.bottom,
-          );
-        } else {
-          showSnackBar(
-            context,
-                () {},
-            message: "$addedSong songs added to queue",
-            alertBannerLocation: AlertBannerLocation.bottom,
-          );
-        }
+      if (addedSong < 1) {
+        showSnackBar(
+          context,
+          () {},
+          message: "Songs already added to queue",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      } else {
+        showSnackBar(
+          context,
+          () {},
+          message: "$addedSong songs added to queue",
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+      }
     } catch (e) {
-      showSnackBar(context, () {}, message: 'Error adding artist to queue', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Error adding artist to queue',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
     }
   }
 
   Future<void> _addArtistToPlaylist(BuildContext context) async {
     if (artist.id == null) {
-      showSnackBar(context, () {}, message: 'Artist has no songs', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Artist has no songs',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
       return;
     }
     try {
       final playlistBloc = context.read<PlaylistBloc>();
-      final artistSongs = (await _repo.getSongsForArtist(artist.id!)).cast<SongsModel>();
+      final artistSongs = (await _repo.getSongsForArtist(
+        artist.id!,
+      )).cast<SongsModel>();
 
       if (artistSongs.isEmpty) {
-        showSnackBar(context, () {}, message: 'Artist has no songs', alertBannerLocation: AlertBannerLocation.bottom);
+        showSnackBar(
+          context,
+          () {},
+          message: 'Artist has no songs',
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
         return;
       }
 
-      showModalBottomSheet(
-        context: context,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
-        isScrollControlled: true,
-        builder: (_) => BlocProvider.value(
-          value: playlistBloc,
-          child: PlaylistBottomSheet(songsList: artistSongs),
-        ),
+      showCommonAddToPlaylistBottomSheet(
+        context,
+        songsList: artistSongs,
+        playlistBloc: playlistBloc,
       );
     } catch (e) {
-      showSnackBar(context, () {}, message: 'Error fetching songs from artist: $e', alertBannerLocation: AlertBannerLocation.bottom);
+      showSnackBar(
+        context,
+        () {},
+        message: 'Error fetching songs from artist: $e',
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
     }
   }
 }
