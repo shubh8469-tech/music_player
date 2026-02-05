@@ -8,6 +8,7 @@ import 'package:music_app/features/playlists/bloc/playlist_bloc.dart';
 import 'package:music_app/themes/font.dart';
 
 import '../../../../themes/color.dart';
+import '../../../../utills/playlist_validation.dart';
 import '../../../../utills/snack_bar.dart';
 
 /// CreatePlaylistBottomSheet - A bottom sheet for creating a new playlist
@@ -39,6 +40,7 @@ class CreatePlaylistBottomSheet extends StatefulWidget {
 }
 
 class _CreatePlaylistBottomSheetState extends State<CreatePlaylistBottomSheet> {
+  final _formKey = GlobalKey<FormState>();
   TextEditingController playlistNameController = TextEditingController();
   FocusNode playlistNameFocusNode = FocusNode();
   bool _isCreating = false;
@@ -62,17 +64,9 @@ class _CreatePlaylistBottomSheetState extends State<CreatePlaylistBottomSheet> {
   void _createPlaylist() async {
     if (_isCreating) return;
 
-    final playlistName = playlistNameController.text.trim();
+    if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    if (playlistName.isEmpty) {
-      showSnackBar(
-        context,
-        () {},
-        message: "Please enter a playlist name",
-        alertBannerLocation: AlertBannerLocation.bottom,
-      );
-      return;
-    }
+    final playlistName = playlistNameController.text.trim();
 
     setState(() {
       _isCreating = true;
@@ -96,10 +90,9 @@ class _CreatePlaylistBottomSheetState extends State<CreatePlaylistBottomSheet> {
           loaded: (playlists, systemPlaylistSongs) {
             // Find the playlist with the matching name (should be the most recent one)
 
-              newPlaylist = playlists
-                  .where((p) => p.name == playlistName && p.isSystem != true)
-                  .firstOrNull;
-
+            newPlaylist = playlists
+                .where((p) => p.name == playlistName && p.isSystem != true)
+                .firstOrNull;
           },
           orElse: () {},
         );
@@ -151,7 +144,7 @@ class _CreatePlaylistBottomSheetState extends State<CreatePlaylistBottomSheet> {
     final viewPadding = MediaQuery.of(context).viewPadding.bottom;
     final bottomPadding = viewInsets > 0
         ? viewInsets + 20.h
-        : (viewPadding > 0 ? viewPadding : 20.h);// + 16.h;
+        : (viewPadding > 0 ? viewPadding : 20.h); // + 16.h;
 
     return SafeArea(
       child: Container(
@@ -159,13 +152,15 @@ class _CreatePlaylistBottomSheetState extends State<CreatePlaylistBottomSheet> {
           left: 16.w,
           right: 16.w,
           top: 10.h,
-          bottom: bottomPadding//20.h,
+          bottom: bottomPadding, //20.h,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Top handle bar
-            Container(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Top handle bar
+              Container(
               width: 40.w,
               height: 4.h,
               decoration: BoxDecoration(
@@ -188,44 +183,74 @@ class _CreatePlaylistBottomSheetState extends State<CreatePlaylistBottomSheet> {
               textAlign: TextAlign.center,
             ),
 
-            SizedBox(height: 30.h),
+            SizedBox(height: 35.h),
 
             // Input field
-            Container(
-              height: 48.h,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: TextField(
-                controller: playlistNameController,
-                focusNode: playlistNameFocusNode,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 12.h,
-                  ),
-                  hintText: 'Enter Playlist Name',
-                  hintStyle: TextStyle(
-                    fontSize: 16.sp,
-                    fontFamily: AppFonts.inter,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.grey[600],
-                  ),
+            TextFormField(
+              controller: playlistNameController,
+              focusNode: playlistNameFocusNode,
+              validator: PlaylistValidation.validatePlaylistName,
+              maxLength: PlaylistValidation.maxNameLength,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.grey[200],
+                suffixIconConstraints: const BoxConstraints(
+                  minHeight: 0,
+                  minWidth: 0,
                 ),
-                style: TextStyle(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(color: Colors.transparent),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(color: Colors.transparent),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(color: Colors.transparent),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(color: Colors.transparent),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(color: Colors.transparent),
+                ),
+                disabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(color: Colors.grey.shade400),
+                ),
+                counterText: '',
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 12.h,
+                ),
+                hintText: 'Enter Playlist Name',
+                hintStyle: TextStyle(
                   fontSize: 16.sp,
                   fontFamily: AppFonts.inter,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.black,
+                  color: Colors.grey[600],
                 ),
-                textInputAction: TextInputAction.done,
-                onSubmitted: (_) => _createPlaylist(),
+                errorStyle: TextStyle(
+                  fontSize: 12.sp,
+                  fontFamily: AppFonts.inter,
+                  color: Colors.red,
+                ),
               ),
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontFamily: AppFonts.inter,
+                fontWeight: FontWeight.w400,
+                color: AppColors.black,
+              ),
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) => _createPlaylist(),
             ),
 
-            SizedBox(height: 30.h),
+            SizedBox(height: 37.h),
 
             // Action buttons
             Row(
@@ -295,10 +320,10 @@ class _CreatePlaylistBottomSheetState extends State<CreatePlaylistBottomSheet> {
                 ),
               ],
             ),
-
           ],
         ),
       ),
+    ),
     );
   }
 }

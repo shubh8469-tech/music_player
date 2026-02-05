@@ -13,7 +13,7 @@ import '../../../commonWidgets/text_field_widget.dart';
 import '../../../generated/assets.dart';
 import '../../../l10n/l10n.dart';
 import '../../../themes/color.dart';
-import '../../../utills/snack_bar.dart';
+import '../../../utills/playlist_validation.dart';
 
 class CreateNewPlaylistBottomSheet extends StatefulWidget {
   const CreateNewPlaylistBottomSheet({super.key});
@@ -25,8 +25,19 @@ class CreateNewPlaylistBottomSheet extends StatefulWidget {
 
 class _CreateNewPlaylistBottomSheetState
     extends State<CreateNewPlaylistBottomSheet> {
+  final _formKey = GlobalKey<FormState>();
   TextEditingController playlistNameController = TextEditingController();
   FocusNode playlistNameFocusNode = FocusNode();
+
+  void _createPlaylist() {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    final playlistName = playlistNameController.text.trim();
+    context.read<PlaylistBloc>().add(
+          PlaylistEvent.addPlaylist(playlistName),
+        );
+    Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,9 +51,10 @@ class _CreateNewPlaylistBottomSheetState
         : (viewPadding > 0 ? viewPadding : 20.h);
 
     return SafeArea(
-      child: Container(
-        // constraints: BoxConstraints(minHeight: minHeight),
-        padding: EdgeInsets.only(
+      child: Form(
+        key: _formKey,
+        child: Container(
+          padding: EdgeInsets.only(
           left: 16.w,
           right: 16.w,
           top: 10.h,
@@ -59,39 +71,78 @@ class _CreateNewPlaylistBottomSheetState
               fontWeight: FontWeight.w500,
               fontFamily: AppFonts.inter,
             ),
-            SizedBox(height: 30.h),
-            Flexible(
-              child: Padding(
-                padding: EdgeInsets.only(bottom: 15.0.h, top: 10.h),
-                child: TextFieldWidget(
-                  controller: playlistNameController,
-                  fillColor: AppColors.textColor.withValues(alpha: .2),
-                  wantListeners: true,
-                  cursorColor: AppColors.textColor,
-                  textStyleColor: AppColors.textColor,
-                  textInputAction: TextInputAction.done,
-                  hintText: "Enter Playlist Name",
-                  hintStyle: TextStyle(
-                    fontSize: 13.sp,
-                    fontFamily: AppFonts.inter,
-                    fontWeight: FontWeight.w400,
-                  ),
-                  focusNode: playlistNameFocusNode,
-                  hasFocus: playlistNameFocusNode.hasFocus,
-                  onFieldSubmitted: (value) {
-                    FocusScope.of(context).unfocus();
-                  },
+            SizedBox(height: 35.h),
+            TextFormField(
+              controller: playlistNameController,
+              validator: PlaylistValidation.validatePlaylistName,
+              maxLength: PlaylistValidation.maxNameLength,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.grey[200],
+                suffixIconConstraints: const BoxConstraints(
+                  minHeight: 0,
+                  minWidth: 0,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(color: Colors.transparent),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(color: Colors.transparent),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(color: Colors.transparent),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(color: Colors.transparent),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(color: Colors.transparent),
+                ),
+                disabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(color: Colors.grey.shade400),
+                ),
+                counterText: '',
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 12.h,
+                ),
+                hintText: 'Enter Playlist Name',
+                hintStyle: TextStyle(
+                  fontSize: 16.sp,
+                  fontFamily: AppFonts.inter,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.grey[600],
+                ),
+                errorStyle: TextStyle(
+                  fontSize: 12.sp,
+                  fontFamily: AppFonts.inter,
+                  color: Colors.red,
                 ),
               ),
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontFamily: AppFonts.inter,
+                fontWeight: FontWeight.w400,
+                color: AppColors.black,
+              ),
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) => _createPlaylist(),
+              focusNode: playlistNameFocusNode,
             ),
-            SizedBox(height: 25.h),
+            SizedBox(height: 37.h),
 
             Row(
               children: [
                 // Cancel button
                 Expanded(
                   child: GestureDetector(
-                    onTap: (){
+                    onTap: () {
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -119,22 +170,7 @@ class _CreateNewPlaylistBottomSheetState
                 // Create button
                 Expanded(
                   child: GestureDetector(
-                    onTap: (){
-                      if (playlistNameController.text.isEmpty) {
-                        showSnackBar(
-                          context,
-                              () {},
-                          message: "Please enter a playlist name",
-                          alertBannerLocation: AlertBannerLocation.bottom,
-                        );
-                      }
-                      else{
-                        context.read<PlaylistBloc>().add(
-                          PlaylistEvent.addPlaylist(playlistNameController.text),
-                        );
-                        Navigator.pop(context);
-                      }
-                    },
+                    onTap: _createPlaylist,
                     child: Container(
                       height: 48.h,
                       decoration: BoxDecoration(
@@ -160,6 +196,7 @@ class _CreateNewPlaylistBottomSheetState
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }

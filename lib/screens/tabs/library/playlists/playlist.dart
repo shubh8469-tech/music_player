@@ -17,6 +17,7 @@ import 'dart:async';
 
 import 'create_playlist_bottom_sheet.dart';
 import 'rename_playlist_bottom_sheet.dart';
+import '../../../../commonWidgets/common_modal_bottom_sheet.dart';
 import '../../../../utills/snack_bar.dart';
 
 class PlayListScreen extends StatefulWidget {
@@ -361,27 +362,13 @@ class _PlayListScreenState extends State<PlayListScreen> {
                                     systemKeyOrId: p.id.toString(),
                                     onRename: () async {
                                       final result =
-                                          await showModalBottomSheet<String>(
-                                            context: context,
-                                            backgroundColor: Colors.white,
-                                            elevation: 0,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.vertical(
-                                                    top: Radius.circular(40.r),
-                                                  ),
-                                            ),
-                                            isScrollControlled: true,
-                                            builder: (_) => BlocProvider.value(
-                                              value: context
-                                                  .read<PlaylistBloc>(),
-                                              child: RenamePlaylistBottomSheet(
-                                                playlist: p,
-                                              ),
-                                            ),
-                                          );
+                                          await showRenamePlaylistBottomSheet(
+                                        context: context,
+                                        playlist: p,
+                                      );
                                       if (!mounted) return;
-                                      if (result != null && result.isNotEmpty) {
+                                      if (result != null &&
+                                          result.isNotEmpty) {
                                         showSnackBar(
                                           context,
                                           () {},

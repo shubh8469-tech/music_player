@@ -243,11 +243,11 @@ final GoRouter appRouter = GoRouter(
             return AddSongsScreen(playlist: playlist);
           },
         ),
-        GoRoute(
-          name: AppRouteName.createPlaylist.name,
-          path: 'create-playlist',
-          builder: (context, state) => const CreatePlaylistScreen(),
-        ),
+        // GoRoute(
+        //   name: AppRouteName.createPlaylist.name,
+        //   path: 'create-playlist',
+        //   builder: (context, state) => const CreatePlaylistScreen(),
+        // ),
         GoRoute(
           name: AppRouteName.selectPlaylist.name,
           path: 'select-playlist',

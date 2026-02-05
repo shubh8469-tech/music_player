@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:music_app/features/playlists/bloc/playlist_bloc.dart';
+import 'package:music_app/features/playlists/domain/entities/playlist.dart'
+    as domain;
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/l10n/l10n.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
 import 'textWidget.dart';
 import '../screens/play_song/widget/playlist_bottomsheet.dart';
+import '../screens/tabs/library/playlists/rename_playlist_bottom_sheet.dart';
 
 /// A common confirmation bottom sheet for delete, hide, and similar actions.
 /// Use [showCommonConfirmationBottomSheet] to display it with consistent styling.
@@ -200,6 +203,32 @@ void showCommonAddToPlaylistBottomSheet(
     builder: (_) => BlocProvider.value(
       value: bloc,
       child: PlaylistBottomSheet(songId: songId, songsList: songsList),
+    ),
+  );
+}
+
+/// Shows the Rename Playlist bottom sheet with consistent modal styling.
+///
+/// Returns the new playlist name as a [String] when rename succeeds,
+/// or `null` if the sheet was dismissed or rename did not complete.
+Future<String?> showRenamePlaylistBottomSheet({
+  required BuildContext context,
+  required domain.Playlist playlist,
+  PlaylistBloc? playlistBloc,
+}) {
+  final bloc = playlistBloc ?? context.read<PlaylistBloc>();
+
+  return showModalBottomSheet<String>(
+    context: context,
+    backgroundColor: AppColors.white,
+    elevation: 0,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
+    ),
+    isScrollControlled: true,
+    builder: (_) => BlocProvider.value(
+      value: bloc,
+      child: RenamePlaylistBottomSheet(playlist: playlist),
     ),
   );
 }

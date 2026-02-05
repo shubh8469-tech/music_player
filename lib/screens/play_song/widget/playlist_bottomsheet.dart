@@ -61,7 +61,7 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
 
             return SafeArea(
               child: Container(
-                constraints: BoxConstraints(maxHeight: maxHeight),
+                // constraints: BoxConstraints(maxHeight: maxHeight),
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(50.r)
@@ -84,14 +84,14 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SvgPicture.asset(Assets.svgIcLineBottom),
-                    SizedBox(height: 20.h),
+                    SizedBox(height: 30.h),
                     Texts(
                       'Add to playlist',
                       fontSize: 18.sp,
                       fontWeight: FontWeight.w500,
                       fontFamily: AppFonts.inter,
                     ),
-                    SizedBox(height: 16.h),
+                    SizedBox(height: 32.h),
               
                     Flexible(
                       child: ListView(
@@ -162,7 +162,7 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
                                   ),
               
                                   if (index == playlists.length - 1) ...[
-                                    SizedBox(height: 12.h),
+                                    SizedBox(height: 37.h),
                                     Row(
                                       children: [
                                         // Cancel button

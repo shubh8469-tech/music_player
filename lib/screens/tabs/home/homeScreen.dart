@@ -14,6 +14,7 @@ import '../../../generated/assets.dart';
 import '../../../utills/snack_bar.dart';
 import '../../../screens/tabs/music_service.dart';
 import '../../../features/playlists/bloc/playlist_bloc.dart';
+import '../../../commonWidgets/common_modal_bottom_sheet.dart';
 import '../../play_song/playing_song_screen.dart';
 import '../library/playlists/create_playlist_bottom_sheet.dart';
 import '../library/playlists/rename_playlist_bottom_sheet.dart';
@@ -411,63 +412,53 @@ class _HomeScreenState extends State<HomeScreen> {
                                 },
                               );
                             },
-                            onPlayTap: () {
-                              showModalBottomSheet(
-                                context: context,
-                                backgroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(40.r),
-                                  ),
-                                ),
-                                isScrollControlled: true,
-                                builder: (_) => BlocProvider.value(
-                                  value: context.read<PlaylistBloc>(),
-                                  child: PlaylistMenuScreen(
-                                    playlist: playlist,
-                                    playlistIconAsset: coverAsset,
-                                    playlistGradientColors:
-                                        playlistGradientColors,
-                                    isSystemPlaylist: false,
-                                    systemKeyOrId: playlist.id.toString(),
-                                    onRename: () async {
-                                      final result =
-                                          await showModalBottomSheet<String>(
-                                            context: context,
-                                            backgroundColor: Colors.white,
-                                            elevation: 0,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.vertical(
-                                                    top: Radius.circular(40.r),
-                                                  ),
-                                            ),
-                                            isScrollControlled: true,
-                                            builder: (_) => BlocProvider.value(
-                                              value: context
-                                                  .read<PlaylistBloc>(),
-                                              child: RenamePlaylistBottomSheet(
+                                    onPlayTap: () {
+                                      showModalBottomSheet(
+                                        context: context,
+                                        backgroundColor: Colors.white,
+                                        elevation: 0,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.vertical(
+                                            top: Radius.circular(40.r),
+                                          ),
+                                        ),
+                                        isScrollControlled: true,
+                                        builder: (_) => BlocProvider.value(
+                                          value:
+                                              context.read<PlaylistBloc>(),
+                                          child: PlaylistMenuScreen(
+                                            playlist: playlist,
+                                            playlistIconAsset: coverAsset,
+                                            playlistGradientColors:
+                                                playlistGradientColors,
+                                            isSystemPlaylist: false,
+                                            systemKeyOrId:
+                                                playlist.id.toString(),
+                                            onRename: () async {
+                                              final result =
+                                                  await showRenamePlaylistBottomSheet(
+                                                context: context,
                                                 playlist: playlist,
-                                              ),
-                                            ),
-                                          );
-                                      if (!context.mounted) return;
-                                      if (result != null && result.isNotEmpty) {
-                                        showSnackBar(
-                                          context,
-                                          () {},
-                                          message:
-                                              'Playlist renamed successfully',
-                                          alertBannerLocation:
-                                              AlertBannerLocation.bottom,
-                                        );
-                                      }
+                                              );
+                                              if (!context.mounted) return;
+                                              if (result != null &&
+                                                  result.isNotEmpty) {
+                                                showSnackBar(
+                                                  context,
+                                                  () {},
+                                                  message:
+                                                      'Playlist renamed successfully',
+                                                  alertBannerLocation:
+                                                      AlertBannerLocation
+                                                          .bottom,
+                                                );
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                      );
                                     },
-                                  ),
-                                ),
-                              );
-                            },
                           );
                         }).toList(),
                       );

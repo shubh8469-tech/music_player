@@ -637,23 +637,10 @@ class _PlaylistsSection extends StatelessWidget {
                               ? null
                               : () async {
                                   final result =
-                                      await showModalBottomSheet<String>(
-                                        context: context,
-                                        backgroundColor: Colors.white,
-                                        elevation: 0,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(40.r),
-                                          ),
-                                        ),
-                                        isScrollControlled: true,
-                                        builder: (_) => BlocProvider.value(
-                                          value: context.read<PlaylistBloc>(),
-                                          child: RenamePlaylistBottomSheet(
-                                            playlist: playlist,
-                                          ),
-                                        ),
-                                      );
+                                      await showRenamePlaylistBottomSheet(
+                                    context: context,
+                                    playlist: playlist,
+                                  );
                                   if (!context.mounted) return;
                                   if (result != null && result.isNotEmpty) {
                                     showSnackBar(
