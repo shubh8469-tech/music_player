@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -189,13 +188,13 @@ class AudioPlayerWidget extends StatelessWidget {
               GestureDetector(
                 onTap: () async {
                   try {
-                    await musicService.toggleRepeat();
+                    await provider.toggleRepeat();
                     showSnackBar(
                       context,
                       () {},
-                      message: musicService.loopMode == LoopMode.off
+                      message: provider.loopMode == LoopMode.off
                           ? "Repeat off"
-                          : musicService.loopMode == LoopMode.all
+                          : provider.loopMode == LoopMode.all
                               ? "Loop all"
                               : "Repeat current",
                       alertBannerLocation: AlertBannerLocation.bottom,
@@ -205,9 +204,9 @@ class AudioPlayerWidget extends StatelessWidget {
                   }
                 },
                 child: SvgPicture.asset(
-                  musicService.loopMode == LoopMode.off
+                  provider.loopMode == LoopMode.off
                       ? Assets.svgRepeatOff
-                      : musicService.loopMode == LoopMode.all
+                      : provider.loopMode == LoopMode.all
                           ? Assets.svgRepeatOn
                           : Assets.svgRepeatOnce,
                   width: 28.w,

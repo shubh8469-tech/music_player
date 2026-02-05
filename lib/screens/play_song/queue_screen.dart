@@ -834,7 +834,7 @@ class _QueueScreenState extends State<QueueScreen> {
                                     ? Assets.svgRepeatOnce
                                     : repeatMode == 'off'
                                     ? Assets.svgRepeatOff
-                                    : Assets.svgIcRepeat,
+                                    : Assets.svgRepeatOn,
                                 width: 20.w,
                                 height: 20.h,
                                 colorFilter: ColorFilter.mode(

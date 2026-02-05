@@ -693,7 +693,7 @@ class MusicPlayerService {
     if (Platform.isAndroid) {
       final nextIndex = (currentIndex + 1) % songs.length;
       await _androidPlayer!.seek(Duration.zero, index: nextIndex);
-      await _androidPlayer!.play();
+      // await _androidPlayer!.play();
     } else if (Platform.isIOS) {
       print(
         '🎵 MusicPlayerService.next() called - current index: $currentIndex, total songs: ${songs.length}',

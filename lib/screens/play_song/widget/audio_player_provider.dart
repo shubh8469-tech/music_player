@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import 'package:just_audio/just_audio.dart';
+
 import '../../tabs/music_service.dart';
 
 class AudioPlayerProvider extends ChangeNotifier {
@@ -28,6 +30,9 @@ class AudioPlayerProvider extends ChangeNotifier {
 
   bool get isSeeking => _isSeeking;
   Duration get dragPosition => _dragPosition;
+
+  /// Expose current loop mode for the UI
+  LoopMode get loopMode => _musicService.loopMode;
 
   /// Value to be used by the Slider
   double get sliderValue {
@@ -85,6 +90,12 @@ class AudioPlayerProvider extends ChangeNotifier {
       _isSeeking = false;
       notifyListeners();
     }
+  }
+
+  /// Toggle repeat and notify listeners so the icon updates even when paused
+  Future<void> toggleRepeat() async {
+    await _musicService.toggleRepeat();
+    notifyListeners();
   }
 
   @override
