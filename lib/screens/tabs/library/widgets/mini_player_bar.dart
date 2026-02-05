@@ -270,9 +270,12 @@ class MiniPlayerBar extends StatelessWidget {
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    QueueNavigationHelper.navigateToQueueScreen(
-                                      context,
+                                    context.go(
+                                      '/dashboard/queue',
                                     );
+                                    // QueueNavigationHelper.navigateToQueueScreen(
+                                    //   context,
+                                    // );
                                   },
                                   child: SvgPicture.asset(
                                     Assets.svgIcQueue,
