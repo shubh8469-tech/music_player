@@ -111,17 +111,17 @@ class AudioPlayerWidget extends StatelessWidget {
             children: [
               GestureDetector(
                 onTap: () async {
-                  await musicService.toggleShuffle();
+                  await provider.toggleShuffle();
                   showSnackBar(
                     context,
                     () {},
                     message:
-                        "Shuffle ${musicService.isShuffleEnabled ? "On" : "Off"}",
+                        "Shuffle ${provider.isShuffleEnabled ? "On" : "Off"}",
                     alertBannerLocation: AlertBannerLocation.bottom,
                   );
                 },
                 child: SvgPicture.asset(
-                  musicService.isShuffleEnabled
+                  provider.isShuffleEnabled
                       ? Assets.svgIcSuffle
                       : Assets.svgShuffleOff,
                   width: 28.w,

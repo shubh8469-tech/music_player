@@ -16,6 +16,7 @@ class AudioPlayerProvider extends ChangeNotifier {
   StreamSubscription<Duration?>? _durationSub;
   StreamSubscription<Duration>? _positionSub;
   StreamSubscription<bool>? _playerStateSub;
+  StreamSubscription<bool>? _shuffleSub;
 
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
@@ -69,7 +70,14 @@ class AudioPlayerProvider extends ChangeNotifier {
       _isPlaying = playing;
       notifyListeners();
     });
+
+    _shuffleSub = _musicService.shuffleStream.listen((enabled) {
+      // Just trigger rebuild so isShuffleEnabled getter reflects latest value
+      notifyListeners();
+    });
   }
+
+  bool get isShuffleEnabled => _musicService.isShuffleEnabled;
 
   void startSeeking() {
     _isSeeking = true;
@@ -98,11 +106,17 @@ class AudioPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> toggleShuffle() async {
+    await _musicService.toggleShuffle();
+    notifyListeners();
+  }
+
   @override
   void dispose() {
     _durationSub?.cancel();
     _positionSub?.cancel();
     _playerStateSub?.cancel();
+    _shuffleSub?.cancel();
     super.dispose();
   }
 }

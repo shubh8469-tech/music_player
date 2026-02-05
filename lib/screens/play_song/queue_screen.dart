@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -43,6 +42,7 @@ class _QueueScreenState extends State<QueueScreen> {
   StreamSubscription<int?>? _indexSubscription;
   StreamSubscription<bool>? _shuffleSubscription;
   StreamSubscription<List<SongsModel>>? _songsSubscription;
+  StreamSubscription<LoopMode>? _loopModeSubscription;
   Timer? _updateDebounceTimer;
   bool _isReordering = false;
   bool _isClosing = false;
@@ -71,15 +71,13 @@ class _QueueScreenState extends State<QueueScreen> {
     });
 
     // Listen to shuffle state changes
-    _shuffleSubscription = musicService.isPlayingStream
-        .map((_) => musicService.isShuffleEnabled)
-        .listen((shuffleEnabled) {
-          if (mounted) {
-            setState(() {
-              isShuffleEnabled = shuffleEnabled;
-            });
-          }
+    _shuffleSubscription = musicService.shuffleStream.listen((shuffleEnabled) {
+      if (mounted) {
+        setState(() {
+          isShuffleEnabled = shuffleEnabled;
         });
+      }
+    });
 
     // Listen to songs list changes - this will automatically update when actions are performed in select_song_screen
     _songsSubscription = musicService.songsChanged.listen((newSongs) {
@@ -102,6 +100,24 @@ class _QueueScreenState extends State<QueueScreen> {
           _handleEmptyQueue();
         }
       }
+    });
+
+    // Listen to loop mode changes from the music service
+    _loopModeSubscription = musicService.loopModeStream.listen((mode) {
+      if (!mounted) return;
+      String newRepeatMode;
+      if (mode == LoopMode.off) {
+        newRepeatMode = 'off';
+      } else if (mode == LoopMode.one) {
+        newRepeatMode = 'one';
+      } else {
+        newRepeatMode = 'all';
+      }
+
+      setState(() {
+        repeatMode = newRepeatMode;
+        isRepeatEnabled = newRepeatMode != 'off';
+      });
     });
   }
 
@@ -152,6 +168,7 @@ class _QueueScreenState extends State<QueueScreen> {
     if (repeatMode != newRepeatMode) {
       setState(() {
         repeatMode = newRepeatMode;
+        isRepeatEnabled = newRepeatMode != 'off';
       });
       print('🔁 Repeat mode synced: $repeatMode');
     }
@@ -164,6 +181,7 @@ class _QueueScreenState extends State<QueueScreen> {
     _indexSubscription?.cancel();
     _shuffleSubscription?.cancel();
     _songsSubscription?.cancel();
+    _loopModeSubscription?.cancel();
     super.dispose();
   }
 
@@ -838,9 +856,10 @@ class _QueueScreenState extends State<QueueScreen> {
                                 width: 20.w,
                                 height: 20.h,
                                 colorFilter: ColorFilter.mode(
-                                  isRepeatEnabled
-                                      ? AppColors.white
-                                      : AppColors.textColor,
+                                  // isRepeatEnabled
+                                      // ? AppColors.white
+                                      // : AppColors.textColor,
+                                       AppColors.textColor,
                                   BlendMode.srcIn,
                                 ),
                               ),

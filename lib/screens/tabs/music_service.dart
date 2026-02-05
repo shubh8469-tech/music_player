@@ -58,6 +58,18 @@ class MusicPlayerService {
   bool _isShuffleEnabled = false;
   double _playbackSpeed = 1.0;
 
+  // Loop mode change notifications
+  final StreamController<LoopMode> _loopModeController =
+      StreamController<LoopMode>.broadcast();
+
+  Stream<LoopMode> get loopModeStream => _loopModeController.stream;
+
+  // Shuffle state change notifications
+  final StreamController<bool> _shuffleController =
+      StreamController<bool>.broadcast();
+
+  Stream<bool> get shuffleStream => _shuffleController.stream;
+
   double get playbackSpeed => _playbackSpeed;
 
   // ============================================
@@ -805,6 +817,8 @@ class MusicPlayerService {
       await _iosPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
       print('✅ iOS Shuffle: ${_isShuffleEnabled ? "ON" : "OFF"}');
     }
+    // Notify listeners that shuffle state changed
+    _shuffleController.add(_isShuffleEnabled);
     // if (Platform.isAndroid) {
     //   await _androidPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
     //   if (_isShuffleEnabled) {
@@ -916,6 +930,9 @@ class MusicPlayerService {
       }
       await _iosPlayer!.setLoopMode(iosLoopMode);
     }
+
+    // Notify listeners (e.g. queue screen, mini player) that loop mode changed
+    _loopModeController.add(_loopMode);
   }
 
   /// Re-schedule the current track to apply new loop mode immediately
