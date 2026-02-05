@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../commonWidgets/app_bar_with_icon_title.dart';
 import '../../commonWidgets/textWidget.dart';
 import '../../generated/assets.dart';
 import '../../themes/color.dart';
@@ -30,24 +31,11 @@ class ScanCompleteScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBar(
-        centerTitle: false,
+      appBar: const AppBarWithIconTitle(
+        title: "Scan Music",
         backgroundColor: AppColors.primaryOrange,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            color: AppColors.white,
-            size: 20,
-          ),
-          onPressed: () => context.pop(),
-        ),
-        title: Texts(
-          "Scan Music",
-          fontSize: 18.sp,
-          fontWeight: AppFontWeights.medium,
-          fontFamily: AppFonts.inter,
-          color: AppColors.white,
-        ),
+        titleColor: AppColors.white,
+        centerTitle: false,
       ),
       body: Center(
         child: Column(

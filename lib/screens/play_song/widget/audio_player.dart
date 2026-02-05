@@ -118,10 +118,11 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                 _isSeeking = true;
               });
             },
-            onChanged: (value) {
+            onChanged: (value) async {
               setState(() {
                 _position = Duration(milliseconds: value.round());
               });
+              // await _musicService.seek(Duration(milliseconds: value.round()));
             },
             onChangeEnd: (value) async {
               final position = Duration(milliseconds: value.round());

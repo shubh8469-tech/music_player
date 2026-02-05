@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../commonWidgets/app_bar_with_icon_title.dart';
 import '../../commonWidgets/textWidget.dart';
 import '../../core/di/injection.dart';
 import '../../features/settings/data/dataSource/scan_preferences_local_data_source.dart';
@@ -100,24 +101,12 @@ class _ScanMusicScreenState extends State<ScanMusicScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBar(
-        centerTitle: false,
+      appBar: AppBarWithIconTitle(
+        title: "Scan Music",
         backgroundColor: AppColors.primaryOrange,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            color: AppColors.white,
-            size: 20,
-          ),
-          onPressed: () => context.pop(),
-        ),
-        title: Texts(
-          "Scan Music",
-          fontSize: 18.sp,
-          fontWeight: AppFontWeights.medium,
-          fontFamily: AppFonts.inter,
-          color: AppColors.white,
-        ),
+        titleColor: AppColors.white,
+        centerTitle: false,
+        onBack: () => context.pop(),
       ),
       body: SingleChildScrollView(
         child: Padding(

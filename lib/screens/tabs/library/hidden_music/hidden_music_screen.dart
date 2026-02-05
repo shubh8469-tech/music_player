@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:music_app/commonWidgets/textWidget.dart';
 import 'package:music_app/commonWidgets/MusicListTile.dart';
-import 'package:music_app/features/folders/bloc/folder_bloc.dart';
+import 'package:music_app/commonWidgets/app_bar_with_icon_title.dart';
+import 'package:music_app/commonWidgets/textWidget.dart';
 import 'package:music_app/core/di/injection.dart';
+import 'package:music_app/features/folders/bloc/folder_bloc.dart';
 import 'package:music_app/features/folders/data/dataSource/folder_local_data_source.dart';
 import 'package:music_app/features/folders/data/models/folder_model.dart';
 import 'package:music_app/features/songs/bloc/songs_bloc.dart';
@@ -157,23 +158,12 @@ class _HiddenMusicScreenState extends State<HiddenMusicScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBar(
+      appBar: AppBarWithIconTitle(
+        title: 'Hidden Music',
         backgroundColor: AppColors.primaryOrange,
-        elevation: 0,
-        leading: IconButton(
-          icon: SvgPicture.asset(
-            Assets.svgIcBack,
-            colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Texts(
-          'Hidden Music',
-          fontSize: 18.sp,
-          fontWeight: AppFontWeights.semiBold,
-          fontFamily: AppFonts.inter,
-          color: AppColors.white,
-        ),
+        titleColor: AppColors.white,
+        centerTitle: false,
+        onBack: () => Navigator.pop(context),
       ),
       body: Column(
         children: [

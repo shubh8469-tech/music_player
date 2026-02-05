@@ -501,13 +501,22 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
   }
 
   void _handleEditAlbumTags(Album album) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: context.read<AlbumBloc>(),
-          child: EditAlbumTagsScreen(album: album),
-        ),
-      ),
+    showCommonConfirmationBottomSheet(
+      context: context,
+      title: S.of(context).editTags,
+      message: 'Do you want to edit tags for "${album.name}"?',
+      confirmButtonText: S.of(context).editTags,
+      onConfirm: (sheetContext) async {
+        Navigator.pop(sheetContext);
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => BlocProvider.value(
+              value: context.read<AlbumBloc>(),
+              child: EditAlbumTagsScreen(album: album),
+            ),
+          ),
+        );
+      },
     );
   }
 

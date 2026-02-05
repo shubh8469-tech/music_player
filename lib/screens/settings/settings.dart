@@ -1,4 +1,7 @@
 import 'dart:developer';
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,40 +9,40 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'dart:io';
-import 'dart:typed_data';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
+
+import '../../commonWidgets/app_bar_with_icon_title.dart';
 import '../../commonWidgets/textWidget.dart';
 import '../../core/di/injection.dart';
 import '../../features/albums/bloc/album_bloc.dart';
-import '../../features/artists/bloc/artist_bloc.dart';
-import '../../features/folders/bloc/folder_bloc.dart';
-import '../../features/genres/bloc/genre_bloc.dart';
-import '../../features/songs/bloc/songs_bloc.dart';
-import '../../features/songs/data/dataSource/song_local_data_source.dart';
-import '../../features/songs/data/models/song_model.dart';
-import '../../features/songs/domain/usecases/add_song.dart';
-import '../../features/folders/domain/entities/folder.dart';
-import '../../features/folders/domain/usecases/add_folder.dart';
-import '../../features/folders/domain/usecases/add_song_to_folder.dart';
-import '../../features/artists/domain/entities/artist.dart';
-import '../../features/artists/domain/usecases/add_artist.dart';
-import '../../features/artists/domain/usecases/add_song_to_artist.dart';
 import '../../features/albums/domain/entities/album.dart';
+import '../../features/albums/domain/repositories/album_repository.dart';
 import '../../features/albums/domain/usecases/add_album.dart';
 import '../../features/albums/domain/usecases/add_song_to_album.dart';
-import '../../features/folders/domain/repositories/folder_repository.dart';
+import '../../features/artists/bloc/artist_bloc.dart';
+import '../../features/artists/domain/entities/artist.dart';
 import '../../features/artists/domain/repositories/artist_repository.dart';
-import '../../features/albums/domain/repositories/album_repository.dart';
+import '../../features/artists/domain/usecases/add_artist.dart';
+import '../../features/artists/domain/usecases/add_song_to_artist.dart';
+import '../../features/folders/bloc/folder_bloc.dart';
+import '../../features/folders/domain/entities/folder.dart';
+import '../../features/folders/domain/repositories/folder_repository.dart';
+import '../../features/folders/domain/usecases/add_folder.dart';
+import '../../features/folders/domain/usecases/add_song_to_folder.dart';
+import '../../features/genres/bloc/genre_bloc.dart';
 import '../../features/genres/domain/entities/genre.dart';
 import '../../features/genres/domain/repositories/genre_repository.dart';
 import '../../features/genres/domain/usecases/add_genre.dart';
 import '../../features/genres/domain/usecases/add_song_to_genre.dart';
+import '../../features/songs/bloc/songs_bloc.dart';
+import '../../features/songs/data/dataSource/song_local_data_source.dart';
+import '../../features/songs/data/models/song_model.dart';
+import '../../features/songs/domain/usecases/add_song.dart';
 import '../../generated/assets.dart';
 import '../../themes/color.dart';
 import '../../themes/font.dart';
 import '../../utills/snack_bar.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -453,24 +456,12 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBar(
-        centerTitle: false,
+      appBar: AppBarWithIconTitle(
+        title: "Settings",
         backgroundColor: AppColors.primaryOrange,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            color: AppColors.white,
-            size: 20,
-          ),
-          onPressed: () => context.pop(),
-        ),
-        title: Texts(
-          "Settings",
-          fontSize: 18.sp,
-          fontWeight: AppFontWeights.medium,
-          fontFamily: AppFonts.inter,
-          color: AppColors.white,
-        ),
+        titleColor: AppColors.white,
+        centerTitle: false,
+        onBack: () => context.pop(),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -523,7 +514,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   title: "Backup & restore",
                   subtitle: "Last backup: 2025-08-25 13:52:14",
                   onTap: () {
-                    context.push('/dashboard/backup-restore');
+                    _showComingSoonSnack();
+                    // context.push('/dashboard/backup-restore');
                   },
                 ),
                 _sectionDivider(),

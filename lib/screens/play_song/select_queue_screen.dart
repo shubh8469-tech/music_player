@@ -1,14 +1,16 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:music_app/commonWidgets/common_modal_bottom_sheet.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:music_app/commonWidgets/app_bar_with_icon_title.dart';
+import 'package:music_app/commonWidgets/common_modal_bottom_sheet.dart';
 import 'package:music_app/commonWidgets/textWidget.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/generated/assets.dart';
+import 'package:music_app/screens/tabs/music_service.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
-import 'package:music_app/screens/tabs/music_service.dart';
 
 class SelectQueueScreen extends StatefulWidget {
   const SelectQueueScreen({super.key});
@@ -156,34 +158,12 @@ class _SelectQueueScreenState extends State<SelectQueueScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBar(
+      appBar: AppBarWithIconTitle(
+        title: "Select Queue",
         backgroundColor: AppColors.primaryOrange,
-        leadingWidth: 45.w,
-        toolbarHeight: 52.h,
-        leading: GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
-          child: Padding(
-            padding: EdgeInsets.only(left: 22.w),
-            child: SizedBox(
-              width: 26.w,
-              height: 26.h,
-              child: SvgPicture.asset(
-                Assets.svgIcBack,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.white,
-                  BlendMode.srcIn,
-                ),
-              ),
-            ),
-          ),
-        ),
-        title: Texts(
-          "Select Queue",
-          fontSize: 16.sp,
-          color: AppColors.white,
-          fontWeight: FontWeight.w500,
-          fontFamily: AppFonts.manrope,
-        ),
+        titleColor: AppColors.white,
+        centerTitle: false,
+        onBack: () => Navigator.of(context).pop(),
         actions: [
           IconButton(
             onPressed: () {

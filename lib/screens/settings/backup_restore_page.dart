@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../commonWidgets/app_bar_with_icon_title.dart';
 import '../../commonWidgets/textWidget.dart';
 import '../../core/di/injection.dart';
 import '../../features/settings/data/dataSource/backup_options_local_data_source.dart';
@@ -161,13 +162,11 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBar(
+      appBar: AppBarWithIconTitle(
+        title: "Backup & Restore",
         backgroundColor: AppColors.primaryOrange,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.white, size: 20),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Texts("Backup & Restore", fontSize: 18.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.white),
+        titleColor: AppColors.white,
+        onBack: () => Navigator.of(context).pop(),
       ),
       body: SingleChildScrollView(
         child: Padding(

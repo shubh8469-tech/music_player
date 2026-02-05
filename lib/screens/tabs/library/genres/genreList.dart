@@ -444,30 +444,39 @@ class _GenreListScreenState extends State<GenreListScreen> {
   }
 
   void _handleEditGenreTags(Genre genre) {
-    showModalBottomSheet(
+    showCommonConfirmationBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => BlocProvider.value(
-        value: context.read<GenreBloc>(),
-        child: EditTagBottomSheet(
-          initialValue: genre.name,
-          title: S.of(context).editTags,
-          onSave: (newName) {
-            if (genre.id != null && newName.trim().isNotEmpty) {
-              context.read<GenreBloc>().add(
-                GenreEvent.updateGenreName(genre.id!, newName),
-              );
-              showSnackBar(
-                context,
-                () {},
-                message: 'Genre name updated successfully',
-                alertBannerLocation: AlertBannerLocation.bottom,
-              );
-            }
-          },
-        ),
-      ),
+      title: S.of(context).editTags,
+      message: 'Do you want to edit tags for "${genre.name}"?',
+      confirmButtonText: S.of(context).editTags,
+      onConfirm: (sheetContext) async {
+        Navigator.pop(sheetContext);
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          builder: (bottomSheetContext) => BlocProvider.value(
+            value: context.read<GenreBloc>(),
+            child: EditTagBottomSheet(
+              initialValue: genre.name,
+              title: S.of(bottomSheetContext).editTags,
+              onSave: (newName) {
+                if (genre.id != null && newName.trim().isNotEmpty) {
+                  context.read<GenreBloc>().add(
+                        GenreEvent.updateGenreName(genre.id!, newName),
+                      );
+                  showSnackBar(
+                    bottomSheetContext,
+                    () {},
+                    message: 'Genre name updated successfully',
+                    alertBannerLocation: AlertBannerLocation.bottom,
+                  );
+                }
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 

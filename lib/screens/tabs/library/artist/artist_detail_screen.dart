@@ -1,31 +1,34 @@
 import 'dart:developer' as logS;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:music_app/features/artists/domain/entities/artist.dart';
+import 'package:music_app/commonWidgets/app_bar_with_icon_title.dart';
 import 'package:music_app/features/artists/bloc/artist_bloc.dart';
-import 'package:music_app/features/songs/data/models/song_model.dart';
+import 'package:music_app/features/artists/domain/entities/artist.dart';
 import 'package:music_app/features/songs/bloc/songs_bloc.dart';
+import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/screens/tabs/music_service.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
+
 import '../../../../commonWidgets/MusicListTile.dart';
+import '../../../../commonWidgets/bottom_button_two.dart';
 import '../../../../commonWidgets/gradientCard.dart';
 import '../../../../commonWidgets/song_menu_screen.dart';
 import '../../../../commonWidgets/textWidget.dart';
-import '../../../../features/artists/domain/repositories/artist_repository.dart';
+import '../../../../core/di/injection.dart';
 import '../../../../features/albums/domain/entities/album.dart';
 import '../../../../features/albums/domain/usecases/get_albums_by_artist.dart';
+import '../../../../features/artists/domain/repositories/artist_repository.dart';
 import '../../../../generated/assets.dart';
-import '../../../../core/di/injection.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../../model/song_menu_model.dart';
 import '../../../../utills/globals.dart';
 import '../../../play_song/playing_song_screen.dart';
 import '../widgets/mini_player_bar.dart';
-import '../../../../model/song_menu_model.dart';
-import '../../../../commonWidgets/bottom_button_two.dart';
-import '../../../../l10n/l10n.dart';
 
 class ArtistDetailScreen extends StatefulWidget {
   final Artist artist;
@@ -413,14 +416,12 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
       ],
       child: Scaffold(
         backgroundColor: AppColors.white,
-        appBar: AppBar(
+        appBar: AppBarWithIconTitle(
+          title: _currentArtist.name,
           backgroundColor: AppColors.primaryOrange,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: AppColors.white, size: 20),
-            onPressed: () => context.pop(),
-          ),
-          title: Texts(_currentArtist.name, fontSize: 18.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.white),
+          titleColor: AppColors.white,
+          centerTitle: false,
+          onBack: () => context.pop(),
         ),
         body: SafeArea(
           child: Stack(
@@ -437,7 +438,7 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
                     padding: EdgeInsets.only(
                       left: 20.w,
                       right: 20.w,
-                      top: 10.h,
+                      top: 20.h,
                       bottom: showMiniPlayer ? 91.h : 3.h, // Space for MiniPlayerBar (which includes system nav bar padding)
                     ),
                     child: SizedBox(
@@ -465,6 +466,7 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
                               fontFamily: AppFonts.inter,
                               color: AppColors.textColor,
                               align: TextAlign.center,
+                              maxLines: 1,
                             ),
                             SizedBox(height: 7.h),
                             // Albums section

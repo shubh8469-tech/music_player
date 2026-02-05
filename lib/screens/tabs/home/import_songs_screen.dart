@@ -1,21 +1,24 @@
 import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:metadata_god/metadata_god.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+
 import '../../../commonWidgets/MusicListTile.dart';
+import '../../../commonWidgets/app_bar_with_icon_title.dart';
 import '../../../commonWidgets/buton.dart';
 import '../../../commonWidgets/textWidget.dart';
 import '../../../core/services/import_songs_service.dart';
-import '../../../features/songs/bloc/songs_bloc.dart';
 import '../../../features/playlists/bloc/playlist_bloc.dart';
+import '../../../features/songs/bloc/songs_bloc.dart';
+import '../../../generated/assets.dart';
 import '../../../themes/color.dart';
 import '../../../themes/font.dart';
-import '../../../generated/assets.dart';
 
 class ImportSongsScreen extends StatefulWidget {
   const ImportSongsScreen({super.key});
@@ -199,19 +202,17 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBar(
+      appBar: AppBarWithIconTitle(
+        title: 'Import Music',
         backgroundColor: AppColors.white,
-        elevation: 0,
+        titleColor: Colors.black,
+        centerTitle: false,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => context.pop(),
         ),
-        title: Texts(
-          'Import Music',
-          fontSize: 20.sp,
-          fontWeight: AppFontWeights.bold,
-          fontFamily: AppFonts.manrope,
-        ),
+        showBackButton: false,
+        elevation: 0,
       ),
       body: Padding(padding: EdgeInsets.all(16.0.r), child: _buildBody()),
     );

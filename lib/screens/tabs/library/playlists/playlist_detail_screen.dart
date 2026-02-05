@@ -1,27 +1,30 @@
 import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:music_app/commonWidgets/app_bar_with_icon_title.dart';
 import 'package:music_app/features/playlists/domain/entities/playlist.dart'
     as domain;
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/screens/tabs/music_service.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
+
+import '../../../../commonWidgets/MusicListTile.dart';
 import '../../../../commonWidgets/gradientCard.dart';
 import '../../../../commonWidgets/song_menu_screen.dart';
+import '../../../../commonWidgets/textWidget.dart';
+import '../../../../core/di/injection.dart';
+import '../../../../features/playlists/bloc/playlist_bloc.dart';
+import '../../../../features/playlists/domain/repositories/playlist_repository.dart';
+import '../../../../generated/assets.dart';
 import '../../../../utills/globals.dart';
 import '../../../../utills/snack_bar.dart';
 import '../../../play_song/playing_song_screen.dart';
 import '../widgets/mini_player_bar.dart';
-import '../../../../commonWidgets/MusicListTile.dart';
-import '../../../../commonWidgets/textWidget.dart';
-import '../../../../features/playlists/bloc/playlist_bloc.dart';
-import '../../../../features/playlists/domain/repositories/playlist_repository.dart';
-import '../../../../generated/assets.dart';
-import '../../../../core/di/injection.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final domain.Playlist playlist;
@@ -351,46 +354,12 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       },
       child: Scaffold(
         backgroundColor: AppColors.white,
-        appBar: AppBar(
+        appBar: AppBarWithIconTitle(
+          title: widget.playlist.name,
           backgroundColor: AppColors.primaryOrange,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back_ios,
-              color: AppColors.white,
-              size: 20,
-            ),
-            onPressed: () => context.pop(),
-          ),
-          title: Texts(
-            widget.playlist.name,
-            fontSize: 18.sp,
-            fontWeight: AppFontWeights.medium,
-            fontFamily: AppFonts.inter,
-            color: AppColors.white,
-          ),
-          // actions: [
-          //   GestureDetector(
-          //     onTap: () {
-          //       if (_isSystem) {
-          //         showSnackBar(context, () {}, message: 'System playlist cannot be deleted', alertBannerLocation: AlertBannerLocation.bottom);
-          //       } else {
-          //         showModalBottomSheet(
-          //           context: context,
-          //           backgroundColor: Colors.white,
-          //           elevation: 0,
-          //           shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
-          //           isScrollControlled: true,
-          //           builder: (_) => _buildDeletePlaylistConfirmationDialog(),
-          //         );
-          //       }
-          //     },
-          //     child: Padding(
-          //       padding: EdgeInsets.only(right: 12.w),
-          //       child: SvgPicture.asset(Assets.svgIcDelete, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
-          //     ),
-          //   ),
-          // ],
+          titleColor: AppColors.white,
+          centerTitle: false,
+          onBack: () => context.pop(),
         ),
         body: SafeArea(
           child: Stack(
@@ -437,6 +406,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                               fontWeight: AppFontWeights.medium,
                               fontFamily: AppFonts.inter,
                               color: AppColors.textColor,
+                              maxLines: 1,
                             ),
 
                             SizedBox(height: 25.h),

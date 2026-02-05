@@ -2,17 +2,18 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:music_app/commonWidgets/app_bar_with_icon_title.dart';
+import 'package:music_app/commonWidgets/common_modal_bottom_sheet.dart';
+import 'package:music_app/features/playlists/bloc/playlist_bloc.dart';
+import 'package:music_app/features/songs/bloc/songs_bloc.dart';
+import 'package:music_app/screens/play_song/queue_navigation_helper.dart';
 import 'package:music_app/screens/play_song/queue_screen.dart';
 import 'package:music_app/screens/play_song/widget/audio_player.dart';
-import 'package:music_app/commonWidgets/common_modal_bottom_sheet.dart';
-import 'package:music_app/screens/play_song/queue_navigation_helper.dart';
 import 'package:music_app/utills/globals.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_app/features/songs/bloc/songs_bloc.dart';
-import 'package:music_app/features/playlists/bloc/playlist_bloc.dart';
 
 import '../../commonWidgets/gradientCard.dart';
 import '../../commonWidgets/song_menu_screen.dart';
@@ -233,10 +234,9 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBar(
+      appBar: AppBarWithIconTitle(
         backgroundColor: AppColors.primaryOrange,
-        leadingWidth: 45.w,
-        toolbarHeight: 52.h,
+        title: null,
         leading: GestureDetector(
           onTap: () {
             Navigator.of(context).pop();
@@ -256,6 +256,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
             ),
           ),
         ),
+        showBackButton: false,
         actions: [
           SizedBox(
             width: 40.w,

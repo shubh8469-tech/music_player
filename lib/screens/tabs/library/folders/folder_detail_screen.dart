@@ -1,30 +1,33 @@
 import 'dart:developer' as logS;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:music_app/commonWidgets/app_bar_with_icon_title.dart';
 import 'package:music_app/features/folders/bloc/folder_bloc.dart';
 import 'package:music_app/features/folders/domain/entities/folder.dart';
-import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/features/songs/bloc/songs_bloc.dart';
+import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/screens/tabs/music_service.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
+
 import '../../../../commonWidgets/MusicListTile.dart';
+import '../../../../commonWidgets/bottom_button_two.dart';
 import '../../../../commonWidgets/gradientCard.dart';
 import '../../../../commonWidgets/song_menu_screen.dart';
 import '../../../../commonWidgets/textWidget.dart';
+import '../../../../core/di/injection.dart';
 import '../../../../features/folders/domain/repositories/folder_repository.dart';
 import '../../../../generated/assets.dart';
-import '../../../../core/di/injection.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../../model/song_menu_model.dart';
 import '../../../../utills/globals.dart';
 import '../../../../utills/snack_bar.dart';
 import '../../../play_song/playing_song_screen.dart';
 import '../widgets/mini_player_bar.dart';
-import '../../../../model/song_menu_model.dart';
-import '../../../../commonWidgets/bottom_button_two.dart';
-import '../../../../l10n/l10n.dart';
 
 class FolderDetailScreen extends StatefulWidget {
   final Folder folder;
@@ -535,32 +538,12 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
       ],
       child: Scaffold(
         backgroundColor: AppColors.white,
-        appBar: AppBar(
+        appBar: AppBarWithIconTitle(
+          title: _currentFolder.name,
           backgroundColor: AppColors.primaryOrange,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: AppColors.white, size: 20),
-            onPressed: () => context.pop(),
-          ),
-          title: Texts(_currentFolder.name, fontSize: 18.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.white),
-          // actions: [
-          //   GestureDetector(
-          //     onTap: () {
-          //       showModalBottomSheet(
-          //         context: context,
-          //         backgroundColor: Colors.white,
-          //         elevation: 0,
-          //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
-          //         isScrollControlled: true,
-          //         builder: (_) => _buildDeleteFolderConfirmationDialog(),
-          //       );
-          //     },
-          //     child: Padding(
-          //       padding: EdgeInsets.only(right: 12.w),
-          //       child: SvgPicture.asset(Assets.svgIcDelete, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
-          //     ),
-          //   ),
-          // ],
+          titleColor: AppColors.white,
+          centerTitle: false,
+          onBack: () => context.pop(),
         ),
         body: SafeArea(
           child: Stack(
@@ -598,7 +581,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                               margin: 10.w,
                             ),
                             SizedBox(height: 14.h),
-                            Texts(_currentFolder.name, fontSize: 20.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.textColor),
+                            Texts(_currentFolder.name, fontSize: 20.sp, fontWeight: AppFontWeights.medium, fontFamily: AppFonts.inter, color: AppColors.textColor, maxLines: 1,),
           
                             SizedBox(height: 25.h),
                             Row(

@@ -439,30 +439,39 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
   }
 
   void _handleEditArtistTags(Artist artist) {
-    showModalBottomSheet(
+    showCommonConfirmationBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => BlocProvider.value(
-        value: context.read<ArtistBloc>(),
-        child: EditTagBottomSheet(
-          initialValue: artist.name,
-          title: S.of(context).editTags,
-          onSave: (newName) {
-            if (artist.id != null && newName.trim().isNotEmpty) {
-              context.read<ArtistBloc>().add(
-                ArtistEvent.updateArtistName(artist.id!, newName),
-              );
-              showSnackBar(
-                context,
-                () {},
-                message: 'Artist name updated successfully',
-                alertBannerLocation: AlertBannerLocation.bottom,
-              );
-            }
-          },
-        ),
-      ),
+      title: S.of(context).editTags,
+      message: 'Do you want to edit tags for "${artist.name}"?',
+      confirmButtonText: S.of(context).editTags,
+      onConfirm: (sheetContext) async {
+        Navigator.pop(sheetContext);
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          builder: (bottomSheetContext) => BlocProvider.value(
+            value: context.read<ArtistBloc>(),
+            child: EditTagBottomSheet(
+              initialValue: artist.name,
+              title: S.of(bottomSheetContext).editTags,
+              onSave: (newName) {
+                if (artist.id != null && newName.trim().isNotEmpty) {
+                  context.read<ArtistBloc>().add(
+                        ArtistEvent.updateArtistName(artist.id!, newName),
+                      );
+                  showSnackBar(
+                    bottomSheetContext,
+                    () {},
+                    message: 'Artist name updated successfully',
+                    alertBannerLocation: AlertBannerLocation.bottom,
+                  );
+                }
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 

@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:music_app/themes/color.dart';
 
+import '../../commonWidgets/app_bar_with_icon_title.dart';
 import '../../commonWidgets/level_bar_Sliders.dart';
 import '../../commonWidgets/textWidget.dart';
 import '../../generated/assets.dart';
@@ -479,16 +480,16 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
         children: [
           Scaffold(
             backgroundColor: Colors.white,
-            appBar: AppBar(
+            appBar: AppBarWithIconTitle(
+              title: "Equalizer",
               backgroundColor: AppColors.primaryOrange,
-              elevation: 0,
-              title: Row(
-                children: [Texts("Equalizer", fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: AppFonts.inter, color: AppColors.white)],
-              ),
+              titleColor: AppColors.white,
+              centerTitle: false,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
                 onPressed: () => Navigator.pop(context),
               ),
+              showBackButton: false,
               actions: [
                 Row(
                   children: [

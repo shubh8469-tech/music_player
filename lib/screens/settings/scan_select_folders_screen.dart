@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../commonWidgets/app_bar_with_icon_title.dart';
 import '../../commonWidgets/textWidget.dart';
 import '../../features/folders/bloc/folder_bloc.dart';
 import '../../features/folders/domain/entities/folder.dart' as domain;
@@ -85,24 +86,12 @@ class _ScanSelectFoldersScreenState extends State<ScanSelectFoldersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBar(
-        centerTitle: false,
+      appBar: AppBarWithIconTitle(
+        title: "Select Folders",
         backgroundColor: AppColors.primaryOrange,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            color: AppColors.white,
-            size: 20,
-          ),
-          onPressed: () => context.pop(),
-        ),
-        title: Texts(
-          "Select Folders",
-          fontSize: 18.sp,
-          fontWeight: AppFontWeights.medium,
-          fontFamily: AppFonts.inter,
-          color: AppColors.white,
-        ),
+        titleColor: AppColors.white,
+        centerTitle: false,
+        onBack: () => context.pop(),
       ),
       body: BlocBuilder<FolderBloc, FolderState>(
         builder: (context, state) {

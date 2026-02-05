@@ -13,32 +13,33 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../commonWidgets/app_bar_with_icon_title.dart';
 import '../../commonWidgets/textWidget.dart';
 import '../../core/di/injection.dart';
 import '../../features/albums/bloc/album_bloc.dart';
-import '../../features/artists/bloc/artist_bloc.dart';
-import '../../features/folders/bloc/folder_bloc.dart';
-import '../../features/genres/bloc/genre_bloc.dart';
-import '../../features/songs/bloc/songs_bloc.dart';
-import '../../features/songs/data/dataSource/song_local_data_source.dart';
-import '../../features/songs/data/models/song_model.dart';
-import '../../features/songs/domain/usecases/add_song.dart';
-import '../../features/folders/domain/entities/folder.dart';
-import '../../features/folders/domain/usecases/add_folder.dart';
-import '../../features/folders/domain/usecases/add_song_to_folder.dart';
-import '../../features/artists/domain/entities/artist.dart';
-import '../../features/artists/domain/usecases/add_artist.dart';
-import '../../features/artists/domain/usecases/add_song_to_artist.dart';
 import '../../features/albums/domain/entities/album.dart';
+import '../../features/albums/domain/repositories/album_repository.dart';
 import '../../features/albums/domain/usecases/add_album.dart';
 import '../../features/albums/domain/usecases/add_song_to_album.dart';
-import '../../features/folders/domain/repositories/folder_repository.dart';
+import '../../features/artists/bloc/artist_bloc.dart';
+import '../../features/artists/domain/entities/artist.dart';
 import '../../features/artists/domain/repositories/artist_repository.dart';
-import '../../features/albums/domain/repositories/album_repository.dart';
+import '../../features/artists/domain/usecases/add_artist.dart';
+import '../../features/artists/domain/usecases/add_song_to_artist.dart';
+import '../../features/folders/bloc/folder_bloc.dart';
+import '../../features/folders/domain/entities/folder.dart';
+import '../../features/folders/domain/repositories/folder_repository.dart';
+import '../../features/folders/domain/usecases/add_folder.dart';
+import '../../features/folders/domain/usecases/add_song_to_folder.dart';
+import '../../features/genres/bloc/genre_bloc.dart';
 import '../../features/genres/domain/entities/genre.dart';
 import '../../features/genres/domain/repositories/genre_repository.dart';
 import '../../features/genres/domain/usecases/add_genre.dart';
 import '../../features/genres/domain/usecases/add_song_to_genre.dart';
+import '../../features/songs/bloc/songs_bloc.dart';
+import '../../features/songs/data/dataSource/song_local_data_source.dart';
+import '../../features/songs/data/models/song_model.dart';
+import '../../features/songs/domain/usecases/add_song.dart';
 import '../../generated/assets.dart';
 import '../../themes/color.dart';
 import '../../themes/font.dart';
@@ -623,24 +624,12 @@ class _ScanningProgressScreenState extends State<ScanningProgressScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBar(
-        centerTitle: false,
+      appBar: AppBarWithIconTitle(
+        title: "Scan Music",
         backgroundColor: AppColors.primaryOrange,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            color: AppColors.white,
-            size: 20,
-          ),
-          onPressed: _isScanning ? null : () => context.pop(),
-        ),
-        title: Texts(
-          "Scan Music",
-          fontSize: 18.sp,
-          fontWeight: AppFontWeights.medium,
-          fontFamily: AppFonts.inter,
-          color: AppColors.white,
-        ),
+        titleColor: AppColors.white,
+        centerTitle: false,
+        onBack: _isScanning ? null : () => context.pop(),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,

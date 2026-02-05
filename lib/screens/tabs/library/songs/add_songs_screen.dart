@@ -9,6 +9,7 @@ import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/themes/font.dart';
 
 import '../../../../commonWidgets/MusicListTile.dart';
+import '../../../../commonWidgets/app_bar_with_icon_title.dart';
 import '../../../../commonWidgets/common_functions.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../features/playlists/bloc/playlist_bloc.dart';
@@ -190,27 +191,12 @@ class _AddSongsScreenState extends State<AddSongsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBar(
+      appBar: AppBarWithIconTitle(
+        title: 'Add Songs',
         backgroundColor: AppColors.primaryOrange,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            color: AppColors.white,
-            size: 20,
-          ),
-          onPressed: () => context.pop(),
-        ),
-        title: Text(
-          'Add Songs',
-          style: TextStyle(
-            color: AppColors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            fontFamily: AppFonts.inter,
-          ),
-        ),
+        titleColor: AppColors.white,
         centerTitle: true,
+        onBack: () => context.pop(),
       ),
       body: BlocBuilder<SongsBloc, SongsState>(
         builder: (context, state) {
