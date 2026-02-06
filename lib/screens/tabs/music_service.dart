@@ -397,8 +397,8 @@ class MusicPlayerService {
       '🎵 MusicPlayerService.setPlaylist called - startIndex: $startIndex, songCount: ${songModels.length}',
     );
 
-    songs = songModels;
-    _songsChangedController.add(songs);
+    // songs = songModels;
+    // _songsChangedController.add(songs);
 
     if (Platform.isAndroid) {
       print('📱 Android: Setting playlist...');
@@ -467,6 +467,9 @@ class MusicPlayerService {
       if (!equalizerService.isInitialized) {
         await _initializeAndroidEqualizer();
       }
+
+      songs = songModels;
+      _songsChangedController.add(songs);
 
       // ✅ Only play if autoPlay is true
       // If autoPlay is false and music is already playing, it will continue playing the old song
