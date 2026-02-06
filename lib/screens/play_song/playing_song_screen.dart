@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -9,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:music_app/commonWidgets/app_bar_with_icon_title.dart';
 import 'package:music_app/commonWidgets/common_modal_bottom_sheet.dart';
+import 'package:music_app/features/music_player/bloc/music_player_bloc.dart';
+import 'package:music_app/features/music_player/bloc/music_player_state.dart';
 import 'package:music_app/features/playlists/bloc/playlist_bloc.dart';
 import 'package:music_app/features/songs/bloc/songs_bloc.dart';
 import 'package:music_app/screens/play_song/widget/audio_player.dart';
@@ -42,85 +43,31 @@ class PlayingSongScreen extends StatefulWidget {
 }
 
 class _PlayingSongScreenState extends State<PlayingSongScreen> {
-  late MusicPlayerService musicService;
-  late final bool hasArtwork;
-  StreamSubscription<int?>? _indexSubscription;
-  StreamSubscription<List<SongsModel>>? _songsSubscription;
-
   bool isFavorite = false;
   final UnifiedEqualizerService equalizerService = UnifiedEqualizerService();
+
+  MusicPlayerService get _musicService =>
+      context.read<MusicPlayerBloc>().musicService;
 
   @override
   void initState() {
     super.initState();
-    musicService = MusicPlayerService();
-    if (musicService.songs.isEmpty || musicService.songs != widget.songs) {
-      musicService.setPlaylist(
-        widget.songs,
-        startIndex: musicService.currentIndex,
-      );
-    }
-    _indexSubscription = musicService.currentIndexStream.listen((index) {
-      if (mounted) {
-        setState(() {});
-        _updateFavoriteStatus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final musicService = context.read<MusicPlayerBloc>().musicService;
+      if (musicService.songs.isEmpty || musicService.songs != widget.songs) {
+        musicService.setPlaylist(
+          widget.songs,
+          startIndex: musicService.currentIndex,
+        );
       }
     });
-
-    _songsSubscription = musicService.songsChanged.listen((songs) {
-      if (!mounted) return;
-
-      print('🎵 Playing screen: Queue changed, ${songs.length} songs');
-
-      if (songs.isEmpty) {
-        // Queue is empty - close playing screen
-        print('🔙 Queue empty, closing playing screen');
-        // Cancel subscriptions to prevent further updates
-        _indexSubscription?.cancel();
-        _songsSubscription?.cancel();
-        Future.microtask(() {
-          if (mounted && context.mounted) {
-            print('  ✅ Executing pop on playing screen');
-            try {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                print('  ⚠️ Cannot pop, going to dashboard');
-                context.go('/dashboard');
-              }
-            } catch (e) {
-              print('  ❌ Playing screen pop failed: $e');
-            }
-          }
-        });
-      } else {
-        // Update UI with current songs
-        setState(() {});
-      }
-    });
-
-    final path = musicService.songs.isNotEmpty && musicService.currentIndex >= 0
-        ? musicService.songs[musicService.currentIndex].artwork_path
-        : null;
-
-    hasArtwork = path != null && path.isNotEmpty && File(path).existsSync();
-
-    _updateFavoriteStatus();
   }
 
-  void _updateFavoriteStatus() {
-    if (musicService.songs.isNotEmpty && musicService.currentIndex >= 0) {
-      final currentSong = musicService.songs[musicService.currentIndex];
-      setState(() {
-        isFavorite = currentSong.isFavorite;
-      });
-    }
-  }
+  Future<void> _toggleFavorite(MusicPlayerState state) async {
+    if (state.songs.isEmpty || state.currentIndex == null) return;
 
-  Future<void> _toggleFavorite() async {
-    if (musicService.songs.isEmpty || musicService.currentIndex < 0) return;
-
-    final currentSong = musicService.songs[musicService.currentIndex];
+    final currentSong = state.currentSong;
+    if (currentSong == null) return;
     final newFavoriteStatus = !isFavorite;
 
     try {
@@ -149,7 +96,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
         isFavorite = newFavoriteStatus;
       });
 
-      musicService.songs[musicService.currentIndex].isFavorite =
+      _musicService.songs[_musicService.currentIndex].isFavorite =
           newFavoriteStatus;
 
       showSnackBar(
@@ -192,47 +139,37 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
   }
 
   @override
-  void dispose() {
-    _indexSubscription?.cancel();
-    _songsSubscription?.cancel();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (musicService.songs.isEmpty) {
-      print('⚠️ Build: Empty queue detected, returning empty container');
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && context.mounted && musicService.songs.isEmpty) {
-          print('  📍 Post-frame callback: Attempting navigation');
+    return BlocConsumer<MusicPlayerBloc, MusicPlayerState>(
+      listenWhen: (prev, curr) =>
+          (prev.songs.isNotEmpty && curr.songs.isEmpty) ||
+          prev.currentSongId != curr.currentSongId,
+      listener: (context, state) {
+        if (state.songs.isEmpty && mounted && context.mounted) {
           if (context.canPop()) {
             context.pop();
           } else {
             context.go('/dashboard');
           }
+        } else {
+          setState(() => isFavorite = state.currentSong?.isFavorite ?? false);
         }
-      });
-      return Scaffold(
-        backgroundColor: AppColors.white, // Changed from Colors.black
-        body: SizedBox.shrink(), // Empty instead of loading indicator
-      );
-      // Return loading indicator while popping
-      // return Scaffold(
-      //   backgroundColor: Colors.black,
-      //   body: Center(
-      //     child: CircularProgressIndicator(color: AppColors.primaryOrange),
-      //   ),
-      // );
-    }
+      },
+      buildWhen: (prev, curr) =>
+          prev.songs != curr.songs ||
+          prev.currentIndex != curr.currentIndex ||
+          prev.currentSongId != curr.currentSongId,
+      builder: (context, state) {
+        if (state.songs.isEmpty) {
+          return Scaffold(
+            backgroundColor: AppColors.white,
+            body: const SizedBox.shrink(),
+          );
+        }
 
-    final currentSong =
-        (musicService.songs.isNotEmpty && musicService.currentIndex >= 0)
-        ? musicService.songs[musicService.currentIndex]
-        : null;
+        final currentSong = state.currentSong;
 
-    print("currentSong?.artwork_path---->${currentSong?.artwork_path}");
-
-    return Scaffold(
+        return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBarWithIconTitle(
         backgroundColor: AppColors.primaryOrange,
@@ -292,7 +229,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
                 isScrollControlled: true,
                 builder: (_) => SongMenuScreen(
                   songMenuList: songPlayingMenuItems,
-                  isPlaying: musicService.isPlaying,
+                  isPlaying: state.isPlaying,
                   maxHeight: 0.87.sh,
                   currentSong: currentSong,
                   songIndex: 0,
@@ -353,7 +290,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
             Spacer(),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 17.w),
-              child: songPropertiesWidget(),
+              child: songPropertiesWidget(state),
             ),
             SizedBox(height: 26.h),
             songProgressBarWidget(),
@@ -361,6 +298,8 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
           ],
         ),
       ),
+    );
+      },
     );
   }
 
@@ -416,7 +355,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
     );
   }
 
-  Widget songPropertiesWidget() {
+  Widget songPropertiesWidget(MusicPlayerState state) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -493,7 +432,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
           child: SvgPicture.asset(Assets.svgIEquilizerc, width: 23.w, height: 23.h),
         ),*/
          GestureDetector(
-            onTap: _toggleFavorite,
+            onTap: () => _toggleFavorite(state),
             child: Container(
               width: 23.w, height: 23.h,
               padding: EdgeInsets.all(0.r),
@@ -519,20 +458,4 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
     );
   }
 
-  void _openQueueScreen() async {
-    print('Opening queue screen');
-
-    // Navigate to queue and wait for return
-    context.push('/dashboard/queue');
-
-    print('Returned from queue screen');
-
-    // Double-check if queue is empty after returning
-    if (mounted && musicService.songs.isEmpty) {
-      print('⚠️ Queue is empty after returning, closing playing screen');
-      if (context.canPop()) {
-        context.pop();
-      }
-    }
-  }
 }

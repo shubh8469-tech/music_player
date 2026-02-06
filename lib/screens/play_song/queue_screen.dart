@@ -13,6 +13,8 @@ import 'package:music_app/features/songs/bloc/songs_bloc.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/generated/assets.dart';
 import 'package:music_app/l10n/l10n.dart';
+import 'package:music_app/features/music_player/bloc/music_player_bloc.dart';
+import 'package:music_app/features/music_player/bloc/music_player_state.dart';
 import 'package:music_app/screens/play_song/playing_song_screen.dart';
 import 'package:music_app/screens/tabs/music_service.dart';
 import 'package:music_app/themes/color.dart';
@@ -33,144 +35,43 @@ class QueueScreen extends StatefulWidget {
 }
 
 class _QueueScreenState extends State<QueueScreen> {
-  late MusicPlayerService musicService;
-  List<SongsModel> queueSongs = [];
   Set<int> selectedSongs = {};
-  bool isShuffleEnabled = false;
-  bool isRepeatEnabled = false;
-  String repeatMode = 'off';
-  StreamSubscription<int?>? _indexSubscription;
-  StreamSubscription<bool>? _shuffleSubscription;
-  StreamSubscription<List<SongsModel>>? _songsSubscription;
-  StreamSubscription<LoopMode>? _loopModeSubscription;
   Timer? _updateDebounceTimer;
   bool _isReordering = false;
   bool _isClosing = false;
   bool _isDragging = false;
 
+  MusicPlayerService get _musicService =>
+      context.read<MusicPlayerBloc>().musicService;
+
+  static String _loopModeToString(LoopMode mode) {
+    if (mode == LoopMode.off) return 'off';
+    if (mode == LoopMode.one) return 'one';
+    return 'all';
+  }
+
   @override
   void initState() {
     super.initState();
-
-    musicService = MusicPlayerService();
     _isClosing = false;
-    _loadQueueSongs();
-
-    // Sync shuffle state with music service
-    isShuffleEnabled = musicService.isShuffleEnabled;
-    _syncRepeatMode();
-    print(
-      '🎵 QueueScreen initialized - Shuffle: $isShuffleEnabled, Repeat: $repeatMode',
-    );
-
-    // Listen to current index changes to update UI
-    _indexSubscription = musicService.currentIndexStream.listen((index) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
-
-    // Listen to shuffle state changes
-    _shuffleSubscription = musicService.shuffleStream.listen((shuffleEnabled) {
-      if (mounted) {
-        setState(() {
-          isShuffleEnabled = shuffleEnabled;
-        });
-      }
-    });
-
-    // Listen to songs list changes - this will automatically update when actions are performed in select_song_screen
-    _songsSubscription = musicService.songsChanged.listen((newSongs) {
-      if (_isClosing) {
-        print('🚫 Ignoring song update - screen is closing');
-        return;
-      }
-
-      if (mounted) {
-        final wasEmpty = queueSongs.isEmpty;
-        final nowEmpty = newSongs.isEmpty;
-
-        setState(() {
-          queueSongs = List.from(newSongs);
-        });
-
-        // ✅ Detect transition from non-empty to empty
-        if (!wasEmpty && nowEmpty) {
-          print('🔙 Queue became empty via external action');
-          _handleEmptyQueue();
-        }
-      }
-    });
-
-    // Listen to loop mode changes from the music service
-    _loopModeSubscription = musicService.loopModeStream.listen((mode) {
-      if (!mounted) return;
-      String newRepeatMode;
-      if (mode == LoopMode.off) {
-        newRepeatMode = 'off';
-      } else if (mode == LoopMode.one) {
-        newRepeatMode = 'one';
-      } else {
-        newRepeatMode = 'all';
-      }
-
-      setState(() {
-        repeatMode = newRepeatMode;
-        isRepeatEnabled = newRepeatMode != 'off';
-      });
-    });
   }
 
   void _handleEmptyQueue() async {
     if (_isClosing) return;
 
-    print('🔙 Handling empty queue - closing screen');
     _isClosing = true;
+    await Future.delayed(const Duration(milliseconds: 100));
 
-    // Cancel subscriptions
-    _songsSubscription?.cancel();
-    _indexSubscription?.cancel();
-    _shuffleSubscription?.cancel();
-
-    // Small delay
-    await Future.delayed(Duration(milliseconds: 100));
-
-    // Close using go_router
     if (mounted && context.mounted) {
-      print('✅ Closing queue screen with context.pop()');
       try {
         if (context.canPop()) {
           context.pop();
         } else {
-          print('⚠️ Cannot pop - navigating to dashboard');
           context.go('/dashboard');
         }
       } catch (e) {
-        print('❌ Failed to close queue screen: $e');
+        // Ignore
       }
-    }
-  }
-
-  void _syncRepeatMode() {
-    // Music service stores LoopMode enum (just_audio), but iOS uses strings
-    final currentLoopMode = musicService.loopMode;
-    String newRepeatMode;
-
-    // Convert LoopMode enum to string (matches both Android enum and iOS string)
-    if (currentLoopMode == LoopMode.off) {
-      newRepeatMode = 'off';
-    } else if (currentLoopMode == LoopMode.one) {
-      newRepeatMode = 'one';
-    } else {
-      newRepeatMode = 'all';
-    }
-
-    if (repeatMode != newRepeatMode) {
-      setState(() {
-        repeatMode = newRepeatMode;
-        isRepeatEnabled = newRepeatMode != 'off';
-      });
-      print('🔁 Repeat mode synced: $repeatMode');
     }
   }
 
@@ -178,17 +79,12 @@ class _QueueScreenState extends State<QueueScreen> {
   void dispose() {
     _isClosing = true;
     _updateDebounceTimer?.cancel();
-    _indexSubscription?.cancel();
-    _shuffleSubscription?.cancel();
-    _songsSubscription?.cancel();
-    _loopModeSubscription?.cancel();
     super.dispose();
   }
 
-  Future<void> _popIfQueueEmpty() async {
+  Future<void> _popIfQueueEmpty(List<SongsModel> queueSongs) async {
     if (!mounted || queueSongs.isNotEmpty) return;
-    print('🔙 Queue is empty, navigating back');
-    await musicService.stopAndClearQueue();
+    await _musicService.stopAndClearQueue();
     // Give UI time to update
     await Future.delayed(Duration(milliseconds: 150));
     if (!mounted) return;
@@ -221,32 +117,20 @@ class _QueueScreenState extends State<QueueScreen> {
     }
   }
 
-  void _loadQueueSongs() {
-    // Load songs from the current playlist/queue
-    setState(() {
-      queueSongs = List.from(musicService.songs);
-      for (int i = 0; i < queueSongs.length; i++) {
-        print("queue songs --->${queueSongs[i].title}");
-      }
-    });
-  }
-
-  Future<void> _removeSongAtIndex(int index) async {
+  Future<void> _removeSongAtIndex(int index, List<SongsModel> queueSongs) async {
     if (index < 0 || index >= queueSongs.length) return;
 
-    final currentPlayingIndex = musicService.currentIndex;
+    final currentPlayingIndex = _musicService.currentIndex;
     final isRemovingCurrentSong = index == currentPlayingIndex;
 
-    final wasPlaying = musicService.isPlaying;
-    final currentPosition = musicService.position;
+    final wasPlaying = _musicService.isPlaying;
+    final currentPosition = _musicService.position;
     final removedSong = queueSongs[index];
-    setState(() {
-      queueSongs.removeAt(index);
-    });
+    final newQueue = List<SongsModel>.from(queueSongs)..removeAt(index);
 
-    if (queueSongs.isEmpty) {
+    if (newQueue.isEmpty) {
       try {
-        await musicService.stopAndClearQueue();
+        await _musicService.stopAndClearQueue();
         // Wait a bit for state to settle
         if (mounted) {
           showSnackBar(
@@ -286,158 +170,90 @@ class _QueueScreenState extends State<QueueScreen> {
 
     try {
       if (isRemovingCurrentSong) {
-        // Removing current song - stop and play next
-        final nextIndex = index < queueSongs.length ? index : 0;
-        print('  Playing next at: $nextIndex');
-        // Stop current playback to avoid glitches
-        await musicService.player.stop();
-        // Set new playlist and play
-        await musicService.setPlaylist(
-          queueSongs,
+        final nextIndex = index < newQueue.length ? index : 0;
+        await _musicService.player.stop();
+        await _musicService.setPlaylist(
+          newQueue,
           startIndex: nextIndex,
           autoPlay: true,
         );
       } else if (index < currentPlayingIndex) {
         final newCurrentIndex = currentPlayingIndex - 1;
         if (Platform.isAndroid) {
-          final source = musicService.player.audioSource;
+          final source = _musicService.player.audioSource;
           if (source is ConcatenatingAudioSource &&
-              !musicService.isShuffleEnabled) {
-            print('  Android: Using ConcatenatingAudioSource.removeAt()');
-
+              !_musicService.isShuffleEnabled) {
             await source.removeAt(index);
-
-            musicService.updateSongsList(queueSongs);
+            _musicService.updateSongsList(newQueue);
           } else {
-            // Fallback: rebuild
-            print('  Android: Fallback to rebuild');
-            await musicService.updateSongsInQueueWithIndex(
-              queueSongs,
+            await _musicService.updateSongsInQueueWithIndex(
+              newQueue,
               newCurrentIndex,
             );
-
             if (wasPlaying) {
-              await musicService.seek(currentPosition, index: newCurrentIndex);
-              await musicService.play();
+              await _musicService.seek(currentPosition, index: newCurrentIndex);
+              await _musicService.play();
             }
           }
         } else if (Platform.isIOS) {
-          print('  iOS: Updating internal list only');
-          await musicService.removeFromQueueAtIndex(index, newCurrentIndex);
-          musicService.updateSongsList(queueSongs);
+          await _musicService.removeFromQueueAtIndex(index, newCurrentIndex);
+          _musicService.updateSongsList(newQueue);
         }
       } else {
-        print(
-          '  Removed song AFTER current, keeping index: $currentPlayingIndex',
-        );
-
         if (Platform.isAndroid) {
-          // Android: Use ConcatenatingAudioSource.removeAt() for seamless removal
-          final source = musicService.player.audioSource;
+          final source = _musicService.player.audioSource;
           if (source is ConcatenatingAudioSource &&
-              !musicService.isShuffleEnabled) {
-            print('  Android: Using ConcatenatingAudioSource.removeAt()');
+              !_musicService.isShuffleEnabled) {
             await source.removeAt(index);
-            musicService.updateSongsList(queueSongs);
+            _musicService.updateSongsList(newQueue);
           } else {
-            await musicService.updateSongsInQueueWithIndex(
-              queueSongs,
+            await _musicService.updateSongsInQueueWithIndex(
+              newQueue,
               currentPlayingIndex,
             );
           }
         } else if (Platform.isIOS) {
-          print('  iOS: Updating internal list only');
-          musicService.updateSongsList(queueSongs);
+          _musicService.updateSongsList(newQueue);
         }
       }
-      // showSnackBar(context, () {}, message: 'Removed "${removedSong.title}"', alertBannerLocation: AlertBannerLocation.bottom);
-
-      print('✅ Song removed successfully');
     } catch (e) {
-      print('❌ Error removing song: $e');
-      if (wasPlaying && !musicService.isPlaying) {
+      if (wasPlaying && !_musicService.isPlaying) {
         try {
-          await musicService.play();
+          await _musicService.play();
         } catch (_) {}
       }
     }
   }
 
-  void _reorderSongs(int oldIndex, int newIndex) async {
-    if (newIndex > oldIndex) {
-      newIndex -= 1;
-    }
-
+  void _reorderSongs(int oldIndex, int newIndex, List<SongsModel> queueSongs) async {
+    if (newIndex > oldIndex) newIndex -= 1;
     if (oldIndex == newIndex) return;
 
-    // Mark that we're reordering to prevent external updates
     _isReordering = true;
-
-    // Set cache before setState so first rebuild sees correct currentSongId
-    musicService.prepareReorderForCurrentSong(oldIndex, newIndex);
-
-    setState(() {
-      final tempQueue = List<SongsModel>.from(queueSongs);
-      final SongsModel item = tempQueue.removeAt(oldIndex);
-      tempQueue.insert(newIndex, item);
-      queueSongs = tempQueue;
-    });
-
-    // Cancel any pending updates
+    _musicService.prepareReorderForCurrentSong(oldIndex, newIndex);
     _updateDebounceTimer?.cancel();
 
-    // Use the INSTANT reorder method (Android uses move(), iOS defers update)
-    // _updateDebounceTimer = Timer(Duration(milliseconds: 10), () async {
     try {
-      // final isPlaying = musicService.isPlaying;
-      // if(isPlaying){
-      //   musicService.pause();
-      // }
-      await musicService.swapReorderSongInQueue(oldIndex, newIndex);
-      // if(isPlaying){
-      //   musicService.play();
-      // }
+      await _musicService.swapReorderSongInQueue(oldIndex, newIndex);
     } finally {
       _isReordering = false;
     }
-    // });
   }
 
-  Future<void> _toggleShuffle() async {
+  Future<void> _toggleShuffle(List<SongsModel> queueSongs) async {
     if (queueSongs.isEmpty) return;
 
-    print('🔀 Toggle Shuffle - Current: $isShuffleEnabled');
-    print('📱 Platform: ${Platform.isAndroid ? "Android" : "iOS"}');
-
     try {
-      // Toggle shuffle via music service (handles both platforms)
-      await musicService.toggleShuffle();
-
-      // Update local state from music service
-      setState(() {
-        isShuffleEnabled = musicService.isShuffleEnabled;
-      });
-
+      await _musicService.toggleShuffle();
+      final enabled = _musicService.isShuffleEnabled;
       showSnackBar(
         context,
         () {},
-        message: isShuffleEnabled ? 'Shuffle enabled' : 'Shuffle disabled',
+        message: enabled ? 'Shuffle enabled' : 'Shuffle disabled',
         alertBannerLocation: AlertBannerLocation.bottom,
       );
-
-      // Reload queue to reflect any order changes
-      _loadQueueSongs();
-
-      print('✅ Shuffle toggled to: $isShuffleEnabled');
-      print(
-        '   Android: ${Platform.isAndroid ? "setShuffleModeEnabled + shuffle()" : "N/A"}',
-      );
-      print(
-        '   iOS: ${Platform.isIOS ? "setShuffleModeEnabled via method channel" : "N/A"}',
-      );
     } catch (e) {
-      print('❌ Error toggling shuffle: $e');
-      // _showSnackBar('Failed to toggle shuffle', Assets.svgIcSuffle);
+      // Ignore
     }
   }
 
@@ -489,78 +305,45 @@ class _QueueScreenState extends State<QueueScreen> {
     }
   }*/
 
-  Future<void> _toggleRepeat() async {
+  Future<void> _toggleRepeat(List<SongsModel> queueSongs) async {
     if (queueSongs.isEmpty) return;
 
-    print('🔁 Toggle Repeat - Current: $repeatMode');
-    print('📱 Platform: ${Platform.isAndroid ? "Android" : "iOS"}');
-
     try {
-      await musicService.toggleRepeat();
-
-      _syncRepeatMode();
-
+      await _musicService.toggleRepeat();
+      final mode = _loopModeToString(_musicService.loopMode);
       String message;
-      String iconAsset;
-
-      if (repeatMode == 'off') {
+      if (mode == 'off') {
         message = 'Repeat off';
-        iconAsset = Assets.svgRepeatOff;
-      } else if (repeatMode == 'one') {
+      } else if (mode == 'one') {
         message = 'Repeat current';
-        iconAsset = Assets.svgRepeatOnce;
       } else {
         message = 'Loop all';
-        iconAsset = Assets.svgRepeatOn;
       }
-
       showSnackBar(
         context,
         () {},
         message: message,
         alertBannerLocation: AlertBannerLocation.bottom,
       );
-
-      print('✅ Repeat toggled to: $repeatMode');
-      if (Platform.isAndroid) {
-        print('   Android: Using LoopMode.$repeatMode enum via just_audio');
-      } else if (Platform.isIOS) {
-        print(
-          '   iOS: Converted to string \'$repeatMode\' and sent via method channel',
-        );
-        print('   iOS Native: AVQueuePlayer receives \'$repeatMode\' string');
-      }
     } catch (e) {
-      print('❌ Error toggling repeat: $e');
+      // Ignore
     }
   }
 
   Future<void> _clearQueue() async {
-    // ✅ Close the dialog FIRST
     if (mounted && context.mounted && Navigator.canPop(context)) {
-      Navigator.pop(context); // Close the confirmation dialog
+      Navigator.pop(context);
     }
     _isClosing = true;
+    setState(() => selectedSongs.clear());
 
-    // Cancel subscriptions
-    _songsSubscription?.cancel();
-    _indexSubscription?.cancel();
-    _shuffleSubscription?.cancel();
-
-    setState(() {
-      queueSongs = [];
-      selectedSongs.clear();
-    });
     try {
-      print('  ⏹️ Stopping playback...');
-      await musicService.player.stop();
-      await musicService.player.seek(Duration.zero);
-      print('  ✅ Playback stopped');
+      await _musicService.player.stop();
+      await _musicService.player.seek(Duration.zero);
     } catch (e) {
-      print('  ⚠️ Error stopping player: $e');
+      // Ignore
     }
-    print('  🗑️ Clearing queue in service...');
-    await musicService.stopAndClearQueue();
+    await _musicService.stopAndClearQueue();
     await Future.delayed(Duration(milliseconds: 250));
 
     if (mounted && context.mounted) {
@@ -578,7 +361,7 @@ class _QueueScreenState extends State<QueueScreen> {
     print('✅ Queue cleared successfully');
   }
 
-  void _showClearQueueDialog() {
+  void _showClearQueueDialog(List<SongsModel> queueSongs) {
     if (queueSongs.isEmpty) return;
 
     showModalBottomSheet(
@@ -703,48 +486,55 @@ class _QueueScreenState extends State<QueueScreen> {
     );
   }
 
-  void _navigateToSelectSongScreen() {
+  void _navigateToSelectSongScreen(List<SongsModel> queueSongs) {
     if (queueSongs.isEmpty) return;
-
     context.push('/dashboard/select-song', extra: {'songs': queueSongs});
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool hasQueue = queueSongs.isNotEmpty;
-    final bool showMiniPlayer = hasQueue && musicService.isPlaying;
+    return BlocConsumer<MusicPlayerBloc, MusicPlayerState>(
+      listenWhen: (prev, curr) => prev.songs.isNotEmpty && curr.songs.isEmpty,
+      listener: (context, state) {
+        if (state.songs.isEmpty && !_isClosing) _handleEmptyQueue();
+      },
+      buildWhen: (prev, curr) => prev.songs != curr.songs ||
+          prev.currentIndex != curr.currentIndex ||
+          prev.currentSongId != curr.currentSongId ||
+          prev.isPlaying != curr.isPlaying ||
+          prev.shuffleEnabled != curr.shuffleEnabled ||
+          prev.loopMode != curr.loopMode,
+      builder: (context, state) {
+        final queueSongs = state.songs;
+        final hasQueue = queueSongs.isNotEmpty;
+        final showMiniPlayer = hasQueue && state.isPlaying;
 
     final double miniPlayerHeight = 90.h;
     final double bottomInset = MediaQuery.of(context).padding.bottom;
     final double bottomPadding = hasQueue ? miniPlayerHeight + bottomInset : 0;
 
     return BlocListener<SongsBloc, SongsState>(
-      listener: (context, state) {
-        state.maybeWhen(
-          loaded: (songs) {
-            // Remove any songs from queue that are no longer in the library
-            final currentSongIds = songs.map((s) => s.id).toSet();
-            final filteredQueue = queueSongs
-                .where((song) => currentSongIds.contains(song.id))
-                .toList();
+        listener: (context, songsState) {
+          songsState.maybeWhen(
+            loaded: (librarySongs) {
+              final currentSongIds = librarySongs.map((s) => s.id).toSet();
+              final filteredQueue = queueSongs
+                  .where((song) =>
+                      song.id != null && currentSongIds.contains(song.id))
+                  .toList();
 
-            if (filteredQueue.length != queueSongs.length) {
-              setState(() {
-                queueSongs = filteredQueue;
-                selectedSongs.clear(); // Clear selections if songs were removed
-              });
-
-              // Update music service with filtered queue
-              if (musicService.songs.isNotEmpty) {
-                musicService.setPlaylist(queueSongs);
+              if (filteredQueue.length != queueSongs.length) {
+                setState(() => selectedSongs.clear());
+                if (_musicService.songs.isNotEmpty) {
+                  _musicService.setPlaylist(filteredQueue);
+                }
+                _popIfQueueEmpty(filteredQueue);
               }
-              _popIfQueueEmpty();
-            }
-          },
-          orElse: () {},
-        );
-      },
-      child: Scaffold(
+            },
+            orElse: () {},
+          );
+        },
+        child: Scaffold(
         backgroundColor: AppColors.white,
         appBar: AppBarWithIconTitle(
           title: "Playing Queue",
@@ -754,7 +544,7 @@ class _QueueScreenState extends State<QueueScreen> {
           onBack: () => context.pop(),
           actions: [
             IconButton(
-              onPressed: _showClearQueueDialog,
+              onPressed: () => _showClearQueueDialog(queueSongs),
               icon: SvgPicture.asset(
                 Assets.svgIcDelete,
                 colorFilter: const ColorFilter.mode(
@@ -780,7 +570,7 @@ class _QueueScreenState extends State<QueueScreen> {
                   child: Row(
                     children: [
                       GestureDetector(
-                        onTap: _navigateToSelectSongScreen,
+                        onTap: () => _navigateToSelectSongScreen(queueSongs),
                         child: Row(
                           children: [
                             SvgPicture.asset(Assets.svgSongsCount),
@@ -804,9 +594,10 @@ class _QueueScreenState extends State<QueueScreen> {
                             ),
                             SizedBox(width: 8.w),
                             if (queueSongs.isNotEmpty &&
-                                musicService.currentIndex >= 0) ...[
+                                state.currentIndex != null &&
+                                state.currentIndex! >= 0) ...[
                               Texts(
-                                "${musicService.currentIndex + 1}/${queueSongs.length}",
+                                "${state.currentIndex! + 1}/${queueSongs.length}",
                                 fontSize: 14.sp,
                                 color: AppColors.textColor,
                                 fontWeight: FontWeight.w400,
@@ -820,7 +611,7 @@ class _QueueScreenState extends State<QueueScreen> {
                       Row(
                         children: [
                           GestureDetector(
-                            onTap: _toggleShuffle,
+                            onTap: () => _toggleShuffle(queueSongs),
                             child: Container(
                               padding: EdgeInsets.all(8.w),
                               decoration: BoxDecoration(
@@ -831,7 +622,7 @@ class _QueueScreenState extends State<QueueScreen> {
                                 width: 20.w,
                                 height: 20.h,
                                 colorFilter: ColorFilter.mode(
-                                  !isShuffleEnabled
+                                  !state.shuffleEnabled
                                       ? AppColors.mediumDarkGrey
                                       : AppColors.textColor,
                                   BlendMode.srcIn,
@@ -841,16 +632,16 @@ class _QueueScreenState extends State<QueueScreen> {
                           ),
                           SizedBox(width: 12.w),
                           GestureDetector(
-                            onTap: _toggleRepeat,
+                            onTap: () => _toggleRepeat(queueSongs),
                             child: Container(
                               padding: EdgeInsets.all(8.w),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20.r),
                               ),
                               child: SvgPicture.asset(
-                                repeatMode == 'one'
+                                _loopModeToString(state.loopMode) == 'one'
                                     ? Assets.svgRepeatOnce
-                                    : repeatMode == 'off'
+                                    : _loopModeToString(state.loopMode) == 'off'
                                     ? Assets.svgRepeatOff
                                     : Assets.svgRepeatOn,
                                 width: 20.w,
@@ -873,15 +664,7 @@ class _QueueScreenState extends State<QueueScreen> {
 
                 // Queue Songs List
                 Expanded(
-                  child: StreamBuilder<List<SongsModel>>(
-                    stream: musicService.songsChanged,
-                    initialData: musicService.songs,
-                    builder: (context, snapshot) {
-                      // Always check the current state, not just the snapshot
-                      // final hasAny = musicService.songs.isNotEmpty;
-                      // // final showMiniPlayer = hasAny;
-
-                      return ReorderableListView.builder(
+                  child: ReorderableListView.builder(
                         proxyDecorator:
                             (
                               Widget child,
@@ -915,14 +698,15 @@ class _QueueScreenState extends State<QueueScreen> {
                               bottomPadding, // Space for MiniPlayerBar (which includes system nav bar padding)
                         ),
                         itemCount: queueSongs.length,
-                        onReorder: _reorderSongs,
+                        onReorder: (oldIndex, newIndex) =>
+                            _reorderSongs(oldIndex, newIndex, queueSongs),
                         itemBuilder: (context, index) {
                           final song = queueSongs[index];
                           final isCurrentlyPlaying =
-                              musicService.currentSongId == song.id;
+                              state.currentSongId == song.id;
                           final isPlaying =
-                              musicService.currentSongId == song.id &&
-                              musicService.isPlaying;
+                              state.currentSongId == song.id &&
+                              state.isPlaying;
 
                           return Container(
                             key: ValueKey(song.id),
@@ -961,22 +745,23 @@ class _QueueScreenState extends State<QueueScreen> {
                               showCancelIcon: false,
                               cancelIconAsset: Assets.svgCancel,
                               cancelIconSize: 24.r,
-                              onCancelTap: () => _removeSongAtIndex(index),
+                              onCancelTap: () =>
+                                  _removeSongAtIndex(index, queueSongs),
                               onTap: () async {
-                                if (musicService.songs.isNotEmpty &&
-                                    musicService
-                                            .songs[musicService.currentIndex]
-                                            .id ==
+                                if (state.songs.isNotEmpty &&
+                                    state.currentIndex != null &&
+                                    state.currentIndex! < state.songs.length &&
+                                    state.songs[state.currentIndex!].id ==
                                         song.id &&
-                                    musicService.isPlaying) {
+                                    state.isPlaying) {
                                   context.push(
                                     '/dashboard/playing',
                                     extra: PlayingSongArgs(
-                                      songs: musicService.songs,
+                                      songs: _musicService.songs,
                                     ),
                                   );
                                 } else {
-                                  musicService.setPlaylist(
+                                  _musicService.setPlaylist(
                                     queueSongs,
                                     startIndex: index,
                                   );
@@ -1002,22 +787,16 @@ class _QueueScreenState extends State<QueueScreen> {
                                     from: 'queue',
                                     maxHeight: 0.87.sh,
                                     onSongDeleted: () {
-                                      setState(() {
-                                        _loadQueueSongs();
-                                      });
+                                      setState(() {});
                                     },
                                   ),
                                 );
-                                setState(() {
-                                  _loadQueueSongs();
-                                });
+                                setState(() {});
                               },
                             ),
                           );
                         },
-                      );
-                    },
-                  ),
+                      ),
                 ),
               ],
             ),
@@ -1031,6 +810,8 @@ class _QueueScreenState extends State<QueueScreen> {
           ],
         ),
       ),
+    );
+      },
     );
   }
 }

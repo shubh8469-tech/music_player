@@ -10,13 +10,14 @@ import 'package:music_app/screens/tabs/search/search_screen.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/screens/tabs/library/widgets/mini_player_bar.dart';
 
+import '../../features/music_player/bloc/music_player_bloc.dart';
+import '../../features/music_player/bloc/music_player_state.dart';
 import '../../generated/assets.dart';
 import '../../themes/font.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
 import '../tabs/music_service.dart';
 import '../../features/playlists/bloc/playlist_bloc.dart';
-import '../../features/songs/data/models/song_model.dart';
 import 'widgets/music_drawer.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -28,7 +29,6 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int currentIndex = 0;
-  final _musicService = MusicPlayerService();
   final _libraryController = LibraryScreenController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -174,23 +174,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             )
           : null,
-      body: StreamBuilder<List<SongsModel>>(
-        stream: _musicService.songsChanged,
-        initialData: _musicService.songs,
-        builder: (context, snapshot) {
-          // Always check the current state, not just the snapshot
-          final hasAny = _musicService.songs.isNotEmpty;
+      body: BlocBuilder<MusicPlayerBloc, MusicPlayerState>(
+        buildWhen: (prev, curr) => prev.songs != curr.songs,
+        builder: (context, playerState) {
+          final hasAny = playerState.songs.isNotEmpty;
           final showMiniPlayer = hasAny;
 
           return Stack(
             children: [
               Positioned.fill(
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: showMiniPlayer ? 74.h : 0), // Space for MiniPlayerBar (which includes system nav bar padding)
+                  padding: EdgeInsets.only(
+                    bottom: showMiniPlayer ? 74.h : 0,
+                  ), // Space for MiniPlayerBar (which includes system nav bar padding)
                   child: screens[currentIndex],
                 ),
               ),
-              Positioned(left: 0, right: 0, bottom: 0, child: MiniPlayerBar()),
+              const Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: MiniPlayerBar(),
+              ),
             ],
           );
         },

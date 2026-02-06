@@ -28,6 +28,8 @@ import 'package:music_app/features/genres/domain/usecases/update_genre_cover.dar
 import 'package:music_app/features/genres/domain/usecases/update_genre_name.dart';
 import 'Blocs/languageBloc/language_bloc.dart';
 import 'app_router.dart';
+import 'features/music_player/bloc/music_player_bloc.dart';
+import 'screens/tabs/music_service.dart';
 import 'core/di/injection.dart';
 import 'features/songs/bloc/songs_bloc.dart';
 import 'features/songs/data/dataSource/song_local_data_source.dart';
@@ -114,6 +116,9 @@ Future<void> main() async {
                 updateGenreCoverUseCase: locator<UpdateGenreCover>(),
                 updateGenreNameUseCase: locator<UpdateGenreName>(),
               ),
+            ),
+            BlocProvider<MusicPlayerBloc>(
+              create: (_) => MusicPlayerBloc(musicService: MusicPlayerService()),
             ),
             BlocProvider<SongsBloc>(
               create: (context) => SongsBloc(

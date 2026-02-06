@@ -10,6 +10,8 @@ import '../../../commonWidgets/MusicListTile.dart';
 import '../../../commonWidgets/playlist_menu_screen.dart';
 import '../../../commonWidgets/gradientCard.dart';
 import '../../../commonWidgets/textWidget.dart';
+import '../../../features/music_player/bloc/music_player_bloc.dart';
+import '../../../features/music_player/bloc/music_player_state.dart';
 import '../../../generated/assets.dart';
 import '../../../utills/snack_bar.dart';
 import '../../../screens/tabs/music_service.dart';
@@ -17,7 +19,6 @@ import '../../../features/playlists/bloc/playlist_bloc.dart';
 import '../../../commonWidgets/common_modal_bottom_sheet.dart';
 import '../../play_song/playing_song_screen.dart';
 import '../library/playlists/create_playlist_bottom_sheet.dart';
-import '../library/playlists/rename_playlist_bottom_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback? onNavigateToLibraryPlaylists;
@@ -218,88 +219,81 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: TextStyle(color: Colors.grey),
                         );
                       }
-                      return Column(
-                        children: recentlyPlayedSongs.take(3).map((song) {
-                          return StreamBuilder<int?>(
-                            stream: musicService.currentSongIdStream,
-                            initialData: musicService.currentSongId,
-                            builder: (context, currentIdSnap) {
-                              return StreamBuilder<bool>(
-                                stream: musicService.isPlayingStream,
-                                initialData: musicService.isPlaying,
-                                builder: (context, playingSnap) {
-                                  final currentId = currentIdSnap.data;
-                                  final isCurrent = song.id == currentId;
-                                  final isPlaying = musicService.isPlaying;
-                                  final isCurrentlyPlaying =
-                                      isCurrent; // && isPlaying;
+                      return BlocBuilder<MusicPlayerBloc, MusicPlayerState>(
+                        buildWhen: (prev, curr) =>
+                            prev.currentSongId != curr.currentSongId ||
+                            prev.isPlaying != curr.isPlaying,
+                        builder: (context, playerState) {
+                          return Column(
+                            children:
+                                recentlyPlayedSongs.take(3).map((song) {
+                              final isCurrent =
+                                  song.id == playerState.currentSongId;
+                              final isPlaying = playerState.isPlaying;
+                              final isCurrentlyPlaying = isCurrent;
 
-                                  return MusicListTile(
-                                    margin: 7.w,
-                                    height: 66.h,
-                                    borderRadius: 10.r,
-                                    backgroundColor:
-                                        AppColors.musicTileBackgroundColor,
-                                    cardHeight: 50.h,
-                                    cardWidth: 50.h,
-                                    cardRadius: 7.r,
-                                    cardIconAsset:
-                                        song.artwork_path ??
-                                        Assets.svgMusicIcon,
-                                    cardIconSize: 32.r,
-                                    isSvgCardIcon: (song.artwork_path ?? '')
-                                        .contains('.svg'),
-                                    title: song.title,
-                                    subtitle: '${song.artist} - ${song.album}',
-                                    trailingIconAsset: isCurrent && isPlaying
-                                        ? Assets.svgPause
-                                        : Assets.svgPlayLogo,
-                                    trailingIconHeight: 32.r,
-                                    trailingIconWidth: 32.r,
-                                    trailingMargin: 0,
-                                    isGifLoad: isCurrentlyPlaying,
-                                    isPlaying: isPlaying,
-                                    onTap: () async {
-                                      if (musicService.songs.isNotEmpty &&
-                                          musicService
-                                                  .songs[musicService
-                                                      .currentIndex]
-                                                  .id ==
-                                              song.id &&
-                                          musicService.isPlaying) {
-                                        context.push(
-                                          '/dashboard/playing',
-                                          extra: PlayingSongArgs(
-                                            songs: musicService.songs,
-                                          ),
-                                        );
-                                      } else {
-                                        await musicService.setPlaylist(
-                                          recentlyPlayedSongs,
-                                          startIndex: recentlyPlayedSongs
-                                              .indexOf(song),
-                                        );
-                                        await musicService.play();
-                                      }
-                                    },
-                                    onPlayTap: () async {
-                                      if (isCurrent && isPlaying) {
-                                        await musicService.pause();
-                                      } else {
-                                        await musicService.setPlaylist(
-                                          recentlyPlayedSongs,
-                                          startIndex: recentlyPlayedSongs
-                                              .indexOf(song),
-                                        );
-                                        await musicService.play();
-                                      }
-                                    },
-                                  );
+                              return MusicListTile(
+                                margin: 7.w,
+                                height: 66.h,
+                                borderRadius: 10.r,
+                                backgroundColor:
+                                    AppColors.musicTileBackgroundColor,
+                                cardHeight: 50.h,
+                                cardWidth: 50.h,
+                                cardRadius: 7.r,
+                                cardIconAsset: song.artwork_path ??
+                                    Assets.svgMusicIcon,
+                                cardIconSize: 32.r,
+                                isSvgCardIcon:
+                                    (song.artwork_path ?? '').contains('.svg'),
+                                title: song.title,
+                                subtitle: '${song.artist} - ${song.album}',
+                                trailingIconAsset: isCurrent && isPlaying
+                                    ? Assets.svgPause
+                                    : Assets.svgPlayLogo,
+                                trailingIconHeight: 32.r,
+                                trailingIconWidth: 32.r,
+                                trailingMargin: 0,
+                                isGifLoad: isCurrentlyPlaying,
+                                isPlaying: isPlaying,
+                                onTap: () async {
+                                  if (musicService.songs.isNotEmpty &&
+                                      musicService
+                                              .songs[musicService.currentIndex]
+                                              .id ==
+                                          song.id &&
+                                      musicService.isPlaying) {
+                                    context.push(
+                                      '/dashboard/playing',
+                                      extra: PlayingSongArgs(
+                                        songs: musicService.songs,
+                                      ),
+                                    );
+                                  } else {
+                                    await musicService.setPlaylist(
+                                      recentlyPlayedSongs,
+                                      startIndex:
+                                          recentlyPlayedSongs.indexOf(song),
+                                    );
+                                    await musicService.play();
+                                  }
+                                },
+                                onPlayTap: () async {
+                                  if (isCurrent && isPlaying) {
+                                    await musicService.pause();
+                                  } else {
+                                    await musicService.setPlaylist(
+                                      recentlyPlayedSongs,
+                                      startIndex:
+                                          recentlyPlayedSongs.indexOf(song),
+                                    );
+                                    await musicService.play();
+                                  }
                                 },
                               );
-                            },
+                            }).toList(),
                           );
-                        }).toList(),
+                        },
                       );
                     },
                     error: (message) => Text('Error: $message'),

@@ -8,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:music_app/commonWidgets/app_bar_with_icon_title.dart';
 import 'package:music_app/features/genres/bloc/genre_bloc.dart';
 import 'package:music_app/features/genres/domain/entities/genre.dart';
+import 'package:music_app/features/music_player/bloc/music_player_bloc.dart';
+import 'package:music_app/features/music_player/bloc/music_player_state.dart';
 import 'package:music_app/features/songs/bloc/songs_bloc.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/screens/tabs/music_service.dart';
@@ -40,7 +42,9 @@ class GenreDetailScreen extends StatefulWidget {
 
 class _GenreDetailScreenState extends State<GenreDetailScreen> {
   final _repo = locator<GenreRepository>();
-  final musicService = MusicPlayerService();
+
+  MusicPlayerService get _musicService =>
+      context.read<MusicPlayerBloc>().musicService;
 
   List<SongsModel> _songs = [];
   List<SongsModel> _baseSongs = [];
@@ -213,16 +217,11 @@ class _GenreDetailScreenState extends State<GenreDetailScreen> {
     });
   }
 
-  Widget _songTile(List<SongsModel> list, int index) {
+  Widget _songTile(List<SongsModel> list, int index, MusicPlayerState state) {
     final song = list[index];
-    return StreamBuilder<int?>(
-      stream: musicService.currentSongIdStream,
-      initialData: musicService.currentSongId,
-      builder: (context, idSnap) {
-        final currentId = idSnap.data;
-        final isCurrent = song.id == currentId;
-        final isPlaying = musicService.isPlaying;
-        return MusicListTile(
+    final isCurrent = song.id == state.currentSongId;
+    final isPlaying = state.isPlaying;
+    return MusicListTile(
           margin: 7.w,
           height: 66.h,
           borderRadius: 10.r,
@@ -245,17 +244,17 @@ class _GenreDetailScreenState extends State<GenreDetailScreen> {
           isGifLoad: isCurrent,
           isPlaying: isPlaying,
           onTap: () async {
-            if (musicService.songs.isNotEmpty &&
-                musicService.currentIndex >= 0 &&
-                musicService.songs[musicService.currentIndex].id == song.id &&
-                musicService.isPlaying) {
+            if (_musicService.songs.isNotEmpty &&
+                _musicService.currentIndex >= 0 &&
+                _musicService.songs[_musicService.currentIndex].id == song.id &&
+                isPlaying) {
               context.push(
                 '/dashboard/playing',
-                extra: PlayingSongArgs(songs: musicService.songs),
+                extra: PlayingSongArgs(songs: _musicService.songs),
               );
             } else {
-              await musicService.setPlaylist(list, startIndex: index);
-              await musicService.play();
+              await _musicService.setPlaylist(list, startIndex: index);
+              await _musicService.play();
             }
           },
           onPlayTap: () {
@@ -304,8 +303,6 @@ class _GenreDetailScreenState extends State<GenreDetailScreen> {
             );
           },
         );
-      },
-    );
   }
 
   @override
@@ -380,11 +377,13 @@ class _GenreDetailScreenState extends State<GenreDetailScreen> {
         body: SafeArea(
           child: Stack(
             children: [
-              StreamBuilder<List<SongsModel>>(
-                stream: musicService.songsChanged,
-                initialData: musicService.songs,
-                builder: (context, snapshot) {
-                  final hasAny = musicService.songs.isNotEmpty;
+              BlocBuilder<MusicPlayerBloc, MusicPlayerState>(
+                buildWhen: (prev, curr) =>
+                    prev.songs != curr.songs ||
+                    prev.currentSongId != curr.currentSongId ||
+                    prev.isPlaying != curr.isPlaying,
+                builder: (context, state) {
+                  final hasAny = state.songs.isNotEmpty;
                   final showMiniPlayer = hasAny;
                   final hasArtwork =
                       _currentGenre.artworkPath?.isNotEmpty ?? false;
@@ -535,31 +534,31 @@ class _GenreDetailScreenState extends State<GenreDetailScreen> {
                                   onTap: () async {
                                     if (_songs.isEmpty) return;
 
-                                    if (musicService.currentIndex < 0) {
-                                      await musicService.setPlaylist(
+                                    if (_musicService.currentIndex < 0) {
+                                      await _musicService.setPlaylist(
                                         _songs,
                                         autoPlay: false,
                                         startIndex: 0,
                                       );
-                                      await musicService.play();
+                                      await _musicService.play();
                                     } else {
                                       context.push(
                                         '/dashboard/playing',
                                         extra: PlayingSongArgs(songs: _songs),
                                       );
-                                      await musicService.setShufflePlaylist(
+                                      await _musicService.setShufflePlaylist(
                                         _songs,
                                         autoPlay: false,
                                       );
-                                      await musicService
+                                      await _musicService
                                           .ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
-                                      await musicService
+                                      await _musicService
                                           .player
                                           .currentIndexStream
                                           .firstWhere(
                                             (idx) => idx != null && idx != 0,
                                           );
-                                      await musicService.play();
+                                      await _musicService.play();
                                     }
 
                                     logS.log("Shuffle Play started for genre");
@@ -597,13 +596,13 @@ class _GenreDetailScreenState extends State<GenreDetailScreen> {
                                 GestureDetector(
                                   onTap: () async {
                                     if (_baseSongs.isEmpty) return;
-                                    await musicService.ensureShuffleOff();
-                                    await musicService.setPlaylist(
+                                    await _musicService.ensureShuffleOff();
+                                    await _musicService.setPlaylist(
                                       List<SongsModel>.from(_baseSongs),
                                       startIndex: 0,
                                       autoPlay: true,
                                     );
-                                    await musicService.play();
+                                    await _musicService.play();
                                     context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
                                   },
                                   child: Container(
@@ -716,7 +715,7 @@ class _GenreDetailScreenState extends State<GenreDetailScreen> {
                               Column(
                                 children: List.generate(
                                   _songs.length,
-                                  (index) => _songTile(_songs, index),
+                                  (index) => _songTile(_songs, index, state),
                                 ),
                               ),
                           ],

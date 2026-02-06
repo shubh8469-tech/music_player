@@ -717,10 +717,11 @@ class MusicPlayerService {
       try {
         final source = _androidPlayer!.audioSource;
         if (source is ConcatenatingAudioSource) {
-          await source.move(oldIndex, newIndex);
+          // Emit new order immediately so UI doesn't snap back during await
           songs = mutableSongs;
           _reorderManager.markListUpdated();
           _songsChangedController.add(songs);
+          await source.move(oldIndex, newIndex);
         } else {
           songs = mutableSongs;
           _reorderManager.markListUpdated();

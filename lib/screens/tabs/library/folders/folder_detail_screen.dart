@@ -10,6 +10,8 @@ import 'package:music_app/features/folders/bloc/folder_bloc.dart';
 import 'package:music_app/features/folders/domain/entities/folder.dart';
 import 'package:music_app/features/songs/bloc/songs_bloc.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
+import 'package:music_app/features/music_player/bloc/music_player_bloc.dart';
+import 'package:music_app/features/music_player/bloc/music_player_state.dart';
 import 'package:music_app/screens/tabs/music_service.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
@@ -141,98 +143,110 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
     });
   }
 
-  Widget _songTile(List<SongsModel> list, int index) {
+  Widget _songTile(
+    List<SongsModel> list,
+    int index,
+    MusicPlayerState playerState,
+  ) {
     final song = list[index];
-    return StreamBuilder<int?>(
-      stream: musicService.currentSongIdStream,
-      initialData: musicService.currentSongId,
-      builder: (context, idSnap) {
-        final currentId = idSnap.data;
-        final isCurrent = song.id == currentId;
-        final isPlaying = musicService.isPlaying;
-        return Material(
-          key: ValueKey(song.id),
-          color: Colors.transparent,
-          child: Column(
-            children: [
-              MusicListTile(
-                margin: 7.w,
-                height: 66.h,
-                borderRadius: 10.r,
-                backgroundColor: AppColors.musicTileBackgroundColor,
-                cardHeight: 50.h,
-                cardWidth: 50.h,
-                cardRadius: 7.r,
-                cardIconAsset: song.artwork_path ?? Assets.svgMusicIcon,
-                cardIconSize: 32.r,
-                isSvgCardIcon: (song.artwork_path ?? '').contains('.svg') || song.artwork_path == null,
-                title: song.title,
-                subtitle: song.artist,
-                trailingIconAsset: Assets.svgMenuIcon,
-                trailingIconHeight: 19.5.h,
-                trailingIconWidth: 3.w,
-                trailingMargin: 10.w,
-                isGifLoad: isCurrent,
-                isPlaying: isPlaying,
-                onTap: () async {
-                  if (musicService.songs.isNotEmpty && musicService.songs[musicService.currentIndex].id == song.id && musicService.isPlaying) {
-                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: musicService.songs));
-                  } else {
-                    await musicService.setPlaylist(list, startIndex: index);
-                    await musicService.play();
-                  }
-                },
-                onPlayTap: () async {
-                  showModalBottomSheet(
-                    context: context,
-                    backgroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
-                    isScrollControlled: true,
-                    builder: (_) => SongMenuScreen(
-                      songMenuList: songMenuItems,
-                      isPlaying: false,
-                      currentSong: song,
-                      songIndex: index,
-                      songsList: list,
-                      maxHeight: 0.87.sh,
-                      systemKeyOrId: _currentFolder.id.toString(),
-                      isSystemPlaylist: false,
-                      from: 'folder_in',
-                      onSongDeleted: () {
-                        // Immediately remove the song from local list for instant UI update
-                        final songId = song.id;
-                        setState(() {
-                          _songs.removeWhere((s) => s.id == songId);
-                          _baseSongs.removeWhere((s) => s.id == songId);
-                          // Decrement folder count temporarily (will be synced from DB)
-                          _currentFolder = Folder(
-                            id: _currentFolder.id,
-                            name: _currentFolder.name,
-                            path: _currentFolder.path,
-                            songCount: _currentFolder.songCount - 1,
-                            artworkPath: _currentFolder.artworkPath,
-                            createdTime: _currentFolder.createdTime,
-                            updatedTime: _currentFolder.updatedTime,
-                          );
-                        });
+    final isCurrent = song.id == playerState.currentSongId;
+    final isPlaying = playerState.isPlaying;
 
-                        // Wait for database operations and triggers to complete, then sync with DB
-                        Future.delayed(const Duration(milliseconds: 800), () async {
-                          if (mounted) {
-                            await _loadSongs();
-                            _refreshFolderData();
-                          }
-                        });
+    return Material(
+      key: ValueKey(song.id),
+      color: Colors.transparent,
+      child: Column(
+        children: [
+          MusicListTile(
+            margin: 7.w,
+            height: 66.h,
+            borderRadius: 10.r,
+            backgroundColor: AppColors.musicTileBackgroundColor,
+            cardHeight: 50.h,
+            cardWidth: 50.h,
+            cardRadius: 7.r,
+            cardIconAsset: song.artwork_path ?? Assets.svgMusicIcon,
+            cardIconSize: 32.r,
+            isSvgCardIcon:
+                (song.artwork_path ?? '').contains('.svg') ||
+                song.artwork_path == null,
+            title: song.title,
+            subtitle: song.artist,
+            trailingIconAsset: Assets.svgMenuIcon,
+            trailingIconHeight: 19.5.h,
+            trailingIconWidth: 3.w,
+            trailingMargin: 10.w,
+            isGifLoad: isCurrent,
+            isPlaying: isPlaying,
+            onTap: () async {
+              if (musicService.songs.isNotEmpty &&
+                  musicService
+                          .songs[musicService.currentIndex]
+                          .id ==
+                      song.id &&
+                  musicService.isPlaying) {
+                context.push(
+                  '/dashboard/playing',
+                  extra: PlayingSongArgs(songs: musicService.songs),
+                );
+              } else {
+                await musicService.setPlaylist(list, startIndex: index);
+                await musicService.play();
+              }
+            },
+            onPlayTap: () async {
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(40.r),
+                  ),
+                ),
+                isScrollControlled: true,
+                builder: (_) => SongMenuScreen(
+                  songMenuList: songMenuItems,
+                  isPlaying: false,
+                  currentSong: song,
+                  songIndex: index,
+                  songsList: list,
+                  maxHeight: 0.87.sh,
+                  systemKeyOrId: _currentFolder.id.toString(),
+                  isSystemPlaylist: false,
+                  from: 'folder_in',
+                  onSongDeleted: () {
+                    final songId = song.id;
+                    setState(() {
+                      _songs.removeWhere((s) => s.id == songId);
+                      _baseSongs.removeWhere((s) => s.id == songId);
+                      _currentFolder = Folder(
+                        id: _currentFolder.id,
+                        name: _currentFolder.name,
+                        path: _currentFolder.path,
+                        songCount: _currentFolder.songCount - 1,
+                        artworkPath: _currentFolder.artworkPath,
+                        createdTime: _currentFolder.createdTime,
+                        updatedTime: _currentFolder.updatedTime,
+                      );
+                    });
+
+                    Future.delayed(
+                      const Duration(milliseconds: 800),
+                      () async {
+                        if (mounted) {
+                          await _loadSongs();
+                          _refreshFolderData();
+                        }
                       },
-                    ),
-                  );
-                },
-              ),
-            ],
+                    );
+                  },
+                ),
+              );
+            },
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -548,12 +562,13 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
         body: SafeArea(
           child: Stack(
             children: [
-              StreamBuilder<List<SongsModel>>(
-                stream: musicService.songsChanged,
-                initialData: musicService.songs,
-                builder: (context, snapshot) {
-                  // Always check the current state, not just the snapshot
-                  final hasAny = musicService.songs.isNotEmpty;
+              BlocBuilder<MusicPlayerBloc, MusicPlayerState>(
+                buildWhen: (prev, curr) =>
+                    prev.songs != curr.songs ||
+                    prev.currentSongId != curr.currentSongId ||
+                    prev.isPlaying != curr.isPlaying,
+                builder: (context, playerState) {
+                  final hasAny = playerState.songs.isNotEmpty;
                   final showMiniPlayer = hasAny;
           
                   return Padding(
@@ -711,7 +726,11 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
           
                             Column(
                               children: List.generate(_songs.length, (index) {
-                                return _songTile(_songs, index);
+                                return _songTile(
+                                  _songs,
+                                  index,
+                                  playerState,
+                                );
                               }),
                             ),
           

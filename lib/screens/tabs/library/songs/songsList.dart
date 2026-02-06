@@ -22,6 +22,8 @@ import '../../../../commonWidgets/common_functions.dart';
 
 // import '../../../../commonWidgets/gradientCard.dart';
 import '../../../../commonWidgets/song_menu_screen.dart';
+import '../../../../features/music_player/bloc/music_player_bloc.dart';
+import '../../../../features/music_player/bloc/music_player_state.dart';
 import '../../../../features/songs/bloc/songs_bloc.dart';
 import '../../../../generated/assets.dart';
 import '../../../../utills/globals.dart';
@@ -144,308 +146,277 @@ class _SongsListState extends State<SongsList> {
                   ),
                 );
               }
-              return Column(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 15.w, right: 15.w, top: 30.h, bottom: 1.h),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              return BlocBuilder<MusicPlayerBloc, MusicPlayerState>(
+                buildWhen: (prev, curr) => prev.currentSongId != curr.currentSongId || prev.isPlaying != curr.isPlaying,
+                builder: (context, playerState) {
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 15.w, right: 15.w, top: 30.h, bottom: 1.h),
+                          child: SingleChildScrollView(
+                            child: Column(
                               children: [
-                                GestureDetector(
-                                  onTap: () async {
-                                    try {
-                                      print('🔀 Shuffle button tapped');
-                                      print('Current state - playing: ${musicService.isPlaying}, currentIndex: ${musicService.currentIndex}');
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () async {
+                                        try {
+                                          print('🔀 Shuffle button tapped');
+                                          print('Current state - playing: ${musicService.isPlaying}, currentIndex: ${musicService.currentIndex}');
 
-                                      if (songs.isEmpty) return;
+                                          if (songs.isEmpty) return;
 
-                                      // Stop any current playback
-                                      // await musicService.stop();
+                                          // Stop any current playback
+                                          // await musicService.stop();
 
-                                      if (musicService.currentIndex < 0) {
-                                        log(
-                                          'shuffle:- Current index is invalid, resetting to 0',
-                                        );
-                                        await musicService.setPlaylist(songs, autoPlay: true, startIndex: 0);
-                                        await musicService.play();
-                                      } else {
-                                        log('shuffle:- Setting shuffle playlist');
-                                        await musicService.setShufflePlaylist(
-                                          songs,
-                                          autoPlay: true,
-                                        );
-                                        await musicService
-                                            .ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
-                                        await musicService
-                                            .player
-                                            .currentIndexStream
-                                            .firstWhere(
-                                              (idx) => idx != null && idx != 0,
-                                        );
-                                        await musicService.play();
-                                      }
+                                          if (musicService.currentIndex < 0) {
+                                            log('shuffle:- Current index is invalid, resetting to 0');
+                                            await musicService.setPlaylist(songs, autoPlay: true, startIndex: 0);
+                                            await musicService.play();
+                                          } else {
+                                            log('shuffle:- Setting shuffle playlist');
+                                            await musicService.setShufflePlaylist(songs, autoPlay: true);
+                                            await musicService.ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
+                                            await musicService.player.currentIndexStream.firstWhere((idx) => idx != null && idx != 0);
+                                            await musicService.play();
+                                          }
 
-                                      if (mounted) {
-                                        setState(() {
-                                          _showMiniPlayer = true;
-                                        });
-                                      }
-                                    } catch (e) {
-                                      log("❌ Shuffle error: $e");
-                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error starting shuffle: $e')));
-                                    }
-
-                                    // if (musicService.currentIndex < 0) {
-                                    //   await musicService.setPlaylist(songs, autoPlay: false, startIndex: 0);
-                                    //   await musicService.play();
-                                    // } else {
-                                    //   await musicService.setShufflePlaylist(
-                                    //     songs,
-                                    //     autoPlay: false,
-                                    //     startIndex: musicService.currentIndex != -1 ? musicService.currentIndex : 0,
-                                    //   );
-                                    //   await musicService.ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
-                                    //   await musicService.player.currentIndexStream.firstWhere((idx) => idx != null && idx != 0);
-                                    //   await musicService.play();
-                                    // }
-                                  },
-                                  child: Container(
-                                    alignment: Alignment.center,
-                                    height: 40.h,
-                                    width: 165.w,
-                                    decoration: BoxDecoration(color: AppColors.shuffleBackground, borderRadius: BorderRadius.circular(100.r)),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        SvgPicture.asset(Assets.svgShuffle, height: 16.79.h, width: 17.77),
-                                        SizedBox(width: 10.w),
-                                        Texts('Shuffle', fontWeight: AppFontWeights.medium, fontSize: 14.sp, color: AppColors.black),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () async {
-                                    try {
-                                      print('▶️ Play button tapped');
-                                      // Stop current playback first
-                                      await musicService.stop();
-                                      // Ensure shuffle is OFF for normal play
-                                      await musicService.ensureShuffleOff();
-                                      print('✅ Shuffle disabled');
-                                      // Set playlist starting from index 0
-                                      await musicService.setPlaylist(songs, startIndex: 0, autoPlay: true);
-
-                                      print('✅ Normal Play started from index 0');
-
-                                      if (mounted) {
-                                        setState(() {
-                                          _showMiniPlayer = true;
-                                        });
-                                      }
-                                    } catch (e) {
-                                      print('❌ Play error: $e');
-                                      // ScaffoldMessenger.of(context).showSnackBar(
-                                      //   SnackBar(content: Text('Error starting playback: $e')),
-                                      // );
-                                    }
-                                    log("Playing all songs from first position");
-                                  },
-                                  child: Container(
-                                    height: 40.h,
-                                    width: 165.w,
-                                    decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(100.r)),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        SvgPicture.asset(Assets.svgPlay, height: 16.79.h, width: 17.77),
-                                        SizedBox(width: 10.w),
-                                        Texts('Play', fontWeight: AppFontWeights.medium, fontSize: 14.sp, color: AppColors.white),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 25.h),
-                            Row(
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    context.push('/dashboard/select-song');
-                                  },
-                                  child: Row(
-                                    children: [
-                                      SvgPicture.asset(Assets.svgSongsCount),
-                                      SizedBox(width: 8.w),
-                                      SizedBox(
-                                        height: 38.h, // Increase height so padding doesn't zero it out
-                                        child: Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 8.h), // Leave some room for the line
-                                          child: VerticalDivider(
-                                            color: AppColors.mediumDarkGrey.withOpacity(0.5),
-                                            width: 1.w,      // Total space the widget occupies
-                                            thickness: 1.2.w,   // The actual thickness of the line
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(width: 8.w),
-                                      Texts("${songs.length} songs", fontSize: 14.sp, fontWeight: AppFontWeights.regular, color: AppColors.textColor),
-                                    ],
-                                  ),
-                                ),
-                                Spacer(),
-                                // GestureDetector(
-                                //   onTap: () {
-                                //     context.push('/dashboard/hidden-music');
-                                //   },
-                                //   child: SvgPicture.asset(
-                                //     Assets.svgIcHide,
-                                //     height: 20.h,
-                                //     width: 20.w,
-                                //     colorFilter: const ColorFilter.mode(
-                                //       AppColors.textColor,
-                                //       BlendMode.srcIn,
-                                //     ),
-                                //   ),
-                                // ),
-                                // SizedBox(width: 18.w),
-                                GestureDetector(
-                                  onTap: () {
-                                    showModalBottomSheet(
-                                      context: context,
-                                      backgroundColor: Colors.white,
-                                      elevation: 0,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
-                                      isScrollControlled: true,
-                                      builder: (_) => BlocProvider.value(
-                                        value: context.read<SongsBloc>(),
-                                        child: SortByBottomSheet(
-                                          selectedIndex: selectedIndex,
-                                          selectedOrder: selectedOrder,
-                                          onItemSelected: (index, order) {
+                                          if (mounted) {
                                             setState(() {
-                                              selectedIndex = index;
-                                              selectedOrder = order;
-                                              selectedSongSort = sortByItems[index].title; // Optional: update selected song title
+                                              _showMiniPlayer = true;
                                             });
-                                            // Trigger Bloc sort event
-                                            context.read<SongsBloc>().add(SongsEvent.sortSongs(index, order));
-                                            // Close bottom sheet safely
-                                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                                              if (Navigator.canPop(context)) Navigator.pop(context);
-                                            });
-                                          },
+                                          }
+                                        } catch (e) {
+                                          log("❌ Shuffle error: $e");
+                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error starting shuffle: $e')));
+                                        }
+
+                                        // if (musicService.currentIndex < 0) {
+                                        //   await musicService.setPlaylist(songs, autoPlay: false, startIndex: 0);
+                                        //   await musicService.play();
+                                        // } else {
+                                        //   await musicService.setShufflePlaylist(
+                                        //     songs,
+                                        //     autoPlay: false,
+                                        //     startIndex: musicService.currentIndex != -1 ? musicService.currentIndex : 0,
+                                        //   );
+                                        //   await musicService.ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
+                                        //   await musicService.player.currentIndexStream.firstWhere((idx) => idx != null && idx != 0);
+                                        //   await musicService.play();
+                                        // }
+                                      },
+                                      child: Container(
+                                        alignment: Alignment.center,
+                                        height: 40.h,
+                                        width: 165.w,
+                                        decoration: BoxDecoration(color: AppColors.shuffleBackground, borderRadius: BorderRadius.circular(100.r)),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            SvgPicture.asset(Assets.svgShuffle, height: 16.79.h, width: 17.77),
+                                            SizedBox(width: 10.w),
+                                            Texts('Shuffle', fontWeight: AppFontWeights.medium, fontSize: 14.sp, color: AppColors.black),
+                                          ],
                                         ),
                                       ),
-                                    );
-                                  },
-                                  child: SvgPicture.asset(Assets.svgFilter),
-                                  // child: Row(
-                                  //   children: [
-                                  //     Texts(
-                                  //       selectedSongSort,
-                                  //       fontSize: 14.sp,
-                                  //       fontWeight: AppFontWeights.regular,
-                                  //       color: AppColors.textColor,
-                                  //     ),
-                                  //   ],
-                                  // ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () async {
+                                        try {
+                                          print('▶️ Play button tapped');
+                                          // Stop current playback first
+                                          await musicService.stop();
+                                          // Ensure shuffle is OFF for normal play
+                                          await musicService.ensureShuffleOff();
+                                          print('✅ Shuffle disabled');
+                                          // Set playlist starting from index 0
+                                          await musicService.setPlaylist(songs, startIndex: 0, autoPlay: true);
+
+                                          print('✅ Normal Play started from index 0');
+
+                                          if (mounted) {
+                                            setState(() {
+                                              _showMiniPlayer = true;
+                                            });
+                                          }
+                                        } catch (e) {
+                                          print('❌ Play error: $e');
+                                          // ScaffoldMessenger.of(context).showSnackBar(
+                                          //   SnackBar(content: Text('Error starting playback: $e')),
+                                          // );
+                                        }
+                                        log("Playing all songs from first position");
+                                      },
+                                      child: Container(
+                                        height: 40.h,
+                                        width: 165.w,
+                                        decoration: BoxDecoration(color: AppColors.primaryOrange, borderRadius: BorderRadius.circular(100.r)),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            SvgPicture.asset(Assets.svgPlay, height: 16.79.h, width: 17.77),
+                                            SizedBox(width: 10.w),
+                                            Texts('Play', fontWeight: AppFontWeights.medium, fontSize: 14.sp, color: AppColors.white),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                SizedBox(width: 5.w),
-                              ],
-                            ),
-                            SizedBox(height: 15.h),
-
-                            Column(
-                              children: List.generate(songs.length, (index) {
-                                return StreamBuilder<int?>(
-                                  stream: musicService.currentSongIdStream,
-                                  initialData: musicService.currentSongId,
-                                  builder: (context, idSnap) {
-                                    final currentId = idSnap.data;
-
-                                    return StreamBuilder<bool>(
-                                      stream: musicService.isPlayingStream,
-                                      initialData: musicService.isPlaying,
-                                      builder: (context, playingSnap) {
-                                        final isCurrent = (songs[index].id == currentId);
-                                        final isPlaying = musicService.isPlaying;
-
-                                        return MusicListTile(
-                                          margin: 7.w,
-                                          height: 66.h,
-                                          borderRadius: 10.r,
-                                          backgroundColor: AppColors.musicTileBackgroundColor,
-                                          cardHeight: 50.h,
-                                          cardWidth: 50.h,
-                                          cardRadius: 7.r,
-                                          cardIconAsset: songs[index].artwork_path ?? Assets.svgMusicIcon,
-                                          cardIconSize: 32.r,
-                                          isSvgCardIcon: (songs[index].artwork_path ?? '').contains('.svg') || songs[index].artwork_path == null,
-                                          title: songs[index].title,
-                                          subtitle: songs[index].artist,
-                                          trailingIconAsset: Assets.svgMenuIcon,
-                                          trailingIconHeight: 19.5.h,
-                                          trailingIconWidth: 3.w,
-                                          trailingMargin: 10.w,
-                                          songLength: formatDuration(songs[index].duration),
-                                          songLengthRequired: true,
-                                          isGifLoad: isCurrent,
-                                          isPlaying: isPlaying,
-                                          onTap: () async {
-                                            if (musicService.songs.isNotEmpty &&
-                                                musicService.songs[musicService.currentIndex].id == songs[index].id &&
-                                                musicService.isPlaying) {
-                                              log('song   innnn');
-                                              context.push('/dashboard/playing', extra: PlayingSongArgs(songs: musicService.songs));
-                                            } else {
-                                              log('song   outttt');
-                                              await musicService.setPlaylist(songs, startIndex: index);
-                                            }
-                                          },
-                                          onPlayTap: () async {
-                                            showModalBottomSheet(
-                                              context: context,
-                                              backgroundColor: Colors.white,
-                                              elevation: 0,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
-                                              isScrollControlled: true,
-                                              builder: (_) => SongMenuScreen(
-                                                songMenuList: songMenuItems,
-                                                isPlaying: false,
-                                                currentSong: songs[index],
-                                                songIndex: index,
-                                                songsList: songs,
-                                                maxHeight: 0.85.sh,
-                                                onSongDeleted: () {
-                                                  // Ensure the global songs list is refreshed after deletion
-                                                  // (Folder/album/artist screens handle their own local lists)
-                                                  if (!context.mounted) return;
-                                                  context.read<SongsBloc>().add(const SongsEvent.getAllSongs());
-                                                },
+                                SizedBox(height: 25.h),
+                                Row(
+                                  children: [
+                                    InkWell(
+                                      onTap: () {
+                                        context.push('/dashboard/select-song');
+                                      },
+                                      child: Row(
+                                        children: [
+                                          SvgPicture.asset(Assets.svgSongsCount),
+                                          SizedBox(width: 8.w),
+                                          SizedBox(
+                                            height: 38.h, // Increase height so padding doesn't zero it out
+                                            child: Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: 8.h, // Leave some room for the line
                                               ),
-                                            );
-                                          },
+                                              child: VerticalDivider(
+                                                color: AppColors.mediumDarkGrey.withOpacity(0.5),
+                                                width: 1.w, // Total space the widget occupies
+                                                thickness: 1.2.w, // The actual thickness of the line
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 8.w),
+                                          Texts("${songs.length} songs", fontSize: 14.sp, fontWeight: AppFontWeights.regular, color: AppColors.textColor),
+                                        ],
+                                      ),
+                                    ),
+                                    Spacer(),
+                                    // GestureDetector(
+                                    //   onTap: () {
+                                    //     context.push('/dashboard/hidden-music');
+                                    //   },
+                                    //   child: SvgPicture.asset(
+                                    //     Assets.svgIcHide,
+                                    //     height: 20.h,
+                                    //     width: 20.w,
+                                    //     colorFilter: const ColorFilter.mode(
+                                    //       AppColors.textColor,
+                                    //       BlendMode.srcIn,
+                                    //     ),
+                                    //   ),
+                                    // ),
+                                    // SizedBox(width: 18.w),
+                                    GestureDetector(
+                                      onTap: () {
+                                        showModalBottomSheet(
+                                          context: context,
+                                          backgroundColor: Colors.white,
+                                          elevation: 0,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
+                                          isScrollControlled: true,
+                                          builder: (_) => BlocProvider.value(
+                                            value: context.read<SongsBloc>(),
+                                            child: SortByBottomSheet(
+                                              selectedIndex: selectedIndex,
+                                              selectedOrder: selectedOrder,
+                                              onItemSelected: (index, order) {
+                                                setState(() {
+                                                  selectedIndex = index;
+                                                  selectedOrder = order;
+                                                  selectedSongSort = sortByItems[index].title; // Optional: update selected song title
+                                                });
+                                                // Trigger Bloc sort event
+                                                context.read<SongsBloc>().add(SongsEvent.sortSongs(index, order));
+                                                // Close bottom sheet safely
+                                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                                  if (Navigator.canPop(context)) Navigator.pop(context);
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: SvgPicture.asset(Assets.svgFilter),
+                                    ),
+                                    SizedBox(width: 5.w),
+                                  ],
+                                ),
+                                SizedBox(height: 15.h),
+
+                                Column(
+                                  children: List.generate(songs.length, (index) {
+                                    final song = songs[index];
+                                    final isCurrent = song.id == playerState.currentSongId;
+                                    final isPlaying = playerState.isPlaying;
+
+                                    return MusicListTile(
+                                      margin: 7.w,
+                                      height: 66.h,
+                                      borderRadius: 10.r,
+                                      backgroundColor: AppColors.musicTileBackgroundColor,
+                                      cardHeight: 50.h,
+                                      cardWidth: 50.h,
+                                      cardRadius: 7.r,
+                                      cardIconAsset: song.artwork_path ?? Assets.svgMusicIcon,
+                                      cardIconSize: 32.r,
+                                      isSvgCardIcon: (song.artwork_path ?? '').contains('.svg') || song.artwork_path == null,
+                                      title: song.title,
+                                      subtitle: song.artist,
+                                      trailingIconAsset: Assets.svgMenuIcon,
+                                      trailingIconHeight: 19.5.h,
+                                      trailingIconWidth: 3.w,
+                                      trailingMargin: 10.w,
+                                      songLength: formatDuration(song.duration),
+                                      songLengthRequired: true,
+                                      isGifLoad: isCurrent,
+                                      isPlaying: isPlaying,
+                                      onTap: () async {
+                                        if (musicService.songs.isNotEmpty && musicService.songs[musicService.currentIndex].id == song.id && musicService.isPlaying) {
+                                          log('song   innnn');
+                                          context.push('/dashboard/playing', extra: PlayingSongArgs(songs: musicService.songs));
+                                        } else {
+                                          log('song   outttt');
+                                          await musicService.setPlaylist(songs, startIndex: index);
+                                        }
+                                      },
+                                      onPlayTap: () async {
+                                        showModalBottomSheet(
+                                          context: context,
+                                          backgroundColor: Colors.white,
+                                          elevation: 0,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
+                                          isScrollControlled: true,
+                                          builder: (_) => SongMenuScreen(
+                                            songMenuList: songMenuItems,
+                                            isPlaying: false,
+                                            currentSong: song,
+                                            songIndex: index,
+                                            songsList: songs,
+                                            maxHeight: 0.85.sh,
+                                            onSongDeleted: () {
+                                              if (!context.mounted) return;
+                                              context.read<SongsBloc>().add(const SongsEvent.getAllSongs());
+                                            },
+                                          ),
                                         );
                                       },
                                     );
-                                  },
-                                );
-                              }),
+                                  }),
+                                ),
+                                SizedBox(height: 90.h),
+                              ],
                             ),
-                            SizedBox(height: 90.h),
-                          ],
+                          ),
                         ),
+                        // Mini player is now global in Dashboard
                       ),
-                    ),
-                  ),
-                  // Mini player is now global in Dashboard
-                ],
+                    ],
+                  );
+                },
               );
             },
           );
