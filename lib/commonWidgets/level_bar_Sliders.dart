@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 
-import 'package:flutter/material.dart';
-
-
 class LevelBarSlider extends StatelessWidget {
   final int level;
   final int displayMaxLevel;
   final ValueChanged<int> onChanged;
+  final ValueChanged<int>? onChangeEnd;
 
   const LevelBarSlider({
     super.key,
     required this.level,
     this.displayMaxLevel = 20,
     required this.onChanged,
+    this.onChangeEnd,
   });
 
   @override
@@ -31,8 +30,20 @@ class LevelBarSlider extends StatelessWidget {
             _handleTouch(context, details.globalPosition, barWidth, gapWidth);
           },
 
+          onHorizontalDragEnd: (_) {
+            if (onChangeEnd != null) {
+              onChangeEnd!(level);
+            }
+          },
+
           onTapDown: (details) {
             _handleTouch(context, details.globalPosition, barWidth, gapWidth);
+          },
+
+          onTapUp: (_) {
+            if (onChangeEnd != null) {
+              onChangeEnd!(level);
+            }
           },
 
           child: Row(

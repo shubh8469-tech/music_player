@@ -740,8 +740,9 @@ class _FolderListScreenState extends State<FolderListScreen> {
       context: context,
       title: 'Hide the folder',
       message: 'Are you sure you want to hide this folder?',
+      confirmButtonText: 'Hide',
       onConfirm: (sheetContext) async {
-        Navigator.pop(sheetContext);
+        // Navigator.pop(sheetContext);
         await _updateFolderHiddenStatus(folder, true);
       },
     );

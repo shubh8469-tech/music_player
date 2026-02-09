@@ -279,7 +279,7 @@ class _PlayListScreenState extends State<PlayListScreen> {
                     orElse: () {},
                   );
                   return Texts(
-                    'My PlayLists ($userCount)',
+                    'My Playlists ($userCount)',
                     fontSize: 18,
                     fontWeight: AppFontWeights.medium,
                     fontFamily: AppFonts.inter,

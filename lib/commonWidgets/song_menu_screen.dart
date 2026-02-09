@@ -3658,6 +3658,7 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
           }
         }
       },
+      confirmButtonText: 'Hide'
     );
   }
 }

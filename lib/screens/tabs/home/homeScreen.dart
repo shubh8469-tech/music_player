@@ -302,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     children: [
                       Texts(
-                        'My PlayLists',
+                        'My Playlists',
                         fontSize: 18.sp,
                         fontWeight: AppFontWeights.medium,
                         fontFamily: AppFonts.inter,

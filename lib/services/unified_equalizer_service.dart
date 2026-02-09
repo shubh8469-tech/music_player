@@ -456,10 +456,10 @@ class UnifiedEqualizerService {
     _currentPreset = 'Custom';
     _presets['Custom'] = List.from(_bandLevels);
 
-    // Reapply effects to maintain them
-    await _reapplyAllEffects();
-
-
+    // NOTE: Do NOT reapply all effects on every band change.
+    // That was causing audible glitches when moving sliders because
+    // bass boost / virtualizer / reverb were repeatedly re-written.
+    // Effects are still re-applied when their own controls change.
     _equalizerChangedController.add(null);
   }
 
