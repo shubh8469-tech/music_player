@@ -38,123 +38,120 @@ class _EqualizerScreenContent extends StatelessWidget {
     final row1 = presetList.take(half).toList();
     final row2 = presetList.skip(half).toList();
 
-    return SafeArea(
-      bottom: true,
-      child: Stack(
-        children: [
-          Scaffold(
-            backgroundColor: Colors.white,
-            appBar: AppBarWithIconTitle(
-              title: "Equalizer",
-              backgroundColor: AppColors.primaryOrange,
-              titleColor: AppColors.white,
-              centerTitle: false,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
-              ),
-              showBackButton: false,
-              actions: [
-                Row(
-                  children: [
-                    Switch(
-                      value: eqService.isEnabled,
-                      onChanged: (value) => provider.setEnabled(value),
-                      activeThumbColor: Colors.white,
-                      activeTrackColor: Colors.white.withValues(alpha: 0.5),
-                      inactiveThumbColor: Colors.white70,
-                      inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
-                    ),
-                    SizedBox(width: 8.w),
-                  ],
-                ),
-              ],
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBarWithIconTitle(
+            title: "Equalizer",
+            backgroundColor: AppColors.primaryOrange,
+            titleColor: AppColors.white,
+            centerTitle: false,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
             ),
-            body: !provider.isInitialized
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const CircularProgressIndicator(color: AppColors.primaryOrange),
-                        SizedBox(height: 16.h),
-                        Texts('Loading Equalizer...', fontSize: 14.sp, color: AppColors.textColor),
-                      ],
-                    ),
-                  )
-                : provider.hasError
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.error_outline, color: AppColors.primaryOrange, size: 48.w),
-                            SizedBox(height: 16.h),
-                            Texts('Failed to load equalizer', fontSize: 14.sp, color: AppColors.textColor),
-                            SizedBox(height: 8.h),
-                            TextButton(
-                              onPressed: provider.retryInit,
-                              child: Texts('Retry', fontSize: 14.sp, color: AppColors.primaryOrange),
-                            ),
-                          ],
-                        ),
-                      )
-                    : Stack(
+            showBackButton: false,
+            actions: [
+              Row(
+                children: [
+                  Switch(
+                    value: eqService.isEnabled,
+                    onChanged: (value) => provider.setEnabled(value),
+                    activeThumbColor: Colors.white,
+                    activeTrackColor: Colors.white.withValues(alpha: 0.5),
+                    inactiveThumbColor: Colors.white70,
+                    inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
+                  ),
+                  SizedBox(width: 8.w),
+                ],
+              ),
+            ],
+          ),
+          body: !provider.isInitialized
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const CircularProgressIndicator(color: AppColors.primaryOrange),
+                      SizedBox(height: 16.h),
+                      Texts('Loading Equalizer...', fontSize: 14.sp, color: AppColors.textColor),
+                    ],
+                  ),
+                )
+              : provider.hasError
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SingleChildScrollView(
-                            padding: EdgeInsets.symmetric(vertical: 15.w),
-                            child: Container(
-                              color: AppColors.white,
-                              height: MediaQuery.of(context).size.height,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _PresetChips(
-                                    row1: row1,
-                                    row2: row2,
-                                    selectedPreset: provider.selectedPreset,
-                                    onPresetSelected: provider.applyPreset,
-                                  ),
-                                  _FrequencySliders(
-                                    frequencies: provider.frequencies,
-                                    frequencyLabels: provider.frequencyLabels,
-                                    onBandChanged: provider.updateBandLevelUI,
-                                    onBandChangeEnd: provider.commitBandLevelToBackend,
-                                  ),
+                          Icon(Icons.error_outline, color: AppColors.primaryOrange, size: 48.w),
+                          SizedBox(height: 16.h),
+                          Texts('Failed to load equalizer', fontSize: 14.sp, color: AppColors.textColor),
+                          SizedBox(height: 8.h),
+                          TextButton(
+                            onPressed: provider.retryInit,
+                            child: Texts('Retry', fontSize: 14.sp, color: AppColors.primaryOrange),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Stack(
+                      children: [
+                        SingleChildScrollView(
+                          padding: EdgeInsets.symmetric(vertical: 15.w),
+                          child: Container(
+                            color: AppColors.white,
+                            // height: MediaQuery.of(context).size.height,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _PresetChips(
+                                  row1: row1,
+                                  row2: row2,
+                                  selectedPreset: provider.selectedPreset,
+                                  onPresetSelected: provider.applyPreset,
+                                ),
+                                _FrequencySliders(
+                                  frequencies: provider.frequencies,
+                                  frequencyLabels: provider.frequencyLabels,
+                                  onBandChanged: provider.updateBandLevelUI,
+                                  onBandChangeEnd: provider.commitBandLevelToBackend,
+                                ),
+                                SizedBox(height: 20.h),
+                                _EffectsSection(
+                                  selectedReverb: provider.selectedReverb,
+                                  bassBoostLevel: provider.bassBoostLevel,
+                                  virtualizerLevel: provider.virtualizerLevel,
+                                  onBassBoostChanged: provider.updateBassBoostUI,
+                                  onBassBoostChangeEnd: provider.commitBassBoostToBackend,
+                                  onVirtualizerChanged: provider.updateVirtualizerUI,
+                                  onVirtualizerChangeEnd: provider.commitVirtualizerToBackend,
+                                  onReverbTap: () => _showReverbBottomSheet(context),
+                                ),
+                                if (!eqService.isAndroid && !eqService.isIOS) ...[
                                   SizedBox(height: 20.h),
-                                  _EffectsSection(
-                                    selectedReverb: provider.selectedReverb,
-                                    bassBoostLevel: provider.bassBoostLevel,
-                                    virtualizerLevel: provider.virtualizerLevel,
-                                    onBassBoostChanged: provider.updateBassBoostUI,
-                                    onBassBoostChangeEnd: provider.commitBassBoostToBackend,
-                                    onVirtualizerChanged: provider.updateVirtualizerUI,
-                                    onVirtualizerChangeEnd: provider.commitVirtualizerToBackend,
-                                    onReverbTap: () => _showReverbBottomSheet(context),
-                                  ),
-                                  if (!eqService.isAndroid && !eqService.isIOS) ...[
-                                    SizedBox(height: 20.h),
-                                    _PlatformInfo(),
-                                  ],
+                                  _PlatformInfo(),
                                 ],
-                              ),
+                              ],
                             ),
                           ),
-                          if (!eqService.isEnabled)
-                            Positioned.fill(
-                              child: ClipRRect(
-                                child: BackdropFilter(
-                                  filter: ImageFilter.blur(sigmaX: 0.5, sigmaY: 0.5),
-                                  child: Container(
-                                    height: MediaQuery.of(context).size.height,
-                                    color: Colors.grey.withValues(alpha: 0.3),
-                                  ),
+                        ),
+                        if (!eqService.isEnabled)
+                          Positioned.fill(
+                            child: ClipRRect(
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 0.5, sigmaY: 0.5),
+                                child: Container(
+                                  height: MediaQuery.of(context).size.height,
+                                  color: Colors.grey.withValues(alpha: 0.3),
                                 ),
                               ),
                             ),
-                        ],
-                      ),
-          ),
-        ],
-      ),
+                          ),
+                      ],
+                    ),
+        ),
+      ],
     );
   }
 

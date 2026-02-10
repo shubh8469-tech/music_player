@@ -11,8 +11,8 @@ import 'music_player_state.dart';
 /// [MusicPlayerState]. Replaces scattered StreamBuilders across the app.
 class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
   MusicPlayerBloc({required MusicPlayerService musicService})
-      : _musicService = musicService,
-        super(MusicPlayerState()) {
+    : _musicService = musicService,
+      super(MusicPlayerState()) {
     _init();
   }
 
@@ -43,16 +43,40 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
 
   void _emitCurrent() {
     if (!isClosed) {
-      emit(MusicPlayerState(
-        songs: _musicService.songs,
-        currentIndex: _musicService.currentIndex >= 0 ? _musicService.currentIndex : null,
-        currentSongId: _musicService.currentSongId,
-        isPlaying: _musicService.isPlaying,
-        position: _musicService.position,
-        duration: _musicService.duration,
-        loopMode: _musicService.loopMode,
-        shuffleEnabled: _musicService.isShuffleEnabled,
-      ));
+      var position = _musicService.position;
+      var duration = _musicService.duration;
+
+      // Filter transient position/duration resets during shuffle toggle (rebuild).
+      // When the same song is playing, ignore brief 0/null from setAudioSource.
+      final sameSong = state.currentSongId == _musicService.currentSongId;
+      final looksLikeReset =
+          position == Duration.zero &&
+          (duration == null || duration.inMilliseconds <= 0);
+      final hadValidProgress =
+          state.position.inMilliseconds > 0 && state.duration != null;
+
+      if (sameSong &&
+          looksLikeReset &&
+          hadValidProgress &&
+          state.songs.isNotEmpty) {
+        position = state.position;
+        duration = state.duration;
+      }
+
+      emit(
+        MusicPlayerState(
+          songs: _musicService.songs,
+          currentIndex: _musicService.currentIndex >= 0
+              ? _musicService.currentIndex
+              : null,
+          currentSongId: _musicService.currentSongId,
+          isPlaying: _musicService.isPlaying,
+          position: position,
+          duration: duration,
+          loopMode: _musicService.loopMode,
+          shuffleEnabled: _musicService.isShuffleEnabled,
+        ),
+      );
     }
   }
 

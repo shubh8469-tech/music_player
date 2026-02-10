@@ -46,8 +46,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
   bool isFavorite = false;
   final UnifiedEqualizerService equalizerService = UnifiedEqualizerService();
 
-  MusicPlayerService get _musicService =>
-      context.read<MusicPlayerBloc>().musicService;
+  MusicPlayerService get _musicService => context.read<MusicPlayerBloc>().musicService;
 
   @override
   void initState() {
@@ -55,10 +54,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final musicService = context.read<MusicPlayerBloc>().musicService;
       if (musicService.songs.isEmpty || musicService.songs != widget.songs) {
-        musicService.setPlaylist(
-          widget.songs,
-          startIndex: musicService.currentIndex,
-        );
+        musicService.setPlaylist(widget.songs, startIndex: musicService.currentIndex);
       }
     });
   }
@@ -71,9 +67,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
     final newFavoriteStatus = !isFavorite;
 
     try {
-      context.read<SongsBloc>().add(
-        SongsEvent.updateSongFavorite(currentSong.id!, newFavoriteStatus),
-      );
+      context.read<SongsBloc>().add(SongsEvent.updateSongFavorite(currentSong.id!, newFavoriteStatus));
 
       if (newFavoriteStatus) {
         context.read<PlaylistBloc>().add(
@@ -84,38 +78,24 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
           ),
         );
       } else {
-        context.read<PlaylistBloc>().add(
-          PlaylistEvent.removeSongFromPlaylist(
-            await _getFavoritesPlaylistId(),
-            currentSong.id!,
-          ),
-        );
+        context.read<PlaylistBloc>().add(PlaylistEvent.removeSongFromPlaylist(await _getFavoritesPlaylistId(), currentSong.id!));
       }
 
       setState(() {
         isFavorite = newFavoriteStatus;
       });
 
-      _musicService.songs[_musicService.currentIndex].isFavorite =
-          newFavoriteStatus;
+      _musicService.songs[_musicService.currentIndex].isFavorite = newFavoriteStatus;
 
       showSnackBar(
         context,
         () {},
-        message: newFavoriteStatus
-            ? 'Added to favorites'
-            : 'Removed from favorites',
+        message: newFavoriteStatus ? 'Added to favorites' : 'Removed from favorites',
         backgroundColor: AppColors.primaryOrange,
         alertBannerLocation: AlertBannerLocation.bottom,
       );
     } catch (e) {
-      showSnackBar(
-        context,
-        () {},
-        message: 'Error updating favorites: $e',
-        backgroundColor: Colors.red,
-        alertBannerLocation: AlertBannerLocation.bottom,
-      );
+      showSnackBar(context, () {}, message: 'Error updating favorites: $e', backgroundColor: Colors.red, alertBannerLocation: AlertBannerLocation.bottom);
     }
   }
 
@@ -141,9 +121,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<MusicPlayerBloc, MusicPlayerState>(
-      listenWhen: (prev, curr) =>
-          (prev.songs.isNotEmpty && curr.songs.isEmpty) ||
-          prev.currentSongId != curr.currentSongId,
+      listenWhen: (prev, curr) => (prev.songs.isNotEmpty && curr.songs.isEmpty) || prev.currentSongId != curr.currentSongId,
       listener: (context, state) {
         if (state.songs.isEmpty && mounted && context.mounted) {
           if (context.canPop()) {
@@ -155,150 +133,116 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
           setState(() => isFavorite = state.currentSong?.isFavorite ?? false);
         }
       },
-      buildWhen: (prev, curr) =>
-          prev.songs != curr.songs ||
-          prev.currentIndex != curr.currentIndex ||
-          prev.currentSongId != curr.currentSongId,
+      buildWhen: (prev, curr) => prev.songs != curr.songs || prev.currentIndex != curr.currentIndex || prev.currentSongId != curr.currentSongId,
       builder: (context, state) {
         if (state.songs.isEmpty) {
-          return Scaffold(
-            backgroundColor: AppColors.white,
-            body: const SizedBox.shrink(),
-          );
+          return Scaffold(backgroundColor: AppColors.white, body: const SizedBox.shrink());
         }
 
         final currentSong = state.currentSong;
 
+        isFavorite = currentSong?.isFavorite ?? false;
+
         return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: AppBarWithIconTitle(
-        backgroundColor: AppColors.primaryOrange,
-        title: null,
-        leading: GestureDetector(
-          onTap: () {
-            Navigator.of(context).pop();
-          },
-          child: Padding(
-            padding: EdgeInsets.only(left: 22.w),
-            child: SizedBox(
-              width: 26.w,
-              height: 26.h,
-              child: SvgPicture.asset(
-                Assets.svgIcDownArrow,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.white,
-                  BlendMode.srcIn,
-                ),
-              ),
-            ),
-          ),
-        ),
-        showBackButton: false,
-        actions: [
-          SizedBox(
-            width: 40.w,
-            height: 40.h,
-            child: IconButton(
-              onPressed: () {
-                showSnackBar(
-                  context,
-                  () {},
-                  message: 'Themes feature coming soon',
-                  backgroundColor: AppColors.primaryOrange,
-                  alertBannerLocation: AlertBannerLocation.bottom,
-                );
+          backgroundColor: AppColors.white,
+          appBar: AppBarWithIconTitle(
+            backgroundColor: AppColors.primaryOrange,
+            title: null,
+            leading: GestureDetector(
+              onTap: () {
+                Navigator.of(context).pop();
               },
-              icon: SvgPicture.asset(
-                Assets.svgIcShirt,
-                height: 26.h,
-                width: 26.w,
+              child: Padding(
+                padding: EdgeInsets.only(left: 22.w),
+                child: SizedBox(
+                  width: 26.w,
+                  height: 26.h,
+                  child: SvgPicture.asset(Assets.svgIcDownArrow, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
+                ),
               ),
             ),
-          ),
-          IconButton(
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                backgroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(40.r),
-                  ),
+            showBackButton: false,
+            actions: [
+              SizedBox(
+                width: 40.w,
+                height: 40.h,
+                child: IconButton(
+                  onPressed: () {
+                    showSnackBar(
+                      context,
+                      () {},
+                      message: 'Themes feature coming soon',
+                      backgroundColor: AppColors.primaryOrange,
+                      alertBannerLocation: AlertBannerLocation.bottom,
+                    );
+                  },
+                  icon: SvgPicture.asset(Assets.svgIcShirt, height: 26.h, width: 26.w),
                 ),
-                isScrollControlled: true,
-                builder: (_) => SongMenuScreen(
-                  songMenuList: songPlayingMenuItems,
-                  isPlaying: state.isPlaying,
-                  maxHeight: 0.87.sh,
-                  currentSong: currentSong,
-                  songIndex: 0,
-                  songsList: [],
-                ),
-              );
-            },
-            icon: SvgPicture.asset(
-              Assets.svgIcDots,
-              height: 26.h,
-              width: 26.w,
-              colorFilter: const ColorFilter.mode(
-                AppColors.white,
-                BlendMode.srcIn,
               ),
-            ),
+              IconButton(
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(40.r))),
+                    isScrollControlled: true,
+                    builder: (_) => SongMenuScreen(
+                      songMenuList: songPlayingMenuItems,
+                      isPlaying: state.isPlaying,
+                      maxHeight: 0.87.sh,
+                      currentSong: currentSong,
+                      songIndex: 0,
+                      songsList: [],
+                    ),
+                  );
+                },
+                icon: SvgPicture.asset(Assets.svgIcDots, height: 26.h, width: 26.w, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: Padding(
-        padding: EdgeInsets.only(top: 27.h),
-        child: Column(
-          children: [
-            currentSong?.artwork_path != null && currentSong?.artwork_path != ''
-                ? Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 17.w),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(9.r),
-                      child: Image.file(
-                        File(currentSong!.artwork_path!),
-                        width: 250.w,
-                        height: 250.w,
-                        fit: BoxFit.cover,
+          body: Padding(
+            padding: EdgeInsets.only(top: 27.h),
+            child: Column(
+              children: [
+                currentSong?.artwork_path != null && currentSong?.artwork_path != ''
+                    ? Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 17.w),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(9.r),
+                          child: Image.file(File(currentSong!.artwork_path!), width: 250.w, height: 250.w, fit: BoxFit.cover),
+                        ),
+                      )
+                    : Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 17.w),
+                        child: GradientCard(
+                          width: 250.w,
+                          height: 250.w,
+                          borderRadius: 10.r,
+                          iconAsset: Assets.svgMusicIcon,
+                          iconSize: 100.r,
+                          isSvg: false,
+                          margin: 0.w,
+                          colors: [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange],
+                        ),
                       ),
-                    ),
-                  )
-                : Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 17.w),
-                    child: GradientCard(
-                      width: 250.w,
-                      height: 250.w,
-                      borderRadius: 10.r,
-                      iconAsset: Assets.svgMusicIcon,
-                      iconSize: 100.r,
-                      isSvg: false,
-                      margin: 0.w,
-                      colors: [
-                        AppColors.mildOrange.withValues(alpha: 0.21),
-                        AppColors.mildOrange,
-                      ],
-                    ),
-                  ),
-            SizedBox(height: 33.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 17.w),
-              child: songTitlePlaylistWidget(currentSong),
+                SizedBox(height: 33.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 17.w),
+                  child: songTitlePlaylistWidget(currentSong),
+                ),
+                Spacer(),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 17.w),
+                  child: songPropertiesWidget(state),
+                ),
+                SizedBox(height: 26.h),
+                songProgressBarWidget(),
+                SizedBox(height: 70.h),
+              ],
             ),
-            Spacer(),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 17.w),
-              child: songPropertiesWidget(state),
-            ),
-            SizedBox(height: 26.h),
-            songProgressBarWidget(),
-            SizedBox(height: 70.h),
-          ],
-        ),
-      ),
-    );
+          ),
+        );
       },
     );
   }
@@ -322,9 +266,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
                 overflow: TextOverflow.ellipsis,
               ),
               Texts(
-                currentSong?.artist.isNotEmpty == true
-                    ? currentSong!.artist
-                    : 'Unknown Artist',
+                currentSong?.artist.isNotEmpty == true ? currentSong!.artist : 'Unknown Artist',
                 fontSize: 14.sp,
                 color: AppColors.textColor,
                 fontWeight: FontWeight.w400,
@@ -339,17 +281,10 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
         GestureDetector(
           onTap: () {
             if (currentSong?.id != null) {
-              showCommonAddToPlaylistBottomSheet(
-                context,
-                songId: currentSong!.id,
-              );
+              showCommonAddToPlaylistBottomSheet(context, songId: currentSong!.id);
             }
           },
-          child: SvgPicture.asset(
-            Assets.svgIcPlaylist,
-            width: 32.w,
-            height: 32.h,
-          ),
+          child: SvgPicture.asset(Assets.svgIcPlaylist, width: 32.w, height: 32.h),
         ),
       ],
     );
@@ -361,9 +296,7 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
       children: [
         GestureDetector(
           onTap: () {
-            context.go(
-              '/dashboard/queue',
-            );
+            context.go('/dashboard/queue');
             // _openQueueScreen();
             // QueueNavigationHelper.navigateToQueueScreen(context);
           },
@@ -431,31 +364,25 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
           },
           child: SvgPicture.asset(Assets.svgIEquilizerc, width: 23.w, height: 23.h),
         ),*/
-         GestureDetector(
-            onTap: () => _toggleFavorite(state),
-            child: Container(
-              width: 23.w, height: 23.h,
-              padding: EdgeInsets.all(0.r),
-              child: SvgPicture.asset(
-                isFavorite ? Assets.svgFavOn : Assets.svgFav,
-                width: 21.w, height: 21.h,
-                colorFilter: ColorFilter.mode(
-                  isFavorite ? AppColors.primaryOrange : AppColors.black,
-                  BlendMode.srcIn,
-                ),
-              ),
+        GestureDetector(
+          onTap: () => _toggleFavorite(state),
+          child: Container(
+            width: 23.w,
+            height: 23.h,
+            padding: EdgeInsets.all(0.r),
+            child: SvgPicture.asset(
+              isFavorite ? Assets.svgFavOn : Assets.svgFav,
+              width: 21.w,
+              height: 21.h,
+              colorFilter: ColorFilter.mode(isFavorite ? AppColors.primaryOrange : AppColors.black, BlendMode.srcIn),
             ),
           ),
-
+        ),
       ],
     );
   }
 
   Widget songProgressBarWidget() {
-    return ChangeNotifierProvider<AudioPlayerProvider>(
-      create: (_) => AudioPlayerProvider(),
-      child: const AudioPlayerWidget(),
-    );
+    return ChangeNotifierProvider<AudioPlayerProvider>(create: (_) => AudioPlayerProvider(), child: const AudioPlayerWidget());
   }
-
 }

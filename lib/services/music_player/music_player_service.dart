@@ -33,6 +33,7 @@ class MusicPlayerService {
 
   List<SongsModel> songs = [];
   List<int> _shuffleIndices = [];
+  List<SongsModel>? _originalOrderBeforeShuffle;
   int? _lastUpdatedSongId;
   bool _isChangingTrack = false;
 
@@ -99,10 +100,12 @@ class MusicPlayerService {
       return _androidPlayer!.playerStateStream;
     }
     if (Platform.isIOS) {
-      return _iosPlayer!.playingStream.map((isPlaying) => PlayerState(
-            isPlaying,
-            isPlaying ? ProcessingState.ready : ProcessingState.idle,
-          ));
+      return _iosPlayer!.playingStream.map(
+        (isPlaying) => PlayerState(
+          isPlaying,
+          isPlaying ? ProcessingState.ready : ProcessingState.idle,
+        ),
+      );
     }
     return Stream.value(PlayerState(false, ProcessingState.idle));
   }
@@ -155,15 +158,15 @@ class MusicPlayerService {
   }
 
   int? get currentSongId => _reorderManager.getCurrentSongId(
-        currentIndex: currentIndex,
-        songs: songs,
-      );
+    currentIndex: currentIndex,
+    songs: songs,
+  );
 
   Stream<int?> get currentSongIdStream => currentIndexStream.map((i) {
-        final idx = i ?? -1;
-        if (idx >= 0 && idx < songs.length) return songs[idx].id;
-        return null;
-      });
+    final idx = i ?? -1;
+    if (idx >= 0 && idx < songs.length) return songs[idx].id;
+    return null;
+  });
 
   bool get isPlaying {
     if (Platform.isAndroid && _androidPlayer != null) {
@@ -195,10 +198,15 @@ class MusicPlayerService {
     print('📝 Songs list updated: ${songs.length} songs');
   }
 
-  Future<void> removeFromQueueAtIndex(int removeIndex, int newCurrentIndex) async {
+  Future<void> removeFromQueueAtIndex(
+    int removeIndex,
+    int newCurrentIndex,
+  ) async {
     if (!Platform.isIOS) throw Exception('This method is only for iOS');
     try {
-      print('📱 iOS: Removing song at index $removeIndex, new current: $newCurrentIndex');
+      print(
+        '📱 iOS: Removing song at index $removeIndex, new current: $newCurrentIndex',
+      );
       await _iosPlayer!.removeFromQueueAtIndex(removeIndex, newCurrentIndex);
       print('✅ iOS: Song removed seamlessly');
     } catch (e) {
@@ -330,8 +338,10 @@ class MusicPlayerService {
     }
 
     _reorderManager.clear();
-    print('🎵 MusicPlayerService.setPlaylist - startIndex: $startIndex, songCount: ${songModels.length}');
-
+    _originalOrderBeforeShuffle = null;
+    print(
+      '🎵 MusicPlayerService.setPlaylist - startIndex: $startIndex, songCount: ${songModels.length}',
+    );
     if (Platform.isAndroid) {
       await _setAndroidPlaylist(songModels, startIndex, autoPlay);
     } else if (Platform.isIOS) {
@@ -339,16 +349,44 @@ class MusicPlayerService {
     }
   }
 
+  Future<void> _resetAndroidPlayer() async {
+    try {
+      await _androidPlayer?.stop();
+    } catch (_) {}
+    try {
+      await _androidPlayer?.dispose();
+    } catch (_) {}
+
+    _androidPlayer = equalizerService.createAndroidPlayerWithEqualizer();
+    _androidPlayer!.setLoopMode(_loopMode);
+    _androidPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
+    _setupAndroidListeners();
+  }
+
   Future<void> _setAndroidPlaylist(
     List<SongsModel> songModels,
     int startIndex,
-    bool autoPlay,
-  ) async {
+    bool autoPlay, {
+    bool playlistOrderIsFinal = false,
+    Duration? initialPosition,
+  }) async {
     final playlist = PlaylistBuilder.createPlaylist(songModels);
     try {
-      await _androidPlayer!.setAudioSource(playlist, initialIndex: startIndex);
-      await _androidPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
-      if (_isShuffleEnabled) await _androidPlayer!.shuffle();
+      developer.log(
+        'playlist ----> ${playlist.children.length}',
+        name: 'MusicPlayerService._setAndroidPlaylist',
+      );
+      await _androidPlayer!.setAudioSource(
+        playlist,
+        initialIndex: startIndex,
+        initialPosition: initialPosition,
+      );
+      if (!playlistOrderIsFinal) {
+        await _androidPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
+        if (_isShuffleEnabled) await _androidPlayer!.shuffle();
+      } else {
+        await _androidPlayer!.setShuffleModeEnabled(false);
+      }
       await _androidPlayer!.durationStream.firstWhere((d) => d != null);
 
       if (!equalizerService.isInitialized) {
@@ -362,8 +400,25 @@ class MusicPlayerService {
         await _androidPlayer!.play();
         print('▶️ Android: Playing from index $startIndex');
       }
-    } catch (e) {
+    } catch (e, st) {
       print('❌ Android Playlist Error: $e');
+
+      // "Loading interrupted" means the current load was cancelled, usually
+      // because another load or a dispose happened. Treat it as a benign
+      // cancellation: reset the Android player so we don't get stuck in a
+      // bad state that only an app restart would fix.
+      if (e.toString().contains('Loading interrupted')) {
+        developer.log(
+          'Android playlist load was interrupted; resetting player instance.',
+          name: 'MusicPlayerService._setAndroidPlaylist',
+          error: e,
+          stackTrace: st,
+        );
+        await _resetAndroidPlayer();
+        return;
+      }
+
+      // For any other error, still bubble up so it can be handled upstream.
       rethrow;
     }
   }
@@ -384,8 +439,8 @@ class MusicPlayerService {
       final iosLoopMode = _loopMode == LoopMode.one
           ? 'one'
           : _loopMode == LoopMode.all
-              ? 'all'
-              : 'off';
+          ? 'all'
+          : 'off';
       await _iosPlayer!.setLoopMode(iosLoopMode);
       await _iosPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
       print('✅ iOS: Playlist set successfully');
@@ -503,6 +558,7 @@ class MusicPlayerService {
 
     songs = [];
     _shuffleIndices.clear();
+    _originalOrderBeforeShuffle = null;
     _lastUpdatedSongId = null;
     _reorderManager.clear();
     _isShuffleEnabled = false;
@@ -521,14 +577,113 @@ class MusicPlayerService {
   // ---------------------------------------------------------------------------
 
   Future<void> toggleShuffle() async {
-    _isShuffleEnabled = !_isShuffleEnabled;
-    if (Platform.isAndroid) {
-      await _androidPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
-      if (_isShuffleEnabled) await _androidPlayer!.shuffle();
-    } else if (Platform.isIOS) {
+    if (!Platform.isAndroid) {
+      _isShuffleEnabled = !_isShuffleEnabled;
       await _iosPlayer!.setShuffleModeEnabled(_isShuffleEnabled);
+      _shuffleController.add(_isShuffleEnabled);
+      return;
+    }
+
+    if (Platform.isAndroid && songs.isEmpty) return;
+
+    _isShuffleEnabled = !_isShuffleEnabled;
+
+    if (Platform.isAndroid) {
+      if (_isShuffleEnabled) {
+        _originalOrderBeforeShuffle ??= List<SongsModel>.from(songs);
+        final currIdx = currentIndex.clamp(0, songs.length - 1);
+        final currentSong = songs[currIdx];
+        final rest = List<SongsModel>.from(songs)..removeAt(currIdx);
+        rest.shuffle(Random());
+        final targetOrder = [currentSong, ...rest];
+        _reorderManager.setReorderCache(currIdx, 0, currIdx, songs);
+        await _applyOrderUsingMoves(targetOrder);
+        developer.log('🔀 Android shuffle enabled (current at top, no rebuild)');
+      } else {
+        if (_originalOrderBeforeShuffle != null) {
+          final original = List<SongsModel>.from(_originalOrderBeforeShuffle!);
+          _originalOrderBeforeShuffle = null;
+          // Shuffle OFF: always use rebuild (one platform call). Move loop is
+          // O(n) and slow even for ~10 songs.
+          await _applyOrderUsingRebuild(original);
+          developer.log('🔀 Android shuffle disabled, restored original order');
+        }
+      }
     }
     _shuffleController.add(_isShuffleEnabled);
+  }
+
+  static const int _shuffleMoveThreshold = 50;
+
+  /// Reorders the queue. For small playlists uses move() (no glitch). For large
+  /// playlists uses rebuild (fast; O(1) vs O(n) platform calls).
+  Future<void> _applyOrderUsingMoves(List<SongsModel> targetOrder) async {
+    if (targetOrder.length > _shuffleMoveThreshold && Platform.isAndroid) {
+      await _applyOrderUsingRebuild(targetOrder);
+      return;
+    }
+    await _applyOrderUsingMovesInternal(targetOrder);
+  }
+
+  Future<void> _applyOrderUsingRebuild(List<SongsModel> targetOrder) async {
+    if (!Platform.isAndroid) return;
+    final currSongId = currentSongId;
+    int newIndex = 0;
+    if (currSongId != null) {
+      final idx = targetOrder.indexWhere((s) => s.id == currSongId);
+      if (idx >= 0) newIndex = idx;
+    }
+    songs = List<SongsModel>.from(targetOrder);
+    _songsChangedController.add(songs);
+    await _rebuildPlaylist(
+      targetOrder,
+      newIndex,
+      position,
+      isPlaying,
+    );
+    developer.log(
+      '🔀 Large playlist (${targetOrder.length}): used rebuild for speed',
+    );
+  }
+
+  /// Reorders using ConcatenatingAudioSource.move (like swapReorderSongInQueue).
+  /// Keeps playback and progress uninterrupted. Use for small playlists only.
+  Future<void> _applyOrderUsingMovesInternal(List<SongsModel> targetOrder) async {
+    if (targetOrder.length != songs.length) {
+      songs = List<SongsModel>.from(targetOrder);
+      _songsChangedController.add(songs);
+      if (Platform.isAndroid) await updateSongsInQueue(songs);
+      return;
+    }
+
+    if (!Platform.isAndroid) {
+      songs = List<SongsModel>.from(targetOrder);
+      _songsChangedController.add(songs);
+      return;
+    }
+
+    final source = _androidPlayer?.audioSource;
+    if (source is! ConcatenatingAudioSource) {
+      songs = List<SongsModel>.from(targetOrder);
+      _songsChangedController.add(songs);
+      await updateSongsInQueue(songs);
+      return;
+    }
+
+    var currentOrder = List<SongsModel>.from(songs);
+
+    for (int i = 0; i < targetOrder.length; i++) {
+      if (currentOrder[i].id == targetOrder[i].id) continue;
+      final from = currentOrder.indexWhere((s) => s.id == targetOrder[i].id);
+      if (from == -1 || from == i) continue;
+      final item = currentOrder.removeAt(from);
+      currentOrder.insert(i, item);
+      await source.move(from, i);
+    }
+
+    songs = currentOrder;
+    _reorderManager.markListUpdated();
+    _songsChangedController.add(songs);
   }
 
   Future<void> ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition() async {
@@ -585,8 +740,8 @@ class MusicPlayerService {
       final iosLoopMode = _loopMode == LoopMode.one
           ? 'one'
           : _loopMode == LoopMode.all
-              ? 'all'
-              : 'off';
+          ? 'all'
+          : 'off';
       await _iosPlayer!.setLoopMode(iosLoopMode);
     }
     _loopModeController.add(_loopMode);
@@ -607,8 +762,9 @@ class MusicPlayerService {
 
     int newCurrentIndex = 0;
     if (currentPlayingSongId != null) {
-      final foundIndex =
-          mutableSongsList.indexWhere((s) => s.id == currentPlayingSongId);
+      final foundIndex = mutableSongsList.indexWhere(
+        (s) => s.id == currentPlayingSongId,
+      );
       if (foundIndex >= 0) newCurrentIndex = foundIndex;
     }
 
@@ -626,7 +782,9 @@ class MusicPlayerService {
             }
           } else if (newCount > currentCount) {
             for (int i = currentCount; i < newCount; i++) {
-              await source.add(PlaylistBuilder.createAudioSource(mutableSongsList[i]));
+              await source.add(
+                PlaylistBuilder.createAudioSource(mutableSongsList[i]),
+              );
             }
           }
 
@@ -691,8 +849,8 @@ class MusicPlayerService {
     final iosLoopMode = _loopMode == LoopMode.one
         ? 'one'
         : _loopMode == LoopMode.all
-            ? 'all'
-            : 'off';
+        ? 'all'
+        : 'off';
     _iosPlayer!.setLoopMode(iosLoopMode);
   }
 
@@ -778,8 +936,9 @@ class MusicPlayerService {
     if (nextSongs.isEmpty) return 0;
     if (currentIndex < 0 || currentIndex >= songs.length) return 0;
 
-    final addingList =
-        nextSongs.where((s) => !songs.any((q) => q.id == s.id)).toList();
+    final addingList = nextSongs
+        .where((s) => !songs.any((q) => q.id == s.id))
+        .toList();
     if (addingList.isEmpty) return 0;
 
     final mutableSongs = List<SongsModel>.from(songs);
@@ -797,7 +956,10 @@ class MusicPlayerService {
           final wasPlaying = _androidPlayer!.playing;
           int targetIndex = insertIndex;
           for (final song in addingList) {
-            await source.insert(targetIndex, PlaylistBuilder.createAudioSource(song));
+            await source.insert(
+              targetIndex,
+              PlaylistBuilder.createAudioSource(song),
+            );
             targetIndex++;
           }
           if (idxBefore != null && _androidPlayer!.currentIndex == idxBefore) {
@@ -839,7 +1001,10 @@ class MusicPlayerService {
           final idxBefore = _androidPlayer!.currentIndex;
           final posBefore = _androidPlayer!.position;
           final wasPlaying = _androidPlayer!.playing;
-          await source.insert(insertIndex, PlaylistBuilder.createAudioSource(song));
+          await source.insert(
+            insertIndex,
+            PlaylistBuilder.createAudioSource(song),
+          );
           if (idxBefore != null && _androidPlayer!.currentIndex == idxBefore) {
             await _androidPlayer!.seek(posBefore, index: idxBefore);
             if (wasPlaying) await _androidPlayer!.play();
@@ -880,7 +1045,9 @@ class MusicPlayerService {
             }
           } else if (newCount > currentCount) {
             for (int i = currentCount; i < newCount; i++) {
-              await source.add(PlaylistBuilder.createAudioSource(mutableList[i]));
+              await source.add(
+                PlaylistBuilder.createAudioSource(mutableList[i]),
+              );
             }
           }
           if (_androidPlayer!.currentIndex != safePreserveIndex) {
@@ -915,8 +1082,8 @@ class MusicPlayerService {
       final iosLoopMode = _loopMode == LoopMode.one
           ? 'one'
           : _loopMode == LoopMode.all
-              ? 'all'
-              : 'off';
+          ? 'all'
+          : 'off';
       _iosPlayer!.setLoopMode(iosLoopMode);
       if (wasPlaying) await _iosPlayer!.play();
     }
@@ -966,8 +1133,9 @@ class MusicPlayerService {
   Future<int> addMultipleSongsToQueue(List<SongsModel> songsToAdd) async {
     if (songsToAdd.isEmpty) return 0;
 
-    final addingList =
-        songsToAdd.where((s) => !songs.any((q) => q.id == s.id)).toList();
+    final addingList = songsToAdd
+        .where((s) => !songs.any((q) => q.id == s.id))
+        .toList();
     if (addingList.isEmpty) return 0;
 
     final mutableSongs = List<SongsModel>.from(songs)..addAll(addingList);
@@ -1043,8 +1211,9 @@ class MusicPlayerService {
             if (removeIndex < idxBefore) {
               await player.seek(posBefore, index: idxBefore - 1);
             } else if (idxBefore == removeIndex && mutableSongs.isNotEmpty) {
-              final newIndex =
-                  removeIndex < mutableSongs.length ? removeIndex : mutableSongs.length - 1;
+              final newIndex = removeIndex < mutableSongs.length
+                  ? removeIndex
+                  : mutableSongs.length - 1;
               await player.seek(Duration.zero, index: newIndex);
               if (wasPlaying) await player.play();
             }
@@ -1091,17 +1260,17 @@ class MusicPlayerService {
           }
         }
         if (idxBefore != null) {
-          final removedBefore =
-              removeIndexes.where((i) => i < idxBefore).length;
+          final removedBefore = removeIndexes
+              .where((i) => i < idxBefore)
+              .length;
           final isCurrentRemoved = removeIndexes.contains(idxBefore);
           if (!isCurrentRemoved) {
-            await player.seek(
-              posBefore,
-              index: idxBefore - removedBefore,
-            );
+            await player.seek(posBefore, index: idxBefore - removedBefore);
           } else if (mutableSongs.isNotEmpty) {
-            final newIndex =
-                (idxBefore - removedBefore).clamp(0, mutableSongs.length - 1);
+            final newIndex = (idxBefore - removedBefore).clamp(
+              0,
+              mutableSongs.length - 1,
+            );
             await player.seek(Duration.zero, index: newIndex);
             if (wasPlaying) await player.play();
           }

@@ -74,7 +74,45 @@ class _CreateNewPlaylistBottomSheetState
             SizedBox(height: 35.h),
             TextFormField(
               controller: playlistNameController,
-              validator: PlaylistValidation.validatePlaylistName,
+              // validator: PlaylistValidation.validatePlaylistName,
+              validator: (value){
+                const int maxNameLength = 100;
+
+                final playlistBloc = context.read<PlaylistBloc>();
+
+                bool status = false;
+
+                playlistBloc.state.maybeWhen(
+                  loaded: (playlists, systemPlaylistSongs) {
+                    // Find the playlist with the matching name (should be the most recent one)
+
+                    status = playlists.any((playlist) {
+                      return playlist.name.toLowerCase().trim() == value?.toLowerCase().trim();
+                    },);
+                  },
+                  orElse: () {},
+                );
+
+                if (value == null) {
+                  return 'Please enter a playlist name';
+                }
+
+                final trimmed = value.trim();
+
+                if (trimmed.isEmpty) {
+                  return 'Please enter a playlist name';
+                }
+
+                if (trimmed.length > maxNameLength) {
+                  return 'Playlist name must be at most $maxNameLength characters';
+                }
+
+                if(status){
+                  return 'The name already exists, please try another name';
+                }
+
+                return null;
+              },
               maxLength: PlaylistValidation.maxNameLength,
               decoration: InputDecoration(
                 filled: true,
