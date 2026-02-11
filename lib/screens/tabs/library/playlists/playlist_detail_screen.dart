@@ -377,7 +377,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     padding: EdgeInsets.only(
                       left: 20.w,
                       right: 20.w,
-                      top: 10.h,
+                      // top: 10.h,
                       bottom: showMiniPlayer
                           ? 91.h
                           : 3.h, // Space for MiniPlayerBar (which includes system nav bar padding)
@@ -387,7 +387,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
-                            SizedBox(height: 15.h),
+                            SizedBox(height: 25.h),
                             GradientCard(
                               height: 150.h,
                               width: 150.w,
@@ -434,22 +434,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                       );
                                     } else {
                                       log('shuffle:- Setting shuffle playlist');
-                                      await musicService.setShufflePlaylist(
-                                        _songs,
-                                        autoPlay: true,
-                                      );
-                                      context.push(
-                                        '/dashboard/playing',
-                                        extra: PlayingSongArgs(songs: _songs),
-                                      );
-                                      await musicService
-                                          .ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
-                                      await musicService
-                                          .player
-                                          .currentIndexStream
-                                          .firstWhere(
-                                            (idx) => idx != null && idx != 0,
-                                          );
+                                      context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs),);
+                                      await musicService.setShufflePlaylist(_songs, autoPlay: true,);
+                                      await musicService.ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
+                                      await musicService.player.currentIndexStream.firstWhere((idx) => idx != null && idx != 0,);
                                       await musicService.play();
                                     }
 

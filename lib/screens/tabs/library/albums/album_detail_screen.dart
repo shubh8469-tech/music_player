@@ -648,7 +648,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                     padding: EdgeInsets.only(
                       left: 20.w,
                       right: 20.w,
-                      top: 27.h,
+                      // top: 27.h,
                       bottom: showMiniPlayer
                           ? 91.h
                           : 3.h, // Space for MiniPlayerBar (which includes system nav bar padding)
@@ -658,6 +658,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
+                            SizedBox(height: 25.h),
                             GradientCard(
                               height: 150.h,
                               width: 150.w,

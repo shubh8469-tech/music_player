@@ -17,6 +17,7 @@ import '../../../../commonWidgets/textWidget.dart';
 import '../../../../generated/assets.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../themes/color.dart';
+import '../../../../utills/globals.dart';
 import '../../../../utills/snack_bar.dart';
 import '../../../../commonWidgets/common_modal_bottom_sheet.dart';
 import '../../music_service.dart';
@@ -97,12 +98,6 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
           song.artist.toLowerCase().contains(searchQuery.toLowerCase()) ||
           song.album.toLowerCase().contains(searchQuery.toLowerCase());
     }).toList();
-  }
-
-  int selectedSongsCount(List<SongsModel> filteredSongs) {
-    return filteredSongs
-        .where((song) => selectedSongIds.contains(song.id))
-        .length;
   }
 
   // Get selected count
@@ -765,7 +760,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
               children: [
                 Expanded(
                   child: Texts(
-                    "${selectedSongsCount(filteredSongs) != 0 ? "${selectedSongsCount(filteredSongs)} ${S.of(context).selected}" : ''} ",
+                    "${selectedItemsCount(filteredSongs, selectedSongIds) != 0 ? "${selectedItemsCount(filteredSongs, selectedSongIds)} ${S.of(context).selected}" : ''} ",
                     // selectedCount != 0 ? "$selectedCount ${S.of(context).selected}" : "",
                     fontSize: 14.sp,
                     fontFamily: AppFonts.inter,

@@ -454,7 +454,7 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
                     padding: EdgeInsets.only(
                       left: 20.w,
                       right: 20.w,
-                      top: 20.h,
+                      // top: 20.h,
                       bottom: showMiniPlayer ? 91.h : 3.h, // Space for MiniPlayerBar (which includes system nav bar padding)
                     ),
                     child: SizedBox(
@@ -462,6 +462,7 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
+                            SizedBox(height: 22.h),
                             CircleAvatar(
                               radius: 57.r,
                               backgroundColor: Colors.transparent,

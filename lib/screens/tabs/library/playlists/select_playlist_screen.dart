@@ -16,6 +16,7 @@ import '../../../../commonWidgets/textWidget.dart';
 import '../../../../generated/assets.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../themes/color.dart';
+import '../../../../utills/globals.dart';
 import '../../../../utills/snack_bar.dart';
 import '../../../../commonWidgets/common_modal_bottom_sheet.dart';
 import '../../music_service.dart';
@@ -82,6 +83,12 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
       return playlist.name.toLowerCase().contains(searchQuery.toLowerCase());
     }).toList();
   }
+
+  // int selectedPlaylistCount(List<domain.Playlist> filteredPlaylists) {
+  //   return filteredPlaylists
+  //       .where((song) => selectedPlaylistIds.contains(song.id))
+  //       .length;
+  // }
 
   // Get selected count
   int get selectedCount => selectedPlaylistIds.length;
@@ -971,9 +978,10 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
                         children: [
                           Expanded(
                             child: Texts(
-                              selectedCount != 0
-                                  ? "$selectedCount ${S.of(context).selected}"
-                                  : "",
+                              "${selectedItemsCount(filteredPlaylists, selectedPlaylistIds) != 0 ? "${selectedItemsCount(filteredPlaylists, selectedPlaylistIds)} ${S.of(context).selected}" : ''} ",
+                              // selectedCount != 0
+                              //     ? "$selectedCount ${S.of(context).selected}"
+                              //     : "",
                               fontSize: 14.sp,
                               fontFamily: AppFonts.inter,
                               fontWeight: FontWeight.w400,

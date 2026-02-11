@@ -333,3 +333,9 @@ final List<SongMenuItem> genreMenuItems = [
     title: S.of(rootNavigatorKey.currentContext!).editTags,
   ),
 ];
+
+int selectedItemsCount<T>(List<T> filteredList, Set<int> selectedIds) {
+  return filteredList
+      .where((song) => selectedIds.contains((song as dynamic).id))
+      .length;
+}

@@ -15,6 +15,7 @@ import '../../../../commonWidgets/textWidget.dart';
 import '../../../../generated/assets.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../themes/color.dart';
+import '../../../../utills/globals.dart';
 import '../../../../utills/snack_bar.dart';
 import '../../music_service.dart';
 import 'package:go_router/go_router.dart';
@@ -754,9 +755,10 @@ class _SelectAlbumScreenState extends State<SelectAlbumScreen> {
                         children: [
                           Expanded(
                             child: Texts(
-                              selectedCount != 0
-                                  ? "$selectedCount ${S.of(context).selected}"
-                                  : "",
+                              // selectedCount != 0
+                              //     ? "$selectedCount ${S.of(context).selected}"
+                              //     : "",
+                              "${selectedItemsCount(filteredAlbums, selectedAlbumIds) != 0 ? "${selectedItemsCount(filteredAlbums, selectedAlbumIds)} ${S.of(context).selected}" : ''} ",
                               fontSize: 14.sp,
                               fontFamily: AppFonts.inter,
                               fontWeight: FontWeight.w400,

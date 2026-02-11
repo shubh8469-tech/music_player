@@ -575,7 +575,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                     padding: EdgeInsets.only(
                       left: 20.w,
                       right: 20.w,
-                      top: 10.h,
+                      // top: 10.h,
                       bottom: showMiniPlayer
                           ? 91.h
                           : 3.h, // Space for MiniPlayerBar (which includes system nav bar padding)
@@ -585,7 +585,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
-                            // SizedBox(height: 15.h),
+                            SizedBox(height: 10.h),
                             GradientCard(
                               height: 150.h,
                               width: 150.w,
