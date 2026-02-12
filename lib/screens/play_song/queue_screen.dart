@@ -26,6 +26,7 @@ import '../../commonWidgets/common_functions.dart';
 import '../../commonWidgets/song_menu_screen.dart';
 import '../../utills/globals.dart';
 import '../tabs/library/widgets/mini_player_bar.dart';
+import '../common/commonTapProvider.dart';
 
 class QueueScreen extends StatefulWidget {
   const QueueScreen({super.key});
@@ -747,26 +748,34 @@ class _QueueScreenState extends State<QueueScreen> {
                               cancelIconSize: 24.r,
                               onCancelTap: () =>
                                   _removeSongAtIndex(index, queueSongs),
-                              onTap: () async {
-                                if (state.songs.isNotEmpty &&
-                                    state.currentIndex != null &&
-                                    state.currentIndex! < state.songs.length &&
-                                    state.songs[state.currentIndex!].id ==
-                                        song.id &&
-                                    state.isPlaying) {
-                                  context.push(
-                                    '/dashboard/playing',
-                                    extra: PlayingSongArgs(
-                                      songs: _musicService.songs,
-                                    ),
-                                  );
-                                } else {
-                                  _musicService.setPlaylist(
-                                    queueSongs,
-                                    startIndex: index,
-                                  );
-                                }
-                              },
+                              onTap: context
+                                      .watch<HoldTheTapFor>()
+                                      .isHoldingSongPLay
+                                  ? null
+                                  : () async {
+                                      context
+                                          .read<HoldTheTapFor>()
+                                          .startHoldingSongPlay();
+                                      if (state.songs.isNotEmpty &&
+                                          state.currentIndex != null &&
+                                          state.currentIndex! <
+                                              state.songs.length &&
+                                          state.songs[state.currentIndex!].id ==
+                                              song.id &&
+                                          state.isPlaying) {
+                                        context.push(
+                                          '/dashboard/playing',
+                                          extra: PlayingSongArgs(
+                                            songs: _musicService.songs,
+                                          ),
+                                        );
+                                      } else {
+                                        _musicService.setPlaylist(
+                                          queueSongs,
+                                          startIndex: index,
+                                        );
+                                      }
+                                    },
                               onPlayTap: () async {
                                 await showModalBottomSheet(
                                   context: context,

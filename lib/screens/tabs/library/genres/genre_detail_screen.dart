@@ -244,20 +244,23 @@ class _GenreDetailScreenState extends State<GenreDetailScreen> {
           trailingMargin: 10.w,
           isGifLoad: isCurrent,
           isPlaying: isPlaying,
-          onTap: () async {
-            final current = _musicService.currentSong;
-            if (current != null &&
-                current.id == song.id &&
-                isPlaying) {
-              context.push(
-                '/dashboard/playing',
-                extra: PlayingSongArgs(songs: _musicService.songs),
-              );
-            } else {
-              await _musicService.setPlaylist(list, startIndex: index);
-              await _musicService.play();
-            }
-          },
+          onTap: context.watch<HoldTheTapFor>().isHoldingSongPLay
+              ? null
+              : () async {
+                  context.read<HoldTheTapFor>().startHoldingSongPlay();
+                  final current = _musicService.currentSong;
+                  if (current != null &&
+                      current.id == song.id &&
+                      isPlaying) {
+                    context.push(
+                      '/dashboard/playing',
+                      extra: PlayingSongArgs(songs: _musicService.songs),
+                    );
+                  } else {
+                    await _musicService.setPlaylist(list, startIndex: index);
+                    await _musicService.play();
+                  }
+                },
           onPlayTap: () {
             showModalBottomSheet(
               context: context,

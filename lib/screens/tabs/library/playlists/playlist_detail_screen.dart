@@ -149,20 +149,23 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             trailingMargin: 10.w,
             isGifLoad: isCurrent,
             isPlaying: isPlaying,
-            onTap: () async {
-              final current = musicService.currentSong;
-              if (current != null &&
-                  current.id == song.id &&
-                  musicService.isPlaying) {
-                context.push(
-                  '/dashboard/playing',
-                  extra: PlayingSongArgs(songs: musicService.songs),
-                );
-              } else {
-                await musicService.setPlaylist(list, startIndex: index);
-                await musicService.play();
-              }
-            },
+            onTap: context.watch<HoldTheTapFor>().isHoldingSongPLay
+                ? null
+                : () async {
+                    context.read<HoldTheTapFor>().startHoldingSongPlay();
+                    final current = musicService.currentSong;
+                    if (current != null &&
+                        current.id == song.id &&
+                        musicService.isPlaying) {
+                      context.push(
+                        '/dashboard/playing',
+                        extra: PlayingSongArgs(songs: musicService.songs),
+                      );
+                    } else {
+                      await musicService.setPlaylist(list, startIndex: index);
+                      await musicService.play();
+                    }
+                  },
             onPlayTap: () async {
               showModalBottomSheet(
                 context: context,

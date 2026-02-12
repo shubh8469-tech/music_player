@@ -19,6 +19,7 @@ import '../../../features/playlists/bloc/playlist_bloc.dart';
 import '../../../commonWidgets/common_modal_bottom_sheet.dart';
 import '../../play_song/playing_song_screen.dart';
 import '../library/playlists/create_playlist_bottom_sheet.dart';
+import '../../common/commonTapProvider.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback? onNavigateToLibraryPlaylists;
@@ -256,26 +257,34 @@ class _HomeScreenState extends State<HomeScreen> {
                                 trailingMargin: 0,
                                 isGifLoad: isCurrentlyPlaying,
                                 isPlaying: isPlaying,
-                                onTap: () async {
-                                  final current = musicService.currentSong;
-                                  if (current != null &&
-                                      current.id == song.id &&
-                                      musicService.isPlaying) {
-                                    context.push(
-                                      '/dashboard/playing',
-                                      extra: PlayingSongArgs(
-                                        songs: musicService.songs,
-                                      ),
-                                    );
-                                  } else {
-                                    await musicService.setPlaylist(
-                                      recentlyPlayedSongs,
-                                      startIndex:
-                                          recentlyPlayedSongs.indexOf(song),
-                                    );
-                                    await musicService.play();
-                                  }
-                                },
+                                onTap: context
+                                        .watch<HoldTheTapFor>()
+                                        .isHoldingSongPLay
+                                    ? null
+                                    : () async {
+                                        context
+                                            .read<HoldTheTapFor>()
+                                            .startHoldingSongPlay();
+                                        final current =
+                                            musicService.currentSong;
+                                        if (current != null &&
+                                            current.id == song.id &&
+                                            musicService.isPlaying) {
+                                          context.push(
+                                            '/dashboard/playing',
+                                            extra: PlayingSongArgs(
+                                              songs: musicService.songs,
+                                            ),
+                                          );
+                                        } else {
+                                          await musicService.setPlaylist(
+                                            recentlyPlayedSongs,
+                                            startIndex: recentlyPlayedSongs
+                                                .indexOf(song),
+                                          );
+                                          await musicService.play();
+                                        }
+                                      },
                                 onPlayTap: () async {
                                   if (isCurrent && isPlaying) {
                                     await musicService.pause();

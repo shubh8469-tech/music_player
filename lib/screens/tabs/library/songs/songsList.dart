@@ -379,7 +379,8 @@ class _SongsListState extends State<SongsList> {
                                       songLengthRequired: true,
                                       isGifLoad: isCurrent,
                                       isPlaying: isPlaying,
-                                      onTap: () async {
+                                      onTap: context.watch<HoldTheTapFor>().isHoldingSongPLay ? null : () async {
+                                        context.read<HoldTheTapFor>().startHoldingSongPlay();
                                         final current = musicService.currentSong;
                                         if (current != null &&
                                             current.id == song.id &&
