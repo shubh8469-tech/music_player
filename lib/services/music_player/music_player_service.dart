@@ -162,6 +162,12 @@ class MusicPlayerService {
     songs: songs,
   );
 
+  SongsModel? get currentSong {
+    final idx = currentIndex;
+    if (idx >= 0 && idx < songs.length) return songs[idx];
+    return null;
+  }
+
   Stream<int?> get currentSongIdStream => currentIndexStream.map((i) {
     final idx = i ?? -1;
     if (idx >= 0 && idx < songs.length) return songs[idx].id;
@@ -326,7 +332,6 @@ class MusicPlayerService {
   // ---------------------------------------------------------------------------
   // Playlist management
   // ---------------------------------------------------------------------------
-
   Future<void> setPlaylist(
     List<SongsModel> songModels, {
     int startIndex = 0,
@@ -335,6 +340,11 @@ class MusicPlayerService {
     if (songModels.isEmpty) {
       await stopAndClearQueue();
       return;
+    }
+
+    // Clamp startIndex to valid range to avoid RangeError in the platform player.
+    if (startIndex < 0 || startIndex >= songModels.length) {
+      startIndex = 0;
     }
 
     _reorderManager.clear();
@@ -598,7 +608,9 @@ class MusicPlayerService {
         final targetOrder = [currentSong, ...rest];
         _reorderManager.setReorderCache(currIdx, 0, currIdx, songs);
         await _applyOrderUsingMoves(targetOrder);
-        developer.log('🔀 Android shuffle enabled (current at top, no rebuild)');
+        developer.log(
+          '🔀 Android shuffle enabled (current at top, no rebuild)',
+        );
       } else {
         if (_originalOrderBeforeShuffle != null) {
           final original = List<SongsModel>.from(_originalOrderBeforeShuffle!);
@@ -635,12 +647,7 @@ class MusicPlayerService {
     }
     songs = List<SongsModel>.from(targetOrder);
     _songsChangedController.add(songs);
-    await _rebuildPlaylist(
-      targetOrder,
-      newIndex,
-      position,
-      isPlaying,
-    );
+    await _rebuildPlaylist(targetOrder, newIndex, position, isPlaying);
     developer.log(
       '🔀 Large playlist (${targetOrder.length}): used rebuild for speed',
     );
@@ -648,7 +655,9 @@ class MusicPlayerService {
 
   /// Reorders using ConcatenatingAudioSource.move (like swapReorderSongInQueue).
   /// Keeps playback and progress uninterrupted. Use for small playlists only.
-  Future<void> _applyOrderUsingMovesInternal(List<SongsModel> targetOrder) async {
+  Future<void> _applyOrderUsingMovesInternal(
+    List<SongsModel> targetOrder,
+  ) async {
     if (targetOrder.length != songs.length) {
       songs = List<SongsModel>.from(targetOrder);
       _songsChangedController.add(songs);

@@ -191,11 +191,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
             isGifLoad: isCurrent,
             isPlaying: isPlaying,
             onTap: () async {
-              if (musicService.songs.isNotEmpty &&
-                  musicService
-                          .songs[musicService.currentIndex]
-                          .id ==
-                      song.id &&
+              final current = musicService.currentSong;
+              if (current != null &&
+                  current.id == song.id &&
                   musicService.isPlaying) {
                 context.push(
                   '/dashboard/playing',
@@ -760,13 +758,13 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                                     await musicService.ensureShuffleOff();
 
                                     // Start from the first song of the album
+                                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
                                     await musicService.setPlaylist(
                                       List<SongsModel>.from(_baseSongs),
                                       startIndex: 0,
                                       autoPlay: true,
                                     );
                                     await musicService.play();
-                                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
                                   },
                                   child: Container(
                                     height: 40.h,

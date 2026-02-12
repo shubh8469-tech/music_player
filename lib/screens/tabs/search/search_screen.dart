@@ -254,7 +254,7 @@ class _SearchHeader extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: EdgeInsets.fromLTRB(13.w, 20.h, 20.w, 20.h),
+          padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 20.h),
           child: Row(
             children: [
               // SizedBox(
@@ -299,8 +299,8 @@ class _SearchHeader extends StatelessWidget {
                             isDense: true,
                             hintText: 'Search In Library',
                             hintStyle: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.85),
-                              fontSize: 16.sp,
+                              color: AppColors.textColor.withValues(alpha: 0.65),
+                              fontSize: 15.sp,
                               fontFamily: AppFonts.inter,
                             ),
                             border: InputBorder.none,
@@ -366,7 +366,7 @@ class _AllTab extends StatelessWidget {
           _SectionHeader(title: 'Artists', onViewAll: () => onViewAll(5)),
           SizedBox(height: 12.h),
           _ArtistsSection(query: query, limit: 4),
-          SizedBox(height: 70.h),
+          // SizedBox(height: 70.h),
         ],
       ),
     );
@@ -1047,8 +1047,8 @@ List<Folder> _filterFolders(List<Folder> folders, String query) {
   return folders
       .where(
         (folder) =>
-            folder.name.toLowerCase().contains(normalized) ||
-            folder.path.toLowerCase().contains(normalized),
+            folder.name.toLowerCase().contains(normalized),
+            // || folder.path.toLowerCase().contains(normalized),
       )
       .toList();
 }

@@ -23,14 +23,19 @@ class GenreBloc extends Bloc<GenreEvent, GenreState> {
     required this.getGenreSongs,
     required this.updateGenreCoverUseCase,
     required this.updateGenreNameUseCase,
-  })
-    : super(const GenreState.initial()) {
+  }) : super(const GenreState.initial()) {
     on<_FetchAllGenres>((event, emit) async {
       try {
         log('Fetching all genres');
         emit(const GenreState.loading());
         final genres = await getAllGenres();
-        emit(GenreState.loaded(genres));
+
+        // Filter out genres that have no songs, so the UI only shows
+        // genres with at least one song (matching albums/artists behavior).
+        final nonEmptyGenres =
+            genres.where((genre) => genre.songCount > 0).toList();
+
+        emit(GenreState.loaded(nonEmptyGenres));
       } catch (e) {
         log('Error fetching genres: $e');
         emit(GenreState.error(e.toString()));

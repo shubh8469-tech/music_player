@@ -1,3 +1,6 @@
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,8 +9,10 @@ import 'package:music_app/core/di/injection.dart';
 import 'package:music_app/features/artists/bloc/artist_bloc.dart';
 import 'package:music_app/features/artists/domain/entities/artist.dart';
 import 'package:music_app/features/artists/domain/repositories/artist_repository.dart';
+import 'package:music_app/features/songs/bloc/songs_bloc.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/themes/font.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../commonWidgets/MusicListTile.dart';
 import '../../../../commonWidgets/app_bar_with_icon_title.dart';
@@ -113,8 +118,9 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
         .toList();
   }
 
-  // Delete selected artists
-  void _deleteSelectedArtists(List<Artist> allArtists) {
+  // Permanently delete songs belonging to selected artists (like _performDeleteFromEntity)
+  Future<void> _deleteSongsFromSelectedArtists(
+      List<Artist> allArtists) async {
     final selectedArtists = _getSelectedArtists(allArtists);
 
     if (selectedArtists.isEmpty) {
@@ -127,26 +133,102 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
       return;
     }
 
-    final artistCount = selectedArtists.length;
-    showCommonConfirmationBottomSheet(
-      context: context,
-      title: 'Delete Artists',
-      message:
-          'Are you sure you want to delete ${artistCount == 1 ? 'this artist' : 'these $artistCount artists'}?',
-      onConfirm: (sheetContext) async {
-        Navigator.pop(sheetContext);
-        setState(() {
-          selectedArtistIds.clear();
-          isSelectedAll = false;
-        });
+    try {
+      final repo = locator<ArtistRepository>();
+      final List<SongsModel> allSongsFromArtists = [];
+
+      // Fetch all songs from selected artists
+      for (final artist in selectedArtists) {
+        final artistSongs =
+            (await repo.getSongsForArtist(artist.id!)).cast<SongsModel>();
+
+        for (final song in artistSongs) {
+          if (!allSongsFromArtists.any((s) => s.id == song.id)) {
+            allSongsFromArtists.add(song);
+          }
+        }
+      }
+
+      if (allSongsFromArtists.isEmpty) {
         showSnackBar(
           context,
           () {},
-          message:
-              "$artistCount ${artistCount == 1 ? 'artist' : 'artists'} deleted successfully!",
+          message: "Selected artists contain no songs",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
-      },
+        return;
+      }
+
+      final songCount = allSongsFromArtists.length;
+      showCommonConfirmationBottomSheet(
+        context: context,
+        title: 'Delete Songs',
+        message:
+            'Are you sure you want to permanently delete these $songCount songs from the selected artists? This will remove them from your library.',
+        onConfirm: (sheetContext) async {
+          Navigator.pop(sheetContext);
+          await _performDeleteSongsFromEntities(allSongsFromArtists, songCount);
+        },
+      );
+    } catch (e) {
+      log('Error deleting songs from artists: $e');
+      showSnackBar(
+        context,
+        () {},
+        message: "Error deleting songs from artists",
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    }
+  }
+
+  Future<void> _performDeleteSongsFromEntities(
+    List<SongsModel> songsToDelete,
+    int songCount,
+  ) async {
+    final musicService = MusicPlayerService();
+
+    for (final song in songsToDelete) {
+      final hasPermission = await _checkAndRequestPermission();
+      if (!hasPermission) {
+        showSnackBar(
+          context,
+          () {},
+          message: 'Storage permission denied',
+          backgroundColor: Colors.red,
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+        return;
+      }
+
+      final file = File(song.filePath);
+      if (await file.exists()) {
+        await file.delete();
+        log('File deleted: ${song.filePath}');
+      }
+
+      if (song.id != null) {
+        context.read<SongsBloc>().add(SongsEvent.removeSong(song.id!));
+        final currentSongs = List<SongsModel>.from(musicService.songs);
+        currentSongs.removeWhere((element) => element.id == song.id);
+        if (currentSongs.isNotEmpty) {
+          await musicService.removeDeletedSongFromQueue(song.id!);
+        } else {
+          musicService.resetPlaylist(currentSongs);
+        }
+      }
+    }
+
+    setState(() {
+      selectedArtistIds.clear();
+      isSelectedAll = false;
+    });
+
+    Navigator.pop(context);
+    showSnackBar(
+      context,
+      () {},
+      message: "$songCount songs deleted successfully!",
+      alertBannerLocation: AlertBannerLocation.bottom,
     );
   }
 
@@ -651,6 +733,32 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
     ];
   }
 
+  Future<bool> _checkAndRequestPermission() async {
+    if (Platform.isAndroid) {
+      // Check if we have manage external storage permission (Android 11+)
+      if (await Permission.manageExternalStorage.isGranted) {
+        return true;
+      }
+
+      // Request manage external storage permission
+      PermissionStatus status = await Permission.manageExternalStorage.request();
+      if (status.isGranted) {
+        return true;
+      }
+
+      // Fallback to storage permission (for older Android versions)
+      if (await Permission.storage.isGranted) {
+        return true;
+      }
+
+      status = await Permission.storage.request();
+      return status.isGranted;
+    }
+
+    // For iOS and other platforms
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -712,9 +820,10 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
                           ),
                           hintText: 'Search Artists',
                           hintStyle: TextStyle(
-                            color: AppColors.textColor,
+                              color: AppColors.textColor.withValues(alpha: 0.65),
                             fontWeight: FontWeight.w400,
                             fontFamily: AppFonts.inter,
+                              fontSize: 15.sp
                           ),
                           contentPadding: EdgeInsets.symmetric(
                             horizontal: 16.w,
@@ -846,22 +955,23 @@ class _SelectArtistScreenState extends State<SelectArtistScreen> {
                             ],
                           ),
                         ),
-                        // GestureDetector(
-                        //   onTap: () => _deleteSelectedArtists(allArtists),
-                        //   child: Column(
-                        //     mainAxisSize: MainAxisSize.min,
-                        //     children: [
-                        //       SvgPicture.asset(Assets.svgIcNavDelete),
-                        //       SizedBox(height: 3.h),
-                        //       Texts(
-                        //         S.of(context).delete,
-                        //         fontSize: 12.sp,
-                        //         fontFamily: AppFonts.inter,
-                        //         fontWeight: FontWeight.w400,
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
+                        GestureDetector(
+                          onTap: () =>
+                              _deleteSongsFromSelectedArtists(allArtists),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SvgPicture.asset(Assets.svgIcNavDelete),
+                              SizedBox(height: 3.h),
+                              Texts(
+                                S.of(context).delete,
+                                fontSize: 12.sp,
+                                fontFamily: AppFonts.inter,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),

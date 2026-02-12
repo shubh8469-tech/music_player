@@ -1,3 +1,6 @@
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -7,8 +10,10 @@ import 'package:music_app/features/folders/bloc/folder_bloc.dart';
 import 'package:music_app/features/folders/domain/entities/folder.dart'
     as domain;
 import 'package:music_app/features/folders/domain/repositories/folder_repository.dart';
+import 'package:music_app/features/songs/bloc/songs_bloc.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/themes/font.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../commonWidgets/MusicListTile.dart';
 import '../../../../commonWidgets/app_bar_with_icon_title.dart';
@@ -114,8 +119,9 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
         .toList();
   }
 
-  // Delete selected folders
-  void _deleteSelectedFolders(List<domain.Folder> allFolders) {
+  // Permanently delete songs belonging to selected folders (like _performDeleteFromEntity)
+  Future<void> _deleteSongsFromSelectedFolders(
+      List<domain.Folder> allFolders) async {
     final selectedFolders = _getSelectedFolders(allFolders);
 
     if (selectedFolders.isEmpty) {
@@ -128,29 +134,102 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
       return;
     }
 
-    final folderCount = selectedFolders.length;
-    showCommonConfirmationBottomSheet(
-      context: context,
-      title: 'Delete Folders',
-      message:
-          'Are you sure you want to delete ${folderCount == 1 ? 'this folder' : 'these $folderCount folders'}?',
-      onConfirm: (sheetContext) async {
-        Navigator.pop(sheetContext);
-        for (var folder in selectedFolders) {
-          context.read<FolderBloc>().add(FolderEvent.deleteFolder(folder.id!));
+    try {
+      final repo = locator<FolderRepository>();
+      final List<SongsModel> allSongsFromFolders = [];
+
+      // Fetch all songs from selected folders
+      for (final folder in selectedFolders) {
+        final folderSongs =
+            (await repo.getSongsForFolder(folder.id!)).cast<SongsModel>();
+
+        for (final song in folderSongs) {
+          if (!allSongsFromFolders.any((s) => s.id == song.id)) {
+            allSongsFromFolders.add(song);
+          }
         }
-        setState(() {
-          selectedFolderIds.clear();
-          isSelectedAll = false;
-        });
+      }
+
+      if (allSongsFromFolders.isEmpty) {
         showSnackBar(
           context,
           () {},
-          message:
-              "$folderCount ${folderCount == 1 ? 'folder' : 'folders'} deleted successfully!",
+          message: "Selected folders contain no songs",
           alertBannerLocation: AlertBannerLocation.bottom,
         );
-      },
+        return;
+      }
+
+      final songCount = allSongsFromFolders.length;
+      showCommonConfirmationBottomSheet(
+        context: context,
+        title: 'Delete Songs',
+        message:
+            'Are you sure you want to permanently delete these $songCount songs from the selected folders? This will remove them from your library.',
+        onConfirm: (sheetContext) async {
+          Navigator.pop(sheetContext);
+          await _performDeleteSongsFromEntities(allSongsFromFolders, songCount);
+        },
+      );
+    } catch (e) {
+      log('Error deleting songs from folders: $e');
+      showSnackBar(
+        context,
+        () {},
+        message: "Error deleting songs from folders",
+        alertBannerLocation: AlertBannerLocation.bottom,
+      );
+    }
+  }
+
+  Future<void> _performDeleteSongsFromEntities(
+    List<SongsModel> songsToDelete,
+    int songCount,
+  ) async {
+    final musicService = MusicPlayerService();
+
+    for (final song in songsToDelete) {
+      final hasPermission = await _checkAndRequestPermission();
+      if (!hasPermission) {
+        showSnackBar(
+          context,
+          () {},
+          message: 'Storage permission denied',
+          backgroundColor: Colors.red,
+          alertBannerLocation: AlertBannerLocation.bottom,
+        );
+        return;
+      }
+
+      final file = File(song.filePath);
+      if (await file.exists()) {
+        await file.delete();
+        log('File deleted: ${song.filePath}');
+      }
+
+      if (song.id != null) {
+        context.read<SongsBloc>().add(SongsEvent.removeSong(song.id!));
+        final currentSongs = List<SongsModel>.from(musicService.songs);
+        currentSongs.removeWhere((element) => element.id == song.id);
+        if (currentSongs.isNotEmpty) {
+          await musicService.removeDeletedSongFromQueue(song.id!);
+        } else {
+          musicService.resetPlaylist(currentSongs);
+        }
+      }
+    }
+
+    setState(() {
+      selectedFolderIds.clear();
+      isSelectedAll = false;
+    });
+
+    Navigator.pop(context);
+    showSnackBar(
+      context,
+      () {},
+      message: "$songCount songs deleted successfully!",
+      alertBannerLocation: AlertBannerLocation.bottom,
     );
   }
 
@@ -649,6 +728,32 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
     ];
   }
 
+  Future<bool> _checkAndRequestPermission() async {
+    if (Platform.isAndroid) {
+      // Check if we have manage external storage permission (Android 11+)
+      if (await Permission.manageExternalStorage.isGranted) {
+        return true;
+      }
+
+      // Request manage external storage permission
+      PermissionStatus status = await Permission.manageExternalStorage.request();
+      if (status.isGranted) {
+        return true;
+      }
+
+      // Fallback to storage permission (for older Android versions)
+      if (await Permission.storage.isGranted) {
+        return true;
+      }
+
+      status = await Permission.storage.request();
+      return status.isGranted;
+    }
+
+    // For iOS and other platforms
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -710,9 +815,10 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
                           ),
                           hintText: 'Search Folders',
                           hintStyle: TextStyle(
-                            color: AppColors.textColor,
+                              color: AppColors.textColor.withValues(alpha: 0.65),
                             fontWeight: FontWeight.w400,
                             fontFamily: AppFonts.inter,
+                              fontSize: 15.sp
                           ),
                           contentPadding: EdgeInsets.symmetric(
                             horizontal: 16.w,
@@ -844,22 +950,23 @@ class _SelectFolderScreenState extends State<SelectFolderScreen> {
                             ],
                           ),
                         ),
-                        // GestureDetector(
-                        //   onTap: () => _deleteSelectedFolders(allFolders),
-                        //   child: Column(
-                        //     mainAxisSize: MainAxisSize.min,
-                        //     children: [
-                        //       SvgPicture.asset(Assets.svgIcNavDelete),
-                        //       SizedBox(height: 3.h),
-                        //       Texts(
-                        //         S.of(context).delete,
-                        //         fontSize: 12.sp,
-                        //         fontFamily: AppFonts.inter,
-                        //         fontWeight: FontWeight.w400,
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
+                        GestureDetector(
+                          onTap: () =>
+                              _deleteSongsFromSelectedFolders(allFolders),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SvgPicture.asset(Assets.svgIcNavDelete),
+                              SizedBox(height: 3.h),
+                              Texts(
+                                S.of(context).delete,
+                                fontSize: 12.sp,
+                                fontFamily: AppFonts.inter,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),

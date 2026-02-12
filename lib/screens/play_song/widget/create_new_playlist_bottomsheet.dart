@@ -10,13 +10,18 @@ import 'package:music_app/themes/font.dart';
 
 import '../../../commonWidgets/textWidget.dart';
 import '../../../commonWidgets/text_field_widget.dart';
+import '../../../features/songs/data/models/song_model.dart';
 import '../../../generated/assets.dart';
 import '../../../l10n/l10n.dart';
 import '../../../themes/color.dart';
 import '../../../utills/playlist_validation.dart';
+import '../../../utills/snack_bar.dart';
 
 class CreateNewPlaylistBottomSheet extends StatefulWidget {
-  const CreateNewPlaylistBottomSheet({super.key});
+  final int? songId;
+  final List<SongsModel>? songsList;
+  final void Function({required int playlistId, required int position,})? onPlaylistCreated;
+  const CreateNewPlaylistBottomSheet({super.key, this.songId, this.songsList, this.onPlaylistCreated});
 
   @override
   _CreateNewPlaylistBottomSheetState createState() =>
@@ -29,14 +34,28 @@ class _CreateNewPlaylistBottomSheetState
   TextEditingController playlistNameController = TextEditingController();
   FocusNode playlistNameFocusNode = FocusNode();
 
+  /// Set when we dispatch addPlaylist; BlocListener uses these to add songs and pop once loaded.
+  String? _pendingPlaylistName;
+  List<int>? _pendingSongIds;
+
   void _createPlaylist() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     final playlistName = playlistNameController.text.trim();
-    context.read<PlaylistBloc>().add(
-          PlaylistEvent.addPlaylist(playlistName),
-        );
-    Navigator.pop(context);
+
+    List<int> songIds = [];
+    if (widget.songsList != null) {
+      for (var song in widget.songsList!) {
+        if (song.id != null) songIds.add(song.id!);
+      }
+    }
+
+    setState(() {
+      _pendingPlaylistName = playlistName;
+      _pendingSongIds = songIds.isEmpty ? null : songIds;
+    });
+
+    context.read<PlaylistBloc>().add(PlaylistEvent.addPlaylist(playlistName));
   }
 
   @override
@@ -50,7 +69,62 @@ class _CreateNewPlaylistBottomSheetState
         ? viewInsets + 20.h
         : (viewPadding > 0 ? viewPadding : 20.h);
 
-    return SafeArea(
+    return BlocListener<PlaylistBloc, PlaylistState>(
+      listenWhen: (previous, current) {
+        if (_pendingPlaylistName == null) return false;
+        return current.maybeWhen(loaded: (_, __) => true, orElse: () => false);
+      },
+      listener: (context, state) {
+        if (_pendingPlaylistName == null || !mounted) return;
+        state.maybeWhen(
+          loaded: (playlists, systemPlaylistSongs) {
+            final name = _pendingPlaylistName!;
+            final songIds = _pendingSongIds;
+            final songId = widget.songId;
+            final playlist = playlists
+                .where((p) =>
+                    p.name.toLowerCase().trim() == name.toLowerCase().trim())
+                .firstOrNull;
+            if (playlist == null) return;
+            final playlistId = playlist.id;
+            if (playlistId == null) return;
+
+            setState(() {
+              _pendingPlaylistName = null;
+              _pendingSongIds = null;
+            });
+
+            if (songIds != null && songIds.isNotEmpty && mounted) {
+              context.read<PlaylistBloc>().add(
+                    PlaylistEvent.addMultipleSongsToPlaylist(playlistId, songIds),
+                  );
+              showSnackBar(
+                context,
+                () {},
+                message: "${songIds.length} songs added to playlist",
+                alertBannerLocation: AlertBannerLocation.bottom,
+              );
+            }
+            else if (widget.songId != null) {
+              context.read<PlaylistBloc>().add(
+                PlaylistEvent.addSongToPlaylist(playlistId, widget.songId!, playlist.songCount),
+              );
+              showSnackBar(
+                context,
+                    () {},
+                message: "1 songs added to playlist",
+                alertBannerLocation: AlertBannerLocation.bottom,
+              );
+            }
+            if (mounted){
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            }
+          },
+          orElse: () {},
+        );
+      },
+      child: SafeArea(
       child: Form(
         key: _formKey,
         child: Container(
@@ -234,6 +308,7 @@ class _CreateNewPlaylistBottomSheetState
           ],
         ),
       ),
+    ),
     ),
   );
   }

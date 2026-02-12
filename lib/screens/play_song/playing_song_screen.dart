@@ -85,7 +85,10 @@ class _PlayingSongScreenState extends State<PlayingSongScreen> {
         isFavorite = newFavoriteStatus;
       });
 
-      _musicService.songs[_musicService.currentIndex].isFavorite = newFavoriteStatus;
+      final idx = _musicService.currentIndex;
+      if (idx >= 0 && idx < _musicService.songs.length) {
+        _musicService.songs[idx].isFavorite = newFavoriteStatus;
+      }
 
       showSnackBar(
         context,

@@ -252,10 +252,10 @@ class _AddSongsScreenState extends State<AddSongsScreen> {
                         ),
                         hintText: 'Search Songs',
                         hintStyle: TextStyle(
-                          color: Colors.grey[600],
+                            color: AppColors.textColor.withValues(alpha: 0.65),
                           fontWeight: FontWeight.w400,
                           fontFamily: AppFonts.inter,
-                          fontSize: 16.sp,
+                            fontSize: 15.sp
                         ),
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: 16.w,

@@ -1221,8 +1221,11 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                           print(
                                             '  Android: Rebuilding (shuffle or fallback)',
                                           );
-                                          final currentSong =
-                                              musicService.songs[currentIndex];
+                                          if (currentIndex < 0 ||
+                                              currentIndex >=
+                                                  musicService.songs.length) {
+                                            return;
+                                          }
                                           await musicService
                                               .updateSongsInQueueWithIndex(
                                                 mutableSongs,

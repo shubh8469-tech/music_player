@@ -244,9 +244,9 @@ class _GenreDetailScreenState extends State<GenreDetailScreen> {
           isGifLoad: isCurrent,
           isPlaying: isPlaying,
           onTap: () async {
-            if (_musicService.songs.isNotEmpty &&
-                _musicService.currentIndex >= 0 &&
-                _musicService.songs[_musicService.currentIndex].id == song.id &&
+            final current = _musicService.currentSong;
+            if (current != null &&
+                current.id == song.id &&
                 isPlaying) {
               context.push(
                 '/dashboard/playing',
@@ -598,13 +598,13 @@ class _GenreDetailScreenState extends State<GenreDetailScreen> {
                                   onTap: () async {
                                     if (_baseSongs.isEmpty) return;
                                     await _musicService.ensureShuffleOff();
+                                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
                                     await _musicService.setPlaylist(
                                       List<SongsModel>.from(_baseSongs),
                                       startIndex: 0,
                                       autoPlay: true,
                                     );
                                     await _musicService.play();
-                                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
                                   },
                                   child: Container(
                                     height: 40.h,

@@ -26,10 +26,8 @@ class AudioPlayerWidget extends StatelessWidget {
     final provider = context.watch<AudioPlayerProvider>();
     final musicService = provider.musicService;
 
-    // Ensure max value is never zero to avoid slider issues
-    final song = musicService.songs.isNotEmpty && musicService.currentIndex >= 0
-        ? musicService.songs[musicService.currentIndex]
-        : null;
+    // Current song is derived from the service safely (handles index bounds).
+    final song = musicService.currentSong;
 
     if (song != null) {
       // log('music name ${song.title} ${song.duration} ${musicService.duration} ${musicService.position}');

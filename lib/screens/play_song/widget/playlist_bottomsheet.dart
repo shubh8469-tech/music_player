@@ -356,7 +356,7 @@ class _PlaylistBottomSheetState extends State<PlaylistBottomSheet> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
       ),
       isScrollControlled: true,
-      builder: (_) => CreateNewPlaylistBottomSheet(),
+      builder: (_) => CreateNewPlaylistBottomSheet(songId: widget.songId, songsList: widget.songsList, onPlaylistCreated: addSongToPlaylist,),
     );
   }
 }

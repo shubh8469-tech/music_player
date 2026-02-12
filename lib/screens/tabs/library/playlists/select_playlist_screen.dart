@@ -943,9 +943,10 @@ class _SelectPlaylistScreenState extends State<SelectPlaylistScreen> {
                           ),
                           hintText: 'Search Playlists',
                           hintStyle: TextStyle(
-                            color: AppColors.textColor,
+                              color: AppColors.textColor.withValues(alpha: 0.65),
                             fontWeight: FontWeight.w400,
                             fontFamily: AppFonts.inter,
+                              fontSize: 15.sp
                           ),
                           contentPadding: EdgeInsets.symmetric(
                             horizontal: 16.w,

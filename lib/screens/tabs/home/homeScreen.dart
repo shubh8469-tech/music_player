@@ -257,11 +257,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 isGifLoad: isCurrentlyPlaying,
                                 isPlaying: isPlaying,
                                 onTap: () async {
-                                  if (musicService.songs.isNotEmpty &&
-                                      musicService
-                                              .songs[musicService.currentIndex]
-                                              .id ==
-                                          song.id &&
+                                  final current = musicService.currentSong;
+                                  if (current != null &&
+                                      current.id == song.id &&
                                       musicService.isPlaying) {
                                     context.push(
                                       '/dashboard/playing',

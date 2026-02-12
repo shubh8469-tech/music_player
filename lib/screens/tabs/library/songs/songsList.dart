@@ -190,7 +190,7 @@ class _SongsListState extends State<SongsList> {
                                           }
                                         } catch (e) {
                                           log("❌ Shuffle error: $e");
-                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error starting shuffle: $e')));
+                                          // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error starting shuffle: $e')));
                                         }
 
                                         // if (musicService.currentIndex < 0) {
@@ -375,12 +375,22 @@ class _SongsListState extends State<SongsList> {
                                       isGifLoad: isCurrent,
                                       isPlaying: isPlaying,
                                       onTap: () async {
-                                        if (musicService.songs.isNotEmpty && musicService.songs[musicService.currentIndex].id == song.id && musicService.isPlaying) {
+                                        final current = musicService.currentSong;
+                                        if (current != null &&
+                                            current.id == song.id &&
+                                            musicService.isPlaying) {
                                           log('song   innnn');
-                                          context.push('/dashboard/playing', extra: PlayingSongArgs(songs: musicService.songs));
+                                          context.push(
+                                            '/dashboard/playing',
+                                            extra:
+                                                PlayingSongArgs(songs: musicService.songs),
+                                          );
                                         } else {
                                           log('song   outttt');
-                                          await musicService.setPlaylist(songs, startIndex: index);
+                                          await musicService.setPlaylist(
+                                            songs,
+                                            startIndex: index,
+                                          );
                                         }
                                       },
                                       onPlayTap: () async {
