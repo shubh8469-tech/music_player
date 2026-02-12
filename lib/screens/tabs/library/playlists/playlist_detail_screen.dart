@@ -25,6 +25,7 @@ import '../../../../features/playlists/domain/repositories/playlist_repository.d
 import '../../../../generated/assets.dart';
 import '../../../../utills/globals.dart';
 import '../../../../utills/snack_bar.dart';
+import '../../../common/commonTapProvider.dart';
 import '../../../play_song/playing_song_screen.dart';
 import '../widgets/mini_player_bar.dart';
 
@@ -413,8 +414,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 GestureDetector(
-                                  onTap: () async {
+                                  onTap: context.watch<HoldTheTapFor>().isHoldingShuffle ? null : () async {
                                     if (_songs.isEmpty) return;
+
+                                    context.read<HoldTheTapFor>().startHoldingShuffle();
 
                                     if (musicService.currentIndex < 0) {
                                       log(
@@ -426,10 +429,6 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                         startIndex: 0,
                                       );
                                       await musicService.play();
-                                      context.push(
-                                        '/dashboard/playing',
-                                        extra: PlayingSongArgs(songs: _songs),
-                                      );
                                     } else {
                                       log('shuffle:- Setting shuffle playlist');
                                       context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs),);
@@ -488,14 +487,26 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: () async {
+                                  onTap: context.watch<HoldTheTapFor>().isHoldingPlay ? null : () async {
                                     if (_baseSongs.isEmpty) return;
-                                    await musicService.ensureShuffleOff();
 
-                                    // Start from the first song of the playlist
-                                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs),);
-                                    await musicService.setPlaylist(List<SongsModel>.from(_baseSongs), startIndex: 0, autoPlay: true,);
-                                    await musicService.play();
+                                    context.read<HoldTheTapFor>().startHoldingPlay();
+
+                                    if(musicService.isPlaying){
+                                      context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs),);
+                                    }
+                                    else if(musicService.currentIndex >= 0){
+                                      context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs),);
+                                      await musicService.play();
+                                    }
+                                    else{
+                                      Future.microtask(() async {
+                                        await musicService.ensureShuffleOff();
+                                        // Start from the first song of the playlist
+                                        await musicService.setPlaylist(List<SongsModel>.from(_baseSongs), startIndex: 0, autoPlay: true,);
+                                        await musicService.play();
+                                      },);
+                                    }
                                   },
                                   child: Container(
                                     height: 40.h,

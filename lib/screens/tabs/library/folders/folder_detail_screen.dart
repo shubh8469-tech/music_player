@@ -28,6 +28,7 @@ import '../../../../l10n/l10n.dart';
 import '../../../../model/song_menu_model.dart';
 import '../../../../utills/globals.dart';
 import '../../../../utills/snack_bar.dart';
+import '../../../common/commonTapProvider.dart';
 import '../../../play_song/playing_song_screen.dart';
 import '../widgets/mini_player_bar.dart';
 
@@ -601,23 +602,42 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 GestureDetector(
-                                  onTap: () async {
-                                    
-                                    if (_songs.isEmpty) return;
-          
-                                    if (musicService.currentIndex < 0) {
-                                      await musicService.setPlaylist(_songs, autoPlay: false, startIndex: 0);
-                                      await musicService.play();
-                                    } else {
-                                      context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
-                                      await musicService.setShufflePlaylist(_songs, autoPlay: false);
-                                      await musicService.ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
-                                      await musicService.player.currentIndexStream.firstWhere((idx) => idx != null && idx != 0);
-                                      await musicService.play();
-                                    }
-          
-                                    logS.log("Shuffle Play started");
-                                  },
+                                  onTap: context.watch<HoldTheTapFor>().isHoldingShuffle
+                                      ? null
+                                      : () async {
+                                          try {
+                                            if (_songs.isEmpty) return;
+
+                                            context.read<HoldTheTapFor>().startHoldingShuffle();
+
+                                            if (musicService.currentIndex < 0) {
+                                              await musicService.setPlaylist(
+                                                _songs,
+                                                autoPlay: false,
+                                                startIndex: 0,
+                                              );
+                                              await musicService.play();
+                                            } else {
+                                              context.push(
+                                                '/dashboard/playing',
+                                                extra: PlayingSongArgs(songs: _songs),
+                                              );
+                                              await musicService.setShufflePlaylist(
+                                                _songs,
+                                                autoPlay: false,
+                                              );
+                                              await musicService.ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
+                                              await musicService.player.currentIndexStream.firstWhere(
+                                                (idx) => idx != null && idx != 0,
+                                              );
+                                              await musicService.play();
+                                            }
+
+                                            logS.log("Shuffle Play started");
+                                          } catch (e) {
+                                            logS.log("Shuffle error in FolderDetailScreen: $e");
+                                          }
+                                        },
                                   child: Container(
                                     alignment: Alignment.center,
                                     height: 40.h,
@@ -634,15 +654,37 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: () async {
-                                    if (_baseSongs.isEmpty) return;
-                                    await musicService.ensureShuffleOff();
-          
-                                    // Start from the first song of the folder
-                                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
-                                    await musicService.setPlaylist(List<SongsModel>.from(_baseSongs), startIndex: 0, autoPlay: true);
-                                    await musicService.play();
-                                  },
+                                  onTap: context.watch<HoldTheTapFor>().isHoldingPlay
+                                      ? null
+                                      : () async {
+                                          try {
+                                            if (_baseSongs.isEmpty) return;
+
+                                            context.read<HoldTheTapFor>().startHoldingPlay();
+
+                                            if (musicService.isPlaying) {
+                                              context.push(
+                                                '/dashboard/playing',
+                                                extra: PlayingSongArgs(songs: _songs),
+                                              );
+                                            } else if (musicService.currentIndex >= 0) {
+                                              context.push(
+                                                '/dashboard/playing',
+                                                extra: PlayingSongArgs(songs: _songs),
+                                              );
+                                              await musicService.play();
+                                            } else {
+                                              await musicService.ensureShuffleOff();
+                                              await musicService.setPlaylist(
+                                                List<SongsModel>.from(_baseSongs),
+                                                startIndex: 0,
+                                                autoPlay: true,
+                                              );
+                                            }
+                                          } catch (e) {
+                                            logS.log("Play error in FolderDetailScreen: $e");
+                                          }
+                                        },
                                   child: Container(
                                     height: 40.h,
                                     width: 165.w,

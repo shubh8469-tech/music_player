@@ -29,6 +29,7 @@ import '../../../../l10n/l10n.dart';
 import '../../../../model/song_menu_model.dart';
 import '../../../../utills/globals.dart';
 import '../../../../utills/snack_bar.dart';
+import '../../../common/commonTapProvider.dart';
 import '../../../play_song/playing_song_screen.dart';
 import '../widgets/mini_player_bar.dart';
 
@@ -532,38 +533,42 @@ class _GenreDetailScreenState extends State<GenreDetailScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 GestureDetector(
-                                  onTap: () async {
-                                    if (_songs.isEmpty) return;
+                                  onTap: context.watch<HoldTheTapFor>().isHoldingShuffle
+                                      ? null
+                                      : () async {
+                                          try {
+                                            if (_songs.isEmpty) return;
 
-                                    if (_musicService.currentIndex < 0) {
-                                      await _musicService.setPlaylist(
-                                        _songs,
-                                        autoPlay: false,
-                                        startIndex: 0,
-                                      );
-                                      await _musicService.play();
-                                    } else {
-                                      context.push(
-                                        '/dashboard/playing',
-                                        extra: PlayingSongArgs(songs: _songs),
-                                      );
-                                      await _musicService.setShufflePlaylist(
-                                        _songs,
-                                        autoPlay: false,
-                                      );
-                                      await _musicService
-                                          .ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
-                                      await _musicService
-                                          .player
-                                          .currentIndexStream
-                                          .firstWhere(
-                                            (idx) => idx != null && idx != 0,
-                                          );
-                                      await _musicService.play();
-                                    }
+                                            context.read<HoldTheTapFor>().startHoldingShuffle();
 
-                                    logS.log("Shuffle Play started for genre");
-                                  },
+                                            if (_musicService.currentIndex < 0) {
+                                              await _musicService.setPlaylist(
+                                                _songs,
+                                                autoPlay: false,
+                                                startIndex: 0,
+                                              );
+                                              await _musicService.play();
+                                            } else {
+                                              context.push(
+                                                '/dashboard/playing',
+                                                extra: PlayingSongArgs(songs: _songs),
+                                              );
+                                              await _musicService.setShufflePlaylist(
+                                                _songs,
+                                                autoPlay: false,
+                                              );
+                                              await _musicService.ensureShuffleOnAndReshuffleOnlyIndexNotAllSongsPosition();
+                                              await _musicService.player.currentIndexStream.firstWhere(
+                                                (idx) => idx != null && idx != 0,
+                                              );
+                                              await _musicService.play();
+                                            }
+
+                                            logS.log("Shuffle Play started for genre");
+                                          } catch (e) {
+                                            logS.log("Shuffle error in GenreDetailScreen: $e");
+                                          }
+                                        },
                                   child: Container(
                                     alignment: Alignment.center,
                                     height: 40.h,
@@ -595,17 +600,37 @@ class _GenreDetailScreenState extends State<GenreDetailScreen> {
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: () async {
-                                    if (_baseSongs.isEmpty) return;
-                                    await _musicService.ensureShuffleOff();
-                                    context.push('/dashboard/playing', extra: PlayingSongArgs(songs: _songs));
-                                    await _musicService.setPlaylist(
-                                      List<SongsModel>.from(_baseSongs),
-                                      startIndex: 0,
-                                      autoPlay: true,
-                                    );
-                                    await _musicService.play();
-                                  },
+                                  onTap: context.watch<HoldTheTapFor>().isHoldingPlay
+                                      ? null
+                                      : () async {
+                                          try {
+                                            if (_baseSongs.isEmpty) return;
+
+                                            context.read<HoldTheTapFor>().startHoldingPlay();
+
+                                            if (_musicService.isPlaying) {
+                                              context.push(
+                                                '/dashboard/playing',
+                                                extra: PlayingSongArgs(songs: _songs),
+                                              );
+                                            } else if (_musicService.currentIndex >= 0) {
+                                              context.push(
+                                                '/dashboard/playing',
+                                                extra: PlayingSongArgs(songs: _songs),
+                                              );
+                                              await _musicService.play();
+                                            } else {
+                                              await _musicService.ensureShuffleOff();
+                                              await _musicService.setPlaylist(
+                                                List<SongsModel>.from(_baseSongs),
+                                                startIndex: 0,
+                                                autoPlay: true,
+                                              );
+                                            }
+                                          } catch (e) {
+                                            logS.log("Play error in GenreDetailScreen: $e");
+                                          }
+                                        },
                                   child: Container(
                                     height: 40.h,
                                     width: 165.w,

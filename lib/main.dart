@@ -26,6 +26,8 @@ import 'package:music_app/features/genres/domain/usecases/get_all_genres.dart';
 import 'package:music_app/features/genres/domain/usecases/get_genre_songs.dart';
 import 'package:music_app/features/genres/domain/usecases/update_genre_cover.dart';
 import 'package:music_app/features/genres/domain/usecases/update_genre_name.dart';
+import 'package:music_app/screens/common/commonTapProvider.dart';
+import 'package:provider/provider.dart';
 import 'Blocs/languageBloc/language_bloc.dart';
 import 'app_router.dart';
 import 'features/music_player/bloc/music_player_bloc.dart';
@@ -144,6 +146,7 @@ Future<void> main() async {
                 },
               )..add(const SongsEvent.getAllSongs()),
             ),
+            ChangeNotifierProvider(create: (_) => HoldTheTapFor())
           ],
           child: ScreenUtilInit(
             designSize: const Size(375, 812),

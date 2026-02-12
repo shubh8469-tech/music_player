@@ -29,6 +29,7 @@ import '../../../../generated/assets.dart';
 import '../../../../utills/globals.dart';
 
 // import '../../../../l10n/l10n.dart';
+import '../../../common/commonTapProvider.dart';
 import '../../../play_song/playing_song_screen.dart';
 import '../../music_service.dart';
 
@@ -161,15 +162,14 @@ class _SongsListState extends State<SongsList> {
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     GestureDetector(
-                                      onTap: () async {
+                                      onTap: context.watch<HoldTheTapFor>().isHoldingShuffle ? null :  () async {
                                         try {
                                           print('🔀 Shuffle button tapped');
                                           print('Current state - playing: ${musicService.isPlaying}, currentIndex: ${musicService.currentIndex}');
 
                                           if (songs.isEmpty) return;
 
-                                          // Stop any current playback
-                                          // await musicService.stop();
+                                          context.read<HoldTheTapFor>().startHoldingShuffle();
 
                                           if (musicService.currentIndex < 0) {
                                             log('shuffle:- Current index is invalid, resetting to 0');
@@ -223,24 +223,29 @@ class _SongsListState extends State<SongsList> {
                                       ),
                                     ),
                                     GestureDetector(
-                                      onTap: () async {
+                                      onTap: context.watch<HoldTheTapFor>().isHoldingPlay ? null : () async {
                                         try {
-                                          print('▶️ Play button tapped');
-                                          // Stop current playback first
-                                          await musicService.stop();
-                                          // Ensure shuffle is OFF for normal play
-                                          await musicService.ensureShuffleOff();
-                                          print('✅ Shuffle disabled');
-                                          // Set playlist starting from index 0
-                                          await musicService.setPlaylist(songs, startIndex: 0, autoPlay: true);
+                                          if (songs.isEmpty) return;
 
-                                          print('✅ Normal Play started from index 0');
+                                          context.read<HoldTheTapFor>().startHoldingPlay();
 
-                                          if (mounted) {
-                                            setState(() {
-                                              _showMiniPlayer = true;
-                                            });
+                                          if(musicService.isPlaying){
+                                            context.push('/dashboard/playing', extra: PlayingSongArgs(songs: songs),);
                                           }
+                                          else if(musicService.currentIndex >= 0){
+                                            context.push('/dashboard/playing', extra: PlayingSongArgs(songs: songs),);
+                                            await musicService.play();
+                                          }
+                                          else{
+                                            await musicService.ensureShuffleOff();
+                                            await musicService.setPlaylist(songs, startIndex: 0, autoPlay: true);
+                                            if (mounted) {
+                                              setState(() {
+                                                _showMiniPlayer = true;
+                                              });
+                                            }
+                                          }
+                                          // context.push('/dashboard/playing', extra: PlayingSongArgs(songs: songs),);
                                         } catch (e) {
                                           print('❌ Play error: $e');
                                           // ScaffoldMessenger.of(context).showSnackBar(
