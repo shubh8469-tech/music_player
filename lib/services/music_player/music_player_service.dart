@@ -411,20 +411,20 @@ class MusicPlayerService {
         print('▶️ Android: Playing from index $startIndex');
       }
     } catch (e, st) {
-      print('❌ Android Playlist Error: $e');
-
       // "Loading interrupted" means the current load was cancelled, usually
-      // because another load or a dispose happened. Treat it as a benign
-      // cancellation: reset the Android player so we don't get stuck in a
-      // bad state that only an app restart would fix.
+      // because another load was started (e.g. user tapped a different song)
+      // or the player was disposed. This is expected behaviour in just_audio
+      // and should be treated as a benign cancellation.
       if (e.toString().contains('Loading interrupted')) {
         developer.log(
-          'Android playlist load was interrupted; resetting player instance.',
+          'Android playlist load was interrupted by a new request; ignoring.',
           name: 'MusicPlayerService._setAndroidPlaylist',
           error: e,
           stackTrace: st,
         );
-        await _resetAndroidPlayer();
+        // Do NOT reset or dispose the player here; another setAudioSource()
+        // call is typically in progress and resetting would break the new
+        // player instance and any UI listeners (miniplayer streams, etc).
         return;
       }
 
