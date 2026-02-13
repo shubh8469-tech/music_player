@@ -205,7 +205,7 @@ class _PlaylistMenuScreenState extends State<PlaylistMenuScreen> {
     return ListTile(
       dense: true,
       visualDensity: VisualDensity(horizontal: 0.w, vertical: 0.h),
-      leading: SvgPicture.asset(icon, height: 24, width: 24),
+      leading: SvgPicture.asset(icon, height: 24.w, width: 24.w),
       title: Texts(
         title,
         fontSize: 16.sp,

@@ -7,6 +7,7 @@ import 'package:music_app/commonWidgets/textWidget.dart';
 import 'package:music_app/themes/font.dart';
 
 import '../generated/assets.dart';
+import '../themes/color.dart';
 
 class GradientCard extends StatelessWidget {
   final double height;
@@ -44,21 +45,21 @@ class GradientCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Widget childWidget = content ??
+    final Widget childWidget =
+        content ??
         ((iconAsset.isEmpty || iconAsset.contains('.svg'))
-            ? SvgPicture.asset(
-                iconAsset.isEmpty ? Assets.svgMusicIcon : iconAsset,
-                height: iconSize,
-                width: iconSize,
+            ? SvgPicture.asset(iconAsset.isEmpty ? Assets.svgMusicIcon : iconAsset, height: iconSize, width: iconSize)
+            : (iconAsset.contains('.gif'))
+            ? Container(
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(7.r), color: AppColors.white.withValues(alpha: .4)),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0.w, vertical: 5.h),
+                  child: Image.asset(Assets.pngSongPlaying, fit: BoxFit.contain, height: height, width: width),
+                ),
               )
             : ClipRRect(
                 borderRadius: BorderRadius.circular(borderRadius),
-                child: Image.file(
-                  File(iconAsset),
-                  fit: BoxFit.cover,
-                  height: height,
-                  width: width,
-                ),
+                child: Image.file(File(iconAsset), fit: BoxFit.cover, height: height, width: width),
               ));
 
     return GestureDetector(

@@ -696,7 +696,7 @@ class _QueueScreenState extends State<QueueScreen> {
                           right: 16.w,
                           // bottom: showMiniPlayer ? 74.h : 10.h, // Space for MiniPlayerBar (which includes system nav bar padding)
                           bottom:
-                              bottomPadding, // Space for MiniPlayerBar (which includes system nav bar padding)
+                              10.h, // Space for MiniPlayerBar (which includes system nav bar padding)
                         ),
                         itemCount: queueSongs.length,
                         onReorder: (oldIndex, newIndex) =>
@@ -807,6 +807,7 @@ class _QueueScreenState extends State<QueueScreen> {
                         },
                       ),
                 ),
+                SizedBox(height: 90.h),
               ],
             ),
             Positioned(

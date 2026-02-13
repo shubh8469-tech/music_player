@@ -39,21 +39,12 @@ class MiniPlayerBar extends StatelessWidget {
 
         return GestureDetector(
           onTap: () {
-            context.push(
-              '/dashboard/playing',
-              extra: PlayingSongArgs(songs: musicService.songs),
-            );
+            context.push('/dashboard/playing', extra: PlayingSongArgs(songs: musicService.songs));
           },
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 8,
-                  offset: const Offset(0, -2),
-                ),
-              ],
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, -2))],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -62,17 +53,10 @@ class MiniPlayerBar extends StatelessWidget {
                   value: state.progress.clamp(0.0, 1.0),
                   minHeight: 4,
                   backgroundColor: Colors.grey.shade300,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    AppColors.primaryOrange,
-                  ),
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryOrange),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(
-                    left: 13.w,
-                    right: 13.w,
-                    top: 10.h,
-                    bottom: 10.h + MediaQuery.of(context).padding.bottom,
-                  ),
+                  padding: EdgeInsets.only(left: 13.w, right: 13.w, top: 10.h, bottom: 10.h + MediaQuery.of(context).padding.bottom),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -92,12 +76,7 @@ class MiniPlayerBar extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            Texts(
-                              currentSong?.artist ?? '',
-                              fontSize: 8.sp,
-                              fontWeight: FontWeight.w400,
-                              fontFamily: AppFonts.inter,
-                            ),
+                            Texts(currentSong?.artist ?? '', fontSize: 8.sp, fontWeight: FontWeight.w400, fontFamily: AppFonts.inter),
                           ],
                         ),
                       ),
@@ -108,19 +87,11 @@ class MiniPlayerBar extends StatelessWidget {
                           children: [
                             GestureDetector(
                               onTap: () => context.go('/dashboard/queue'),
-                              child: SvgPicture.asset(
-                                Assets.svgIcQueue,
-                                width: 24.w,
-                                height: 24.h,
-                              ),
+                              child: SvgPicture.asset(Assets.svgIcQueue, width: 24.w, height: 24.h),
                             ),
                             GestureDetector(
                               onTap: () => musicService.next(),
-                              child: SvgPicture.asset(
-                                Assets.svgIcPlayingnext,
-                                width: 24.w,
-                                height: 24.h,
-                              ),
+                              child: SvgPicture.asset(Assets.svgIcPlayingnext, width: 24.w, height: 24.h),
                             ),
                             _PlayPauseButton(state: state),
                           ],
@@ -146,22 +117,22 @@ class _ArtworkSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasArtwork = song?.artwork_path != null &&
-        song!.artwork_path!.isNotEmpty;
+    final hasArtwork = song?.artwork_path != null && song!.artwork_path!.isNotEmpty;
 
     return Stack(
       children: [
         if (hasArtwork)
           Container(
-            height: 50.h,
-            width: 50.h,
             margin: EdgeInsets.all(10.w),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(7.r),
-              image: DecorationImage(
-                image: FileImage(File(song!.artwork_path!)),
-                fit: BoxFit.cover,
-              ),
+            child: GradientCard(
+              height: 50.h,
+              width: 50.w,
+              borderRadius: 7.r,
+              iconAsset: song!.artwork_path!,
+              iconSize: 40.r,
+              isSvg: true,
+              margin: 0.w,
+              colors: [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange],
             ),
           )
         else
@@ -170,36 +141,46 @@ class _ArtworkSection extends StatelessWidget {
             child: GradientCard(
               height: 50.h,
               width: 50.w,
-              borderRadius: 10.r,
+              borderRadius: 7.r,
               iconAsset: Assets.svgMusicIcon,
               iconSize: 40.r,
               isSvg: true,
-              margin: 10.w,
-              colors: [
-                AppColors.mildOrange.withValues(alpha: 0.21),
-                AppColors.mildOrange,
-              ],
+              margin: 0.w,
+              colors: [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange],
             ),
           ),
         if (isPlaying)
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(7.r),
-              color: AppColors.white.withValues(alpha: .4),
-            ),
+        Container(
+          margin: EdgeInsets.all(10.w),
+          child: GradientCard(
             height: 50.h,
             width: 50.w,
-            margin: EdgeInsets.only(top: 10.w, bottom: 10.w, left: 9.w),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8.0.w, vertical: 5.h),
-              child: Image.asset(
-                Assets.pngSongPlaying,
-                fit: BoxFit.contain,
-                height: 50.h,
-                width: 50.w,
-              ),
+            borderRadius: 10.r,
+            iconAsset: Assets.pngSongPlaying,
+            iconSize: 40.r,
+            isSvg: true,
+            margin: 0.w,
+            colors: [AppColors.white.withValues(alpha: 0.21), AppColors.white.withValues(alpha: 0.21)],
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(7.r),
+            color: AppColors.white.withValues(alpha: .4),
+          ),
+          height: 50.h,
+          width: 50.w,
+          margin: EdgeInsets.only(top: 10.w, bottom: 10.w, left: 9.w),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.0.w, vertical: 5.h),
+            child: Image.asset(
+              Assets.pngSongPlaying,
+              fit: BoxFit.contain,
+              height: 50.h,
+              width: 50.w,
             ),
           ),
+        ),
       ],
     );
   }
@@ -217,28 +198,12 @@ class _PlayPauseButton extends StatelessWidget {
     if (state.isPlaying) {
       return GestureDetector(
         onTap: () => musicService.pause(),
-        child: SvgPicture.asset(
-          Assets.svgNewPause,
-          height: 19.h,
-          width: 19.w,
-          colorFilter: const ColorFilter.mode(
-            AppColors.primaryOrange,
-            BlendMode.srcIn,
-          ),
-        ),
+        child: SvgPicture.asset(Assets.svgNewPause, height: 19.h, width: 19.w, colorFilter: const ColorFilter.mode(AppColors.primaryOrange, BlendMode.srcIn)),
       );
     }
     return GestureDetector(
       onTap: () => musicService.play(),
-      child: SvgPicture.asset(
-        Assets.svgPlay,
-        height: 19.h,
-        width: 19.w,
-        colorFilter: const ColorFilter.mode(
-          AppColors.primaryOrange,
-          BlendMode.srcIn,
-        ),
-      ),
+      child: SvgPicture.asset(Assets.svgPlay, height: 19.h, width: 19.w, colorFilter: const ColorFilter.mode(AppColors.primaryOrange, BlendMode.srcIn)),
     );
   }
 }

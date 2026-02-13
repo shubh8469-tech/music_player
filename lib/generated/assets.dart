@@ -95,6 +95,7 @@ class Assets {
   static const String svgMenuIcon = 'assets/svg/menuIcon.svg';
   static const String svgMostPlayed = 'assets/svg/mostPlayed.svg';
   static const String svgMusicIcon = 'assets/svg/musicIcon.svg';
+  static const String svgMusicIconBlack = 'assets/svg/musicIcon_black.svg';
   static const String svgMusicLibrary = 'assets/svg/musicLibrary.svg';
   static const String svgMusicStops = 'assets/svg/musicStops.svg';
   static const String svgNewPause = 'assets/svg/newPause.svg';
@@ -125,6 +126,7 @@ class Assets {
   static const String svgTermsDoc = 'assets/svg/termsDoc.svg';
   static const String svgThemeBrush = 'assets/svg/themeBrush.svg';
   static const String svgVersion = 'assets/svg/version.svg';
+  static const String svgVisible = 'assets/svg/visible.svg';
   static const String svgWidget = 'assets/svg/widget.svg';
 
 }

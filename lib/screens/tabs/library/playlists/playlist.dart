@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:music_app/themes/color.dart';
 
+import '../../../../commonWidgets/common_functions.dart';
 import '../../../../commonWidgets/MusicListTile.dart';
 import '../../../../commonWidgets/playlist_menu_screen.dart';
 import '../../../../commonWidgets/textWidget.dart';
@@ -198,7 +199,7 @@ class _PlayListScreenState extends State<PlayListScreen> {
                               systemIcon[p.systemKey] ?? Assets.svgMusicIcon;
                           final color =
                               systemColor[p.systemKey] ?? AppColors.mildBlue;
-                          return MusicListTile(
+                            return MusicListTile(
                             margin: 7.w,
                             height: 66.h,
                             borderRadius: 10.r,
@@ -219,7 +220,6 @@ class _PlayListScreenState extends State<PlayListScreen> {
                             trailingIconHeight: 19.5.h,
                             trailingIconWidth: 3.w,
                             trailingMargin: 10.w,
-                            songLength: '5:20',
                             songLengthRequired: true,
                             onTap: () {
                               context.push(
@@ -391,7 +391,7 @@ class _PlayListScreenState extends State<PlayListScreen> {
                   );
                 },
               ),
-              SizedBox(height: 90.h),
+              SizedBox(height: 25.h),
             ],
           ),
         ),

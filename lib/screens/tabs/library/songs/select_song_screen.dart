@@ -728,7 +728,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
                 ),
                 hintText: S.of(context).searchSongs,
                 hintStyle: TextStyle(
-                  color: AppColors.textColor,
+                  color: AppColors.textColor.withValues(alpha: 0.65),
                   fontWeight: FontWeight.w400,
                   fontFamily: AppFonts.inter,
                 ),

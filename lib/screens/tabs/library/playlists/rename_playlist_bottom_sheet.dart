@@ -174,7 +174,7 @@ class _RenamePlaylistBottomSheetState extends State<RenamePlaylistBottomSheet> {
                     height: 48.h,
                     decoration: BoxDecoration(
                       color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(8.r),
+                      borderRadius: BorderRadius.circular(50.r),
                     ),
                     child: Center(
                       child: Text(
@@ -200,7 +200,7 @@ class _RenamePlaylistBottomSheetState extends State<RenamePlaylistBottomSheet> {
                       color: _isRenaming
                           ? Colors.grey[400]
                           : AppColors.primaryOrange,
-                      borderRadius: BorderRadius.circular(8.r),
+                      borderRadius: BorderRadius.circular(50.r),
                     ),
                     child: Center(
                       child: _isRenaming
@@ -229,7 +229,7 @@ class _RenamePlaylistBottomSheetState extends State<RenamePlaylistBottomSheet> {
               ),
             ],
           ),
-          SizedBox(height: 16.h),
+          // SizedBox(height: 16.h),
         ],
       ),
     );

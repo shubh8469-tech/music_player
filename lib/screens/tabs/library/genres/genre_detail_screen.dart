@@ -23,6 +23,7 @@ import '../../../../commonWidgets/gradientCard.dart';
 import '../../../../commonWidgets/song_menu_screen.dart';
 import '../../../../commonWidgets/textWidget.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../features/albums/domain/repositories/album_repository.dart';
 import '../../../../features/genres/domain/repositories/genre_repository.dart';
 import '../../../../generated/assets.dart';
 import '../../../../l10n/l10n.dart';
@@ -43,6 +44,7 @@ class GenreDetailScreen extends StatefulWidget {
 
 class _GenreDetailScreenState extends State<GenreDetailScreen> {
   final _repo = locator<GenreRepository>();
+  final _albumRepo = locator<AlbumRepository>();
 
   MusicPlayerService get _musicService =>
       context.read<MusicPlayerBloc>().musicService;
@@ -472,15 +474,42 @@ class _GenreDetailScreenState extends State<GenreDetailScreen> {
                                             ? album.artworkPath!
                                             : Assets.svgAlbum;
                                     return GestureDetector(
-                                      onTap: () {
-                                        showSnackBar(
-                                          context,
-                                          () {},
-                                          message:
-                                              'Open the Albums tab for full details',
-                                          alertBannerLocation:
-                                              AlertBannerLocation.bottom,
+                                      onTap: () async {
+                                        final artistArg = album.artistName
+                                                .trim()
+                                                .isNotEmpty
+                                            ? album.artistName.trim()
+                                            : null;
+                                        var fullAlbum = await _albumRepo
+                                            .getAlbumByNameAndArtist(
+                                          album.albumName.trim(),
+                                          artistArg,
                                         );
+                                        // Albums are often stored with "Various Artists" during import/scan
+                                        if (fullAlbum == null &&
+                                            artistArg != null &&
+                                            artistArg != 'Various Artists') {
+                                          fullAlbum = await _albumRepo
+                                              .getAlbumByNameAndArtist(
+                                            album.albumName.trim(),
+                                            'Various Artists',
+                                          );
+                                        }
+                                        if (!mounted) return;
+                                        if (fullAlbum != null) {
+                                          context.push(
+                                            '/dashboard/album-detail',
+                                            extra: fullAlbum,
+                                          );
+                                        } else {
+                                          showSnackBar(
+                                            context,
+                                            () {},
+                                            message: 'Album not found',
+                                            alertBannerLocation:
+                                                AlertBannerLocation.bottom,
+                                          );
+                                        }
                                       },
                                       child: Container(
                                         width: 120.w,

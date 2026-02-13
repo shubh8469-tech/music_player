@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:music_app/commonWidgets/MusicListTile.dart';
 import 'package:music_app/commonWidgets/app_bar_with_icon_title.dart';
 import 'package:music_app/commonWidgets/textWidget.dart';
 import 'package:music_app/core/di/injection.dart';
@@ -16,6 +15,8 @@ import 'package:music_app/generated/assets.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
 import 'package:music_app/utills/snack_bar.dart';
+
+import '../../../../commonWidgets/gradientCard.dart';
 
 class HiddenMusicScreen extends StatefulWidget {
   const HiddenMusicScreen({super.key});
@@ -259,7 +260,7 @@ class _HiddenMusicScreenState extends State<HiddenMusicScreen>
           key: PageStorageKey<String>('hidden_music_$title'),
           initiallyExpanded: expanded,
           onExpansionChanged: onToggle,
-          tilePadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+          tilePadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 0.h),
           title: Texts(
             title,
             fontSize: 16.sp,
@@ -353,7 +354,7 @@ class _HiddenMusicScreenState extends State<HiddenMusicScreen>
           key: PageStorageKey<String>('hidden_folder_$title'),
           initiallyExpanded: expanded,
           onExpansionChanged: onToggle,
-          tilePadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+          tilePadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 0.h),
           title: Texts(
             title,
             fontSize: 16.sp,
@@ -395,6 +396,99 @@ class _HiddenMusicScreenState extends State<HiddenMusicScreen>
   }
 }
 
+class _HiddenItemTile extends StatelessWidget {
+  const _HiddenItemTile({
+    required this.title,
+    required this.subtitle,
+    required this.iconAsset,
+    required this.isSvgIcon,
+    required this.isHidden,
+    required this.onToggle,
+  });
+
+  final String title;
+  final String subtitle;
+  final String iconAsset;
+  final bool isSvgIcon;
+  final bool isHidden;
+  final VoidCallback onToggle;
+
+  Widget _buildIcon() {
+      return GradientCard(
+        height: 50.h,
+        width: 50.w,
+        borderRadius: 7.r,
+        iconAsset: iconAsset.isNotEmpty ? iconAsset : Assets.svgMusicIconBlack,
+        iconSize: 40.r,
+        isSvg: true,
+        margin: 7.w,
+        colors: [AppColors.mildOrange.withValues(alpha: 0.21), AppColors.mildOrange],
+      );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: AppColors.musicTileBackgroundColor,
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Row(
+        children: [
+          Center(
+            child: _buildIcon(),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Texts(
+                  title,
+                  fontSize: 16.sp,
+                  fontWeight: AppFontWeights.semiBold,
+                  fontFamily: AppFonts.inter,
+                  color: AppColors.textColor,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 4.h),
+                Texts(
+                  subtitle,
+                  fontSize: 10.sp,
+                  fontWeight: AppFontWeights.regular,
+                  fontFamily: AppFonts.inter,
+                  color: Assets.svgDirectory == iconAsset ? AppColors.textColor : AppColors.textColor.withValues(alpha: 0.6),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: onToggle,
+            child: Padding(
+              padding: EdgeInsets.all(8.w),
+              child: SvgPicture.asset(
+                isHidden ? Assets.svgVisible : Assets.svgIcHide,
+                width: 24.w,
+                height: 24.w,
+                colorFilter: ColorFilter.mode(
+                 AppColors.primaryOrange,
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _HiddenSongTile extends StatelessWidget {
   const _HiddenSongTile({
     required this.song,
@@ -414,32 +508,16 @@ class _HiddenSongTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: MusicListTile(
-        margin: 8.h,
-        height: 66.h,
-        borderRadius: 12.r,
-        backgroundColor: AppColors.musicTileBackgroundColor,
-        cardHeight: 50.h,
-        cardWidth: 50.h,
-        cardRadius: 7.r,
-        cardIconAsset: song.artwork_path ?? Assets.svgMusicIcon,
-        cardIconSize: 32.r,
-        isSvgCardIcon: (song.artwork_path ?? '').contains('.svg') || song.artwork_path == null,
-        title: song.title,
-        subtitle: _buildSubtitle(song),
-        trailingIconAsset: Assets.svgMenuIcon,
-        trailingIconHeight: 19.5.h,
-        trailingIconWidth: 3.w,
-        trailingMargin: 10.w,
-        isLeading: true,
-        leadingIconAsset: Assets.svgIcHide,
-        leadingIconHeight: 20.h,
-        leadingIconWidth: 20.w,
-        leadingMargin: 10.w,
-        onInfoTap: onToggle,
-      ),
+    final artworkPath = song.artwork_path ?? Assets.svgMusicIconBlack;
+    final isSvgIcon = (song.artwork_path ?? '').contains('.svg') || song.artwork_path == null;
+    
+    return _HiddenItemTile(
+      title: song.title,
+      subtitle: _buildSubtitle(song),
+      iconAsset: artworkPath,
+      isSvgIcon: isSvgIcon,
+      isHidden: isHidden,
+      onToggle: onToggle,
     );
   }
 }
@@ -457,57 +535,13 @@ class _HiddenFolderTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: AppColors.musicTileBackgroundColor,
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Row(
-        children: [
-          Center(
-            child: SvgPicture.asset(
-              Assets.svgDirectory,
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Texts(
-                  folder.name,
-                  fontSize: 16.sp,
-                  fontWeight: AppFontWeights.semiBold,
-                  fontFamily: AppFonts.inter,
-                  color: AppColors.textColor,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 4.h),
-                Texts(
-                  '${folder.songCount} songs • ${folder.path}',
-                  fontSize: 12.sp,
-                  fontWeight: AppFontWeights.regular,
-                  fontFamily: AppFonts.inter,
-                  color: AppColors.textColor.withValues(alpha: 0.6),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            onPressed: onToggle,
-            icon: Icon(isHidden ? Icons.visibility : Icons.visibility_off),
-            color: isHidden
-                ? AppColors.primaryOrange
-                : AppColors.textColor.withValues(alpha: 0.6),
-          ),
-        ],
-      ),
+    return _HiddenItemTile(
+      title: folder.name,
+      subtitle: '${folder.songCount} songs',
+      iconAsset: Assets.svgDirectory,
+      isSvgIcon: true,
+      isHidden: isHidden,
+      onToggle: onToggle,
     );
   }
 }

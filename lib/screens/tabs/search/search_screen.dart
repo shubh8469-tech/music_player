@@ -299,7 +299,7 @@ class _SearchHeader extends StatelessWidget {
                             isDense: true,
                             hintText: 'Search In Library',
                             hintStyle: TextStyle(
-                              color: AppColors.textColor.withValues(alpha: 0.65),
+                              color: AppColors.white.withValues(alpha: 0.55),
                               fontSize: 15.sp,
                               fontFamily: AppFonts.inter,
                             ),
@@ -1230,7 +1230,7 @@ class _FolderActionSheet extends StatelessWidget {
     return ListTile(
       dense: true,
       visualDensity: VisualDensity(horizontal: 0.w, vertical: 0.h),
-      leading: SvgPicture.asset(icon, height: 24, width: 24),
+      leading: SvgPicture.asset(icon, height: 24.w, width: 24.w, colorFilter: ColorFilter.mode(AppColors.black, BlendMode.srcIn),),
       title: Texts(
         title,
         fontSize: 16.sp,

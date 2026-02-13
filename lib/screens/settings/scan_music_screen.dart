@@ -297,19 +297,24 @@ class _ScanMusicScreenState extends State<ScanMusicScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: isSelected ? AppColors.primaryOrange : Colors.grey,
-                width: 2.w,
+                color: isSelected ? AppColors.primaryOrange : AppColors.black,
+                width: 1.5.w,
               ),
               color: Colors.transparent,
             ),
             child: isSelected
-                ? Padding(
-                  padding: const EdgeInsets.all(0.5),
-                  child: Icon(
-                      Icons.circle,
-                      size: 14.sp,
-                      color: AppColors.primaryOrange,
-                    ),
+                ? Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(2.r),
+                    child: Container(
+                      height: 14.sp,
+                      width: 14.sp,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(100.r),
+                        color: AppColors.primaryOrange,
+                      ),
+                      ),
+                  ),
                 )
                 : null,
           ),

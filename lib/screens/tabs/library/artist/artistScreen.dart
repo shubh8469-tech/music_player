@@ -237,6 +237,7 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                   );
                 },
               ),
+              SizedBox(height: 25.h),
             ],
           ),
         ),

@@ -240,6 +240,7 @@ class _GenreListScreenState extends State<GenreListScreen> {
                   );
                 },
               ),
+              SizedBox(height: 25.h),
             ],
           ),
         ),
