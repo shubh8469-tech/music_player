@@ -18,6 +18,7 @@ import 'package:music_app/themes/font.dart';
 
 import '../../../../commonWidgets/MusicListTile.dart';
 import '../../../../commonWidgets/bottom_button_two.dart';
+import '../../../../commonWidgets/common_functions.dart';
 import '../../../../commonWidgets/gradientCard.dart';
 import '../../../../commonWidgets/song_menu_screen.dart';
 import '../../../../commonWidgets/textWidget.dart';
@@ -187,6 +188,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
             subtitle: song.artist,
             trailingIconAsset: Assets.svgMenuIcon,
             trailingIconHeight: 19.5.h,
+            songLengthRequired: true,
+            songLength: formatDuration(song.duration),
             trailingIconWidth: 3.w,
             trailingMargin: 10.w,
             isGifLoad: isCurrent,

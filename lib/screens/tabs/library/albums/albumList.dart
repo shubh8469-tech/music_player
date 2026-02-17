@@ -178,7 +178,7 @@ class _AlbumListScreenState extends State<AlbumListScreen> {
                           crossAxisCount: 2,
                           mainAxisSpacing: 5.h,
                           crossAxisSpacing: 20.w,
-                          childAspectRatio: 0.8,
+                          childAspectRatio: 0.9,
                         ),
                         itemCount: albums.length,
                         itemBuilder: (context, index) {

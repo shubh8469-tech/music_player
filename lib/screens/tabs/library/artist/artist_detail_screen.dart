@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:music_app/commonWidgets/app_bar_with_icon_title.dart';
+import 'package:music_app/commonWidgets/common_functions.dart';
 import 'package:music_app/features/artists/bloc/artist_bloc.dart';
 import 'package:music_app/features/artists/domain/entities/artist.dart';
 import 'package:music_app/features/songs/bloc/songs_bloc.dart';
@@ -178,6 +179,8 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
             title: song.title,
             subtitle: song.album,
             trailingIconAsset: Assets.svgMenuIcon,
+            songLengthRequired: true,
+            songLength:formatDuration(song.duration),
             trailingIconHeight: 19.5.h,
             trailingIconWidth: 3.w,
             trailingMargin: 10.w,
