@@ -155,7 +155,7 @@ class _ArtworkSection extends StatelessWidget {
           child: GradientCard(
             height: 50.h,
             width: 50.w,
-            borderRadius: 10.r,
+            borderRadius: 7.r,
             iconAsset: Assets.pngSongPlaying,
             iconSize: 40.r,
             isSvg: true,
@@ -170,7 +170,7 @@ class _ArtworkSection extends StatelessWidget {
           ),
           height: 50.h,
           width: 50.w,
-          margin: EdgeInsets.only(top: 10.w, bottom: 10.w, left: 9.w),
+          margin: EdgeInsets.only(top: 10.w, bottom: 10.w, left: 10.w),
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.0.w, vertical: 5.h),
             child: Image.asset(

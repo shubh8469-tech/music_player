@@ -153,14 +153,14 @@ class AudioPlayerWidget extends StatelessWidget {
                   height: 65.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.textColor.withValues(alpha: 0.2),
-                        blurRadius: 12.r,
-                        spreadRadius: 1.r,
-                        offset: Offset(0, 2.h),
-                      ),
-                    ],
+                    // boxShadow: [
+                    //   BoxShadow(
+                    //     color: AppColors.textColor.withValues(alpha: 0.2),
+                    //     blurRadius: 12.r,
+                    //     spreadRadius: 1.r,
+                    //     offset: Offset(0, 2.h),
+                    //   ),
+                    // ],
                   ),
                   alignment: Alignment.center,
                   child: SvgPicture.asset(

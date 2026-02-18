@@ -78,7 +78,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: widget.maxLines != null && widget.maxLines! > 1 ? 120 : 48,
+      // height: widget.maxLines != null && widget.maxLines! > 1 ? 120 : 48,
       child: TextFormField(
         readOnly: widget.readOnly,
         controller: widget.controller,
