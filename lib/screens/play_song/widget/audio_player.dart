@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:provider/provider.dart';
+import '../../../commonWidgets/common_functions.dart';
 import '../../../generated/assets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../themes/font.dart';
@@ -87,11 +88,13 @@ class AudioPlayerWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                _formatTime(provider.position),
+                // _formatTime(provider.position),
+                formatDuration(provider.position.inMilliseconds),
                 style: TextStyle(color: AppColors.textColor, fontSize: 12.sp, fontWeight: AppFontWeights.regular),
               ),
               Text(
-                _formatTime(provider.duration),
+                // _formatTime(provider.duration),
+                formatDuration(provider.duration.inMilliseconds),
                 style: TextStyle(color: AppColors.textColor, fontSize: 12.sp, fontWeight: AppFontWeights.regular),
               ),
             ],

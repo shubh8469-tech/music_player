@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
 import 'package:music_app/features/songs/bloc/songs_bloc.dart';
 import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/features/playlists/bloc/playlist_bloc.dart';
@@ -54,6 +53,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
   Set<int> searchSelectedIds = {}; // Store selected song IDs
   String searchQuery = '';
   final musicService = MusicPlayerService();
+  List<SongsModel>? _playlistSongs;
 
   List<String> musicIcons = [
     Assets.pngBand2,
@@ -64,6 +64,9 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
   @override
   void initState() {
     super.initState();
+     _playlistSongs = widget.playlistSongs != null
+         ? List<SongsModel>.from(widget.playlistSongs!)
+         : null;
     searchController.addListener(() {
       setState(() {
         searchQuery = searchController.text.trim();
@@ -614,7 +617,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
   // Hide selected songs
   Future<void> _hideSelectedSongs() async {
     final selectedSongs = _getSelectedSongs(
-      widget.playlistSongs ??
+      _playlistSongs ??
           context.read<SongsBloc>().state.maybeWhen(
             loaded: (songs) => songs,
             orElse: () => <SongsModel>[],
@@ -631,15 +634,12 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
       return;
     }
 
-    bool anyHidden = false;
-
     for (final song in selectedSongs) {
       if (song.id == null) {
       } else {
         try {
           context.read<SongsBloc>().add(SongsEvent.hideSong(song.id!));
           // await musicService.removeDeletedSongFromQueue(song.id!);
-          anyHidden = true;
         } catch (e) {
           showSnackBar(
             context,
@@ -656,8 +656,15 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
       selectedSongIds.removeWhere(
         (id) => selectedSongs.any((song) => song.id == id),
       );
+      if (_playlistSongs != null) {
+        final selectedIds = selectedSongs
+            .where((song) => song.id != null)
+            .map((song) => song.id!)
+            .toSet();
+        _playlistSongs!.removeWhere((song) => selectedIds.contains(song.id));
+      }
       updateSelectAllState(
-        widget.playlistSongs ??
+        _playlistSongs ??
             context.read<SongsBloc>().state.maybeWhen(
               loaded: (songs) => songs,
               orElse: () => <SongsModel>[],
@@ -685,10 +692,10 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
 
   // Helper method to build content for playlist songs
   Widget _buildPlaylistSongsContent() {
-    final filteredSongs = _filterSongs(widget.playlistSongs!);
+    final filteredSongs = _filterSongs(_playlistSongs!);
     updateSelectAllState(filteredSongs);
 
-    if (widget.playlistSongs!.isEmpty) {
+    if (_playlistSongs!.isEmpty) {
       return const Center(
         child: Text(
           "No songs in this playlist",
@@ -697,7 +704,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
       );
     }
 
-    return _buildSongsContent(widget.playlistSongs!, filteredSongs);
+    return _buildSongsContent(_playlistSongs!, filteredSongs);
   }
 
   // Helper method to build the songs content
@@ -847,7 +854,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
         isActionBtnDisplay: true,
         onTapAction: () => _showPopupMenu(context),
       ),
-      body: widget.playlistSongs != null
+      body: _playlistSongs != null
           ? _buildPlaylistSongsContent()
           : BlocBuilder<SongsBloc, SongsState>(
               builder: (context, state) {
@@ -882,7 +889,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
                 );
               },
             ),
-      bottomNavigationBar: widget.playlistSongs != null
+      bottomNavigationBar: _playlistSongs != null
           ? _buildPlaylistBottomBar()
           : BlocBuilder<SongsBloc, SongsState>(
               builder: (context, state) {
@@ -970,7 +977,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               GestureDetector(
-                onTap: () => _playSelectedSongs(widget.playlistSongs!),
+                onTap: () => _playSelectedSongs(_playlistSongs!),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -986,7 +993,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
                 ),
               ),
               GestureDetector(
-                onTap: () => _addToPlaylist(widget.playlistSongs!),
+                onTap: () => _addToPlaylist(_playlistSongs!),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -1002,7 +1009,7 @@ class _SelectSongScreenState extends State<SelectSongScreen> {
                 ),
               ),
               GestureDetector(
-                onTap: () => _deleteSelectedSongs(widget.playlistSongs!),
+                onTap: () => _deleteSelectedSongs(_playlistSongs!),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
