@@ -154,6 +154,10 @@ class EqualizerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Note: frequency sliders are driven only by presets and manual band edits.
+  // Effects like Bass Boost / Virtualizer / Reverb change audio but intentionally
+  // do not re-shape the visible sliders, to match the reference app behaviour.
+
   List<double> _getPresetFrequencies(String presetName) {
     const presetData = {
       'Custom': [0.0, 0.0, 0.0, 0.0, 0.0],
@@ -206,16 +210,11 @@ class EqualizerProvider extends ChangeNotifier {
       return;
     }
 
-    String backendPresetName = presetName;
-    if (presetName.toLowerCase() == 'bass boost') {
-      backendPresetName = 'Hip Hop';
-    } else if (!_eqService.presetNames.contains(presetName)) {
-      backendPresetName = 'Normal';
-    }
-
-    if (_eqService.presetNames.contains(backendPresetName)) {
+    // If this preset exists in the backend, apply it directly so that
+    // `_eqService.currentPreset` stays in sync with the UI name.
+    if (_eqService.presetNames.contains(presetName)) {
       try {
-        await _eqService.applyPreset(backendPresetName);
+        await _eqService.applyPreset(presetName);
       } catch (_) {}
     } else {
       for (int i = 0; i < frequencies.length; i++) {
@@ -233,6 +232,9 @@ class EqualizerProvider extends ChangeNotifier {
     customFrequencies[index] = clampedValue;
     selectedPreset = 0;
     notifyListeners();
+    // Also apply the change to the backend immediately so the effect is heard
+    // while sliding, not only after releasing the thumb.
+    _eqService.setBandLevel(index, clampedValue);
   }
 
   /// Commits current band level to backend - call when user releases the slider
