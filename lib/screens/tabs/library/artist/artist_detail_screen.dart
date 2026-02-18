@@ -398,7 +398,9 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
                   final oldSongCount = _currentArtist.songCount;
                   final newSongCount = updatedArtist.songCount;
                   final songCountChanged = newSongCount != oldSongCount;
-                  final hasChanged = songCountChanged || updatedArtist.name != _currentArtist.name;
+                  final hasChanged = songCountChanged ||
+                      updatedArtist.name != _currentArtist.name ||
+                      updatedArtist.artworkPath != _currentArtist.artworkPath;
 
                   if (hasChanged && mounted) {
                     setState(() {
@@ -418,10 +420,12 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
         ),
         BlocListener<SongsBloc, SongsState>(
           listener: (context, state) {
-            // When a song is successfully removed, refresh artist data
+            // When songs change (e.g. artwork updated, song removed), reload list and refresh artist data
             state.maybeWhen(
               loaded: (songs) {
-                // Wait a bit for database trigger to update artist count, then refresh
+                if (mounted) {
+                  _loadSongs();
+                }
                 Future.delayed(const Duration(milliseconds: 500), () {
                   if (mounted) {
                     _refreshArtistData();

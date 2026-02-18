@@ -589,7 +589,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                   final songCountChanged = newSongCount != oldSongCount;
                   final hasChanged =
                       songCountChanged ||
-                      updatedAlbum.name != _currentAlbum.name;
+                      updatedAlbum.name != _currentAlbum.name ||
+                      updatedAlbum.artworkPath != _currentAlbum.artworkPath;
 
                   if (hasChanged && mounted) {
                     setState(() {
@@ -609,10 +610,12 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
         ),
         BlocListener<SongsBloc, SongsState>(
           listener: (context, state) {
-            // When a song is successfully removed, refresh album data
+            // When songs change (e.g. artwork updated, song removed), reload list and refresh album data
             state.maybeWhen(
               loaded: (songs) {
-                // Wait a bit for database trigger to update album count, then refresh
+                if (mounted) {
+                  _loadSongs();
+                }
                 Future.delayed(const Duration(milliseconds: 500), () {
                   if (mounted) {
                     _refreshAlbumData();

@@ -148,9 +148,20 @@ Future<void> main() async {
             ),
             ChangeNotifierProvider(create: (_) => HoldTheTapFor())
           ],
-          child: ScreenUtilInit(
-            designSize: const Size(375, 812),
-            child: const MyApp(),
+          child: BlocListener<SongsBloc, SongsState>(
+            listener: (context, state) {
+              state.maybeWhen(
+                loaded: (songs) {
+                  context.read<MusicPlayerBloc>().musicService
+                      .syncCurrentPlaylistWithUpdatedSongs(songs);
+                },
+                orElse: () {},
+              );
+            },
+            child: ScreenUtilInit(
+              designSize: const Size(375, 812),
+              child: const MyApp(),
+            ),
           ),
         );
       },

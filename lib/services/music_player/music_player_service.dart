@@ -204,6 +204,27 @@ class MusicPlayerService {
     print('📝 Songs list updated: ${songs.length} songs');
   }
 
+  /// Syncs the current playlist with updated song data (e.g. from SongsBloc after
+  /// artwork or metadata change). Replaces matching songs by id so the UI updates.
+  void syncCurrentPlaylistWithUpdatedSongs(List<SongsModel> updatedSongs) {
+    if (songs.isEmpty || updatedSongs.isEmpty) return;
+    final byId = {for (var s in updatedSongs) s.id: s};
+    bool changed = false;
+    final newList = <SongsModel>[];
+    for (final s in songs) {
+      if (s.id != null && byId.containsKey(s.id)) {
+        newList.add(byId[s.id]!);
+        changed = true;
+      } else {
+        newList.add(s);
+      }
+    }
+    if (changed) {
+      songs = newList;
+      _songsChangedController.add(List.from(songs));
+    }
+  }
+
   Future<void> removeFromQueueAtIndex(
     int removeIndex,
     int newCurrentIndex,

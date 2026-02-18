@@ -537,10 +537,12 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
         ),
         BlocListener<SongsBloc, SongsState>(
           listener: (context, state) {
-            // When a song is successfully removed, refresh folder data
+            // When songs change (e.g. artwork updated, song removed), reload list and refresh folder data
             state.maybeWhen(
               loaded: (songs) {
-                // Wait a bit for database trigger to update folder count, then refresh
+                if (mounted) {
+                  _loadSongs();
+                }
                 Future.delayed(const Duration(milliseconds: 500), () {
                   if (mounted) {
                     _refreshFolderData();

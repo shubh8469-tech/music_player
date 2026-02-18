@@ -398,7 +398,7 @@ class _SectionHeader extends StatelessWidget {
             fontSize: 14.sp,
             fontWeight: AppFontWeights.medium,
             fontFamily: AppFonts.inter,
-            color: AppColors.primaryOrange,
+            color: AppColors.textColor,
           ),
         ),
       ],
