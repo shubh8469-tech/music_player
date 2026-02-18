@@ -120,7 +120,8 @@ Future<void> main() async {
               ),
             ),
             BlocProvider<MusicPlayerBloc>(
-              create: (_) => MusicPlayerBloc(musicService: MusicPlayerService()),
+              create: (_) =>
+                  MusicPlayerBloc(musicService: MusicPlayerService()),
             ),
             BlocProvider<SongsBloc>(
               create: (context) => SongsBloc(
@@ -129,30 +130,32 @@ Future<void> main() async {
                 onLibraryRefresh: () {
                   log('Library refresh triggered from SongsBloc');
                   context.read<PlaylistBloc>().add(
-                        const PlaylistEvent.fetchAllPlaylists(),
-                      );
+                    const PlaylistEvent.fetchAllPlaylists(),
+                  );
                   context.read<FolderBloc>().add(
-                        const FolderEvent.fetchAllFolders(),
-                      );
+                    const FolderEvent.fetchAllFolders(),
+                  );
                   context.read<ArtistBloc>().add(
-                        const ArtistEvent.fetchAllArtists(),
-                      );
+                    const ArtistEvent.fetchAllArtists(),
+                  );
                   context.read<AlbumBloc>().add(
-                        const AlbumEvent.fetchAllAlbums(),
-                      );
+                    const AlbumEvent.fetchAllAlbums(),
+                  );
                   context.read<GenreBloc>().add(
-                        const GenreEvent.fetchAllGenres(),
-                      );
+                    const GenreEvent.fetchAllGenres(),
+                  );
                 },
               )..add(const SongsEvent.getAllSongs()),
             ),
-            ChangeNotifierProvider(create: (_) => HoldTheTapFor())
+            ChangeNotifierProvider(create: (_) => HoldTheTapFor()),
           ],
           child: BlocListener<SongsBloc, SongsState>(
             listener: (context, state) {
               state.maybeWhen(
                 loaded: (songs) {
-                  context.read<MusicPlayerBloc>().musicService
+                  context
+                      .read<MusicPlayerBloc>()
+                      .musicService
                       .syncCurrentPlaylistWithUpdatedSongs(songs);
                 },
                 orElse: () {},
