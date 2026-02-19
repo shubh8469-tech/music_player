@@ -807,7 +807,7 @@ class _QueueScreenState extends State<QueueScreen> {
                         },
                       ),
                 ),
-                SizedBox(height: 90.h),
+                SizedBox(height: 130.h),
               ],
             ),
             Positioned(

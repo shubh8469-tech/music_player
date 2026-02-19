@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -8,6 +9,11 @@ import 'package:permission_handler/permission_handler.dart';
 // Note: metadata_god package available if needed for additional metadata extraction
 import '../../core/di/injection.dart';
 import '../../core/services/app_state_service.dart';
+import '../../features/albums/bloc/album_bloc.dart';
+import '../../features/artists/bloc/artist_bloc.dart';
+import '../../features/folders/bloc/folder_bloc.dart';
+import '../../features/genres/bloc/genre_bloc.dart';
+import '../../features/songs/bloc/songs_bloc.dart';
 import '../../features/songs/data/dataSource/song_local_data_source.dart';
 import '../../features/songs/data/models/song_model.dart';
 import '../../features/songs/domain/usecases/add_song.dart';
@@ -508,6 +514,15 @@ class _SyncProgressState extends State<SyncProgress>
       allSongs.forEach((song) {
         localDataSource.updateSongWithRelations(song);
       });
+
+      if (mounted) {
+        context.read<SongsBloc>().add(const SongsEvent.getAllSongs());
+        context.read<AlbumBloc>().add(const AlbumEvent.fetchAllAlbums());
+        context.read<FolderBloc>().add(const FolderEvent.fetchAllFolders());
+        context.read<ArtistBloc>().add(const ArtistEvent.fetchAllArtists());
+        context.read<GenreBloc>().add(const GenreEvent.fetchAllGenres());
+      }
+
 
       // Debug output
       debugPrint("Found $scannedFiles");
