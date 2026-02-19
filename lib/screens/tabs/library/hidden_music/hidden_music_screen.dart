@@ -17,6 +17,10 @@ import 'package:music_app/themes/font.dart';
 import 'package:music_app/utills/snack_bar.dart';
 
 import '../../../../commonWidgets/gradientCard.dart';
+import '../../../../features/albums/bloc/album_bloc.dart';
+import '../../../../features/artists/bloc/artist_bloc.dart';
+import '../../../../features/genres/bloc/genre_bloc.dart';
+import '../../../../features/playlists/bloc/playlist_bloc.dart';
 
 class HiddenMusicScreen extends StatefulWidget {
   const HiddenMusicScreen({super.key});
@@ -92,7 +96,12 @@ class _HiddenMusicScreenState extends State<HiddenMusicScreen>
     try {
       await _songLocalDataSource.updateSongHiddenStatus(song.id!, hide);
       if (mounted) {
+        context.read<FolderBloc>().add(const FolderEvent.fetchAllFolders());
         context.read<SongsBloc>().add(const SongsEvent.getAllSongs());
+        context.read<PlaylistBloc>().add(const PlaylistEvent.fetchAllPlaylists());
+        context.read<AlbumBloc>().add(const AlbumEvent.fetchAllAlbums());
+        context.read<ArtistBloc>().add(const ArtistEvent.fetchAllArtists());
+        context.read<GenreBloc>().add(const GenreEvent.fetchAllGenres());
       }
       await _loadContent();
 
@@ -125,6 +134,10 @@ class _HiddenMusicScreenState extends State<HiddenMusicScreen>
       if (mounted) {
         context.read<FolderBloc>().add(const FolderEvent.fetchAllFolders());
         context.read<SongsBloc>().add(const SongsEvent.getAllSongs());
+        context.read<PlaylistBloc>().add(const PlaylistEvent.fetchAllPlaylists());
+        context.read<AlbumBloc>().add(const AlbumEvent.fetchAllAlbums());
+        context.read<ArtistBloc>().add(const ArtistEvent.fetchAllArtists());
+        context.read<GenreBloc>().add(const GenreEvent.fetchAllGenres());
       }
       await _loadContent();
 
