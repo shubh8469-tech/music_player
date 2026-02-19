@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../commonWidgets/textWidget.dart';
 import '../../core/di/injection.dart';
 import '../../core/services/app_state_service.dart';
+import '../../features/songs/data/dataSource/song_local_data_source.dart';
 import '../../generated/assets.dart';
 import '../../l10n/l10n.dart';
 import '../../themes/font.dart';
@@ -87,25 +88,36 @@ class _SplashScreenState extends State<SplashScreen>
     return storageGranted || audioGranted;
   }
 
+  /// Removes song rows whose files no longer exist (e.g. after backup restore).
+  /// Prevents ghost hidden songs and playback crashes.
+  Future<void> _cleanupMissingSongsIfNeeded() async {
+    if (!mounted) return;
+    try {
+      final songDataSource = locator<SongLocalDataSource>();
+      final missingIds = await songDataSource.validateAndFindMissingFiles();
+      if (missingIds.isEmpty) return;
+      for (final id in missingIds) {
+        await songDataSource.deleteSong(id);
+      }
+      await songDataSource.cleanupOrphanedEntities();
+    } catch (_) {
+      // Non-fatal: continue to next screen even if cleanup fails
+    }
+  }
+
   /// Determines the next screen based on app state
   Future<void> _navigateToNextScreen() async {
     if (!mounted) return;
 
     // For iOS devices, skip permission and sync screens and go directly to dashboard
     if (Platform.isIOS) {
+      await _cleanupMissingSongsIfNeeded();
       if (mounted) context.go('/dashboard');
       return;
     }
 
     // Android-specific navigation flow
     final appStateService = locator<AppStateService>();
-
-    // Check if sync has been completed
-    // final syncCompleted = await appStateService.isSyncCompleted();
-    // if (syncCompleted) {
-    //   if (mounted) context.go('/dashboard');
-    //   return;
-    // }
 
     // Verify actual runtime permissions (not just stored flag)
     final hasRuntimePermission = await _checkRuntimePermissions();
@@ -121,13 +133,12 @@ class _SplashScreenState extends State<SplashScreen>
       return;
     }
 
-    // If runtime permission is actually granted, proceed to sync
+    // If runtime permission is actually granted, cleanup ghost entries then proceed
     if (hasRuntimePermission) {
-      // Update stored flag if it's not set
+      await _cleanupMissingSongsIfNeeded();
       if (!permissionGranted) {
         await appStateService.setPermissionGranted(true);
       }
-      // Permission granted but sync not completed, go to sync
       if (mounted) context.go('/sync');
       return;
     }

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Exclude the music library database so uninstall/reinstall starts fresh.
+         This prevents hidden songs / library state from being restored by
+         Android's auto-backup. -->
+    <exclude domain="database" path="music_app.db" />
+</full-backup-content>
+

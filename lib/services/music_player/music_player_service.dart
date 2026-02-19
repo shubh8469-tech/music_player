@@ -363,6 +363,19 @@ class MusicPlayerService {
       return;
     }
 
+    // Drop songs whose files no longer exist (e.g. after backup restore) to avoid crashes.
+    final filtered = await PlaylistBuilder.filterSongsWithExistingFiles(
+      songModels,
+      startIndex: startIndex,
+    );
+    songModels = filtered.list;
+    startIndex = filtered.startIndex;
+
+    if (songModels.isEmpty) {
+      await stopAndClearQueue();
+      return;
+    }
+
     // Clamp startIndex to valid range to avoid RangeError in the platform player.
     if (startIndex < 0 || startIndex >= songModels.length) {
       startIndex = 0;
@@ -486,6 +499,14 @@ class MusicPlayerService {
     int startIndex = 0,
     bool autoPlay = true,
   }) async {
+    if (songModels.isEmpty) return;
+    final filtered = await PlaylistBuilder.filterSongsWithExistingFiles(
+      songModels,
+      startIndex: 0,
+    );
+    songModels = filtered.list;
+    if (songModels.isEmpty) return;
+
     _isShuffleEnabled = true;
     _generateShuffleIndices();
     final randomStartIndex = Random().nextInt(songModels.length);
