@@ -350,6 +350,25 @@ class _HiddenMusicScreenState extends State<HiddenMusicScreen>
     );
   }
 
+  /// Full songs count for a folder (hidden + visible), computed from loaded songs
+  /// so the folders tab can show total count without relying on DB song_count.
+  int _fullSongCountForFolder(FolderModel folder) {
+    String dirOf(SongsModel s) {
+      final i = s.filePath.lastIndexOf('/');
+      return i >= 0 ? s.filePath.substring(0, i) : '';
+    }
+
+    bool belongs(SongsModel s) {
+      final dir = dirOf(s);
+      return dir == folder.path ||
+          (folder.path.isNotEmpty && dir.startsWith(folder.path + '/')) ||
+          (s.folder != null && s.folder == folder.name);
+    }
+
+    return _hiddenSongs.where(belongs).length +
+        _visibleSongs.where(belongs).length;
+  }
+
   Widget _buildFolderSection({
     required String title,
     required bool expanded,
@@ -398,6 +417,7 @@ class _HiddenMusicScreenState extends State<HiddenMusicScreen>
               ...folders.map(
                 (folder) => _HiddenFolderTile(
                   folder: folder,
+                  fullSongCount: _fullSongCountForFolder(folder),
                   isHidden: isHidden,
                   onToggle: () => _toggleFolderHidden(folder, !isHidden),
                 ),
@@ -538,11 +558,13 @@ class _HiddenSongTile extends StatelessWidget {
 class _HiddenFolderTile extends StatelessWidget {
   const _HiddenFolderTile({
     required this.folder,
+    required this.fullSongCount,
     required this.isHidden,
     required this.onToggle,
   });
 
   final FolderModel folder;
+  final int fullSongCount;
   final bool isHidden;
   final VoidCallback onToggle;
 
@@ -550,7 +572,7 @@ class _HiddenFolderTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return _HiddenItemTile(
       title: folder.name,
-      subtitle: '${folder.songCount} songs',
+      subtitle: '$fullSongCount songs',
       iconAsset: Assets.svgDirectory,
       isSvgIcon: true,
       isHidden: isHidden,

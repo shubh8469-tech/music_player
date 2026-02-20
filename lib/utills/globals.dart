@@ -339,3 +339,22 @@ int selectedItemsCount<T>(List<T> filteredList, Set<int> selectedIds) {
       .where((song) => selectedIds.contains((song as dynamic).id))
       .length;
 }
+
+bool isVideoFile(String path) {
+  final videoExtensions = [
+    '.mp4',
+    '.avi',
+    '.mkv',
+    '.mov',
+    '.wmv',
+    '.flv',
+    '.webm',
+    '.m4v',
+    '.3gp',
+    '.ts',
+    '.mpg',
+    '.mpeg',
+  ];
+  final lowerPath = path.toLowerCase();
+  return videoExtensions.any((ext) => lowerPath.endsWith(ext));
+}

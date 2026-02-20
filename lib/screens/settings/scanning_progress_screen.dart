@@ -43,6 +43,7 @@ import '../../features/songs/domain/usecases/add_song.dart';
 import '../../generated/assets.dart';
 import '../../themes/color.dart';
 import '../../themes/font.dart';
+import '../../utills/globals.dart';
 
 class ScanningProgressScreen extends StatefulWidget {
   const ScanningProgressScreen({super.key});
@@ -219,6 +220,7 @@ class _ScanningProgressScreenState extends State<ScanningProgressScreen> {
       int sizeRejectCount = 0;
 
       final List<SongModel> filteredSongs = deviceSongs.where((song) {
+
         final duration = song.duration ?? 0;
         final size = (song.size as int?) ?? 0;
         final passesDuration = duration >= durationFilter;
@@ -234,7 +236,7 @@ class _ScanningProgressScreenState extends State<ScanningProgressScreen> {
         if (passesFolder && passesDuration && passesSize)
           allFiltersMatchCount++;
 
-        return passesFolder && passesDuration && passesSize;
+        return passesFolder && passesDuration && passesSize && !isVideoFile(song.data);
       }).toList();
 
       log('Rejection counts:');
@@ -329,6 +331,15 @@ class _ScanningProgressScreenState extends State<ScanningProgressScreen> {
       int addedCount = 0;
 
       for (final song in songsToProcess) {
+
+        final String path = song.data;
+
+        // Skip video files (MP4, AVI, etc.) that may have been incorrectly indexed as audio
+        if (isVideoFile(path)) {
+          log('Skipping video file: $path');
+          continue;
+        }
+
         final info = folderInfoCache.putIfAbsent(
           song.id,
           () => _resolveFolderInfo(song.data),

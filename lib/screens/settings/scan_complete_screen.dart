@@ -31,11 +31,15 @@ class ScanCompleteScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: const AppBarWithIconTitle(
+      appBar: AppBarWithIconTitle(
         title: "Scan Music",
         backgroundColor: AppColors.primaryOrange,
         titleColor: AppColors.white,
         centerTitle: false,
+        onBack: (){
+          context.go('/dashboard');
+          context.push('/dashboard/settings');
+        },
       ),
       body: Center(
         child: Column(
@@ -67,6 +71,7 @@ class ScanCompleteScreen extends StatelessWidget {
           child: ElevatedButton(
             onPressed: () {
               context.go('/dashboard');
+              context.push('/dashboard/settings');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryOrange,

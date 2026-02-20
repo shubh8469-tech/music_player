@@ -42,6 +42,7 @@ import '../../features/songs/domain/usecases/add_song.dart';
 import '../../generated/assets.dart';
 import '../../themes/color.dart';
 import '../../themes/font.dart';
+import '../../utills/globals.dart';
 import '../../utills/snack_bar.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -86,26 +87,6 @@ class _SettingsPageState extends State<SettingsPage> {
       }
     }
     return status.isGranted;
-  }
-
-  /// Check if a file path represents a video file
-  bool _isVideoFile(String path) {
-    final lowerPath = path.toLowerCase();
-    final videoExtensions = [
-      '.mp4',
-      '.avi',
-      '.mkv',
-      '.mov',
-      '.wmv',
-      '.flv',
-      '.webm',
-      '.m4v',
-      '.3gp',
-      '.ts',
-      '.mpg',
-      '.mpeg',
-    ];
-    return videoExtensions.any((ext) => lowerPath.endsWith(ext));
   }
 
   Future<void> _refreshLibrary() async {
@@ -191,7 +172,7 @@ class _SettingsPageState extends State<SettingsPage> {
         final String path = song.data;
 
         // Skip video files (MP4, AVI, etc.) that may have been incorrectly indexed as audio
-        if (_isVideoFile(path)) {
+        if (isVideoFile(path)) {
           log('Skipping video file: $path');
           continue;
         }
