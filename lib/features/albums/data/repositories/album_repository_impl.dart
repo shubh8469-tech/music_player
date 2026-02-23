@@ -1,7 +1,7 @@
 import '../../../songs/domain/entities/song.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/repositories/album_repository.dart';
-import '../dataSource/album_local_data_source.dart';
+import '../datasources/album_local_data_source.dart';
 import '../models/album_model.dart';
 
 class AlbumRepositoryImpl implements AlbumRepository {

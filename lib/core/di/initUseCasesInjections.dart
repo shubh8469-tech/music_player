@@ -33,6 +33,33 @@ import '../../features/genres/domain/usecases/get_genre_songs.dart';
 import '../../features/genres/domain/usecases/add_song_to_genre.dart';
 import '../../features/genres/domain/usecases/update_genre_cover.dart';
 import '../../features/genres/domain/usecases/update_genre_name.dart';
+import '../../features/music_player/domain/repositories/playback_repository.dart';
+import '../../features/music_player/domain/usecases/get_playback_state_stream.dart';
+import '../../features/music_player/domain/usecases/set_playlist.dart';
+import '../../features/music_player/domain/usecases/sync_playlist_with_updated_songs.dart';
+import '../../features/music_player/domain/usecases/play_playback.dart';
+import '../../features/music_player/domain/usecases/pause_playback.dart';
+import '../../features/music_player/domain/usecases/seek_playback.dart';
+import '../../features/music_player/domain/usecases/next_playback.dart';
+import '../../features/music_player/domain/usecases/previous_playback.dart';
+import '../../features/music_player/domain/usecases/toggle_shuffle_playback.dart';
+import '../../features/music_player/domain/usecases/set_loop_mode_playback.dart';
+import '../../features/music_player/domain/usecases/set_shuffle_playlist.dart';
+import '../../features/music_player/domain/usecases/play_next_single_song.dart';
+import '../../features/music_player/domain/usecases/add_single_song_to_queue.dart';
+import '../../features/music_player/domain/usecases/stop_and_clear_queue.dart';
+import '../../features/music_player/domain/usecases/set_playback_speed.dart';
+import '../../features/music_player/domain/usecases/reorder_song_in_queue.dart';
+import '../../features/music_player/domain/usecases/swap_reorder_song_in_queue.dart';
+import '../../features/music_player/domain/usecases/prepare_reorder_for_current_song.dart';
+import '../../features/music_player/domain/usecases/remove_from_queue_at_index.dart';
+import '../../features/music_player/domain/usecases/play_next_multiple_songs.dart';
+import '../../features/music_player/domain/usecases/add_multiple_songs_to_queue.dart';
+import '../../features/music_player/domain/usecases/reset_playlist.dart';
+import '../../features/music_player/domain/usecases/update_songs_list_playback.dart';
+import '../../features/music_player/domain/usecases/ensure_shuffle_on_reshuffle_playback.dart';
+import '../../features/music_player/domain/usecases/ensure_shuffle_off_playback.dart';
+import '../../features/music_player/domain/usecases/ensure_shuffle_on_reshuffle_index_playback.dart';
 import 'injection.dart';
 
 Future<void> initUseCaseInjections() async {
@@ -78,4 +105,32 @@ Future<void> initUseCaseInjections() async {
   locator.registerFactory(() => AddSongToGenre(locator<GenreRepository>()));
   locator.registerFactory(() => UpdateGenreCover(locator<GenreRepository>()));
   locator.registerFactory(() => UpdateGenreName(locator<GenreRepository>()));
+
+  ///---> Playback (music player) UseCases
+  locator.registerFactory(() => GetPlaybackStateStream(locator<PlaybackRepository>()));
+  locator.registerFactory(() => SetPlaylist(locator<PlaybackRepository>()));
+  locator.registerFactory(() => SyncPlaylistWithUpdatedSongs(locator<PlaybackRepository>()));
+  locator.registerFactory(() => PlayPlayback(locator<PlaybackRepository>()));
+  locator.registerFactory(() => PausePlayback(locator<PlaybackRepository>()));
+  locator.registerFactory(() => SeekPlayback(locator<PlaybackRepository>()));
+  locator.registerFactory(() => NextPlayback(locator<PlaybackRepository>()));
+  locator.registerFactory(() => PreviousPlayback(locator<PlaybackRepository>()));
+  locator.registerFactory(() => ToggleShufflePlayback(locator<PlaybackRepository>()));
+  locator.registerFactory(() => SetLoopModePlayback(locator<PlaybackRepository>()));
+  locator.registerFactory(() => SetShufflePlaylist(locator<PlaybackRepository>()));
+  locator.registerFactory(() => PlayNextSingleSong(locator<PlaybackRepository>()));
+  locator.registerFactory(() => AddSingleSongToQueue(locator<PlaybackRepository>()));
+  locator.registerFactory(() => StopAndClearQueue(locator<PlaybackRepository>()));
+  locator.registerFactory(() => SetPlaybackSpeed(locator<PlaybackRepository>()));
+  locator.registerFactory(() => ReorderSongInQueue(locator<PlaybackRepository>()));
+  locator.registerFactory(() => SwapReorderSongInQueue(locator<PlaybackRepository>()));
+  locator.registerFactory(() => PrepareReorderForCurrentSong(locator<PlaybackRepository>()));
+  locator.registerFactory(() => RemoveFromQueueAtIndex(locator<PlaybackRepository>()));
+  locator.registerFactory(() => PlayNextMultipleSongs(locator<PlaybackRepository>()));
+  locator.registerFactory(() => AddMultipleSongsToQueue(locator<PlaybackRepository>()));
+  locator.registerFactory(() => ResetPlaylist(locator<PlaybackRepository>()));
+  locator.registerFactory(() => UpdateSongsListPlayback(locator<PlaybackRepository>()));
+  locator.registerFactory(() => EnsureShuffleOnAndReshufflePlayback(locator<PlaybackRepository>()));
+  locator.registerFactory(() => EnsureShuffleOffPlayback(locator<PlaybackRepository>()));
+  locator.registerFactory(() => EnsureShuffleOnReshuffleIndexPlayback(locator<PlaybackRepository>()));
 }

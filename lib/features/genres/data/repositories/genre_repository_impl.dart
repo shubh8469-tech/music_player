@@ -1,7 +1,7 @@
 import '../../../songs/domain/entities/song.dart';
 import '../../domain/entities/genre.dart';
 import '../../domain/repositories/genre_repository.dart';
-import '../dataSource/genre_local_data_source.dart';
+import '../datasources/genre_local_data_source.dart';
 import '../models/genre_model.dart';
 
 class GenreRepositoryImpl implements GenreRepository {

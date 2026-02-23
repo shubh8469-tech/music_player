@@ -86,4 +86,80 @@ class SongsModel extends Song {
       'is_hidden': isHidden ? 1 : 0,
     };
   }
+
+  /// Creates a [SongsModel] from domain [Song] with default values for persistence fields.
+  static SongsModel fromDomain(Song song) {
+    final now = DateTime.now().toIso8601String();
+    return SongsModel(
+      id: song.id,
+      title: song.title,
+      artist: song.artist,
+      album: song.album,
+      genre: song.genre,
+      year: song.year,
+      duration: song.duration,
+      filePath: song.filePath,
+      folder: song.folder,
+      artwork_path: song.artwork_path,
+      createdTime: now,
+      updatedTime: now,
+      playCount: 0,
+      lastPlayed: null,
+      isFavorite: false,
+      isHidden: song.isHidden,
+    );
+  }
+
+  SongsModel copyWith({
+    int? id,
+    String? title,
+    String? artist,
+    String? album,
+    String? genre,
+    int? year,
+    int? duration,
+    String? filePath,
+    String? folder,
+    String? artwork_path,
+    String? createdTime,
+    String? updatedTime,
+    int? playCount,
+    String? lastPlayed,
+    bool? isFavorite,
+    bool? isHidden,
+  }) {
+    return SongsModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      artist: artist ?? this.artist,
+      album: album ?? this.album,
+      genre: genre ?? this.genre,
+      year: year ?? this.year,
+      duration: duration ?? this.duration,
+      filePath: filePath ?? this.filePath,
+      folder: folder ?? this.folder,
+      artwork_path: artwork_path ?? this.artwork_path,
+      createdTime: createdTime ?? this.createdTime,
+      updatedTime: updatedTime ?? this.updatedTime,
+      playCount: playCount ?? this.playCount,
+      lastPlayed: lastPlayed ?? this.lastPlayed,
+      isFavorite: isFavorite ?? this.isFavorite,
+      isHidden: isHidden ?? this.isHidden,
+    );
+  }
+
+  /// Domain entity view of this model (for CA boundary).
+  Song toDomain() => Song(
+        id: id,
+        title: title,
+        artist: artist,
+        album: album,
+        genre: genre,
+        year: year,
+        duration: duration,
+        filePath: filePath,
+        folder: folder,
+        artwork_path: artwork_path,
+        isHidden: isHidden,
+      );
 }

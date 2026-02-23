@@ -80,7 +80,7 @@
                                               <map>
                                                 <entry key="color" value="000000" />
                                                 <entry key="imagePath" value="$PROJECT_DIR$/../assets/png/logo.png" />
-                                                <entry key="scalingPercent" value="63" />
+                                                <entry key="scalingPercent" value="60" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -113,7 +113,7 @@
                                   <option name="values">
                                     <map>
                                       <entry key="backgroundAssetType" value="COLOR" />
-                                      <entry key="backgroundColor" value="fd4215" />
+                                      <entry key="backgroundColor" value="fe4819" />
                                     </map>
                                   </option>
                                 </PersistentState>

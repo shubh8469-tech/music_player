@@ -4,7 +4,7 @@ import 'package:music_app/features/songs/data/models/song_model.dart';
 
 import '../../domain/entities/playlist.dart';
 import '../../domain/repositories/playlist_repository.dart';
-import '../dataSource/playlist_local_data_source.dart';
+import '../datasources/playlist_local_data_source.dart';
 import '../models/playlist_model.dart';
 
 class PlaylistRepositoryImpl implements PlaylistRepository {

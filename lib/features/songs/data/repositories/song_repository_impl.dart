@@ -1,6 +1,6 @@
 import '../../domain/entities/song.dart';
 import '../../domain/repositories/song_repository.dart';
-import '../dataSource/song_local_data_source.dart';
+import '../datasources/song_local_data_source.dart';
 import '../models/song_model.dart';
 
 class SongRepositoryImpl implements SongRepository {

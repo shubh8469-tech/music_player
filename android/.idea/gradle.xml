@@ -20,6 +20,18 @@
         <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
         <option name="modules">
           <set>
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/audio_service-0.18.18/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/audio_session-0.2.2/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/file_picker-8.3.7/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_localization-0.3.3/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.32/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/just_audio-0.10.5/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/metadata_god-1.1.0/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/on_audio_query_android-1.1.0/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_android-2.2.20/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/permission_handler_android-13.0.1/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/shared_preferences_android-2.4.15/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/sqflite_android-2.4.2+2/android" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$USER_HOME$/developer/flutter/packages/flutter_tools/gradle" />

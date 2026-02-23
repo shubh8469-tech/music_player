@@ -1,7 +1,7 @@
 import '../../../songs/domain/entities/song.dart';
 import '../../domain/entities/folder.dart';
 import '../../domain/repositories/folder_repository.dart';
-import '../dataSource/folder_local_data_source.dart';
+import '../datasources/folder_local_data_source.dart';
 import '../models/folder_model.dart';
 
 class FolderRepositoryImpl implements FolderRepository {

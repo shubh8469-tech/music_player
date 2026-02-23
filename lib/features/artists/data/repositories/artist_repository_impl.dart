@@ -1,7 +1,7 @@
 import '../../../songs/domain/entities/song.dart';
 import '../../domain/entities/artist.dart';
 import '../../domain/repositories/artist_repository.dart';
-import '../dataSource/artist_local_data_source.dart';
+import '../datasources/artist_local_data_source.dart';
 import '../models/artist_model.dart';
 
 class ArtistRepositoryImpl implements ArtistRepository {

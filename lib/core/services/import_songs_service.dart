@@ -5,7 +5,7 @@ import 'package:metadata_god/metadata_god.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import '../../features/songs/data/models/song_model.dart';
-import '../../features/songs/data/dataSource/song_local_data_source.dart';
+import '../../features/songs/data/datasources/song_local_data_source.dart';
 import '../../features/songs/domain/usecases/add_song.dart';
 import '../../features/folders/domain/entities/folder.dart';
 import '../../features/folders/domain/usecases/add_folder.dart';
