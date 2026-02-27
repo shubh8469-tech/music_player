@@ -4,9 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:music_app/features/app_shell/presentation/screens/tabs/home/homeScreen.dart';
-import 'package:music_app/features/app_shell/presentation/screens/tabs/library/libraryScreen.dart';
-import 'package:music_app/features/app_shell/presentation/screens/tabs/search/search_screen.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/features/music_player/presentation/screens/widgets/mini_player_bar.dart';
 
@@ -17,6 +14,9 @@ import 'package:music_app/themes/font.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
 import 'package:music_app/features/playlists/presentation/bloc/playlist_bloc.dart';
+import '../tabs/home/homeScreen.dart';
+import '../tabs/library/libraryScreen.dart';
+import '../tabs/search/search_screen.dart';
 import 'widgets/music_drawer.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -46,7 +46,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           setState(() {
             currentIndex = 2; // Switch to Library tab
           });
-          // Switch to Playlists tab in Library after the frame is built
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _libraryController.switchToPlaylistsTab();
           });
@@ -56,13 +55,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
       LibraryScreen(controller: _libraryController),
     ];
 
-    _libChangedSub = context.read<MusicPlayerBloc>().libraryChangedStream.listen((_) {
+    _libChangedSub =
+        context.read<MusicPlayerBloc>().libraryChangedStream.listen((_) {
       if (!mounted) return;
-      // context.read<PlaylistBloc>().add(const PlaylistEvent.fetchAllPlaylists());
       final now = DateTime.now();
-      if (_lastRefreshTime == null || now.difference(_lastRefreshTime!).inSeconds > 1) {
+      if (_lastRefreshTime == null ||
+          now.difference(_lastRefreshTime!).inSeconds > 1) {
         _lastRefreshTime = now;
-        context.read<PlaylistBloc>().add(const PlaylistEvent.refreshPlaylists());
+        context
+            .read<PlaylistBloc>()
+            .add(const PlaylistEvent.refreshPlaylists());
       }
     });
   }
@@ -135,7 +137,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _scaffoldKey.currentState?.openDrawer();
                     }
                   },
-                  icon: SvgPicture.asset(Assets.svgDrawer, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
+                  icon: SvgPicture.asset(
+                    Assets.svgDrawer,
+                    colorFilter: const ColorFilter.mode(
+                      AppColors.white,
+                      BlendMode.srcIn,
+                    ),
+                  ),
                 ),
               ),
               actions: [
@@ -146,29 +154,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Themes feature coming soon'),
+                          content: const Text('Themes feature coming soon'),
                           backgroundColor: AppColors.primaryOrange,
-                          duration: Duration(seconds: 2),
+                          duration: const Duration(seconds: 2),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
                     },
-                    icon: SvgPicture.asset(Assets.svgThemeBrush, height: 26.h, width: 26.w),
+                    icon: SvgPicture.asset(
+                      Assets.svgThemeBrush,
+                      height: 26.h,
+                      width: 26.w,
+                    ),
                   ),
                 ),
                 GestureDetector(
-                  // padding: EdgeInsets.zero,
                   onTap: () {
                     context.push('/dashboard/settings');
                   },
-                  child: SvgPicture.asset(Assets.svgSetting, height: 26.h, width: 26.w, colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn)),
+                  child: SvgPicture.asset(
+                    Assets.svgSetting,
+                    height: 26.h,
+                    width: 26.w,
+                    colorFilter: const ColorFilter.mode(
+                      AppColors.white,
+                      BlendMode.srcIn,
+                    ),
+                  ),
                 ),
                 if (Platform.isIOS)
                   IconButton(
                     onPressed: () {
                       context.push('/dashboard/import-songs');
                     },
-                    icon: Icon(Icons.add, color: AppColors.white, size: 28.r),
+                    icon: Icon(
+                      Icons.add,
+                      color: AppColors.white,
+                      size: 28.r,
+                    ),
                   ),
               ],
             )
@@ -185,7 +208,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Padding(
                   padding: EdgeInsets.only(
                     bottom: showMiniPlayer ? 74.h : 0,
-                  ), // Space for MiniPlayerBar (which includes system nav bar padding)
+                  ),
                   child: screens[currentIndex],
                 ),
               ),
@@ -204,8 +227,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: BottomNavigationBar(
           selectedItemColor: AppColors.primaryOrange,
           unselectedItemColor: AppColors.black,
-          selectedLabelStyle: TextStyle(fontSize: 12.sp, fontFamily: AppFonts.inter, fontWeight: AppFontWeights.regular),
-          unselectedLabelStyle: TextStyle(fontSize: 12.sp, fontFamily: AppFonts.inter, fontWeight: AppFontWeights.regular),
+          selectedLabelStyle: TextStyle(
+            fontSize: 12.sp,
+            fontFamily: AppFonts.inter,
+            fontWeight: AppFontWeights.regular,
+          ),
+          unselectedLabelStyle: TextStyle(
+            fontSize: 12.sp,
+            fontFamily: AppFonts.inter,
+            fontWeight: AppFontWeights.regular,
+          ),
           backgroundColor: AppColors.white,
           currentIndex: currentIndex,
           onTap: (index) {
@@ -215,19 +246,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
           },
           items: [
             BottomNavigationBarItem(
-              icon: SvgPicture.asset(Assets.svgHome, colorFilter: const ColorFilter.mode(AppColors.black, BlendMode.srcIn)),
+              icon: SvgPicture.asset(
+                Assets.svgHome,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.black,
+                  BlendMode.srcIn,
+                ),
+              ),
               label: 'Home',
               activeIcon: SvgPicture.asset(Assets.svgHome),
             ),
             BottomNavigationBarItem(
               icon: SvgPicture.asset(Assets.svgSearch),
               label: 'Search',
-              activeIcon: SvgPicture.asset(Assets.svgSearch, colorFilter: const ColorFilter.mode(AppColors.primaryOrange, BlendMode.srcIn)),
+              activeIcon: SvgPicture.asset(
+                Assets.svgSearch,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.primaryOrange,
+                  BlendMode.srcIn,
+                ),
+              ),
             ),
             BottomNavigationBarItem(
               icon: SvgPicture.asset(Assets.svgMusicLibrary),
               label: 'Library',
-              activeIcon: SvgPicture.asset(Assets.svgMusicLibrary, colorFilter: const ColorFilter.mode(AppColors.primaryOrange, BlendMode.srcIn)),
+              activeIcon: SvgPicture.asset(
+                Assets.svgMusicLibrary,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.primaryOrange,
+                  BlendMode.srcIn,
+                ),
+              ),
             ),
           ],
         ),
@@ -235,3 +284,4 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 }
+

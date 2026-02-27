@@ -37,8 +37,6 @@ abstract class PlaybackRepository {
 
   void syncPlaylistWithUpdatedSongs(List<Song> updatedSongs);
 
-  Future<void> removeFromQueueAtIndex(int removeIndex, int newCurrentIndex);
-
   Future<int> playNextMultipleSongs(List<Song> nextSongs);
   Future<bool> playNextSingleSong(Song song);
 

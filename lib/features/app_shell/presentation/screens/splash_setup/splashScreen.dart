@@ -75,21 +75,17 @@ class _SplashScreenState extends State<SplashScreen>
     });
   }
 
-  /// Check actual runtime permission status
   Future<bool> _checkRuntimePermissions() async {
     if (Platform.isIOS) {
-      return true; // iOS doesn't need explicit permission for media library
+      return true;
     }
 
-    // Check actual runtime permission status
     final storageGranted = await Permission.storage.isGranted;
     final audioGranted = await Permission.audio.isGranted;
 
     return storageGranted || audioGranted;
   }
 
-  /// Removes song rows whose files no longer exist (e.g. after backup restore).
-  /// Prevents ghost hidden songs and playback crashes.
   Future<void> _cleanupMissingSongsIfNeeded() async {
     if (!mounted) return;
     try {
@@ -100,40 +96,29 @@ class _SplashScreenState extends State<SplashScreen>
         await songDataSource.deleteSong(id);
       }
       await songDataSource.cleanupOrphanedEntities();
-    } catch (_) {
-      // Non-fatal: continue to next screen even if cleanup fails
-    }
+    } catch (_) {}
   }
 
-  /// Determines the next screen based on app state
   Future<void> _navigateToNextScreen() async {
     if (!mounted) return;
 
-    // For iOS devices, skip permission and sync screens and go directly to dashboard
     if (Platform.isIOS) {
       await _cleanupMissingSongsIfNeeded();
       if (mounted) context.go('/dashboard');
       return;
     }
 
-    // Android-specific navigation flow
     final appStateService = locator<AppStateService>();
 
-    // Verify actual runtime permissions (not just stored flag)
     final hasRuntimePermission = await _checkRuntimePermissions();
-
-    // Check stored permission flag
     final permissionGranted = await appStateService.isPermissionGranted();
 
-    // If stored flag says granted but runtime permission is not actually granted,
-    // reset the flag and go to permission screen
     if (permissionGranted && !hasRuntimePermission) {
       await appStateService.setPermissionGranted(false);
       if (mounted) context.go('/permission');
       return;
     }
 
-    // If runtime permission is actually granted, cleanup ghost entries then proceed
     if (hasRuntimePermission) {
       await _cleanupMissingSongsIfNeeded();
       if (!permissionGranted) {
@@ -143,7 +128,6 @@ class _SplashScreenState extends State<SplashScreen>
       return;
     }
 
-    // No permission yet, go to permission screen
     if (mounted) context.go('/permission');
   }
 
@@ -201,3 +185,4 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
+

@@ -10,7 +10,6 @@ import 'package:music_app/features/settings/presentation/screens/scanning_progre
 import 'package:music_app/features/settings/presentation/screens/scan_complete_screen.dart';
 import 'package:music_app/features/songs/presentation/screens/select_song_screen.dart';
 import 'package:music_app/features/songs/presentation/screens/add_songs_screen.dart';
-import 'package:music_app/features/playlists/presentation/screens/create_playlist_screen.dart';
 import 'package:music_app/features/playlists/presentation/screens/playlist_detail_screen.dart';
 import 'package:music_app/features/playlists/presentation/screens/select_playlist_screen.dart';
 import 'package:music_app/features/folders/presentation/screens/hidden_music_screen.dart';
@@ -24,15 +23,16 @@ import 'package:music_app/features/genres/presentation/screens/genre_detail_scre
 import 'package:music_app/features/genres/presentation/screens/select_genre_screen.dart';
 
 import 'package:music_app/features/songs/data/models/song_model.dart';
-import 'package:music_app/features/app_shell/presentation/screens/splash_setup/permission.dart';
-import 'package:music_app/features/app_shell/presentation/screens/splash_setup/splashScreen.dart';
-import 'package:music_app/features/app_shell/presentation/screens/splash_setup/sync_progress.dart';
-import 'package:music_app/features/app_shell/presentation/screens/dashboard/dashboardScreen.dart';
 import 'package:music_app/features/music_player/presentation/screens/play_song/playing_song_screen.dart';
-import 'package:music_app/features/app_shell/presentation/screens/tabs/home/homeScreen.dart';
-import 'package:music_app/features/app_shell/presentation/screens/tabs/home/import_songs_screen.dart';
-import 'package:music_app/features/app_shell/presentation/screens/tabs/library/libraryScreen.dart';
 import 'package:music_app/features/songs/presentation/screens/edit_song/edit_song_details_screen.dart';
+
+import 'features/app_shell/presentation/screens/dashboard/dashboardScreen.dart';
+import 'features/app_shell/presentation/screens/splash_setup/permission.dart';
+import 'features/app_shell/presentation/screens/splash_setup/splashScreen.dart';
+import 'features/app_shell/presentation/screens/splash_setup/sync_progress.dart';
+import 'features/app_shell/presentation/screens/tabs/home/homeScreen.dart';
+import 'features/app_shell/presentation/screens/tabs/home/import_songs_screen.dart';
+import 'features/app_shell/presentation/screens/tabs/library/libraryScreen.dart';
 
 enum AppRouteName {
   splash,

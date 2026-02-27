@@ -10,7 +10,6 @@ import 'package:music_app/features/artists/presentation/screens/artistScreen.dar
 import 'package:music_app/features/folders/presentation/screens/folders.dart';
 import 'package:music_app/features/genres/presentation/screens/genreList.dart';
 
-// Public controller to control LibraryScreen from outside
 class LibraryScreenController {
   _LibraryScreenState? _state;
 
@@ -40,12 +39,12 @@ class _LibraryScreenState extends State<LibraryScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final List<String> _tabs = [
-    "SONGS",
-    "PLAYLISTS",
-    "FOLDERS",
-    "ALBUMS",
-    "ARTISTS",
-    "GENRES",
+    'SONGS',
+    'PLAYLISTS',
+    'FOLDERS',
+    'ALBUMS',
+    'ARTISTS',
+    'GENRES',
   ];
 
   @override
@@ -62,10 +61,9 @@ class _LibraryScreenState extends State<LibraryScreen>
     super.dispose();
   }
 
-  // Method to switch to Playlists tab
   void switchToPlaylistsTab() {
     if (mounted) {
-      _tabController.animateTo(1); // PLAYLISTS is at index 1
+      _tabController.animateTo(1);
     }
   }
 
@@ -102,11 +100,10 @@ class _LibraryScreenState extends State<LibraryScreen>
             ),
             tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
           ),
-
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              children: [
+              children: const [
                 SongsList(),
                 PlayListScreen(),
                 FolderListScreen(),
@@ -121,3 +118,4 @@ class _LibraryScreenState extends State<LibraryScreen>
     );
   }
 }
+

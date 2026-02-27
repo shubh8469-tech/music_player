@@ -32,7 +32,6 @@ class _PermissionPageState extends State<PermissionPage> {
       }
 
       if (status.isGranted) {
-        // Save permission granted state
         final appStateService = locator<AppStateService>();
         await appStateService.setPermissionGranted(true);
 
@@ -88,7 +87,7 @@ class _PermissionPageState extends State<PermissionPage> {
               children: [
                 Row(
                   children: [
-                    checkIconWidget(),
+                    _checkIconWidget(),
                     SizedBox(width: 5.w),
                     Texts(
                       'Detect and list your offline music files',
@@ -101,7 +100,7 @@ class _PermissionPageState extends State<PermissionPage> {
                 SizedBox(height: 10.h),
                 Row(
                   children: [
-                    checkIconWidget(),
+                    _checkIconWidget(),
                     SizedBox(width: 5.w),
                     Texts(
                       'Play songs stored on your device',
@@ -114,7 +113,7 @@ class _PermissionPageState extends State<PermissionPage> {
                 SizedBox(height: 10.h),
                 Row(
                   children: [
-                    checkIconWidget(),
+                    _checkIconWidget(),
                     SizedBox(width: 5.w),
                     Texts(
                       'Keep your playlists organized automatically',
@@ -129,7 +128,7 @@ class _PermissionPageState extends State<PermissionPage> {
             SizedBox(height: 45.h),
             Center(
               child: OvalButton(
-                text: "Open Settings",
+                text: 'Open Settings',
                 onPressed: () async {
                   if (Platform.isAndroid) {
                     PermissionStatus status;
@@ -146,14 +145,12 @@ class _PermissionPageState extends State<PermissionPage> {
                       openAppSettings();
                       return;
                     } else {
-                      // Save permission granted state
                       final appStateService = locator<AppStateService>();
                       await appStateService.setPermissionGranted(true);
 
                       if (mounted) context.go('/sync');
                     }
                   }
-                  // context.go('/sync'); // 🔹 Navigate as before
                 },
                 backgroundColor: AppColors.primaryOrange,
                 textColor: AppColors.white,
@@ -169,9 +166,10 @@ class _PermissionPageState extends State<PermissionPage> {
     );
   }
 
-  Widget checkIconWidget() => Icon(
-    Icons.check_circle_outline,
-    color: AppColors.primaryOrange,
-    size: 20.sp,
-  );
+  Widget _checkIconWidget() => Icon(
+        Icons.check_circle_outline,
+        color: AppColors.primaryOrange,
+        size: 20.sp,
+      );
 }
+

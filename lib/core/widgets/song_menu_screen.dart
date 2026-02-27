@@ -1196,7 +1196,6 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                         '  Adjusting index: $currentIndex → $newCurrentIndex',
                                       );
 
-                                      if (Platform.isAndroid) {
                                         final source =
                                             bloc.player.audioSource;
                                         // if (source is ConcatenatingAudioSource && !bloc.state.shuffleEnabled) {
@@ -1238,23 +1237,12 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                             bloc.add(const PlayEvent());
                                           }
                                         }
-                                      } else if (Platform.isIOS) {
-                                        print('  iOS: Updating list only');
-                                        // ✅ iOS: Use dedicated method channel call for seamless removal
-                                        bloc.add(RemoveFromQueueAtIndexEvent(
-                                            removeIndex,
-                                            newCurrentIndex));
-                                        bloc.add(UpdateSongsListEvent(
-                                          mutableSongs.map((m) => m.toDomain()).toList(),
-                                        ));
-                                      }
 
                                       // showSnackBar(context, () {}, message: 'Removed "${removedSong.title}"', alertBannerLocation: AlertBannerLocation.bottom);
                                     } else {
                                       // ✅ Removing AFTER current - seamless update
                                       print('  Removing AFTER current');
 
-                                      if (Platform.isAndroid) {
                                         final source =
                                             bloc.player.audioSource;
                                         if (source
@@ -1279,12 +1267,6 @@ class _SongMenuScreenState extends State<SongMenuScreen> {
                                                 currentIndex,
                                               ));
                                         }
-                                      } else if (Platform.isIOS) {
-                                        print('  iOS: Updating list only');
-                                        bloc.add(UpdateSongsListEvent(
-                                          mutableSongs.map((m) => m.toDomain()).toList(),
-                                        ));
-                                      }
 
                                       // showSnackBar(context, () {}, message: 'Removed "${removedSong.title}"', alertBannerLocation: AlertBannerLocation.bottom);
                                     }

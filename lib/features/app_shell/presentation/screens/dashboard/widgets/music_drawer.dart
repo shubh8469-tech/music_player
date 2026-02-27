@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -67,14 +65,6 @@ class MusicDrawer extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 4.h),
-                        // Text(
-                        //   'Side menu',
-                        //   style: TextStyle(
-                        //     fontSize: 12.sp,
-                        //     fontFamily: AppFonts.inter,
-                        //     color: AppColors.textColor.withOpacity(0.6),
-                        //   ),
-                        // ),
                       ],
                     ),
                   ],
@@ -170,10 +160,12 @@ class MusicDrawer extends StatelessWidget {
                 padding: const EdgeInsets.all(1.0),
                 child: SvgPicture.asset(
                   assetPath,
-                  colorFilter: assetPath != Assets.svgThemeBrush ? const ColorFilter.mode(
-                    AppColors.black,
-                    BlendMode.srcIn,
-                  ) : null,
+                  colorFilter: assetPath != Assets.svgThemeBrush
+                      ? const ColorFilter.mode(
+                          AppColors.black,
+                          BlendMode.srcIn,
+                        )
+                      : null,
                 ),
               ),
             ),

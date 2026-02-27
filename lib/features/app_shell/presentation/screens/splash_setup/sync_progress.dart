@@ -265,33 +265,6 @@ class _SyncProgressState extends State<SyncProgress>
           // Try to extract year from song metadata
           int? songYear;
 
-          // FIRST PRIORITY: Try to read year from audio file metadata (ID3 tags, etc.)
-          // COMMENTED OUT: Not needed as on_audio_query provides year data
-          // (metadata_god available if more detailed extraction needed in future)
-          // if (!path.startsWith('content://')) {
-          //   try {
-          //     final file = File(path);
-          //     if (await file.exists()) {
-          //       final metadata = await MetadataRetriever.fromFile(file);
-          //
-          //       if (metadata.year != null) {
-          //         final yearValue = metadata.year!;
-          //
-          //         // Validate year is in reasonable range
-          //         if (yearValue > 1900 &&
-          //             yearValue <= DateTime.now().year + 1) {
-          //           songYear = yearValue;
-          //           log(
-          //             '✅ Year from audio metadata for ${song.title}: $songYear',
-          //           );
-          //         }
-          //       }
-          //     }
-          //   } catch (e) {
-          //     log('Failed to read audio metadata for ${song.title}: $e');
-          //   }
-          // }
-
           // FIRST PRIORITY (ACTIVE): Check dateAdded from media store
           try {
             final dateAdded = song.dateAdded ?? 0;
@@ -506,7 +479,6 @@ class _SyncProgressState extends State<SyncProgress>
         context.read<GenreBloc>().add(const GenreEvent.fetchAllGenres());
       }
 
-
       // Debug output
       debugPrint("Found $scannedFiles");
       debugPrint("Found ${scannedFiles.length} songs");
@@ -681,3 +653,5 @@ class _SyncProgressState extends State<SyncProgress>
     );
   }
 }
+
+

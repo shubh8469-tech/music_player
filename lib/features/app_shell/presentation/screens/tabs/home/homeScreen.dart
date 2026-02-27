@@ -1,4 +1,5 @@
 import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -18,7 +19,6 @@ import 'package:music_app/generated/assets.dart';
 import 'package:music_app/core/utils/snack_bar.dart';
 import 'package:music_app/features/playlists/presentation/bloc/playlist_bloc.dart';
 import 'package:music_app/core/widgets/common_modal_bottom_sheet.dart';
-import 'package:music_app/features/playlists/presentation/screens/create_playlist_bottom_sheet.dart';
 import 'package:music_app/features/playlists/presentation/screens/create_playlist_bottom_sheet.dart';
 import 'package:music_app/core/screens/common/commonTapProvider.dart';
 
@@ -57,25 +57,15 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Fetch songs for recently played system playlist
     context.read<PlaylistBloc>().add(
-      const PlaylistEvent.fetchSongsForSystemPlaylist('recently_played'),
-    );
+          const PlaylistEvent.fetchSongsForSystemPlaylist('recently_played'),
+        );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      // floatingActionButton: Platform.isIOS
-      //     ? FloatingActionButton(
-      //         onPressed: () {
-      //           context.push('/dashboard/import-songs');
-      //         },
-      //         backgroundColor: AppColors.primaryOrange,
-      //         child: Icon(Icons.add, color: AppColors.white, size: 28.r),
-      //       )
-      //     : null,
       body: BlocBuilder<PlaylistBloc, PlaylistState>(
         builder: (context, state) {
           return Padding(
@@ -96,25 +86,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: List.generate(3, (index) {
-                        // Find the corresponding system playlist
                         final systemPlaylist = state.maybeWhen(
                           loaded: (playlists, systemPlaylistSongs) =>
                               playlists.isNotEmpty
-                              ? playlists
-                                    .where((p) => p.isSystem == true)
-                                    .firstWhere(
-                                      (p) =>
-                                          p.systemKey ==
-                                          [
-                                            'most_played',
-                                            'recently_added',
-                                            'favorites',
-                                          ][index],
-                                      orElse: () => playlists
-                                          .where((p) => p.isSystem == true)
-                                          .first,
-                                    )
-                              : null,
+                                  ? playlists
+                                      .where((p) => p.isSystem == true)
+                                      .firstWhere(
+                                        (p) =>
+                                            p.systemKey ==
+                                            [
+                                              'most_played',
+                                              'recently_added',
+                                              'favorites',
+                                            ][index],
+                                        orElse: () => playlists
+                                            .where((p) => p.isSystem == true)
+                                            .first,
+                                      )
+                                  : null,
                           orElse: () => null,
                         );
 
@@ -160,10 +149,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           fontWeight: AppFontWeights.medium,
                           fontFamily: AppFonts.inter,
                         ),
-                        Spacer(),
+                        const Spacer(),
                         GestureDetector(
                           onTap: () {
-                            // Find the recently_played system playlist
                             state.maybeWhen(
                               loaded: (playlists, systemPlaylistSongs) {
                                 final recentlyPlayedPlaylist = playlists
@@ -204,10 +192,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   SizedBox(height: 5.h),
                   state.when(
-                    initial: () => Center(child: CircularProgressIndicator()),
-                    loading: () => Center(child: CircularProgressIndicator()),
+                    initial: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     loaded: (playlists, systemPlaylistSongs) {
-                      // Get recently played songs from the system playlist songs
                       final recentlyPlayedSongs =
                           systemPlaylistSongs?['recently_played'] ?? [];
 
@@ -216,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
 
                       if (recentlyPlayedSongs.isEmpty) {
-                        return Text(
+                        return const Text(
                           'No recently played songs',
                           style: TextStyle(color: Colors.grey),
                         );
@@ -258,47 +247,53 @@ class _HomeScreenState extends State<HomeScreen> {
                                 trailingMargin: 0,
                                 isGifLoad: isCurrentlyPlaying,
                                 isPlaying: isPlaying,
-                                onTap: context
-                                        .watch<HoldTheTapFor>()
-                                        .isHoldingSongPLay
-                                    ? null
-                                    : () async {
-                                        context
-                                            .read<HoldTheTapFor>()
-                                            .startHoldingSongPlay();
-                                        final current =
-                                            _bloc.state.currentSong;
-                                        if (current != null &&
-                                            current.id == song.id &&
-                                            _bloc.state.isPlaying) {
-                                          context.push(
-                                            '/dashboard/playing',
-                                            extra: PlayingSongArgs(
-                                              songs: _bloc.state.songs,
-                                            ),
-                                          );
-                                        } else {
-                                          _bloc.add(SetPlaylistEvent(
-                                            recentlyPlayedSongs
-                                                .map((m) => m.toDomain())
-                                                .toList(),
-                                            startIndex: recentlyPlayedSongs
-                                                .indexOf(song),
-                                          ));
-                                          _bloc.add(const PlayEvent());
-                                        }
-                                      },
+                                onTap:
+                                    context
+                                            .watch<HoldTheTapFor>()
+                                            .isHoldingSongPLay
+                                        ? null
+                                        : () async {
+                                            context
+                                                .read<HoldTheTapFor>()
+                                                .startHoldingSongPlay();
+                                            final current =
+                                                _bloc.state.currentSong;
+                                            if (current != null &&
+                                                current.id == song.id &&
+                                                _bloc.state.isPlaying) {
+                                              context.push(
+                                                '/dashboard/playing',
+                                                extra: PlayingSongArgs(
+                                                  songs: _bloc.state.songs,
+                                                ),
+                                              );
+                                            } else {
+                                              _bloc.add(
+                                                SetPlaylistEvent(
+                                                  recentlyPlayedSongs
+                                                      .map((m) => m.toDomain())
+                                                      .toList(),
+                                                  startIndex:
+                                                      recentlyPlayedSongs
+                                                          .indexOf(song),
+                                                ),
+                                              );
+                                              _bloc.add(const PlayEvent());
+                                            }
+                                          },
                                 onPlayTap: () async {
                                   if (isCurrent && isPlaying) {
                                     _bloc.add(const PauseEvent());
                                   } else {
-                                    _bloc.add(SetPlaylistEvent(
-                                      recentlyPlayedSongs
-                                          .map((m) => m.toDomain())
-                                          .toList(),
-                                      startIndex:
-                                          recentlyPlayedSongs.indexOf(song),
-                                    ));
+                                    _bloc.add(
+                                      SetPlaylistEvent(
+                                        recentlyPlayedSongs
+                                            .map((m) => m.toDomain())
+                                            .toList(),
+                                        startIndex: recentlyPlayedSongs
+                                            .indexOf(song),
+                                      ),
+                                    );
                                     _bloc.add(const PlayEvent());
                                   }
                                 },
@@ -319,10 +314,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: AppFontWeights.medium,
                         fontFamily: AppFonts.inter,
                       ),
-                      Spacer(),
+                      const Spacer(),
                       GestureDetector(
                         onTap: () {
-                          // Navigate to Library tab and switch to Playlists
                           widget.onNavigateToLibraryPlaylists?.call();
                         },
                         child: Texts(
@@ -336,10 +330,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   SizedBox(height: 8.h),
                   state.when(
-                    initial: () => Center(child: CircularProgressIndicator()),
-                    loading: () => Center(child: CircularProgressIndicator()),
+                    initial: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     loaded: (playlists, systemPlaylistSongs) {
-                      // Get user playlists (non-system playlists)
                       final userPlaylists = playlists
                           .where((p) => p.isSystem == false)
                           .toList();
@@ -357,7 +352,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   height: 66.h,
                                   width: 66.w,
                                   decoration: BoxDecoration(
-                                    color: AppColors.mildOrange.withValues(alpha: 0.1),
+                                    color: AppColors.mildOrange.withValues(
+                                      alpha: 0.1,
+                                    ),
                                     borderRadius: BorderRadius.circular(10.r),
                                   ),
                                   child: Icon(
@@ -394,7 +391,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             margin: 7.w,
                             height: 66.h,
                             borderRadius: 10.r,
-                            backgroundColor: AppColors.musicTileBackgroundColor,
+                            backgroundColor:
+                                AppColors.musicTileBackgroundColor,
                             cardHeight: 50.h,
                             cardWidth: 50.h,
                             cardRadius: 7.r,
@@ -418,53 +416,48 @@ class _HomeScreenState extends State<HomeScreen> {
                                 },
                               );
                             },
-                                    onPlayTap: () {
-                                      showModalBottomSheet(
+                            onPlayTap: () {
+                              showModalBottomSheet(
+                                context: context,
+                                backgroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(40.r),
+                                  ),
+                                ),
+                                isScrollControlled: true,
+                                builder: (_) => BlocProvider.value(
+                                  value: context.read<PlaylistBloc>(),
+                                  child: PlaylistMenuScreen(
+                                    playlist: playlist,
+                                    playlistIconAsset: coverAsset,
+                                    playlistGradientColors:
+                                        playlistGradientColors,
+                                    isSystemPlaylist: false,
+                                    systemKeyOrId: playlist.id.toString(),
+                                    onRename: () async {
+                                      final result =
+                                          await showRenamePlaylistBottomSheet(
                                         context: context,
-                                        backgroundColor: Colors.white,
-                                        elevation: 0,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.vertical(
-                                            top: Radius.circular(40.r),
-                                          ),
-                                        ),
-                                        isScrollControlled: true,
-                                        builder: (_) => BlocProvider.value(
-                                          value:
-                                              context.read<PlaylistBloc>(),
-                                          child: PlaylistMenuScreen(
-                                            playlist: playlist,
-                                            playlistIconAsset: coverAsset,
-                                            playlistGradientColors:
-                                                playlistGradientColors,
-                                            isSystemPlaylist: false,
-                                            systemKeyOrId:
-                                                playlist.id.toString(),
-                                            onRename: () async {
-                                              final result =
-                                                  await showRenamePlaylistBottomSheet(
-                                                context: context,
-                                                playlist: playlist,
-                                              );
-                                              if (!context.mounted) return;
-                                              if (result != null &&
-                                                  result.isNotEmpty) {
-                                                showSnackBar(
-                                                  context,
-                                                  () {},
-                                                  message:
-                                                      'Playlist renamed successfully',
-                                                  alertBannerLocation:
-                                                      AlertBannerLocation
-                                                          .bottom,
-                                                );
-                                              }
-                                            },
-                                          ),
-                                        ),
+                                        playlist: playlist,
                                       );
+                                      if (!context.mounted) return;
+                                      if (result != null && result.isNotEmpty) {
+                                        showSnackBar(
+                                          context,
+                                          () {},
+                                          message:
+                                              'Playlist renamed successfully',
+                                          alertBannerLocation:
+                                              AlertBannerLocation.bottom,
+                                        );
+                                      }
                                     },
+                                  ),
+                                ),
+                              );
+                            },
                           );
                         }).toList(),
                       );
@@ -481,3 +474,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+

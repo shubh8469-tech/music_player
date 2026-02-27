@@ -160,10 +160,6 @@ class PlaybackRepositoryImpl implements PlaybackRepository {
   }
 
   @override
-  Future<void> removeFromQueueAtIndex(int removeIndex, int newCurrentIndex) =>
-      _service.removeFromQueueAtIndex(removeIndex, newCurrentIndex);
-
-  @override
   Future<int> playNextMultipleSongs(List<Song> nextSongs) =>
       _service.playNextMultipleSongs(_songsToModel(nextSongs));
 

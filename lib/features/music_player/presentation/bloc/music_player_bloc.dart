@@ -151,12 +151,6 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
     on<AddMultipleSongsToQueueEvent>((event, emit) async {
       await _repository.addMultipleSongsToQueue(event.songs);
     });
-    on<RemoveFromQueueAtIndexEvent>((event, emit) async {
-      await _repository.removeFromQueueAtIndex(
-        event.removeIndex,
-        event.newCurrentIndex,
-      );
-    });
     on<PrepareReorderForCurrentSongEvent>((event, emit) {
       _repository.prepareReorderForCurrentSong(event.oldIndex, event.newIndex);
     });

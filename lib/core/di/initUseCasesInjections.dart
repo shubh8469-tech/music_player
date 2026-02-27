@@ -52,7 +52,6 @@ import '../../features/music_player/domain/usecases/set_playback_speed.dart';
 import '../../features/music_player/domain/usecases/reorder_song_in_queue.dart';
 import '../../features/music_player/domain/usecases/swap_reorder_song_in_queue.dart';
 import '../../features/music_player/domain/usecases/prepare_reorder_for_current_song.dart';
-import '../../features/music_player/domain/usecases/remove_from_queue_at_index.dart';
 import '../../features/music_player/domain/usecases/play_next_multiple_songs.dart';
 import '../../features/music_player/domain/usecases/add_multiple_songs_to_queue.dart';
 import '../../features/music_player/domain/usecases/reset_playlist.dart';
@@ -125,7 +124,6 @@ Future<void> initUseCaseInjections() async {
   locator.registerFactory(() => ReorderSongInQueue(locator<PlaybackRepository>()));
   locator.registerFactory(() => SwapReorderSongInQueue(locator<PlaybackRepository>()));
   locator.registerFactory(() => PrepareReorderForCurrentSong(locator<PlaybackRepository>()));
-  locator.registerFactory(() => RemoveFromQueueAtIndex(locator<PlaybackRepository>()));
   locator.registerFactory(() => PlayNextMultipleSongs(locator<PlaybackRepository>()));
   locator.registerFactory(() => AddMultipleSongsToQueue(locator<PlaybackRepository>()));
   locator.registerFactory(() => ResetPlaylist(locator<PlaybackRepository>()));

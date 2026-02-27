@@ -34,7 +34,6 @@ import 'package:music_app/features/music_player/presentation/bloc/music_player_b
 import 'package:music_app/features/music_player/domain/repositories/playback_repository.dart';
 import 'package:music_app/features/music_player/domain/usecases/get_playback_state_stream.dart';
 import 'package:music_app/features/music_player/data/services/music_player_service.dart';
-import 'package:music_app/features/app_shell/presentation/screens/tabs/music_service.dart';
 import 'core/di/injection.dart';
 import 'features/songs/presentation/bloc/songs_bloc.dart';
 import 'features/songs/data/datasources/song_local_data_source.dart';

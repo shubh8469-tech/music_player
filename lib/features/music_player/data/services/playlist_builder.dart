@@ -5,13 +5,9 @@ import 'package:just_audio/just_audio.dart';
 
 import 'package:music_app/features/songs/data/models/song_model.dart';
 
-/// Helper for creating AudioSource instances from song models.
 class PlaylistBuilder {
   PlaylistBuilder._();
 
-  /// Filters out songs whose file no longer exists (e.g. after backup restore).
-  /// content:// URIs are kept since we cannot check existence. Returns the
-  /// filtered list and the new start index (by original song id, or 0).
   static Future<({List<SongsModel> list, int startIndex})> filterSongsWithExistingFiles(
     List<SongsModel> songs, {
     int startIndex = 0,

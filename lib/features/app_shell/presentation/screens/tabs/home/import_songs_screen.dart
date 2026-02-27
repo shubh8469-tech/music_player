@@ -27,7 +27,6 @@ class ImportSongsScreen extends StatefulWidget {
   State<ImportSongsScreen> createState() => _ImportSongsScreenState();
 }
 
-// Class to hold file preview information
 class FilePreview {
   final PlatformFile file;
   final String title;
@@ -67,17 +66,15 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
         _isLoadingPreviews = true;
       });
 
-      // Extract metadata for preview
       await _extractFilePreviews(files);
     }
   }
 
   Future<void> _extractFilePreviews(List<PlatformFile> files) async {
-    List<FilePreview> previews = [];
+    final previews = <FilePreview>[];
     final appDocDir = await getApplicationDocumentsDirectory();
     final tempArtworkDir = Directory(p.join(appDocDir.path, 'temp_artworks'));
 
-    // Create temp artwork directory if it doesn't exist
     if (!await tempArtworkDir.exists()) {
       await tempArtworkDir.create(recursive: true);
     }
@@ -92,10 +89,8 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
         if (file.path != null) {
           final sourceFile = File(file.path!);
           if (await sourceFile.exists()) {
-            // Extract metadata
             final metadata = await MetadataGod.readMetadata(file: file.path!);
 
-            // Get title and artist
             if (metadata.title != null && metadata.title!.isNotEmpty) {
               title = metadata.title!;
             }
@@ -106,8 +101,8 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
             }
             subtitle = artist;
 
-            // Extract artwork
-            if (metadata.picture != null && metadata.picture!.data.isNotEmpty) {
+            if (metadata.picture != null &&
+                metadata.picture!.data.isNotEmpty) {
               final timestamp = DateTime.now().millisecondsSinceEpoch;
               final artworkFile = File(
                 p.join(tempArtworkDir.path, 'preview_${timestamp}_$i.jpg'),
@@ -117,8 +112,7 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
             }
           }
         }
-      } catch (e) {
-        // If metadata extraction fails, use file name
+      } catch (_) {
         subtitle = _formatBytes(file.size);
       }
 
@@ -146,9 +140,7 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
       if (await tempArtworkDir.exists()) {
         await tempArtworkDir.delete(recursive: true);
       }
-    } catch (e) {
-      // Silently fail - cleanup is not critical
-    }
+    } catch (_) {}
   }
 
   Future<void> _startImport() async {
@@ -181,10 +173,8 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
       _skippedFiles = List<String>.from(result['skippedFiles'] ?? []);
     });
 
-    // Clean up temp artwork files after import
     await _cleanupTempArtworks();
 
-    // Refresh the songs list and playlists after successful import
     if (_successCount > 0 && mounted) {
       context.read<SongsBloc>().add(const SongsEvent.getAllSongs());
       context.read<PlaylistBloc>().add(const PlaylistEvent.fetchAllPlaylists());
@@ -193,7 +183,6 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
 
   @override
   void dispose() {
-    // Clean up temp artworks when widget is disposed
     _cleanupTempArtworks();
     super.dispose();
   }
@@ -214,7 +203,10 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
         showBackButton: false,
         elevation: 0,
       ),
-      body: Padding(padding: EdgeInsets.all(16.0.r), child: _buildBody()),
+      body: Padding(
+        padding: EdgeInsets.all(16.0.r),
+        child: _buildBody(),
+      ),
     );
   }
 
@@ -308,7 +300,7 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
             ),
             SizedBox(height: 32.h),
             OvalButton(
-              text: "Browse Files",
+              text: 'Browse Files',
               onPressed: _pickFiles,
               backgroundColor: AppColors.primaryOrange,
               textColor: AppColors.white,
@@ -383,7 +375,9 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircularProgressIndicator(color: AppColors.primaryOrange),
+                      CircularProgressIndicator(
+                        color: AppColors.primaryOrange,
+                      ),
                       SizedBox(height: 16.h),
                       Texts(
                         'Loading file previews...',
@@ -400,7 +394,6 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
                     final preview = _filePreviews?[index];
                     final file = _selectedFiles![index];
 
-                    // If preview is available, use it; otherwise show basic info
                     final title =
                         preview?.title ?? p.basenameWithoutExtension(file.name);
                     final subtitle =
@@ -429,9 +422,7 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
                         trailingIconHeight: 24.h,
                         trailingIconWidth: 24.w,
                         trailingMargin: 2.w,
-                        onTap: () {
-                          // Optional: show file details
-                        },
+                        onTap: () {},
                       ),
                     );
                   },
@@ -442,7 +433,7 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
           children: [
             Expanded(
               child: OvalButton(
-                text: "Cancel",
+                text: 'Cancel',
                 onPressed: () async {
                   await _cleanupTempArtworks();
                   setState(() {
@@ -459,7 +450,7 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
             SizedBox(width: 16.w),
             Expanded(
               child: OvalButton(
-                text: "Import",
+                text: 'Import',
                 onPressed: _startImport,
                 backgroundColor: AppColors.primaryOrange,
                 textColor: AppColors.white,
@@ -629,9 +620,7 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
                       ],
                     ),
                     SizedBox(height: 8.h),
-                    ..._skippedFiles
-                        .take(5)
-                        .map(
+                    ..._skippedFiles.take(5).map(
                           (file) => Padding(
                             padding: EdgeInsets.only(bottom: 4.h),
                             child: Texts(
@@ -660,7 +649,7 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
             ],
             SizedBox(height: 40.h),
             OvalButton(
-              text: "Done",
+              text: 'Done',
               onPressed: () => context.pop(),
               backgroundColor: AppColors.primaryOrange,
               textColor: AppColors.white,
@@ -676,7 +665,10 @@ class _ImportSongsScreenState extends State<ImportSongsScreen> {
 
   String _formatBytes(int bytes) {
     if (bytes < 1024) return '$bytes B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    if (bytes < 1024 * 1024) {
+      return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    }
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 }
+
