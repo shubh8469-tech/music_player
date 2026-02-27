@@ -11,7 +11,7 @@ import 'package:go_router/go_router.dart';
 // import 'package:music_app/app_router.dart';
 import 'package:music_app/core/widgets/textWidget.dart';
 
-// import 'package:music_app/presentation/screens/play_song/playing_song_screen.dart';
+// import 'package:music_app/presentation/common_screens/play_song/playing_song_screen.dart';
 import 'package:music_app/features/songs/presentation/screens/sort_by_bottomsheet.dart';
 import 'package:music_app/themes/color.dart';
 import 'package:music_app/themes/font.dart';
@@ -30,7 +30,7 @@ import 'package:music_app/generated/assets.dart';
 import 'package:music_app/core/utils/globals.dart';
 
 // import 'package:music_app/l10n/l10n.dart';
-import 'package:music_app/core/screens/common/commonTapProvider.dart';
+import 'package:music_app/core/common_screens/commonTapProvider.dart';
 import 'package:music_app/features/music_player/presentation/screens/play_song/playing_song_screen.dart';
 
 class SongsList extends StatefulWidget {

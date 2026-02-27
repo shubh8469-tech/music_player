@@ -20,7 +20,8 @@ import 'package:music_app/core/utils/snack_bar.dart';
 import 'package:music_app/features/playlists/presentation/bloc/playlist_bloc.dart';
 import 'package:music_app/core/widgets/common_modal_bottom_sheet.dart';
 import 'package:music_app/features/playlists/presentation/screens/create_playlist_bottom_sheet.dart';
-import 'package:music_app/core/screens/common/commonTapProvider.dart';
+
+import '../../../../../../core/common_screens/commonTapProvider.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback? onNavigateToLibraryPlaylists;

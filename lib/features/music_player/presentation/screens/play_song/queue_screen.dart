@@ -26,7 +26,7 @@ import 'package:music_app/core/widgets/common_functions.dart';
 import 'package:music_app/core/widgets/song_menu_screen.dart';
 import 'package:music_app/core/utils/globals.dart';
 import 'package:music_app/features/music_player/presentation/screens/widgets/mini_player_bar.dart';
-import 'package:music_app/core/screens/common/commonTapProvider.dart';
+import 'package:music_app/core/common_screens/commonTapProvider.dart';
 
 class QueueScreen extends StatefulWidget {
   const QueueScreen({super.key});

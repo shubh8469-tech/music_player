@@ -18,7 +18,7 @@ import 'package:music_app/core/widgets/text_field_widget.dart';
 import 'package:music_app/generated/assets.dart';
 import 'package:music_app/l10n/l10n.dart';
 import 'package:music_app/themes/color.dart';
-import 'package:music_app/core/screens/common/image_crop_screen.dart';
+import 'package:music_app/core/common_screens/image_crop_screen.dart';
 import 'package:music_app/core/utils/snack_bar.dart';
 
 class EditAlbumTagsScreen extends StatefulWidget {

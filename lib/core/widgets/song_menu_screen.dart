@@ -18,7 +18,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
 
-import 'package:music_app/app_router.dart';
+import 'package:music_app/config/router/app_router.dart';
 import 'package:music_app/core/di/injection.dart';
 import 'package:music_app/features/albums/domain/repositories/album_repository.dart';
 import 'package:music_app/features/artists/domain/repositories/artist_repository.dart';
@@ -29,7 +29,7 @@ import 'package:music_app/features/songs/presentation/bloc/songs_bloc.dart';
 import 'package:music_app/generated/assets.dart';
 import 'package:music_app/l10n/l10n.dart';
 import 'package:music_app/core/models/song_menu_model.dart';
-import 'package:music_app/core/screens/common/image_crop_screen.dart';
+import '../common_screens/image_crop_screen.dart';
 import 'common_modal_bottom_sheet.dart';
 import 'package:music_app/features/music_player/presentation/screens/play_song/widget/playback_speed_bottom_sheet.dart';
 import 'package:music_app/features/music_player/presentation/bloc/music_player_bloc.dart';

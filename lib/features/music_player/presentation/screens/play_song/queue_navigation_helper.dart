@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:music_app/features/music_player/presentation/screens/play_song/queue_screen.dart';
 import 'package:music_app/features/music_player/presentation/screens/play_song/select_queue_screen.dart';
 
-/// Helper class to navigate to queue-related screens
+/// Helper class to navigate to queue-related common_screens
 class QueueNavigationHelper {
   /// Navigate to the playing queue screen
   static void navigateToQueueScreen(BuildContext context) {

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:music_app/app_router.dart';
+import 'package:music_app/config/router/app_router.dart';
 
 import '../../generated/assets.dart';
 import '../../l10n/l10n.dart';

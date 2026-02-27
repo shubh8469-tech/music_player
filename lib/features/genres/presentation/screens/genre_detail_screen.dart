@@ -30,7 +30,7 @@ import 'package:music_app/l10n/l10n.dart';
 import 'package:music_app/core/models/song_menu_model.dart';
 import 'package:music_app/core/utils/globals.dart';
 import 'package:music_app/core/utils/snack_bar.dart';
-import 'package:music_app/core/screens/common/commonTapProvider.dart';
+import 'package:music_app/core/common_screens/commonTapProvider.dart';
 import 'package:music_app/features/music_player/presentation/screens/play_song/playing_song_screen.dart';
 import 'package:music_app/features/music_player/presentation/screens/widgets/mini_player_bar.dart';
 

@@ -26,13 +26,13 @@ import 'package:music_app/features/songs/data/models/song_model.dart';
 import 'package:music_app/features/music_player/presentation/screens/play_song/playing_song_screen.dart';
 import 'package:music_app/features/songs/presentation/screens/edit_song/edit_song_details_screen.dart';
 
-import 'features/app_shell/presentation/screens/dashboard/dashboardScreen.dart';
-import 'features/app_shell/presentation/screens/splash_setup/permission.dart';
-import 'features/app_shell/presentation/screens/splash_setup/splashScreen.dart';
-import 'features/app_shell/presentation/screens/splash_setup/sync_progress.dart';
-import 'features/app_shell/presentation/screens/tabs/home/homeScreen.dart';
-import 'features/app_shell/presentation/screens/tabs/home/import_songs_screen.dart';
-import 'features/app_shell/presentation/screens/tabs/library/libraryScreen.dart';
+import '../../core/common_screens/dashboard/dashboardScreen.dart';
+import '../../core/common_screens/splash_setup/permission.dart';
+import '../../core/common_screens/splash_setup/splashScreen.dart';
+import '../../core/common_screens/splash_setup/sync_progress.dart';
+import '../../core/common_screens/tabs/home/homeScreen.dart';
+import '../../core/common_screens/tabs/home/import_songs_screen.dart';
+import '../../core/common_screens/tabs/library/libraryScreen.dart';
 
 enum AppRouteName {
   splash,

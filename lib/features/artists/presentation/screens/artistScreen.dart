@@ -27,7 +27,7 @@ import 'package:music_app/core/utils/globals.dart';
 import 'package:music_app/core/utils/snack_bar.dart';
 import 'package:music_app/features/music_player/presentation/bloc/music_player_bloc.dart';
 import 'package:music_app/features/music_player/presentation/bloc/music_player_event.dart';
-import 'package:music_app/core/screens/common/image_crop_screen.dart';
+import 'package:music_app/core/common_screens/image_crop_screen.dart';
 import 'package:music_app/core/widgets/common_modal_bottom_sheet.dart';
 import 'package:music_app/core/widgets/edit_tag_bottom_sheet.dart';
 import 'sort_by_bottomsheet.dart';
