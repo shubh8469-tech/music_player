@@ -28,7 +28,6 @@ import 'package:music_app/features/genres/domain/usecases/update_genre_cover.dar
 import 'package:music_app/features/genres/domain/usecases/update_genre_name.dart';
 import 'package:music_app/core/screens/common/commonTapProvider.dart';
 import 'package:provider/provider.dart';
-import 'package:music_app/core/blocs/language_bloc/language_bloc.dart';
 import 'package:music_app/app_router.dart';
 import 'package:music_app/features/music_player/presentation/bloc/music_player_bloc.dart';
 import 'package:music_app/features/music_player/domain/repositories/playback_repository.dart';
@@ -83,7 +82,6 @@ Future<void> main() async {
       builder: (context, child) {
         return MultiBlocProvider(
           providers: [
-            BlocProvider(create: (context) => LanguageBloc()),
             BlocProvider<PlaylistBloc>(
               create: (_) =>
                   PlaylistBloc(locator())
@@ -179,25 +177,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LanguageBloc, LanguageState>(
-      builder: (context, state) {
-        return MaterialApp.router(
-          debugShowCheckedModeBanner: false,
-          title: 'Flutter Demo',
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          ),
-          supportedLocales: S.supportedLocales,
-          locale: state.locale,
-          localizationsDelegates: const [
-            S.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          routerConfig: appRouter,
-        );
-      },
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      ),
+      supportedLocales: S.supportedLocales,
+      localizationsDelegates: const [
+        S.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      routerConfig: appRouter,
     );
   }
 }
